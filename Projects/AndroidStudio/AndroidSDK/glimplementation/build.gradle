@@ -92,6 +92,6 @@ task(distributeLib, type : Copy) {
     }
     from("build/outputs/native/release/lib") {
         into "lib/"
-        exclude "**/libgnustl*.so"
+        include "**/libglimplementation.so"
     }
 }
