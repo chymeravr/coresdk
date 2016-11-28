@@ -1,2 +1,4 @@
-include ':app', ':glimplementation', ':image360'
+//include ':app'
+//include ':glimplementation'
+//include ':image360'
 include ':coreengine'

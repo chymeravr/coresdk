@@ -23,7 +23,8 @@ model {
             cppFlags.add("-I" + file("${repository_root}/thirdParty/glm/glm-0.9.7.6/glm").absolutePath)
             cppFlags.add("-I" + file("${coreengine_root}/include").absolutePath)
             stl = "gnustl_shared"
-            abiFilters.addAll(['armeabi', 'armeabi-v7a', 'arm64-v8a', 'x86', 'x86_64', 'mips', 'mips64']) //this is default
+            //abiFilters.addAll(['armeabi', 'armeabi-v7a', 'arm64-v8a', 'x86', 'x86_64', 'mips', 'mips64']) //this is default
+            abiFilters.addAll(['armeabi-v7a']) //this is default
             //ldLibs.addAll(['android', 'log'])
         }
         sources{
