@@ -5,14 +5,21 @@
 #ifndef ANDROIDSDK_IOBJECTFACTORY_H
 #define ANDROIDSDK_IOBJECTFACTORY_H
 
+#include <string>
 #include <coreEngine/model/Object.h>
-#include <coreEngine/factory/IObjectFactoryParam.h>
 
 namespace cl{
     class IObjectFactory{
     public:
-        virtual std::unique_ptr<Object> createObject(IObjectFactoryParam &param) = 0;
-        virtual void destroyObject(Object& object) = 0;
+		/**
+		* Factory method to create an object or its derivatives. Implementation of IObjectFactory should ask the resources it needs in the constructor.
+		*/
+        virtual std::unique_ptr<Object> createObject(std::string tag) = 0;
+		/**
+		* The operations of deinitializing resources of the object should be performed here. However, the owner of the Object must destroy the memory manually
+		* or use smart_pointers
+		*/
+		virtual void destroyObject(Object *objectPtr) = 0;
     };
 }
 

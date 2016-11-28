@@ -9,22 +9,23 @@
 #include <coreEngine/conf/Types.h>
 #include <coreEngine/model/Model.h>
 #include <coreEngine/service/IObjectService.h>
+#include <coreEngine/util/ILogger.h>
+#include <coreEngine/util/ILoggerFactory.h>
 
 namespace cl{
     class ModelService : public IModelService{
     private:
-        Logger *loggerPtr;
+        std::unique_ptr<ILogger> loggerPtr;
         std::unique_ptr<IObjectService> objectServicePtr;
     public:
-        ModelService();
-        std::pair<bool, Material&> getMaterialOfModel(Model &model);
-        std::pair<bool, IObjectRenderer&> getRenderer(Model &model);
-        void convertQuadIndicesToTriangleIndices(Model &model);
-        void invertNormal(Model &model);
-        void buildInwardCube(Model &model);
-        void buildOutwardCube(Model &model);
+        ModelService(ILoggerFactory *loggerFactoryPtr, std::unique_ptr<IObjectService> objectServicePtr);
+        Material* getMaterialOfModel(Model *modelPtr);
+        void invertNormal(Model *modelPtr);
+        void buildInwardCube(Model *modelPtr);
+        void buildOutwardCube(Model *modelPtr);
 
     private:
+        void convertQuadIndicesToTriangleIndices(Model *modelPtr);
         float linearInterp(float startY, float endY, float startX, float endX,
                            float targetX);
     };

@@ -2,27 +2,32 @@
 // Created by chimeralabs on 10/21/2016.
 //
 
-#include <coreEngine/factory/IObjectFactory.h>
-#include <coreEngine/factory/IObjectFactoryParam.h>
-#include <coreEngine/factory/defaultImpl/MaterialFactoryParam.h>
-#include <coreEngine/model/Material.h>
-
 #ifndef ANDROIDSDK_MATERIALFACTORY_H
 #define ANDROIDSDK_MATERIALFACTORY_H
 
-namespace cl{
-    class MaterialFactory : public IObjectFactory{
+#include <coreEngine/factory/IMaterialFactory.h>
+#include <coreEngine/service/IMaterialService.h>
+#include <assert.h>
 
+namespace cl{
+    class MaterialFactory : public IMaterialFactory{
+    private:
+        std::unique_ptr<IObjectService> objectServicePtr;
     public:
-        std::unique_ptr<Object> createObject(IObjectFactoryParam &param) {
-            MaterialFactoryParam &materialParam = (MaterialFactoryParam &) param;
-            return std::unique_ptr<Object>(
-                    new Material(materialParam.getShader(), materialParam.getRenderer(),
-                                 materialParam.getTag()));
+        MaterialFactory(std::unique_ptr<IObjectService> objectServicePtr){
+            this->objectServicePtr = std::move(objectServicePtr);
+        }
+        std::unique_ptr<Object> create(std::string tag, Shader* shaderPtr, std::unique_ptr<IMaterialRenderer> materialRendererPtr) {
+            std::unique_ptr<Object> materialPtr(new Material(std::move(materialRendererPtr), tag));
+            objectServicePtr->linkObject(materialPtr.get(), (Object*)shaderPtr);
+            return materialPtr;
         }
 
-        virtual void destroyObject(Object &object) override {
-
+        void destroy(Material *materialPtr) override {
+            assert(materialPtr != nullptr);
+            std::vector<Object *> objects = objectServicePtr->getLinkedObjectsByObjectType(materialPtr, "shader");
+            assert(objects.size() == 1);
+            objectServicePtr->unlinkObject(objects[0], materialPtr);
         }
     };
 }

@@ -14,13 +14,13 @@ namespace cl{
         CL_Vec3 color;
 
     public:
-        MaterialUniformColor(Shader &shader, IObjectRenderer &objectRenderer,
-                             const std::string &tag) : Material(shader, objectRenderer, tag) { }
-        CL_Vec3 getColor(){
+        MaterialUniformColor(std::unique_ptr<IMaterialRenderer> materialRendererPtr,
+                             const std::string &tag) : Material(std::move(materialRendererPtr), tag) { }
+        const CL_Vec3 &getColor() const {
             return color;
         }
-        void setColor(CL_Vec3 color){
-            this->color = color;
+        void setColor(const CL_Vec3 &color) {
+            MaterialUniformColor::color = color;
         }
     };
 }

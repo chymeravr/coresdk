@@ -6,21 +6,45 @@
 #define ANDROIDSDK_SCENESERVICE_H
 
 #include <coreEngine/service/ISceneService.h>
-#include <coreEngine/util/Logger.h>
-#include <coreEngine/util/LoggerFactory.h>
+#include <coreEngine/util/ILogger.h>
+#include <coreEngine/util/ILoggerFactory.h>
 
 namespace cl{
     class SceneService : public ISceneService{
     private:
-        Logger *loggerPtr;
+		std::unique_ptr<ILogger> loggerPtr;
     public:
-        SceneService();
-        SCENE_ERROR_CODE createObject(Scene &scene, IObjectFactory& factory, IObjectFactoryParam &param);
-        SCENE_ERROR_CODE removeObject(Scene &scene, IObjectFactory& factory, Object &object);
-        bool isTagAvailable(Scene &scene, std::string tag);
-        std::pair<bool, Object&> getObjectByTag(Scene &scene, std::string tag);
-        std::vector<Object*>& getObjectsByObjectType(Scene &scene, std::string objectType);
-        std::pair<bool, IObjectRenderer&> getSceneRenderer(Scene &scene);
+		SceneService(ILoggerFactory *loggerFactoryPtr);
+		/**
+		* Creates an Object in the Scene and stores it.
+		* @args scenePtr: Pointer to the Scene object that stores the scene
+		* @args factoryPtr: Pointer to the Factory object that implements IObjectFactory interface and determines how the object is created
+		* @args tag: A unique identifier tag for the scene. Should be checked with isTagAvailable before creation.
+		* @return Returns object pointer if creation was successful else returns nullptr.
+		*/
+		Object* createObject(Scene *scenePtr, IObjectFactory *factoryPtr, const std::string &tag);
+		/**
+		* Removes the object from scene.
+		* @args scenePtr: Pointer to the Scene object that stores the scene
+		* @args factoryPtr: Pointer to the Factory object that implements IObjectFactory interface and determines how the object is created
+		* @args tag: A unique identifier tag for the scene. Should be checked with isTagAvailable before creation.
+		*/
+		void removeObject(Scene *scenePtr, IObjectFactory *factoryPtr, Object *objectPtr);
+
+		/**
+		* Returns true if the tag is available else false
+		*/
+		bool isTagAvailable(Scene *scenePtr, const std::string &tag);
+
+		/**
+		* Retrieves the object with the specified tag. Returns nullptr if it can't be retrieved.
+		*/
+		Object *getObjectByTag(Scene *scenePtr, const std::string &tag);
+
+		/**
+		* Retrieves the list of object with the specified type.
+		*/
+		std::vector<Object*> getObjectsByObjectType(Scene *scenePtr, const std::string &objectType);
     };
 }
 

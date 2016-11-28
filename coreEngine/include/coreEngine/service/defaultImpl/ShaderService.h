@@ -7,15 +7,17 @@
 
 #include <coreEngine/service/IShaderService.h>
 #include <coreEngine/service/IObjectService.h>
+#include <coreEngine/util/ILogger.h>
+#include <coreEngine/util/ILoggerFactory.h>
 
 namespace cl{
     class ShaderService : public IShaderService{
     private:
+        std::unique_ptr<ILogger> loggerPtr;
         std::unique_ptr<IObjectService> objectServicePtr;
     public:
-        ShaderService();
-        std::vector<Material *> getMaterials(Shader &shader);
-        std::pair<bool, IObjectRenderer&> getRenderer(Shader &shader);
+        ShaderService(ILoggerFactory *loggerFactoryPtr, std::unique_ptr<IObjectService> objectServicePtr);
+        std::vector<Material *> getMaterials(Shader *shaderPtr);
     };
 }
 

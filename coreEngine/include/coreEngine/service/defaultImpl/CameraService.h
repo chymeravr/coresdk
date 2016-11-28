@@ -10,7 +10,8 @@
 namespace cl{
     class CameraService : public ICameraService{
     public:
-        void updateCamera(Camera &camera);
+        void updateCameraViewMatrix(Camera *cameraPtr);
+        void updateCameraProjectionMatrix(Camera *cameraPtr);
     };
 }
 

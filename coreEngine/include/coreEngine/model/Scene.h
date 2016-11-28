@@ -11,35 +11,35 @@
 #include <vector>
 
 #include <coreEngine/model/Object.h>
-#include "IObjectRenderer.h"
+#include <coreEngine/model/ISceneRenderer.h>
 
 namespace cl{
-    class Scene : public Object{
+    class Scene{
     protected:
         std::unordered_map<std::string, std::unique_ptr<Object> > objectsByTag;
         std::unordered_map<std::string, std::vector<Object*> > objectsByObjectType;
-        IObjectRenderer *sceneRendererPtr;
+        std::unique_ptr<ISceneRenderer> sceneRendererPtr;
     public:
-        Scene(IObjectRenderer &sceneRenderer, std::string tag) : Object("scene", tag){
-            this->sceneRendererPtr = &sceneRenderer;
-        }
-        void addObject(std::unique_ptr<Object> object){
-            objectsByTag[object->getTag()] = std::move(object);
-        }
-        Object& getObject(std::string tag){
-            return *objectsByTag[tag];
+        Scene(std::unique_ptr<ISceneRenderer> sceneRendererPtr){
+            this->sceneRendererPtr = std::move(sceneRendererPtr);
         }
 
+        /**
+         * Returns reference to objectsByObjectType. Can be changed by the caller, possibly by a service layer. No setter for this.
+         */
         std::unordered_map<std::string, std::vector<Object *>> &getObjectsByObjectType() {
             return objectsByObjectType;
         }
 
+        /**
+         * Returns reference to objectsByTag. Can be changed by the caller, possibly by a service layer. No setter for this.
+         */
         std::unordered_map<std::string, std::unique_ptr<Object> > &getObjectsByTag(){
             return objectsByTag;
         };
 
-        IObjectRenderer &getRenderer(){
-            return *sceneRendererPtr;
+        ISceneRenderer *getRendererPtr(){
+            return sceneRendererPtr.get();
         }
     };
 }

@@ -6,20 +6,23 @@
 #define ANDROIDSDK_SHADER_H
 
 #include <unordered_map>
-#include <coreEngine/util/Logger.h>
 #include <coreEngine/model/Object.h>
-#include <coreEngine/model/IObjectRenderer.h>
-#include <coreEngine/model/Camera.h>
+#include <coreEngine/model/IShaderRenderer.h>
 
 namespace cl{
     class Shader : public Object{
     protected:
-        IObjectRenderer *objectRendererPtr;
+        std::unique_ptr<IShaderRenderer> shaderRendererPtr;
     public:
-        Shader(IObjectRenderer &objectRenderer, std::string tag);
+        Shader(std::unique_ptr<IShaderRenderer> shaderRendererPtr, const std::string &tag) : Object("shader", tag){
+            this->shaderRendererPtr = std::move(shaderRendererPtr);
+        }
 
-        IObjectRenderer &getRenderer(){
-            return *objectRendererPtr;
+        /**
+         * Returns renderer to the object. No setter for this as it is set in the constructor
+         */
+        IShaderRenderer *getShaderRendererPtr(){
+            return shaderRendererPtr.get();
         }
     };
 

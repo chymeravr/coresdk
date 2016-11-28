@@ -6,18 +6,29 @@
 #define ANDROIDSDK_IMODELSERVICE_H
 
 #include <coreEngine/model/Material.h>
+#include <coreEngine/model/IModelRenderer.h>
 
 namespace cl{
     class Model;
 
     class IModelService{
     public:
-        virtual std::pair<bool, Material&> getMaterialOfModel(Model &model) = 0;
-        virtual std::pair<bool, IObjectRenderer&> getRenderer(Model &model) = 0;
-        virtual void convertQuadIndicesToTriangleIndices(Model &model) = 0;
-        virtual void invertNormal(Model &model) = 0;
-        virtual void buildInwardCube(Model &model) = 0;
-        virtual void buildOutwardCube(Model &model) = 0;
+        /**
+        * Returns current material that is attached to the model. Returns nullptr if no material attached
+        */
+        virtual Material* getMaterialOfModel(Model *modelPtr) = 0;
+        /**
+        * For each triangle in indices, consider vertices 1, 2, 3. If original triangle is 1-2-3 invertNormal makes it 1-3-2
+        */
+        virtual void invertNormal(Model *modelPtr) = 0;
+        /**
+        * Builds a cube whose faces have normals inwards. Order of faces in the data are Front, Left, Back, Right, Top, Bottom.
+        */
+        virtual void buildInwardCube(Model *modelPtr) = 0;
+        /**
+        * Builds a cube whose faces have normals outwards. Order of faces in the data are Front, Left, Back, Right, Top, Bottom.
+        */
+        virtual void buildOutwardCube(Model *modelPtr) = 0;
     };
 }
 

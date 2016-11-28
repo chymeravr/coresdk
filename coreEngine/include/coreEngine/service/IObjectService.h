@@ -14,10 +14,10 @@
 namespace cl{
     class IObjectService{
     public:
-        virtual void linkObject(Object &object1, Object &object2) = 0;
-        virtual void unlinkObject(Object &object1, Object &object2) = 0;
-        virtual std::pair<bool, Object&> getLinkedObjectByTag(Object &object, std::string tag) = 0;
-        virtual std::pair<bool, std::vector<Object *>& > getLinkedObjectsByObjectType(Object &object, std::string type) = 0;
+        virtual void linkObject(Object *objectPtr1, Object *objectPtr2) = 0;
+        virtual void unlinkObject(Object *objectPtr1, Object *objectPtr2) = 0;
+        virtual Object* getLinkedObjectByTag(Object *objectPtr, const std::string &tag) = 0;
+        virtual std::vector<Object *> getLinkedObjectsByObjectType(Object *objectPtr, const std::string &type) = 0;
     };
 }
 

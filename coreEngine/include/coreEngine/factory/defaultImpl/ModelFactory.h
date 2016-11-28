@@ -5,22 +5,17 @@
 #ifndef ANDROIDSDK_MODELFACTORY_H
 #define ANDROIDSDK_MODELFACTORY_H
 
-#include <coreEngine/factory/IObjectFactory.h>
+#include <coreEngine/factory/IModelFactoy.h>
 #include <coreEngine/model/Model.h>
-#include <coreEngine/factory/defaultImpl/ModelFactoryParam.h>
 
 namespace cl{
-    class ModelFactory : public IObjectFactory{
+    class ModelFactory : public IModelFactory{
 
     public:
-        std::unique_ptr<Object> createObject(IObjectFactoryParam &param) {
-            ModelFactoryParam &modelParams = (ModelFactoryParam&) param;
-            std::string tag = modelParams.getTag();
-            IObjectRenderer &renderer = modelParams.getRenderer();
-            return std::unique_ptr<Object> (new Model(tag, renderer));
+        std::unique_ptr<Object> create(std::string tag, std::unique_ptr<IModelRenderer> modelRendererPtr){
+            return std::unique_ptr<Object>(new Model(tag, std::move(modelRendererPtr)));
         }
-
-        virtual void destroyObject(Object &object) override {
+        void destroy(Model *model){
 
         }
     };

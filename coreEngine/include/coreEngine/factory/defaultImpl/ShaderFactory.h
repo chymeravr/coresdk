@@ -5,20 +5,17 @@
 #ifndef ANDROIDSDK_SHADERFACTORY_H
 #define ANDROIDSDK_SHADERFACTORY_H
 
-#include <coreEngine/factory/IObjectFactory.h>
-#include <coreEngine/model/Shader.h>
-#include "ShaderFactoryParam.h"
+#include <coreEngine/factory/IShaderFactory.h>
 
 namespace cl{
-    class ShaderFactory : public IObjectFactory{
+    class ShaderFactory : public IShaderFactory{
 
     public:
-        virtual std::unique_ptr<Object> createObject(IObjectFactoryParam &param) override {
-            ShaderFactoryParam &shaderParam = (ShaderFactoryParam&) param;
-            return std::unique_ptr<Object>(new Shader(shaderParam.getObjectRenderer(), shaderParam.getTag()));
+        virtual std::unique_ptr<Object> create(std::string tag, std::unique_ptr<IShaderRenderer> shaderRendererPtr) override{
+            return std::unique_ptr<Object>(new Shader(std::move(shaderRendererPtr), tag));
         }
 
-        virtual void destroyObject(Object &object) override {
+        virtual void destroy(Shader *shaderPtr) override {
 
         }
     };

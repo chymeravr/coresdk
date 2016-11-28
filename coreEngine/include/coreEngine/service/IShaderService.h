@@ -10,14 +10,10 @@
 #include <coreEngine/model/Shader.h>
 
 namespace cl{
-    class Material;
-    class Shader;
-    class Camera;
 
     class IShaderService{
     public:
-        virtual std::vector<Material *> getMaterials(Shader &shader) = 0;
-        virtual std::pair<bool, IObjectRenderer&> getRenderer(Shader &shader) = 0;
+        virtual std::vector<Material *> getMaterials(Shader *shaderPtr) = 0;
     };
 }
 

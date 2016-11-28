@@ -14,19 +14,21 @@
 namespace cl{
     class ComponentStore{
     private:
-        /**
-         * This is just copy of componentsByTypeByObjectTag for faster access to queries like get all components of a particular component type
-         */
         std::unordered_map<std::string, std::vector<Object*> > objectsByComponentType;
-        /*
-         * Stores components of a particular object of a particular componentType. So, it is a map of objectTag and another map M. Where M is a map of
-         * componentType and component for a particular object of objectTag. Component Management system will not worry about uniqueness of objectTag.
-         */
         std::unordered_map<std::string, std::unordered_map<std::string, std::unique_ptr<IComponent> > > componentsByTypeByObjectTag;
     public:
+        /**
+         * This is just copy of componentsByTypeByObjectTag for faster access to queries like get all components of a particular component type.
+         * Reference to the variable is returned here and it could be edited by the caller, possibly service class. No setter for this.
+         */
         std::unordered_map<std::string, std::vector<Object*> > &getObjectsByComponentType(){
             return objectsByComponentType;
         };
+        /*
+         * Stores components of a particular object of a particular componentType. So, it is a map of objectTag and another map M. Where M is a map of
+         * componentType and component for a particular object of objectTag. Component Management system will not worry about uniqueness of objectTag.
+         * Reference to the variable is returned here and it could be edited by the caller, possibly service class. No setter for this.
+         */
         std::unordered_map<std::string, std::unordered_map<std::string, std::unique_ptr<IComponent> > > &getComponentsByTypeByObjectTag(){
             return componentsByTypeByObjectTag;
         };

@@ -13,8 +13,8 @@ namespace cl{
         CL_GLuint colorUniformObject;
 
     public:
-        MaterialGLUniformColor(Shader &shader, IObjectRenderer &objectRenderer,
-                               const std::string &tag) : MaterialUniformColor(shader, objectRenderer, tag) { }
+        MaterialGLUniformColor(Shader *shaderPtr, IObjectRenderer *objectRendererPtr,
+                               const std::string &tag) : MaterialUniformColor(shaderPtr, objectRendererPtr, tag) { }
 
         CL_GLuint getColorUniformObject(){
             return colorUniformObject;

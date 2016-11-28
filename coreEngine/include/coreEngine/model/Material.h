@@ -6,20 +6,27 @@
 #define ANDROIDSDK_MATERIAL_H
 
 #include <memory>
-
 #include <coreEngine/model/Object.h>
-#include <coreEngine/util/Logger.h>
-#include <coreEngine/model/IObjectRenderer.h>
+#include <coreEngine/model/IMaterialRenderer.h>
 
 namespace cl{
     class Shader;
     class Material : public Object{
     protected:
-        IObjectRenderer *objectRendererPtr;
+        std::unique_ptr<IMaterialRenderer> materialRendererPtr;
     public:
-        Material(Shader &shader, IObjectRenderer &objectRenderer, std::string tag);
-        IObjectRenderer& getObjectRenderer(){
-            return *objectRendererPtr;
+        /**
+         * Constructor.
+         */
+        Material(std::unique_ptr<IMaterialRenderer> materialRendererPtr, const std::string &tag) : Object("material", tag){
+            this->materialRendererPtr = std::move(materialRendererPtr);
+        }
+
+        /**
+         * Returns the pointer to renderer for this Object. No setter for this as it is only initialized in constructor.
+         */
+        IMaterialRenderer* getMaterialRendererPtr(){
+            return materialRendererPtr.get();
         }
     };
 }

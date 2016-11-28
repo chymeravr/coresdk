@@ -7,52 +7,24 @@
 
 #include <coreEngine/conf/Types.h>
 #include <coreEngine/model/Object.h>
-#include <coreEngine/util/Logger.h>
-#include <coreEngine/model/IObjectRenderer.h>
+#include <coreEngine/model/IModelRenderer.h>
 
 namespace cl{
-    enum PRIMITIVE_MODE{
-        TRIANGLE_MODE,
-        QUAD_MODE
-    };
-    enum RENDERING_MODE{
-        VERTEX_RENDERING,
-        INDEX_RENDERING
-    };
-
     class Model : public Object {
     protected:
-        PRIMITIVE_MODE primitiveMode = TRIANGLE_MODE;
-        RENDERING_MODE renderingMode = VERTEX_RENDERING;
         bool isStatic = true;
         std::vector <CL_Vec3> vertices;
         std::vector <CL_Vec2> uvs;
         std::vector <CL_Vec4> colors;
         std::vector <CL_Vec3> normals;
         std::vector <CL_GLuint> indices;
-        IObjectRenderer *objectRendererPtr;
+        std::unique_ptr<IModelRenderer> modelRendererPtr;
     public:
-        Model( std::string &tag, IObjectRenderer &objectRenderer) : Object("model", tag) {
-            this->objectRendererPtr = &objectRenderer;
+        Model(const std::string &tag, std::unique_ptr<IModelRenderer> modelRendererPtr) : Object("model", tag) {
+            this->modelRendererPtr = std::move(modelRendererPtr);
         }
 
-        PRIMITIVE_MODE getPrimitiveMode()  {
-            return primitiveMode;
-        }
-
-        void setPrimitiveMode(PRIMITIVE_MODE primitiveMode) {
-            Model::primitiveMode = primitiveMode;
-        }
-
-        RENDERING_MODE getRenderingMode()  {
-            return renderingMode;
-        }
-
-        void setRenderingMode(RENDERING_MODE renderingMode) {
-            Model::renderingMode = renderingMode;
-        }
-
-        bool getIsStatic()  {
+        bool isIsStatic() const {
             return isStatic;
         }
 
@@ -60,28 +32,46 @@ namespace cl{
             Model::isStatic = isStatic;
         }
 
+/**
+         * Returns reference to vertices. Can be modified by caller. Possibly through a service layer. Hence no setter for this.
+         */
         std::vector<CL_Vec3> &getVertices(){
             return vertices;
         }
 
+        /**
+         * Returns reference to uvs. Can be modified by caller. Possibly through a service layer. Hence no setter for this.
+         */
          std::vector<CL_Vec2> &getUvs()  {
             return uvs;
         }
 
+        /**
+         * Returns reference to colors. Can be modified by caller. Possibly through a service layer. Hence no setter for this.
+         */
          std::vector<CL_Vec4> &getColors()  {
             return colors;
         }
 
+        /**
+         * Returns reference to normals. Can be modified by caller. Possibly through a service layer. Hence no setter for this.
+         */
          std::vector<CL_Vec3> &getNormals()  {
             return normals;
         }
 
+        /**
+         * Returns reference to indices. Can be modified by caller. Possibly through a service layer. Hence no setter for this.
+         */
          std::vector<CL_GLuint> &getIndices()  {
             return indices;
         }
 
-        IObjectRenderer &getObjectRenderer(){
-            return *objectRendererPtr;
+        /**
+         * Get renderer for the object. No set for this as it is initialized in constructor only.
+         */
+        IModelRenderer *getModelRendererPtr(){
+            return modelRendererPtr.get();
         }
     };
 }

@@ -16,11 +16,10 @@ namespace cl{
 
     class IMaterialService{
     public:
-        virtual void addMaterialToModel(Material &material, Model &model) = 0;
-        virtual std::vector<Model*> getModelsOfMaterial(Material& material) = 0;
-        virtual void removeMaterialFromModel(Material &material, Model &model) = 0;
-        virtual std::pair<bool, IObjectRenderer &> getRenderer(Material &material) = 0;
-        virtual std::pair<bool, Shader &> getShader(Material &material) = 0;
+        virtual void addMaterialToModel(Material *materialPtr, Model *modelPtr) = 0;
+        virtual std::vector<Model*> getModelsOfMaterial(Material* materialPtr) = 0;
+        virtual void removeMaterialFromModel(Material *materialPtr, Model *modelPtr) = 0;
+        virtual Shader* getShader(Material *materialPtr) = 0;
     };
 }
 
