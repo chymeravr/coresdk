@@ -89,6 +89,8 @@
     <ClCompile Include="..\..\..\..\..\coreEngine\test\src\AllTests.cpp" />
     <ClCompile Include="..\..\..\..\..\coreEngine\test\src\CameraFactoryTest.cpp" />
     <ClCompile Include="..\..\..\..\..\coreEngine\test\src\CameraServiceTest.cpp" />
+    <ClCompile Include="..\..\..\..\..\coreEngine\test\src\MaterialDiffuseTextureFactoryTest.cpp" />
+    <ClCompile Include="..\..\..\..\..\coreEngine\test\src\MaterialDiffuseTextureServiceTest.cpp" />
     <ClCompile Include="..\..\..\..\..\coreEngine\test\src\MaterialFactoryTest.cpp" />
     <ClCompile Include="..\..\..\..\..\coreEngine\test\src\MaterialServiceTest.cpp" />
     <ClCompile Include="..\..\..\..\..\coreEngine\test\src\MaterialUniformColorFactoryTest.cpp" />
@@ -100,6 +102,7 @@
     <ClCompile Include="..\..\..\..\..\coreEngine\test\src\SceneServiceTest.cpp" />
     <ClCompile Include="..\..\..\..\..\coreEngine\test\src\ShaderFactoryTest.cpp" />
     <ClCompile Include="..\..\..\..\..\coreEngine\test\src\ShaderServiceTest.cpp" />
+    <ClCompile Include="..\..\..\..\..\coreEngine\test\src\TextureFactoryTest.cpp" />
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />
@@ -112,6 +115,7 @@
     <ClInclude Include="..\..\..\..\..\coreEngine\test\include\coreEngineTest\mocks\ModelRendererMock.h" />
     <ClInclude Include="..\..\..\..\..\coreEngine\test\include\coreEngineTest\mocks\SceneRendererMock.h" />
     <ClInclude Include="..\..\..\..\..\coreEngine\test\include\coreEngineTest\mocks\ShaderRendererMock.h" />
+    <ClInclude Include="..\..\..\..\..\coreEngine\test\include\coreEngineTest\mocks\TextureRendererMock.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

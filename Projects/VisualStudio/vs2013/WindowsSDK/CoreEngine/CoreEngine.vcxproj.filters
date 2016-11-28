@@ -126,6 +126,33 @@
     <ClInclude Include="..\..\..\..\..\coreEngine\include\coreEngine\factory\defaultImpl\MaterialUniformColorFactory.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\..\..\..\coreEngine\include\coreEngine\model\ITextureRenderer.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\..\..\coreEngine\include\coreEngine\model\Texture.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\..\..\coreEngine\include\coreEngine\factory\ITextureFactory.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\..\..\coreEngine\include\coreEngine\factory\defaultImpl\TextureFactory.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\..\..\coreEngine\include\coreEngine\model\MaterialDiffuseTexture.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\..\..\coreEngine\include\coreEngine\service\IMaterialDiffuseColorService.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\..\..\coreEngine\include\coreEngine\service\IMaterialDiffuseTextureService.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\..\..\coreEngine\include\coreEngine\service\defaultImpl\MaterialDiffuseTextureService.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\..\..\coreEngine\include\coreEngine\factory\defaultImpl\MaterialDiffuseTextureFactory.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\..\..\..\..\coreEngine\src\CoreEngine\service\defaultImpl\ObjectService.cpp">
@@ -147,6 +174,9 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="..\..\..\..\..\coreEngine\src\CoreEngine\conf\MathType.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\..\..\coreEngine\src\CoreEngine\service\defaultImpl\MaterialDiffuseTextureService.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
