@@ -1,3 +1,0 @@
-Following changes were made in core glm-0.9.7.6 to make it work with CL code in android jni
-*Delete test folder
-*Clean the project
