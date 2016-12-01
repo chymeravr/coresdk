@@ -6,22 +6,22 @@
 #define ANDROIDSDK_COMPONENTSERVICE_H
 
 #include <coreEngine/service/IComponentService.h>
-#include <coreEngine/util/Logger.h>
+#include <coreEngine/util/ILogger.h>
+#include <coreEngine/util/ILoggerFactory.h>
 #include <memory>
 
 namespace cl{
     class ComponentService : public IComponentService{
     private:
-        Logger *loggerPtr;
+        std::unique_ptr<ILogger> loggerPtr;
     public:
-        ComponentService();
-        COMPONENT_ERROR createComponent(ComponentStore &componentStore, IComponentFactory &componentFactory, Object &object);
-        bool isComponentTypeExists(Object &object, std::string type);
-        COMPONENT_ERROR destroyComponent(ComponentStore &componentStore, IComponentFactory &componentFactory, Object &object, IComponent &component);
-        std::pair<bool, IComponent &> getComponent(Object &object, std::string type);
-        std::vector<IComponent *> getComponents(Object &object);
-        std::vector<Object *> &getObjectsByComponentType(ComponentStore &componentStore, std::string type);
-
+        ComponentService(ILoggerFactory *loggerFactoryPtr);
+        IComponent* addComponentToComponentStore(ComponentStore *componentStorePtr, std::unique_ptr<IComponent> componentPtr, Object *objectPtr);
+        bool isComponentTypeExists(Object *objectPtr, const std::string &type);
+        void removeComponentFromComponentStore(ComponentStore *componentStorePtr, IComponent *componentPtr);
+        IComponent* getComponent(Object *objectPtr, const std::string &type);
+        std::vector<IComponent*> getComponents(Object *objectPtr);
+        std::vector<Object*> getObjectsByComponentType(ComponentStore *componentStorePtr, const std::string &type);
     };
 }
 

@@ -10,9 +10,8 @@
 #include <coreEngine/model/Scene.h>
 
 namespace cl{
-    class ITransform : public IComponent{
+    class ITransform{
     public:
-        virtual void setScene(Scene &scene) = 0;
         virtual void setPosition(CL_Vec3 position) = 0;
         virtual CL_Vec3 getPosition() = 0;
         virtual void setRoation(CL_Vec3 rotation) = 0;

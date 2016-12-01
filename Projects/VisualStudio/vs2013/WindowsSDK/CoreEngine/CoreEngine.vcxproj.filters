@@ -153,6 +153,21 @@
     <ClInclude Include="..\..\..\..\..\coreEngine\include\coreEngine\factory\defaultImpl\MaterialDiffuseTextureFactory.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\..\..\..\coreEngine\include\coreEngine\model\IComponent.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\..\..\coreEngine\include\coreEngine\model\ComponentStore.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\..\..\coreEngine\include\coreEngine\service\IComponentService.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\..\..\coreEngine\include\coreEngine\service\defaultImpl\ComponentService.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\..\..\coreEngine\include\coreEngine\factory\IComponentFactory.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\..\..\..\..\coreEngine\src\CoreEngine\service\defaultImpl\ObjectService.cpp">
@@ -177,6 +192,9 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="..\..\..\..\..\coreEngine\src\CoreEngine\service\defaultImpl\MaterialDiffuseTextureService.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\..\..\coreEngine\src\CoreEngine\service\defaultImpl\ComponentService.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

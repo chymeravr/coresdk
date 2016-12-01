@@ -12,26 +12,21 @@
 #include <coreEngine/model/ComponentStore.h>
 
 namespace cl{
-    enum COMPONENT_ERROR{
-        COMPONENT_NO_ERROR,
-        COMPONENT_FACTORY_CREATION_ERROR
-    };
 
     class IComponentService{
     public:
         /**
          * Creates Component using factory componentFactory and attaches it to the Object. If Object already has an component of same type, it is
          * deleted and replaced by the new component.
-         * @args componentStore:
-         * @args componentFactory: An implementation of IComponentFactory
-         * @args object: To which the component is to be attached to
+         * @args componentStorePtr:
+         * @args componentPtr: An implementation of IComponent
          */
-        virtual COMPONENT_ERROR createComponent(ComponentStore &componentStore, IComponentFactory &componentFactory, Object &object) = 0;
-        virtual bool isComponentTypeExists(Object &object, std::string type) = 0;
-        virtual COMPONENT_ERROR destroyComponent(ComponentStore &componentStore, IComponentFactory &componentFactory, Object &object, IComponent &component) = 0;
-        virtual std::pair<bool, IComponent &> getComponent(Object &object, std::string type) = 0;
-        virtual std::vector<IComponent*> getComponents(Object &object) = 0;
-        virtual std::vector<Object*> &getObjectsByComponentType(ComponentStore &componentStore, std::string type) = 0;
+        virtual IComponent* addComponentToComponentStore(ComponentStore *componentStorePtr, std::unique_ptr<IComponent> componentPtr, Object *objectPtr) = 0;
+        virtual bool isComponentTypeExists(Object *objectPtr, const std::string &type) = 0;
+        virtual void removeComponentFromComponentStore(ComponentStore *componentStorePtr, IComponent *componentPtr) = 0;
+        virtual IComponent* getComponent(Object *objectPtr, const std::string &type) = 0;
+        virtual std::vector<IComponent*> getComponents(Object *objectPtr) = 0;
+        virtual std::vector<Object*> getObjectsByComponentType(ComponentStore *componentStorePtr, const std::string &type) = 0;
     };
 }
 

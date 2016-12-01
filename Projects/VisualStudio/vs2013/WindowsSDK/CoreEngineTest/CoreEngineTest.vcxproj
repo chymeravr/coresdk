@@ -89,6 +89,7 @@
     <ClCompile Include="..\..\..\..\..\coreEngine\test\src\AllTests.cpp" />
     <ClCompile Include="..\..\..\..\..\coreEngine\test\src\CameraFactoryTest.cpp" />
     <ClCompile Include="..\..\..\..\..\coreEngine\test\src\CameraServiceTest.cpp" />
+    <ClCompile Include="..\..\..\..\..\coreEngine\test\src\ComponentServiceTest.cpp" />
     <ClCompile Include="..\..\..\..\..\coreEngine\test\src\MaterialDiffuseTextureFactoryTest.cpp" />
     <ClCompile Include="..\..\..\..\..\coreEngine\test\src\MaterialDiffuseTextureServiceTest.cpp" />
     <ClCompile Include="..\..\..\..\..\coreEngine\test\src\MaterialFactoryTest.cpp" />
@@ -109,6 +110,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\..\..\..\coreEngine\test\include\coreEngineTest\mocks\CameraRendererMock.h" />
+    <ClInclude Include="..\..\..\..\..\coreEngine\test\include\coreEngineTest\mocks\ComponentMock.h" />
     <ClInclude Include="..\..\..\..\..\coreEngine\test\include\coreEngineTest\mocks\LoggerFactoryMock.h" />
     <ClInclude Include="..\..\..\..\..\coreEngine\test\include\coreEngineTest\mocks\LoggerMock.h" />
     <ClInclude Include="..\..\..\..\..\coreEngine\test\include\coreEngineTest\mocks\MaterialRendererMock.h" />

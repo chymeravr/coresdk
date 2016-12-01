@@ -2,49 +2,50 @@
 // Created by chimeralabs on 11/2/2016.
 //
 
+#include <assert.h>
 #include <coreEngine/service/defaultImpl/ComponentService.h>
-#include <coreEngine/util/LoggerFactory.h>
-#include <coreEngine/components/defaultImpl/Transform.h>
 
 namespace cl{
-    ComponentService::ComponentService() {
-        loggerPtr = &LoggerFactory::getInstance().getLoggerInstance("app::coreEngine::ComponentService:");
+    ComponentService::ComponentService(ILoggerFactory *loggerFactoryPtr) {
+        assert(loggerFactoryPtr != nullptr);
+        loggerPtr = loggerFactoryPtr->createLogger("app::coreEngine::ComponentService:");
     }
 
-    COMPONENT_ERROR ComponentService::createComponent(ComponentStore &componentStore,
-                                                      IComponentFactory &componentFactory,
-                                                      Object &object) {
-        std::unordered_map<std::string, std::unordered_map<std::string, std::unique_ptr<IComponent> > > &componentsByTypeByObjectTag = componentStore.getComponentsByTypeByObjectTag();
-        std::unique_ptr<IComponent> componentPtr = componentFactory.create(object);
-        if(!componentPtr){
-            loggerPtr->log(LOG_ERROR, "Component creation failed in factory for object =" + object.getTag());
-            return COMPONENT_FACTORY_CREATION_ERROR;
-        }
+    IComponent* ComponentService::addComponentToComponentStore(ComponentStore *componentStorePtr, std::unique_ptr<IComponent> componentPtr, Object *objectPtr) {
+        assert(componentStorePtr != nullptr);
+        assert(componentPtr != nullptr);
+        assert(objectPtr != nullptr);
+
+        componentPtr->setObject(objectPtr);
+
+        std::unordered_map<std::string, std::unordered_map<std::string, std::unique_ptr<IComponent> > > &componentsByTypeByObjectTag = componentStorePtr->getComponentsByTypeByObjectTag();
+        
         std::string componentType = componentPtr->getComponentType();
-        if(isComponentTypeExists(object, componentType)){ //Checking if component exists already with object. If yes, then destroy it and proceed further
-            loggerPtr->log(LOG_WARN, "Component type = " + componentType + " already exist for object = " + object.getTag() + ". Replacing it with new one");
-            destroyComponent(componentStore, componentFactory, object, *componentsByTypeByObjectTag[object.getTag()][componentType].get());
+        if(isComponentTypeExists(objectPtr, componentType)){ //Checking if component exists already with object. If yes, then destroy it and proceed further
+            loggerPtr->log(LOG_WARN, "Component type = " + componentType + " already exist for object = " + objectPtr->getTag() + ". Replacing it with new one");
+            removeComponentFromComponentStore(componentStorePtr, componentsByTypeByObjectTag[objectPtr->getTag()][componentType].get());
         }
         //making the componentStore the owner of componentPtr
-        componentsByTypeByObjectTag[object.getTag()][componentType] = std::move(componentPtr);
-        IComponent &componentCopy = *componentsByTypeByObjectTag[object.getTag()][componentType].get();
+        componentsByTypeByObjectTag[objectPtr->getTag()][componentType] = std::move(componentPtr);
+        IComponent *componentPtrCopy = componentsByTypeByObjectTag[objectPtr->getTag()][componentType].get();
 
         //setting reference of component in the object
-        std::unordered_map<std::string, IComponent*> &objectComponents = object.getComponentsByType();
-        objectComponents[componentType] = &componentCopy;
+        std::unordered_map<std::string, IComponent*> &objectComponents = objectPtr->getComponentsByType();
+        objectComponents[componentType] = componentPtrCopy;
 
         //setting reference in componentStore for variable objectsByComponentType
-        std::unordered_map<std::string, std::vector<Object*> > &objectsByComponentType = componentStore.getObjectsByComponentType();
+        std::unordered_map<std::string, std::vector<Object*> > &objectsByComponentType = componentStorePtr->getObjectsByComponentType();
         std::vector<Object*> &objects = objectsByComponentType[componentType];
-        objects.push_back(&object);
+        objects.push_back(objectPtr);
 
-        loggerPtr->log(LOG_INFO, "Component of type = " + componentType + " created for object = " + object.getTag());
+        loggerPtr->log(LOG_INFO, "Component of type = " + componentType + " created for object = " + objectPtr->getTag());
 
-        return COMPONENT_NO_ERROR;
+        return componentPtrCopy;
     }
 
-    bool ComponentService::isComponentTypeExists(Object &object, std::string type) {
-        std::unordered_map<std::string, IComponent* > &components = object.getComponentsByType();
+    bool ComponentService::isComponentTypeExists(Object *objectPtr, const std::string &type) {
+        assert(objectPtr != nullptr);
+        std::unordered_map<std::string, IComponent* > &components = objectPtr->getComponentsByType();
         if(components.find(type) == components.cend()){
             return false;
         }else{
@@ -53,49 +54,51 @@ namespace cl{
 
     }
 
-    COMPONENT_ERROR ComponentService::destroyComponent(ComponentStore &componentStore,
-                                                       IComponentFactory &componentFactory,
-                                                       Object &object, IComponent &component) {
-        std::string componentType = component.getComponentType();
-        if(isComponentTypeExists(object, componentType)){ //Checking if component exists already with object. If yes, then destroy it and proceed further
+    void ComponentService::removeComponentFromComponentStore(ComponentStore *componentStorePtr, IComponent *componentPtr) {
+        assert(componentStorePtr != nullptr);
+        assert(componentPtr != nullptr);
+        Object *objectPtr = componentPtr->getObject();
+        assert(objectPtr != nullptr);
+        std::string componentType = componentPtr->getComponentType();
+        if(isComponentTypeExists(objectPtr, componentType)){ //Checking if component exists already with object. If yes, then destroy it and proceed further
             //removing component from the object
-            std::unordered_map<std::string, IComponent* > &objectComponents = object.getComponentsByType();
+            std::unordered_map<std::string, IComponent* > &objectComponents = objectPtr->getComponentsByType();
             objectComponents.erase(componentType);
 
             //removing object from the componentstore
-            std::unordered_map<std::string, std::vector<Object*> > &objectsByComponentType = componentStore.getObjectsByComponentType();
+            std::unordered_map<std::string, std::vector<Object*> > &objectsByComponentType = componentStorePtr->getObjectsByComponentType();
             std::vector<Object*> &objects = objectsByComponentType[componentType];
-            for(auto it = objects.cbegin(); it!=objects.cend(); it++){
-                if((*it)->getTag() == object.getTag()){
+            for(auto it = objects.begin(); it!=objects.end(); it++){
+                if((*it)->getTag() == objectPtr->getTag()){
                     objects.erase(it);
+                    break;
                 }
             }
 
-            // Use factory to destroy component
-            componentFactory.destroy(component);
-
             // Remove the component unique ptr from component store
-            std::unordered_map<std::string, std::unordered_map<std::string, std::unique_ptr<IComponent> > > &componentsByTypeByObjectTag = componentStore.getComponentsByTypeByObjectTag();
-            componentsByTypeByObjectTag[object.getTag()].erase(componentType);
-            loggerPtr->log(LOG_INFO, "Component of type = " + componentType + " destroyed for object = " + object.getTag());
+            std::unordered_map<std::string, std::unordered_map<std::string, std::unique_ptr<IComponent> > > &componentsByTypeByObjectTag = componentStorePtr->getComponentsByTypeByObjectTag();
+            componentsByTypeByObjectTag[objectPtr->getTag()].erase(componentType);
+            loggerPtr->log(LOG_INFO, "Component of type = " + componentType + " destroyed for object = " + objectPtr->getTag());
         }else{
-            loggerPtr->log(LOG_WARN, "Component of type " + componentType + " can't be destroyed as it doesn't exist in Object = " + object.getTag());
+            loggerPtr->log(LOG_WARN, "Component of type " + componentType + " can't be destroyed as it doesn't exist in Object = " + objectPtr->getTag());
         }
 
-        return COMPONENT_NO_ERROR;
+        return;
     }
 
-    std::pair<bool, IComponent &> ComponentService::getComponent(Object &object, std::string type) {
-        std::unordered_map<std::string, IComponent* > &objectComponents = object.getComponentsByType();
-        if(isComponentTypeExists(object, type)){
-            return std::pair<bool, IComponent &>(true, *objectComponents[type]);
+    IComponent* ComponentService::getComponent(Object *objectPtr, const std::string &type) {
+        assert(objectPtr != nullptr);
+        std::unordered_map<std::string, IComponent* > &objectComponents = objectPtr->getComponentsByType();
+        if(isComponentTypeExists(objectPtr, type)){
+            return objectComponents[type];
         }else{
-            return std::pair<bool, IComponent &>(false, *(IComponent*)NULL);
+            return nullptr;
         }
     }
 
-    std::vector<IComponent *> ComponentService::getComponents(Object &object) {
-        std::unordered_map<std::string, IComponent* > &components = object.getComponentsByType();
+    std::vector<IComponent *> ComponentService::getComponents(Object *objectPtr) {
+        assert(objectPtr != nullptr);
+        std::unordered_map<std::string, IComponent* > &components = objectPtr->getComponentsByType();
         std::vector<IComponent *> componentVec;
         for(auto it = components.cbegin(); it!=components.cend(); it++) {
             componentVec.push_back(((*it).second));
@@ -103,9 +106,9 @@ namespace cl{
         return componentVec;
     }
 
-    std::vector<Object *> &ComponentService::getObjectsByComponentType(ComponentStore &componentStore,
-                                                              std::string type) {
-        std::unordered_map<std::string, std::vector<Object*> > &objects = componentStore.getObjectsByComponentType();
+    std::vector<Object *> ComponentService::getObjectsByComponentType(ComponentStore *componentStorePtr, const std::string &type) {
+        assert(componentStorePtr != nullptr);
+        std::unordered_map<std::string, std::vector<Object*> > &objects = componentStorePtr->getObjectsByComponentType();
         return objects[type];
     }
 

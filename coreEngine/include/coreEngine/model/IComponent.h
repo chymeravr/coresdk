@@ -10,13 +10,19 @@
 
 namespace cl{
     class IComponent{
+    private:
+        Object *objectPtr;
     public:
+        IComponent(Object *objectPtr){
+            this->objectPtr = objectPtr;
+        }
         virtual std::string getComponentType() = 0;
+        Object *getObject(){
+            return objectPtr;
+        }
         virtual void initialize() = 0;
         virtual void draw() = 0;
         virtual void deinitialize() = 0;
-        virtual void setObject(Object &object) = 0;
-        virtual Object &getObject() = 0;
     };
 }
 

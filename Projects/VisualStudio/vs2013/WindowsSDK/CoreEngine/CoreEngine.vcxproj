@@ -87,13 +87,16 @@
     <ClInclude Include="..\..\..\..\..\coreEngine\include\coreEngine\factory\defaultImpl\ShaderFactory.h" />
     <ClInclude Include="..\..\..\..\..\coreEngine\include\coreEngine\factory\defaultImpl\TextureFactory.h" />
     <ClInclude Include="..\..\..\..\..\coreEngine\include\coreEngine\factory\ICameraFactory.h" />
+    <ClInclude Include="..\..\..\..\..\coreEngine\include\coreEngine\factory\IComponentFactory.h" />
     <ClInclude Include="..\..\..\..\..\coreEngine\include\coreEngine\factory\IMaterialFactory.h" />
     <ClInclude Include="..\..\..\..\..\coreEngine\include\coreEngine\factory\IModelFactoy.h" />
     <ClInclude Include="..\..\..\..\..\coreEngine\include\coreEngine\factory\IObjectFactory.h" />
     <ClInclude Include="..\..\..\..\..\coreEngine\include\coreEngine\factory\IShaderFactory.h" />
     <ClInclude Include="..\..\..\..\..\coreEngine\include\coreEngine\factory\ITextureFactory.h" />
     <ClInclude Include="..\..\..\..\..\coreEngine\include\coreEngine\model\Camera.h" />
+    <ClInclude Include="..\..\..\..\..\coreEngine\include\coreEngine\model\ComponentStore.h" />
     <ClInclude Include="..\..\..\..\..\coreEngine\include\coreEngine\model\ICameraRenderer.h" />
+    <ClInclude Include="..\..\..\..\..\coreEngine\include\coreEngine\model\IComponent.h" />
     <ClInclude Include="..\..\..\..\..\coreEngine\include\coreEngine\model\IMaterialRenderer.h" />
     <ClInclude Include="..\..\..\..\..\coreEngine\include\coreEngine\model\IModelRenderer.h" />
     <ClInclude Include="..\..\..\..\..\coreEngine\include\coreEngine\model\ISceneRenderer.h" />
@@ -108,6 +111,7 @@
     <ClInclude Include="..\..\..\..\..\coreEngine\include\coreEngine\model\IShaderRenderer.h" />
     <ClInclude Include="..\..\..\..\..\coreEngine\include\coreEngine\model\Texture.h" />
     <ClInclude Include="..\..\..\..\..\coreEngine\include\coreEngine\service\defaultImpl\CameraService.h" />
+    <ClInclude Include="..\..\..\..\..\coreEngine\include\coreEngine\service\defaultImpl\ComponentService.h" />
     <ClInclude Include="..\..\..\..\..\coreEngine\include\coreEngine\service\defaultImpl\MaterialDiffuseTextureService.h" />
     <ClInclude Include="..\..\..\..\..\coreEngine\include\coreEngine\service\defaultImpl\MaterialService.h" />
     <ClInclude Include="..\..\..\..\..\coreEngine\include\coreEngine\service\defaultImpl\ModelService.h" />
@@ -115,6 +119,7 @@
     <ClInclude Include="..\..\..\..\..\coreEngine\include\coreEngine\service\defaultImpl\SceneService.h" />
     <ClInclude Include="..\..\..\..\..\coreEngine\include\coreEngine\service\defaultImpl\ShaderService.h" />
     <ClInclude Include="..\..\..\..\..\coreEngine\include\coreEngine\service\ICameraService.h" />
+    <ClInclude Include="..\..\..\..\..\coreEngine\include\coreEngine\service\IComponentService.h" />
     <ClInclude Include="..\..\..\..\..\coreEngine\include\coreEngine\service\IMaterialDiffuseColorService.h" />
     <ClInclude Include="..\..\..\..\..\coreEngine\include\coreEngine\service\IMaterialDiffuseTextureService.h" />
     <ClInclude Include="..\..\..\..\..\coreEngine\include\coreEngine\service\IMaterialService.h" />
@@ -127,6 +132,7 @@
   <ItemGroup>
     <ClCompile Include="..\..\..\..\..\coreEngine\src\CoreEngine\conf\MathType.cpp" />
     <ClCompile Include="..\..\..\..\..\coreEngine\src\CoreEngine\service\defaultImpl\CameraService.cpp" />
+    <ClCompile Include="..\..\..\..\..\coreEngine\src\CoreEngine\service\defaultImpl\ComponentService.cpp" />
     <ClCompile Include="..\..\..\..\..\coreEngine\src\CoreEngine\service\defaultImpl\MaterialDiffuseTextureService.cpp" />
     <ClCompile Include="..\..\..\..\..\coreEngine\src\CoreEngine\service\defaultImpl\MaterialService.cpp" />
     <ClCompile Include="..\..\..\..\..\coreEngine\src\CoreEngine\service\defaultImpl\ModelService.cpp" />

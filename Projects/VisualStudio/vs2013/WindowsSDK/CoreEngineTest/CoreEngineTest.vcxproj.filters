@@ -101,5 +101,8 @@
     <ClInclude Include="..\..\..\..\..\coreEngine\test\include\coreEngineTest\mocks\TextureRendererMock.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\..\..\..\coreEngine\test\include\coreEngineTest\mocks\ComponentMock.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>
