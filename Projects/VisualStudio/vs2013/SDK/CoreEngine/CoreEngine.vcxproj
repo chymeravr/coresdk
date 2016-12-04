@@ -65,6 +65,8 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClInclude Include="..\..\..\..\..\CoreEngine\include\coreEngine\components\transform\ITransformCameraFactory.h" />
+    <ClInclude Include="..\..\..\..\..\CoreEngine\include\coreEngine\components\transform\ITransformModelFactory.h" />
     <ClInclude Include="..\..\..\..\..\CoreEngine\include\coreEngine\components\transform\Transform.h" />
     <ClInclude Include="..\..\..\..\..\CoreEngine\include\coreEngine\components\transform\TransformCamera.h" />
     <ClInclude Include="..\..\..\..\..\CoreEngine\include\coreEngine\components\transform\TransformModel.h" />
@@ -74,7 +76,12 @@
     <ClInclude Include="..\..\..\..\..\CoreEngine\include\coreEngine\events\AppEventListener.h" />
     <ClInclude Include="..\..\..\..\..\CoreEngine\include\coreEngine\events\EventQueue.h" />
     <ClInclude Include="..\..\..\..\..\CoreEngine\include\coreEngine\events\IEvent.h" />
+    <ClInclude Include="..\..\..\..\..\CoreEngine\include\coreEngine\factory\IMaterialDiffuseTextureFactory.h" />
+    <ClInclude Include="..\..\..\..\..\CoreEngine\include\coreEngine\factory\IModelFactory.h" />
+    <ClInclude Include="..\..\..\..\..\CoreEngine\include\coreEngine\factory\IShaderDiffuseTextureFactory.h" />
+    <ClInclude Include="..\..\..\..\..\CoreEngine\include\coreEngine\factory\ITextureFactory.h" />
     <ClInclude Include="..\..\..\..\..\CoreEngine\include\coreEngine\IRenderer.h" />
+    <ClInclude Include="..\..\..\..\..\CoreEngine\include\coreEngine\objectBuilders\ITexturedCubeBuilder.h" />
     <ClInclude Include="..\..\..\..\..\CoreEngine\include\coreEngine\renderObjects\Camera.h" />
     <ClInclude Include="..\..\..\..\..\CoreEngine\include\coreEngine\renderObjects\ComponentList.h" />
     <ClInclude Include="..\..\..\..\..\CoreEngine\include\coreEngine\renderObjects\IComponent.h" />
@@ -88,6 +95,7 @@
     <ClInclude Include="..\..\..\..\..\CoreEngine\include\coreEngine\renderObjects\Model.h" />
     <ClInclude Include="..\..\..\..\..\CoreEngine\include\coreEngine\renderObjects\Scene.h" />
     <ClInclude Include="..\..\..\..\..\CoreEngine\include\coreEngine\renderObjects\Shader.h" />
+    <ClInclude Include="..\..\..\..\..\CoreEngine\include\coreEngine\renderObjects\ShaderDiffuseTexture.h" />
     <ClInclude Include="..\..\..\..\..\CoreEngine\include\coreEngine\renderObjects\Texture.h" />
     <ClInclude Include="..\..\..\..\..\CoreEngine\include\coreEngine\util\ILogger.h" />
     <ClInclude Include="..\..\..\..\..\CoreEngine\include\coreEngine\util\ILoggerFactory.h" />

@@ -1,0 +1,2 @@
+testApp uses external thirdParty glfw windowing and event system.
+Download it from http://www.glfw.org/download.html and set the correct path for .lib, .h and .dll/.so files in the project builder.

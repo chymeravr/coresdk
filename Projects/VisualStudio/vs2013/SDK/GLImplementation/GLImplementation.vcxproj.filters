@@ -21,10 +21,16 @@
     <ClInclude Include="..\..\..\..\..\GLImplementation\include\glImplementation\renderObjects\TextureGL.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\..\..\GLImplementation\include\glImplementation\renderObjects\ShaderGL.h">
+    <ClInclude Include="..\..\..\..\..\GLImplementation\include\glImplementation\renderObjects\MaterialDiffuseTextureGL.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\..\..\GLImplementation\include\glImplementation\renderObjects\MaterialDiffuseTextureGL.h">
+    <ClInclude Include="..\..\..\..\..\GLImplementation\include\glImplementation\renderObjects\ShaderDiffuseTextureGL.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\..\..\GLImplementation\include\glImplementation\renderObjects\CameraGLContainer.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\..\..\GLImplementation\include\glImplementation\renderObjects\CameraGL.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

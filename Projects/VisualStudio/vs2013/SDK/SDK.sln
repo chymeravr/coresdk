@@ -13,6 +13,10 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "GLImplementation", "GLImple
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Image360", "Image360\Image360.vcxproj", "{17C0CFFE-5CF8-4238-9944-C81A3496972C}"
 EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "TestApp", "TestApp\TestApp.vcxproj", "{FF73BAE7-0261-4149-8027-03D80C209FAD}"
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "WindowsImplementation", "WindowsImplementation\WindowsImplementation.vcxproj", "{54FD5D63-F6B5-4784-935A-C3B2F1A64E27}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Win32 = Debug|Win32
@@ -39,6 +43,14 @@ Global
 		{17C0CFFE-5CF8-4238-9944-C81A3496972C}.Debug|Win32.Build.0 = Debug|Win32
 		{17C0CFFE-5CF8-4238-9944-C81A3496972C}.Release|Win32.ActiveCfg = Release|Win32
 		{17C0CFFE-5CF8-4238-9944-C81A3496972C}.Release|Win32.Build.0 = Release|Win32
+		{FF73BAE7-0261-4149-8027-03D80C209FAD}.Debug|Win32.ActiveCfg = Debug|Win32
+		{FF73BAE7-0261-4149-8027-03D80C209FAD}.Debug|Win32.Build.0 = Debug|Win32
+		{FF73BAE7-0261-4149-8027-03D80C209FAD}.Release|Win32.ActiveCfg = Release|Win32
+		{FF73BAE7-0261-4149-8027-03D80C209FAD}.Release|Win32.Build.0 = Release|Win32
+		{54FD5D63-F6B5-4784-935A-C3B2F1A64E27}.Debug|Win32.ActiveCfg = Debug|Win32
+		{54FD5D63-F6B5-4784-935A-C3B2F1A64E27}.Debug|Win32.Build.0 = Debug|Win32
+		{54FD5D63-F6B5-4784-935A-C3B2F1A64E27}.Release|Win32.ActiveCfg = Release|Win32
+		{54FD5D63-F6B5-4784-935A-C3B2F1A64E27}.Release|Win32.Build.0 = Release|Win32
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

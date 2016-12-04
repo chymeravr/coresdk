@@ -11,8 +11,8 @@
     </ProjectConfiguration>
   </ItemGroup>
   <PropertyGroup Label="Globals">
-    <ProjectGuid>{B8497C86-7615-42EE-94B2-FF02D1D68B9D}</ProjectGuid>
-    <RootNamespace>GLImplementation</RootNamespace>
+    <ProjectGuid>{54FD5D63-F6B5-4784-935A-C3B2F1A64E27}</ProjectGuid>
+    <RootNamespace>WindowsImplementation</RootNamespace>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
@@ -44,7 +44,6 @@
       <WarningLevel>Level3</WarningLevel>
       <Optimization>Disabled</Optimization>
       <SDLCheck>true</SDLCheck>
-      <AdditionalIncludeDirectories>E:\Chimera\workspace\AdNetwork\SDK\CoreEngine\include;E:\Chimera\workspace\AdNetwork\SDK\GLImplementation\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <GenerateDebugInformation>true</GenerateDebugInformation>
@@ -65,12 +64,7 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClInclude Include="..\..\..\..\..\GLImplementation\include\glImplementation\renderObjects\CameraGL.h" />
-    <ClInclude Include="..\..\..\..\..\GLImplementation\include\glImplementation\renderObjects\CameraGLContainer.h" />
-    <ClInclude Include="..\..\..\..\..\GLImplementation\include\glImplementation\renderObjects\MaterialDiffuseTextureGL.h" />
-    <ClInclude Include="..\..\..\..\..\GLImplementation\include\glImplementation\renderObjects\ModelGL.h" />
-    <ClInclude Include="..\..\..\..\..\GLImplementation\include\glImplementation\renderObjects\ShaderDiffuseTextureGL.h" />
-    <ClInclude Include="..\..\..\..\..\GLImplementation\include\glImplementation\renderObjects\TextureGL.h" />
+    <ClCompile Include="..\..\..\..\..\WindowsImplementation\src\TestAppWindowsLauncher.cpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
