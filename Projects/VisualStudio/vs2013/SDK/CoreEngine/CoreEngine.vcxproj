@@ -65,6 +65,34 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClInclude Include="..\..\..\..\..\CoreEngine\include\coreEngine\components\transform\Transform.h" />
+    <ClInclude Include="..\..\..\..\..\CoreEngine\include\coreEngine\components\transform\TransformCamera.h" />
+    <ClInclude Include="..\..\..\..\..\CoreEngine\include\coreEngine\components\transform\TransformModel.h" />
+    <ClInclude Include="..\..\..\..\..\CoreEngine\include\coreEngine\conf\MathType.h" />
+    <ClInclude Include="..\..\..\..\..\CoreEngine\include\coreEngine\conf\Types.h" />
+    <ClInclude Include="..\..\..\..\..\CoreEngine\include\coreEngine\events\AppEvent.h" />
+    <ClInclude Include="..\..\..\..\..\CoreEngine\include\coreEngine\events\AppEventListener.h" />
+    <ClInclude Include="..\..\..\..\..\CoreEngine\include\coreEngine\events\EventQueue.h" />
+    <ClInclude Include="..\..\..\..\..\CoreEngine\include\coreEngine\events\IEvent.h" />
+    <ClInclude Include="..\..\..\..\..\CoreEngine\include\coreEngine\IRenderer.h" />
+    <ClInclude Include="..\..\..\..\..\CoreEngine\include\coreEngine\renderObjects\Camera.h" />
+    <ClInclude Include="..\..\..\..\..\CoreEngine\include\coreEngine\renderObjects\ComponentList.h" />
+    <ClInclude Include="..\..\..\..\..\CoreEngine\include\coreEngine\renderObjects\IComponent.h" />
+    <ClInclude Include="..\..\..\..\..\CoreEngine\include\coreEngine\renderObjects\IComponentList.h" />
+    <ClInclude Include="..\..\..\..\..\CoreEngine\include\coreEngine\renderObjects\IRelationable.h" />
+    <ClInclude Include="..\..\..\..\..\CoreEngine\include\coreEngine\renderObjects\IRelationStore.h" />
+    <ClInclude Include="..\..\..\..\..\CoreEngine\include\coreEngine\renderObjects\IRenderable.h" />
+    <ClInclude Include="..\..\..\..\..\CoreEngine\include\coreEngine\renderObjects\IScenable.h" />
+    <ClInclude Include="..\..\..\..\..\CoreEngine\include\coreEngine\renderObjects\Material.h" />
+    <ClInclude Include="..\..\..\..\..\CoreEngine\include\coreEngine\renderObjects\MaterialDiffuseTexture.h" />
+    <ClInclude Include="..\..\..\..\..\CoreEngine\include\coreEngine\renderObjects\Model.h" />
+    <ClInclude Include="..\..\..\..\..\CoreEngine\include\coreEngine\renderObjects\Scene.h" />
+    <ClInclude Include="..\..\..\..\..\CoreEngine\include\coreEngine\renderObjects\Shader.h" />
+    <ClInclude Include="..\..\..\..\..\CoreEngine\include\coreEngine\renderObjects\Texture.h" />
+    <ClInclude Include="..\..\..\..\..\CoreEngine\include\coreEngine\util\ILogger.h" />
+    <ClInclude Include="..\..\..\..\..\CoreEngine\include\coreEngine\util\ILoggerFactory.h" />
+    <ClInclude Include="..\..\..\..\..\CoreEngine\include\coreEngine\util\IMutexLock.h" />
+    <ClInclude Include="..\..\..\..\..\CoreEngine\include\coreEngine\util\UniquePointerHelper.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
