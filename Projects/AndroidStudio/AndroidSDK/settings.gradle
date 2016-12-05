@@ -1,4 +1,6 @@
+include ':sdkclient'
+
 //include ':app'
 //include ':glimplementation'
 //include ':image360'
-include ':coreengine'
+//include ':coreengine'
