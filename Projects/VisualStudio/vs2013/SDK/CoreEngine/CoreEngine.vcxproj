@@ -184,6 +184,7 @@
     <ClInclude Include="..\..\..\..\..\CoreEngine\include\coreEngine\factory\IModelFactory.h" />
     <ClInclude Include="..\..\..\..\..\CoreEngine\include\coreEngine\factory\IShaderDiffuseTextureFactory.h" />
     <ClInclude Include="..\..\..\..\..\CoreEngine\include\coreEngine\factory\ITextureFactory.h" />
+    <ClInclude Include="..\..\..\..\..\CoreEngine\include\coreEngine\IApplication.h" />
     <ClInclude Include="..\..\..\..\..\CoreEngine\include\coreEngine\IRenderer.h" />
     <ClInclude Include="..\..\..\..\..\CoreEngine\include\coreEngine\objectBuilders\ITexturedCubeBuilder.h" />
     <ClInclude Include="..\..\..\..\..\CoreEngine\include\coreEngine\renderObjects\Camera.h" />
