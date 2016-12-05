@@ -2,6 +2,7 @@
 #define TESTAPP_TESTAPP_H
 
 #include <coreEngine/IRenderer.h>
+#include <coreEngine/IApplication.h>
 #include <coreEngine/events/AppEventListener.h>
 
 #include <coreEngine/factory/IModelFactory.h>
@@ -13,7 +14,7 @@
 #include <coreEngine/components/transform/ITransformModelFactory.h>
 
 namespace cl{
-    class TestApp : public AppEventListener{
+    class TestApp : public AppEventListener, public IApplication{
     public:
         TestApp(std::unique_ptr<IRenderer> renderer, std::unique_ptr<IModelFactory> modelFactory, std::unique_ptr<ITextureFactory> textureFactory,
             std::unique_ptr<IMaterialDiffuseTextureFactory> materialDiffuseTextureFactory, std::unique_ptr<IShaderDiffuseTextureFactory> shaderDiffuseTextureFactory,
@@ -24,6 +25,14 @@ namespace cl{
         void onAppPauseEvent();
         void onAppResumeEvent();
         void onAppStopEvent();
+
+        //IApplication implementation
+        void start();
+        void initialize();
+        void update();
+        void draw();
+        void deinitialize();
+        void stop();
     };
 }
 
