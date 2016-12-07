@@ -4,6 +4,7 @@ import android.Manifest;
 import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.Color;
+import android.os.Build;
 import android.support.test.InstrumentationRegistry;
 import android.support.test.filters.LargeTest;
 import android.support.test.runner.AndroidJUnit4;
@@ -11,12 +12,15 @@ import android.util.Log;
 
 import junit.framework.Assert;
 
+import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
 import java.nio.ByteBuffer;
 import java.util.Map;
 
+import static android.support.test.InstrumentationRegistry.getInstrumentation;
+import static android.support.test.InstrumentationRegistry.getTargetContext;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertSame;
 
@@ -29,7 +33,34 @@ import static org.junit.Assert.assertSame;
 //@RunWith(MockitoJUnitRunner.class)
 public class UtilTest {
     private static final String TAG = "UtilTest";
-    Context context = InstrumentationRegistry.getTargetContext();
+    Context context = getTargetContext();
+
+    /* grant permissions so that tests may pass*/
+    @Before
+    public void grantPhonePermission() {
+        // In M+, trying to call a number will trigger a runtime dialog. Make sure
+        // the permission is granted before running this test.
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+            getInstrumentation().getUiAutomation().executeShellCommand(
+                    "pm grant " + getTargetContext().getPackageName()
+                            + " android.permission.ACCESS_COARSE_LOCATION");
+            getInstrumentation().getUiAutomation().executeShellCommand(
+                    "pm grant " + getTargetContext().getPackageName()
+                            + " android.permission.ACCESS_FINE_LOCATION");
+            getInstrumentation().getUiAutomation().executeShellCommand(
+                    "pm grant " + getTargetContext().getPackageName()
+                            + " android.permission.ACCESS_WIFI_STATE");
+            getInstrumentation().getUiAutomation().executeShellCommand(
+                    "pm grant " + getTargetContext().getPackageName()
+                            + " android.permission.CHANGE_WIFI_STATE");
+            getInstrumentation().getUiAutomation().executeShellCommand(
+                    "pm grant " + getTargetContext().getPackageName()
+                            + " android.permission.VIBRATE");
+            getInstrumentation().getUiAutomation().executeShellCommand(
+                    "pm grant " + getTargetContext().getPackageName()
+                            + " android.permission.WRITE_EXTERNAL_STORAGE");
+        }
+    }
 
     @Test()
     public void getByteArrayTest() throws Exception{

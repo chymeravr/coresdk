@@ -30,6 +30,7 @@ public final class ChymeraVRAndroidSDK {
     public static Context getContext(){
         return context;
     }
+
     /* do we want a pre initialized singleton here? What about a static class? */
     private static ChymeraVRAndroidSDK ourInstance = new ChymeraVRAndroidSDK();
 
@@ -37,8 +38,7 @@ public final class ChymeraVRAndroidSDK {
         return ourInstance;
     }
 
-    private ChymeraVRAndroidSDK() {
-    }
+    private ChymeraVRAndroidSDK() {}
 
     /* Correctly set up Context, verify appCode, check for required permissions*/
 
@@ -50,6 +50,7 @@ public final class ChymeraVRAndroidSDK {
         assert(newContext != null);
 
         context = newContext;
+
         /* TODO: Verify application code format & validity*/
         applicationCode = newApplicationCode;
 

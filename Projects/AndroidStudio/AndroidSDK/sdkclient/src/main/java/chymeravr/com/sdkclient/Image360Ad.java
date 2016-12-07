@@ -2,9 +2,6 @@ package chymeravr.com.sdkclient;
 
 
 import com.android.volley.Request;
-import com.android.volley.RequestQueue;
-import com.android.volley.Response;
-import com.android.volley.VolleyError;
 import com.android.volley.toolbox.ImageRequest;
 import com.android.volley.toolbox.JsonObjectRequest;
 
@@ -33,56 +30,70 @@ import static android.graphics.Bitmap.Config.ARGB_8888;
         - call display methods for ad
         - request a new ad
  */
-public final class Image360Ad extends Ad {
+public final class Image360Ad extends Ad{
     private static final String TAG = "ChymeraVRImage360";
-    //private String imageURL;
     /* below are some private variables used for internal representation of ad data and
     *  server requests */
     private byte[] byteArray;
     private Bitmap imageBitmap;
-    private RequestQueue queue;
-    private AdServerResponseListener jsonResponse = new AdServerResponseListener();
-    private MediaServerResponseListener imageResponse = new MediaServerResponseListener();
+    private ServerListener<JSONObject> jsonResponse;
+    private ServerListener<Bitmap> imageResponse;
 
-//    public void setImageURL(String imageURL) {
-//        this.imageURL = imageURL;
-//    }
-//
-//    public String getImageURL() {
-//        return imageURL;
-//    }
+    Bitmap getImageBitmap() {
+        return this.imageBitmap;
+    }
+
+    byte[] getByteArray() {
+        return this.byteArray;
+    }
 
     public Image360Ad(Context context){
+        assert(context != null);
         this.setContext(context);
-        this.queue = VolleyRequestQueue.getInstance(this.getContext()).getRequestQueue();
+        this.jsonResponse = new Image360AdServerListener(this);
+        this.imageResponse = new Image360MediaServerListener(this);
     }
 
     /* Request AdServer for a new image360 ad.
     * It passes targeting parameters from AdRequest for better Ads*/
     public void loadAd(AdRequest adRequest){
-
+        this.setLoading(true);
         Log.i(TAG, "Requesting Server for a New 360 Image Ad");
 
         // TODO: build a meaningful adServerURL or howsoever we want to encode the request
         String adServerURL = Config.adServer;
 
-        // Request a string response from the provided URL.
-        JsonObjectRequest jsonObjRequest = new JsonObjectRequest(Request.Method.GET,
-                adServerURL, null, jsonResponse, jsonResponse);
-        this.queue.add(jsonObjRequest);
-
+        // Request a json response from the provided URL.
+        JsonObjectRequest jsonObjRequest = new JsonObjectRequest(Request.Method.GET, adServerURL, null,
+                this.jsonResponse, this.jsonResponse);
+        this.jsonResponse.getRequestQueue().add(jsonObjRequest);
     }
 
-    void onAdServerResponseSuccess(){
-        ImageRequest imageRequest = new ImageRequest(this.getMediaUrl(), this.imageResponse, 0, 0,
-                null, ARGB_8888, this.imageResponse);
-        this.queue.add(imageRequest);
+    @Override
+    void onAdServerResponseSuccess(JSONObject response){
+        try{
+            Image360Ad.this.setMediaUrl(response.getString("url"));
+            ImageRequest imageRequest = new ImageRequest(this.getMediaUrl(), this.imageResponse, 0, 0,
+                    null, ARGB_8888, this.imageResponse);
+            this.imageResponse.getRequestQueue().add(imageRequest);
+
+            Log.i(TAG, "Ad Server response succesfully processed. Proceeding to query Media Server");
+        }catch(JSONException e){
+            this.setLoading(false);
+            Image360Ad.this.getAdListener().onAdFailedToLoad();
+            e.printStackTrace();
+            Log.e(TAG, "An exception occurred while processing the JSON Response from the ad server");
+        }
     }
 
     @Override
     <T> void onMediaServerResponseSuccess(T media) {
         this.imageBitmap = (Bitmap) media;
         this.byteArray = Util.convertToByteArray(this.imageBitmap);
+        this.getAdListener().onAdLoaded();
+        this.setLoaded(true);
+        this.setLoading(false);
+        Log.i(TAG, "Media Server Response Successful");
     }
 
 
@@ -91,42 +102,4 @@ public final class Image360Ad extends Ad {
 
     }
 
-    /* A nested class to implement Response Listeners for image response from ad server*/
-    private class MediaServerResponseListener implements
-            Response.ErrorListener,
-            Response.Listener<Bitmap>{
-
-        @Override
-        public void onErrorResponse(VolleyError error) {
-            Image360Ad.this.getAdListener().onAdFailedToLoad();
-        }
-
-        @Override
-        public void onResponse(Bitmap bitmap) {
-            Image360Ad.this.onMediaServerResponseSuccess(bitmap);
-            Image360Ad.this.getAdListener().onAdLoaded();
-        }
-    }
-
-    /* A nested class to implement Response Listeners for json response from media server*/
-    private class AdServerResponseListener implements
-            Response.ErrorListener,
-            Response.Listener<JSONObject>{
-
-        @Override
-        public void onErrorResponse(VolleyError error) {
-            Image360Ad.this.getAdListener().onAdFailedToLoad();
-        }
-
-        @Override
-        public void onResponse(JSONObject response) {
-            try{
-                Image360Ad.this.setMediaUrl(response.getString("url"));
-                Image360Ad.this.onAdServerResponseSuccess();
-            }catch(JSONException e){
-                e.printStackTrace();
-                Log.e(TAG, "An exception occurred while processing the JSON Response from the ad server");
-            }
-        }
-    }
 }

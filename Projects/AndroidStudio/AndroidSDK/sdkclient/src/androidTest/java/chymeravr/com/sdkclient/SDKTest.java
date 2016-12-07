@@ -30,7 +30,7 @@ public class SDKTest {
         // Context of the app under test.
         Context appContext = InstrumentationRegistry.getTargetContext();
 
-        assertEquals("chymeravr.com.mylibrary.test", appContext.getPackageName());
+        assertEquals("chymeravr.com.sdkclient", appContext.getPackageName());
     }
 
     @Test(expected=NullPointerException.class)

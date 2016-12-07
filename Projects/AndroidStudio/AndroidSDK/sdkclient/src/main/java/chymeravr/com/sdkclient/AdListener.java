@@ -4,7 +4,7 @@ package chymeravr.com.sdkclient;
  * Created by robin_chimera on 11/28/2016.
  */
 
-public abstract class AdListener extends Object {
+public interface AdListener {
 
     public abstract void onAdLoaded();
     public abstract void onAdFailedToLoad();

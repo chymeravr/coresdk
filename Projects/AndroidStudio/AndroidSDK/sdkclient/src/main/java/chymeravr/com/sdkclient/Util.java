@@ -18,7 +18,7 @@ import java.util.Map;
  * Created by robin_chimera on 12/2/2016.
  */
 
-public class Util {
+class Util {
     public static ArrayList<String> mandatoryPermissions =
             new ArrayList<String>(Arrays.asList(Manifest.permission.INTERNET,
                                                 Manifest.permission.ACCESS_NETWORK_STATE));
