@@ -1,4 +1,4 @@
-package chymeravr.com.sdkclient;
+package com.chymeravr.adclient;
 
 import android.content.Context;
 
@@ -11,7 +11,7 @@ import org.json.JSONObject;
 /* A fake ad class implementation for testing. this doesnt do anything*/
 public class FakeAd extends Ad {
     public FakeAd(Context context){
-        this.setContext(context);
+        super("test", context);
     }
     @Override
     public void loadAd(AdRequest adRequest) {
@@ -29,7 +29,9 @@ public class FakeAd extends Ad {
     }
 
     @Override
-    <T> void onMediaServerResponseSuccess(T media) {
+    void onMediaServerResponseSuccess(Object media) {
 
     }
+
+
 }

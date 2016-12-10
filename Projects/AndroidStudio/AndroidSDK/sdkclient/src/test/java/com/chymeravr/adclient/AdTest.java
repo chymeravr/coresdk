@@ -1,8 +1,6 @@
-package chymeravr.com.sdkclient;
+package com.chymeravr.adclient;
 
 import org.junit.Test;
-
-import static org.junit.Assert.*;
 
 /**
  * Created by robin_chimera on 12/7/2016.

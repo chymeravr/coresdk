@@ -1,8 +1,7 @@
-package chymeravr.com.sdkclient;
+package com.chymeravr.adclient;
 
 import android.util.Log;
 
-import com.android.volley.RequestQueue;
 import com.android.volley.VolleyError;
 
 import org.json.JSONObject;
@@ -22,8 +21,8 @@ class Image360AdServerListener extends ServerListener<JSONObject> {
     @Override
     public void onErrorResponse(VolleyError error) {
         Log.e(TAG, "Ad Server Response Failure!");
-        this.getAd().setLoading(false);
-        this.getAd().getAdListener().onAdFailedToLoad();
+        this.getAd().isLoading = false;
+        this.getAd().adListener.onAdFailedToLoad();
         error.printStackTrace();
     }
 

@@ -1,4 +1,4 @@
-package chymeravr.com.sdkclient;
+package com.chymeravr.adclient;
 
 /**
  * Created by robin_chimera on 12/1/2016.

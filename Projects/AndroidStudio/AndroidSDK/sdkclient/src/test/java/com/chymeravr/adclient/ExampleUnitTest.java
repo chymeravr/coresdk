@@ -1,4 +1,4 @@
-package chymeravr.com.sdkclient;
+package com.chymeravr.adclient;
 
 import org.junit.Test;
 

@@ -1,8 +1,14 @@
-package chymeravr.com.sdkclient;
+package com.chymeravr.adclient;
 
 import android.content.Context;
 import android.os.Build.VERSION;
 import android.util.Log;
+
+//import com.google.android.gms.ads.identifier.AdvertisingIdClient;
+//import com.google.android.gms.common.GooglePlayServicesNotAvailableException;
+//import com.google.android.gms.common.GooglePlayServicesRepairableException;
+//import com.google.android.gms.common.api.GoogleApiClient;
+//import com.google.android.gms.drive.Drive;
 
 import java.util.Map;
 
@@ -25,7 +31,16 @@ import java.util.Map;
 public final class ChymeraVRAndroidSDK {
     private static Context context;
     private static String applicationCode;
-    private static final String TAG = "ChymeraVRAndroidSDK";
+    private static final String TAG = "chymeravr.com.sdkclient";
+    private static String advertisingId;
+
+    public static String getApplicationCode() {
+        return applicationCode;
+    }
+
+    public static String getAdvertisingID(){
+        return advertisingId;
+    }
 
     public static Context getContext(){
         return context;
@@ -50,6 +65,8 @@ public final class ChymeraVRAndroidSDK {
         assert(newContext != null);
 
         context = newContext;
+
+        //fetchAdvertisingId();
 
         /* TODO: Verify application code format & validity*/
         applicationCode = newApplicationCode;
@@ -91,4 +108,40 @@ public final class ChymeraVRAndroidSDK {
     public static void setAppVolume(float volume){
 
     }
+
+
+//    private static void fetchAdvertisingId() {
+//        AsyncTask<Void, Void, String> task = new AsyncTask<Object, Object, Void>() {
+//            @Override
+//            protected Void doInBackground(Object... params){}
+//            @Override
+//            protected String doInBackground(Void... params) {
+//                AdvertisingIdClient.Info idInfo = null;
+//                try {
+//                    idInfo = AdvertisingIdClient.getAdvertisingIdInfo(getContext());
+//                } catch (GooglePlayServicesNotAvailableException e) {
+//                    e.printStackTrace();
+//                } catch (GooglePlayServicesRepairableException e) {
+//                    e.printStackTrace();
+//                } catch (Exception e) {
+//                    e.printStackTrace();
+//                }
+//                String advertId = null;
+//                try {
+//                    advertId = idInfo.getId();
+//                } catch (Exception e) {
+//                    e.printStackTrace();
+//                }
+//
+//                return advertId;
+//            }
+//            @Override
+//            protected void onPostExecute(String advertId) {
+//                advertisingId = advertId;
+//            }
+//        };
+//
+//        task.execute();
+//    }
+
 }

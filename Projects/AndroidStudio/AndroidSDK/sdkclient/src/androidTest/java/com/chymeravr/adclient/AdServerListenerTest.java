@@ -1,23 +1,19 @@
-package chymeravr.com.sdkclient;
+package com.chymeravr.adclient;
 
 /**
  * Created by robin_chimera on 12/6/2016.
  */
 
 import android.content.Context;
-import android.content.Intent;
 import android.support.test.InstrumentationRegistry;
 import android.support.test.runner.AndroidJUnit4;
-import android.util.Log;
 
 import com.android.volley.Request;
 import com.android.volley.VolleyError;
 
 import org.json.JSONObject;
 import org.junit.Before;
-import org.mockito.Mock;
 import org.mockito.Mockito;
-import org.mockito.runners.MockitoJUnitRunner;
 
 
 import org.junit.Test;

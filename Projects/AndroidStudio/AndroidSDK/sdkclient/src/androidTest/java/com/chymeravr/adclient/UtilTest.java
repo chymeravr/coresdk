@@ -1,11 +1,10 @@
-package chymeravr.com.sdkclient;
+package com.chymeravr.adclient;
 
 import android.Manifest;
 import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.Color;
 import android.os.Build;
-import android.support.test.InstrumentationRegistry;
 import android.support.test.filters.LargeTest;
 import android.support.test.runner.AndroidJUnit4;
 import android.util.Log;

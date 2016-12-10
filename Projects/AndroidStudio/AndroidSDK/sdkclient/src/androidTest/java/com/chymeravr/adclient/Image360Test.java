@@ -1,11 +1,10 @@
-package chymeravr.com.sdkclient;
+package com.chymeravr.adclient;
 
 /**
  * Created by robin_chimera on 11/29/2016.
  */
 
 import android.content.Context;
-import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.Color;
 import android.support.test.InstrumentationRegistry;
@@ -19,7 +18,6 @@ import junit.framework.Assert;
 import org.json.JSONObject;
 import org.junit.Before;
 import org.mockito.Mockito;
-import org.mockito.runners.MockitoJUnitRunner;
 
 
 import org.junit.Test;
@@ -29,7 +27,6 @@ import org.junit.runner.RunWith;
 import java.util.Arrays;
 
 import static org.mockito.Matchers.any;
-import static org.mockito.Matchers.anyString;
 import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
@@ -55,7 +52,7 @@ public class Image360Test {
     @Before
     public void setUp() throws Exception {
         Log.v(TAG, "Setting up testing environment");
-        image360Ad = new Image360Ad(appContext);
+        image360Ad = new Image360Ad("image360test", appContext);
         image360Ad.setAdListener(new AdListener() {
             @Override
             public void onAdLoaded() {}
@@ -86,7 +83,7 @@ public class Image360Test {
     @Test()
     public void onMediaServerResponseSuccessTest() throws Exception{
         Log.v(TAG, "Commencing image 360 media server response success test");
-        Config.adServer = "ASD";
+        //Config.adServer = "ASD";
         Bitmap testBitmap = Bitmap.createBitmap(8, 1, Bitmap.Config.ARGB_8888);
         testBitmap.setPixel(0, 0, Color.BLACK);
         testBitmap.setPixel(1, 0, Color.BLUE);

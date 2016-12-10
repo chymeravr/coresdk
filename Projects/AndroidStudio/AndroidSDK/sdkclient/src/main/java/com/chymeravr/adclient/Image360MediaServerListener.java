@@ -1,10 +1,8 @@
-package chymeravr.com.sdkclient;
+package com.chymeravr.adclient;
 
 import android.graphics.Bitmap;
 import android.util.Log;
 
-import com.android.volley.RequestQueue;
-import com.android.volley.Response;
 import com.android.volley.VolleyError;
 
 /**
@@ -24,7 +22,7 @@ final class Image360MediaServerListener extends ServerListener<Bitmap> {
     @Override
     public void onErrorResponse(VolleyError error) {
         error.printStackTrace();
-        this.getAd().setLoading(false);
+        this.getAd().isLoading = false;
         this.getAd().getAdListener().onAdFailedToLoad();
         Log.e(TAG, this.getClass() + " Media Server Response Failure!");
     }

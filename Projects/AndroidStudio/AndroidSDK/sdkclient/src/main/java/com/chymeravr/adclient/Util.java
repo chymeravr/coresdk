@@ -1,4 +1,4 @@
-package chymeravr.com.sdkclient;
+package com.chymeravr.adclient;
 
 import android.Manifest;
 import android.content.Context;
@@ -8,10 +8,11 @@ import android.support.annotation.NonNull;
 import android.support.v4.content.ContextCompat;
 
 import java.nio.ByteBuffer;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
+import java.util.Set;
 
 
 /**
@@ -19,11 +20,11 @@ import java.util.Map;
  */
 
 class Util {
-    public static ArrayList<String> mandatoryPermissions =
-            new ArrayList<String>(Arrays.asList(Manifest.permission.INTERNET,
+    public static Set<String> mandatoryPermissions =
+            new HashSet<>(Arrays.asList(Manifest.permission.INTERNET,
                                                 Manifest.permission.ACCESS_NETWORK_STATE));
-    public static ArrayList<String> recommendedPermissions =
-            new ArrayList<String>(Arrays.asList(Manifest.permission.ACCESS_COARSE_LOCATION,
+    public static Set<String> recommendedPermissions =
+            new HashSet<>(Arrays.asList(Manifest.permission.ACCESS_COARSE_LOCATION,
                                                 Manifest.permission.ACCESS_FINE_LOCATION,
                                                 Manifest.permission.ACCESS_WIFI_STATE,
                                                 Manifest.permission.CHANGE_WIFI_STATE,
@@ -49,15 +50,16 @@ class Util {
     }
 
     public static boolean checkMandatoryPermissions(Context context) {
-        boolean result = true;
         for (String permission : mandatoryPermissions){
-            result = result && isResourceAccessPermitted(context, permission);
+            if(!isResourceAccessPermitted(context, permission)) {
+                return false;
+            }
         }
-        return result;
+        return true;
     }
 
     public static Map<String, Boolean>  checkRecommendedPermissions(Context context){
-        Map<String, Boolean> map = new HashMap<String, Boolean>();
+        Map<String, Boolean> map = new HashMap<>();
         for (String permission : recommendedPermissions){
             map.put(permission, isResourceAccessPermitted(context, permission));
         }

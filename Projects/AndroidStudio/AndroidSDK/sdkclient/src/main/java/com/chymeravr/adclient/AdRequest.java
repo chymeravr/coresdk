@@ -1,4 +1,4 @@
-package chymeravr.com.sdkclient;
+package com.chymeravr.adclient;
 
 import android.content.Context;
 import android.location.Location;
@@ -14,8 +14,7 @@ import java.util.Set;
     AdRequest encapsulates targeting information for ads.
     Use Builder to create these objects
  */
-public final class AdRequest extends Object {
-
+public final class AdRequest {
 
     public enum ERROR_CODE{
         INTERNAL_ERROR,
@@ -25,10 +24,18 @@ public final class AdRequest extends Object {
     }
 
     public enum Gender{
-        MALE,
-        FEMALE,
-        OTHER,
-        UNKNOWN
+        MALE("MALE"),
+        FEMALE("FEMALE"),
+        OTHER("OTHER"),
+        UNKNOWN("UNKNOWN");
+
+        private String value;
+        public String getValue(){
+            return value;
+        }
+        private Gender(String value){
+            this.value  = value;
+        }
     }
 
     private Gender gender;
@@ -90,4 +97,5 @@ public final class AdRequest extends Object {
     public Set<String> getKeywords(){
         return null;
     }
+
 }
