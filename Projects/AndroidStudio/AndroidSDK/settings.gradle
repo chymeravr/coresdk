@@ -1,4 +1,4 @@
-include ':sdkclient'
+include ':testApp', ':adclient'
 
 //include ':app'
 //include ':glimplementation'
