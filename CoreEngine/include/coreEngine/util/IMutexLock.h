@@ -4,6 +4,7 @@
 namespace cl{
     class IMutexLock{
     public:
+        virtual ~IMutexLock(){}
         virtual void lock() = 0;
         virtual void unlock() = 0;
     };

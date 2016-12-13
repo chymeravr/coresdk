@@ -39,9 +39,6 @@
     <ClInclude Include="..\..\..\..\..\CoreEngine\include\coreEngine\events\AppEventListener.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\..\..\CoreEngine\include\coreEngine\events\EventQueue.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="..\..\..\..\..\CoreEngine\include\coreEngine\renderObjects\Scene.h">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -126,5 +123,19 @@
     <ClInclude Include="..\..\..\..\..\CoreEngine\include\coreEngine\IApplication.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\..\..\..\CoreEngine\include\coreEngine\events\EventQueueFactory.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\..\..\CoreEngine\include\coreEngine\events\IEventQueue.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\..\..\CoreEngine\include\coreEngine\events\EventQueue.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="..\..\..\..\..\CoreEngine\src\events\EventQueue.cpp">
+      <Filter>Resource Files</Filter>
+    </ClCompile>
   </ItemGroup>
 </Project>

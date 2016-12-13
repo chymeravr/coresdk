@@ -3,6 +3,8 @@
 
 namespace cl{
     class IEvent{
+    public: 
+        virtual ~IEvent(){}
         virtual void callListener() = 0;
     };
 }
