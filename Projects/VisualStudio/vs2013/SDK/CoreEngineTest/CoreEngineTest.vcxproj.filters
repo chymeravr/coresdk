@@ -30,12 +30,27 @@
     <ClCompile Include="$(MSBuildThisFileDirectory)..\..\lib\native\src\gmock\gmock-all.cc">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\..\..\..\CoreEngine\test\src\SceneTest.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\..\..\..\CoreEngine\test\include\coreEngineTest\mocks\EventMock.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="..\..\..\..\..\CoreEngine\test\include\coreEngineTest\mocks\MutexLockMock.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\..\..\CoreEngine\test\include\coreEngineTest\mocks\LoggerMock.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\..\..\CoreEngine\test\include\coreEngineTest\mocks\LoggerFactoryMock.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\..\..\CoreEngine\test\include\coreEngineTest\mocks\SceneMock.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\..\..\CoreEngine\test\include\coreEngineTest\mocks\ScenableMock.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

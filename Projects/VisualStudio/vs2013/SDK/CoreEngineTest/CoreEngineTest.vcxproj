@@ -85,6 +85,7 @@
   <ItemGroup>
     <ClCompile Include="..\..\..\..\..\CoreEngine\test\src\AllTests.cpp" />
     <ClCompile Include="..\..\..\..\..\CoreEngine\test\src\EventQueueTest.cpp" />
+    <ClCompile Include="..\..\..\..\..\CoreEngine\test\src\SceneTest.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\CoreEngine\CoreEngine.vcxproj">
@@ -93,7 +94,11 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\..\..\..\CoreEngine\test\include\coreEngineTest\mocks\EventMock.h" />
+    <ClInclude Include="..\..\..\..\..\CoreEngine\test\include\coreEngineTest\mocks\LoggerFactoryMock.h" />
+    <ClInclude Include="..\..\..\..\..\CoreEngine\test\include\coreEngineTest\mocks\LoggerMock.h" />
     <ClInclude Include="..\..\..\..\..\CoreEngine\test\include\coreEngineTest\mocks\MutexLockMock.h" />
+    <ClInclude Include="..\..\..\..\..\CoreEngine\test\include\coreEngineTest\mocks\ScenableMock.h" />
+    <ClInclude Include="..\..\..\..\..\CoreEngine\test\include\coreEngineTest\mocks\SceneMock.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

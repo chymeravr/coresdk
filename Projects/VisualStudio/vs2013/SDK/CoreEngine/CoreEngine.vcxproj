@@ -185,6 +185,7 @@
     <ClInclude Include="..\..\..\..\..\CoreEngine\include\coreEngine\events\IEvent.h" />
     <ClInclude Include="..\..\..\..\..\CoreEngine\include\coreEngine\factory\IMaterialDiffuseTextureFactory.h" />
     <ClInclude Include="..\..\..\..\..\CoreEngine\include\coreEngine\factory\IModelFactory.h" />
+    <ClInclude Include="..\..\..\..\..\CoreEngine\include\coreEngine\factory\ISceneFactory.h" />
     <ClInclude Include="..\..\..\..\..\CoreEngine\include\coreEngine\factory\IShaderDiffuseTextureFactory.h" />
     <ClInclude Include="..\..\..\..\..\CoreEngine\include\coreEngine\factory\ITextureFactory.h" />
     <ClInclude Include="..\..\..\..\..\CoreEngine\include\coreEngine\IApplication.h" />
@@ -212,6 +213,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\..\..\..\..\CoreEngine\src\events\EventQueue.cpp" />
+    <ClCompile Include="..\..\..\..\..\CoreEngine\src\renderObjects\Scene.cpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

@@ -11,7 +11,7 @@ namespace cl{
     protected:
         void SetUp(){
             EventQueueFactory eventQueueFactory;
-            std::unique_ptr<IMutexLock> mutexUptr = std::unique_ptr<IMutexLock>(new MutexLockMock);
+            std::unique_ptr<IMutexLock> mutexUptr = std::unique_ptr<IMutexLock>(new ::testing::NiceMock<MutexLockMock>());
             mutex = mutexUptr.get();
             eventQueue = eventQueueFactory.create(std::move(mutexUptr));
         }

@@ -132,10 +132,16 @@
     <ClInclude Include="..\..\..\..\..\CoreEngine\include\coreEngine\events\EventQueue.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\..\..\..\CoreEngine\include\coreEngine\factory\ISceneFactory.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\..\..\..\..\CoreEngine\src\events\EventQueue.cpp">
-      <Filter>Resource Files</Filter>
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\..\..\CoreEngine\src\renderObjects\Scene.cpp">
+      <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>

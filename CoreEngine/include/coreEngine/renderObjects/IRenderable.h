@@ -4,6 +4,7 @@
 namespace cl{
     class IRenderable{
     public:
+        virtual ~IRenderable(){}
         virtual bool initialize() = 0;
         virtual void draw() = 0;
         virtual void deinitialize() = 0;

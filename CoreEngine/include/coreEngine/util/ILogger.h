@@ -19,7 +19,6 @@ namespace cl {
     };
 
     class ILogger {
-    protected:
     public:
         virtual void log(LOG_LEVEL level, std::string logString) = 0;
     };
