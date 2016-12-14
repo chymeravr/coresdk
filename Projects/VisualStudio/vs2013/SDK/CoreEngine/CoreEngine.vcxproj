@@ -92,13 +92,15 @@
     <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
   </ImportGroup>
   <PropertyGroup Label="UserMacros" />
-  <PropertyGroup />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <IncludePath>$(IncludePath)</IncludePath>
+  </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>
       <WarningLevel>Level3</WarningLevel>
       <Optimization>Disabled</Optimization>
       <SDLCheck>true</SDLCheck>
-      <AdditionalIncludeDirectories>E:\Chimera\workspace\AdNetwork\SDK\CoreEngine\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>E:\Chimera\workspace\AdNetwork\SDK\Repository\thirdParty\glm\glm-0.9.7.6\glm;E:\Chimera\workspace\AdNetwork\SDK\CoreEngine\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
     </ClCompile>
     <Link>
@@ -183,6 +185,7 @@
     <ClInclude Include="..\..\..\..\..\CoreEngine\include\coreEngine\events\IEventQueue.h" />
     <ClInclude Include="..\..\..\..\..\CoreEngine\include\coreEngine\events\EventQueueFactory.h" />
     <ClInclude Include="..\..\..\..\..\CoreEngine\include\coreEngine\events\IEvent.h" />
+    <ClInclude Include="..\..\..\..\..\CoreEngine\include\coreEngine\factory\ICameraFactory.h" />
     <ClInclude Include="..\..\..\..\..\CoreEngine\include\coreEngine\factory\IMaterialDiffuseTextureFactory.h" />
     <ClInclude Include="..\..\..\..\..\CoreEngine\include\coreEngine\factory\IModelFactory.h" />
     <ClInclude Include="..\..\..\..\..\CoreEngine\include\coreEngine\factory\ISceneFactory.h" />
@@ -211,7 +214,9 @@
     <ClInclude Include="..\..\..\..\..\CoreEngine\include\coreEngine\util\UniquePointerHelper.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="..\..\..\..\..\CoreEngine\src\conf\MathType.cpp" />
     <ClCompile Include="..\..\..\..\..\CoreEngine\src\events\EventQueue.cpp" />
+    <ClCompile Include="..\..\..\..\..\CoreEngine\src\renderObjects\Camera.cpp" />
     <ClCompile Include="..\..\..\..\..\CoreEngine\src\renderObjects\Relation.cpp" />
     <ClCompile Include="..\..\..\..\..\CoreEngine\src\renderObjects\Scene.cpp" />
   </ItemGroup>

@@ -55,7 +55,7 @@
       <Optimization>Disabled</Optimization>
       <PreprocessorDefinitions>WIN32;_DEBUG;_CONSOLE;_LIB;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
-      <AdditionalIncludeDirectories>E:\Chimera\workspace\AdNetwork\SDK\CoreEngine\test\include;E:\Chimera\workspace\AdNetwork\SDK\CoreEngine\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>E:\Chimera\workspace\AdNetwork\SDK\Repository\thirdParty\glm\glm-0.9.7.6\glm;E:\Chimera\workspace\AdNetwork\SDK\CoreEngine\test\include;E:\Chimera\workspace\AdNetwork\SDK\CoreEngine\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -84,9 +84,14 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\..\..\..\..\CoreEngine\test\src\AllTests.cpp" />
+    <ClCompile Include="..\..\..\..\..\CoreEngine\test\src\CameraTest.cpp" />
     <ClCompile Include="..\..\..\..\..\CoreEngine\test\src\EventQueueTest.cpp" />
+    <ClCompile Include="..\..\..\..\..\CoreEngine\test\src\MaterialTest.cpp" />
+    <ClCompile Include="..\..\..\..\..\CoreEngine\test\src\ModelTest.cpp" />
     <ClCompile Include="..\..\..\..\..\CoreEngine\test\src\RelationTest.cpp" />
     <ClCompile Include="..\..\..\..\..\CoreEngine\test\src\SceneTest.cpp" />
+    <ClCompile Include="..\..\..\..\..\CoreEngine\test\src\ShaderTest.cpp" />
+    <ClCompile Include="..\..\..\..\..\CoreEngine\test\src\TextureTest.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\CoreEngine\CoreEngine.vcxproj">
@@ -94,13 +99,18 @@
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="..\..\..\..\..\CoreEngine\test\include\coreEngineTest\mocks\CameraMock.h" />
     <ClInclude Include="..\..\..\..\..\CoreEngine\test\include\coreEngineTest\mocks\EventMock.h" />
     <ClInclude Include="..\..\..\..\..\CoreEngine\test\include\coreEngineTest\mocks\LoggerFactoryMock.h" />
     <ClInclude Include="..\..\..\..\..\CoreEngine\test\include\coreEngineTest\mocks\LoggerMock.h" />
+    <ClInclude Include="..\..\..\..\..\CoreEngine\test\include\coreEngineTest\mocks\MaterialMock.h" />
+    <ClInclude Include="..\..\..\..\..\CoreEngine\test\include\coreEngineTest\mocks\ModelMock.h" />
     <ClInclude Include="..\..\..\..\..\CoreEngine\test\include\coreEngineTest\mocks\MutexLockMock.h" />
     <ClInclude Include="..\..\..\..\..\CoreEngine\test\include\coreEngineTest\mocks\RelationMock.h" />
     <ClInclude Include="..\..\..\..\..\CoreEngine\test\include\coreEngineTest\mocks\ScenableMock.h" />
     <ClInclude Include="..\..\..\..\..\CoreEngine\test\include\coreEngineTest\mocks\SceneMock.h" />
+    <ClInclude Include="..\..\..\..\..\CoreEngine\test\include\coreEngineTest\mocks\ShaderMock.h" />
+    <ClInclude Include="..\..\..\..\..\CoreEngine\test\include\coreEngineTest\mocks\TextureMock.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

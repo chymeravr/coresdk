@@ -9,10 +9,25 @@
 namespace cl{
     class Material : public Relation, public IScenable{
     public:
-        Material(const std::string &sceneId, IRelationStore *relationStore, Shader *shader);
+        virtual ~Material(){}
+        Material(const std::string &sceneId, Shader *shader, ILoggerFactory *loggerFactory) : Relation(loggerFactory){
+            this->sceneId = sceneId;
+            this->createBiRelation(shader);
+        }
         virtual IRenderable *getRenderable() = 0;
-        std::string getType();
-        std::string getSceneId();
+        std::string getType(){
+            return this->type;
+        }
+        std::string getUniqueIdentifier(){
+            return this->sceneId;
+        }
+        std::string getSceneId(){
+            return this->sceneId;
+        }
+
+    protected:
+        std::string sceneId = "";
+        std::string type = "material";
     };
 }
 

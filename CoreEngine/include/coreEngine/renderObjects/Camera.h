@@ -4,17 +4,22 @@
 #include <coreEngine/renderObjects/IScenable.h>
 #include <coreEngine/conf/Types.h>
 #include <coreEngine/renderObjects/IRenderable.h>
+#include <coreEngine/renderObjects/Relation.h>
+#include <coreEngine/renderObjects/Scene.h>
 
 namespace cl{
-    class Camera : public IScenable {
+    class Camera : public IScenable, public Relation {
     public:
-        Camera(const std::string &sceneId);
-        std::string getSceneId();
+        virtual ~Camera(){}
+        Camera(const std::string &sceneId, ILoggerFactory *loggerFactory, Scene *scene);
         virtual IRenderable *getRenderable() = 0;
+        std::string getSceneId();
+        std::string getType();
+        std::string getUniqueIdentifier();
         virtual void calculateViewMatrix();
         virtual void calculateProjectionMatrix();
         CL_Mat44 getViewMatrix();
-        CL_Mat44 getProjectionMatrx();
+        CL_Mat44 getProjectionMatrix();
         void setLocation(const CL_Vec3 &location);
         void setLookAtPoint(const CL_Vec3 &lookAtPoint);
         void setUpVector(const CL_Vec3 &upVector);
@@ -31,9 +36,13 @@ namespace cl{
         void setFarPlane(const float &farPlane);
 
     protected:
+        std::string sceneId = "";
+        std::string type = "camera";
         CL_Vec3 location;
         CL_Vec3 lookAtPoint;
         CL_Vec3 upVector;
+        CL_Mat44 viewMatrix;
+        CL_Mat44 projectionMatrix;
         /**
         * fov is in radians. It represents vertical field of view from top to down.
         */

@@ -7,19 +7,31 @@
 #include <coreEngine/renderObjects/Relation.h>
 #include <coreEngine/renderObjects/IScenable.h>
 #include <coreEngine/renderObjects/IRenderable.h>
-#include <coreEngine/renderObjects/IRelationStore.h>
 
 namespace cl{
     class Model : public Relation, public IScenable{
     public:
-        Model(const std::string &sceneId, IRelationStore *relationStore);
+        virtual ~Model(){}
+        Model(const std::string &sceneId, ILoggerFactory *loggerFactory) : Relation(loggerFactory){
+            this->sceneId = sceneId;
+        }
         virtual IRenderable *getRenderable() = 0;
         
-        std::string getType();
-        std::string getSceneId();
-
-        void setModelMatrix(const CL_Mat44 &modelMatrix);
-        CL_Mat44 getModelMatrix();
+        std::string getType(){
+            return this->type;
+        }
+        std::string getUniqueIdentifier(){
+            return this->sceneId;
+        }
+        std::string getSceneId(){
+            return this->sceneId;
+        }
+        void setModelMatrix(const CL_Mat44 &modelMatrix){
+            this->modelMatrix = modelMatrix;
+        }
+        CL_Mat44 getModelMatrix(){
+            return modelMatrix;
+        }
 
         /**
         * Returns reference to vertices. Can be modified by caller. Possibly through a service layer. Hence no setter for this.
@@ -50,10 +62,13 @@ namespace cl{
         }
 
     protected:
+        std::string sceneId;
+        std::string type = "model";
         std::vector <CL_Vec3> vertices;
         std::vector <CL_Vec2> uvs;
         std::vector <CL_Vec3> normals;
         std::vector <CL_GLuint> indices;
+        CL_Mat44 modelMatrix;
     };
 }
 

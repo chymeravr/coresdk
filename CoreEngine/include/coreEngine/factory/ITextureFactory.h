@@ -7,7 +7,7 @@
 namespace cl{
     class ITextureFactory{
     public:
-        virtual std::unique_ptr<Texture> create(const std::string &sceneId) = 0;
+        virtual std::unique_ptr<Texture> create(const std::string &sceneId, ILoggerFactory *loggerFactory) = 0;
     };
 }
 

@@ -3,13 +3,21 @@
 
 #include <coreEngine/renderObjects/Material.h>
 #include <coreEngine/renderObjects/Texture.h>
+#include <coreEngine/renderObjects/ShaderDiffuseTexture.h>
 
 namespace cl{
     class MaterialDiffuseTexture : public Material{
     public:
-        MaterialDiffuseTexture(const std::string &sceneId, IRelationStore *relationStore, Shader *shader);
-        void setDiffuseTexture(Texture *texture);
-        Texture *getDiffuseTexture();
+        virtual ~MaterialDiffuseTexture(){}
+        MaterialDiffuseTexture(const std::string &sceneId, ShaderDiffuseTexture *shader, ILoggerFactory *loggerFactory) : Material(sceneId, shader, loggerFactory){}
+        void setDiffuseTexture(Texture *texture){
+            this->diffuseTexture = texture;
+        }
+        Texture *getDiffuseTexture(){
+            return this->diffuseTexture;
+        }
+    protected:
+        Texture *diffuseTexture;
     };
 }
 

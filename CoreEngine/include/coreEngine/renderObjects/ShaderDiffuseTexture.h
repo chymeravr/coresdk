@@ -6,7 +6,8 @@
 namespace cl{
     class ShaderDiffuseTexture : public Shader{
     public:
-        ShaderDiffuseTexture(const std::string &sceneId, IRelationStore *relationStore);
+        virtual ~ShaderDiffuseTexture(){}
+        ShaderDiffuseTexture(const std::string &sceneId, ILoggerFactory *loggerFactory, Scene *scene) : Shader(sceneId, loggerFactory, scene){}
     };
 }
 

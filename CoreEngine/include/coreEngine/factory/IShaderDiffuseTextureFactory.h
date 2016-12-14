@@ -7,7 +7,7 @@
 namespace cl{
     class IShaderDiffuseTextureFactory{
     public:
-        virtual std::unique_ptr<ShaderDiffuseTexture> create(const std::string &sceneId, IRelationStore *relationStore) = 0;
+        virtual std::unique_ptr<ShaderDiffuseTexture> create(const std::string &sceneId, ILoggerFactory *loggerFactory, Scene *scene) = 0;
     };
 }
 
