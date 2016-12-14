@@ -2,14 +2,17 @@
 #include <assert.h>
 
 namespace cl{
-    Scene::Scene(ILoggerFactory *loggerFactory){
+    Scene::Scene(ILoggerFactory *loggerFactory, std::string id) : Relation(loggerFactory){
         assert(loggerFactory != nullptr);
-        type = "scene";
-        this->logger = loggerFactory->createLogger("CoreEngine::Scene: ");
+        this->id = id;
+        this->logger = loggerFactory->createLogger("coreEngine::Scene: ");
         logger->log(LOG_INFO, "Scene Created.");
     }
     std::string Scene::getType(){
         return this->type;
+    }
+    std::string Scene::getUniqueIdentifier(){
+        return this->id;
     }
     void Scene::addToScene(std::unique_ptr<IScenable> scenable){
         assert(scenable != nullptr);

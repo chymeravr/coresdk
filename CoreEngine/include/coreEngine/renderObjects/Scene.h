@@ -4,15 +4,16 @@
 #include <memory>
 #include <unordered_map>
 #include <coreEngine/renderObjects/IRenderable.h>
-#include <coreEngine/renderObjects/IRelationable.h>
+#include <coreEngine/renderObjects/Relation.h>
 #include <coreEngine/renderObjects/IScenable.h>
 #include <coreEngine/util/ILoggerFactory.h>
 
 namespace cl{
-    class Scene : public IRelationable{
+    class Scene : public Relation{
     public:
-        Scene(ILoggerFactory *loggerFactory);
+        Scene(ILoggerFactory *loggerFactory, std::string id);
         std::string getType();
+        std::string getUniqueIdentifier();
         virtual IRenderable *getRenderable() = 0;
         /**
         * Add To Scene will add a Scenable object to the Scene. It should be provided with unique sceneId else it will abort.
@@ -23,7 +24,8 @@ namespace cl{
         virtual bool exists(std::string sceneId);
 
     private:
-        std::string type = "";
+        std::string id = "";
+        std::string type = "scene";
         std::unique_ptr<ILogger> logger;
         std::unordered_map<std::string, std::unique_ptr<IScenable> > scenableMap;
     };

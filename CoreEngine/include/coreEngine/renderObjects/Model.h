@@ -4,17 +4,17 @@
 #include <string>
 #include <vector>
 #include <coreEngine/conf/Types.h>
-#include <coreEngine/renderObjects/IRelationable.h>
+#include <coreEngine/renderObjects/Relation.h>
 #include <coreEngine/renderObjects/IScenable.h>
 #include <coreEngine/renderObjects/IRenderable.h>
 #include <coreEngine/renderObjects/IRelationStore.h>
 
 namespace cl{
-    class Model : public IRelationable, public IScenable{
+    class Model : public Relation, public IScenable{
     public:
         Model(const std::string &sceneId, IRelationStore *relationStore);
         virtual IRenderable *getRenderable() = 0;
-
+        
         std::string getType();
         std::string getSceneId();
 

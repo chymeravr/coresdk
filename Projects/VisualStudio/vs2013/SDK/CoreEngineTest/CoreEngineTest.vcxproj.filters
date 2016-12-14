@@ -33,6 +33,9 @@
     <ClCompile Include="..\..\..\..\..\CoreEngine\test\src\SceneTest.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\..\..\..\CoreEngine\test\src\RelationTest.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\..\..\..\CoreEngine\test\include\coreEngineTest\mocks\EventMock.h">
@@ -51,6 +54,9 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="..\..\..\..\..\CoreEngine\test\include\coreEngineTest\mocks\ScenableMock.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\..\..\CoreEngine\test\include\coreEngineTest\mocks\RelationMock.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

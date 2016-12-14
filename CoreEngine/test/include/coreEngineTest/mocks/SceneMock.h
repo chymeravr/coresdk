@@ -7,7 +7,7 @@
 namespace cl{
     class SceneMock : public Scene{
     public:
-        SceneMock(ILoggerFactory *loggerFactory) : Scene(loggerFactory){}
+        SceneMock(ILoggerFactory *loggerFactory, std::string id) : Scene(loggerFactory, id){}
         MOCK_METHOD0(getRenderable, IRenderable* (void));
     };
 

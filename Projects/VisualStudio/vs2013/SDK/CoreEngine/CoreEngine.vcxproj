@@ -195,8 +195,7 @@
     <ClInclude Include="..\..\..\..\..\CoreEngine\include\coreEngine\renderObjects\ComponentList.h" />
     <ClInclude Include="..\..\..\..\..\CoreEngine\include\coreEngine\renderObjects\IComponent.h" />
     <ClInclude Include="..\..\..\..\..\CoreEngine\include\coreEngine\renderObjects\IComponentList.h" />
-    <ClInclude Include="..\..\..\..\..\CoreEngine\include\coreEngine\renderObjects\IRelationable.h" />
-    <ClInclude Include="..\..\..\..\..\CoreEngine\include\coreEngine\renderObjects\IRelationStore.h" />
+    <ClInclude Include="..\..\..\..\..\CoreEngine\include\coreEngine\renderObjects\Relation.h" />
     <ClInclude Include="..\..\..\..\..\CoreEngine\include\coreEngine\renderObjects\IRenderable.h" />
     <ClInclude Include="..\..\..\..\..\CoreEngine\include\coreEngine\renderObjects\IScenable.h" />
     <ClInclude Include="..\..\..\..\..\CoreEngine\include\coreEngine\renderObjects\Material.h" />
@@ -213,6 +212,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\..\..\..\..\CoreEngine\src\events\EventQueue.cpp" />
+    <ClCompile Include="..\..\..\..\..\CoreEngine\src\renderObjects\Relation.cpp" />
     <ClCompile Include="..\..\..\..\..\CoreEngine\src\renderObjects\Scene.cpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

@@ -2,13 +2,13 @@
 #define COREENGINE_SHADER_H
 
 #include <string>
-#include <coreEngine/renderObjects/IRelationable.h>
+#include <coreEngine/renderObjects/Relation.h>
 #include <coreEngine/renderObjects/IScenable.h>
 #include <coreEngine/renderObjects/IRenderable.h>
 #include <coreEngine/renderObjects/IRelationStore.h>
 
 namespace cl{
-    class Shader : public IRelationable, public IScenable{
+    class Shader : public Relation, public IScenable{
     public:
         Shader(const std::string &sceneId, IRelationStore *relationStore);
         virtual IRenderable *getRenderable() = 0;

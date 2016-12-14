@@ -7,7 +7,7 @@
 namespace cl{
     class ISceneFactory{
     public:
-        virtual std::unique_ptr<Scene> create(ILoggerFactory *loggerFactory) = 0;
+        virtual std::unique_ptr<Scene> create(ILoggerFactory *loggerFactory, std::string id) = 0;
     };
 }
 

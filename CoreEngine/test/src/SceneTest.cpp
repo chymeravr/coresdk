@@ -9,12 +9,13 @@ namespace cl{
         protected:
             void SetUp(){
                 loggerFactoryUptr = std::unique_ptr<ILoggerFactory>(new LoggerFactoryMock);
-                scene = std::unique_ptr<Scene>(new SceneMock(loggerFactoryUptr.get()));
+                scene = std::unique_ptr<Scene>(new SceneMock(loggerFactoryUptr.get(), id));
             }
             
             void TearDown(){
 
             }
+            std::string id = "scene1";
             std::unique_ptr<ILoggerFactory> loggerFactoryUptr;
             std::unique_ptr<Scene> scene;
     };

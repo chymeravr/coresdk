@@ -1,14 +1,14 @@
 #ifndef COREENGINE_COMPONENTLIST_H
 #define COREENGINE_COMPONENTLIST_H
 
-#include <coreEngine/renderObjects/IRelationable.h>
+#include <coreEngine/renderObjects/Relation.h>
 #include <coreEngine/renderObjects/IComponentList.h>
 
 namespace cl{
-    class ComponentList : public IRelationable, public IComponentList{
+    class ComponentList : public Relation, public IComponentList{
     public:
         /*
-        * Implementation of IRelationable Interface
+        * Implementation of Relation Interface
         */
         std::string getType();
 

@@ -45,9 +45,6 @@
     <ClInclude Include="..\..\..\..\..\CoreEngine\include\coreEngine\renderObjects\IRenderable.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\..\..\CoreEngine\include\coreEngine\renderObjects\IRelationable.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="..\..\..\..\..\CoreEngine\include\coreEngine\renderObjects\IScenable.h">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -58,9 +55,6 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="..\..\..\..\..\CoreEngine\include\coreEngine\renderObjects\IComponentList.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\..\..\..\CoreEngine\include\coreEngine\renderObjects\IRelationStore.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="..\..\..\..\..\CoreEngine\include\coreEngine\conf\MathType.h">
@@ -135,12 +129,18 @@
     <ClInclude Include="..\..\..\..\..\CoreEngine\include\coreEngine\factory\ISceneFactory.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\..\..\..\CoreEngine\include\coreEngine\renderObjects\Relation.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\..\..\..\..\CoreEngine\src\events\EventQueue.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="..\..\..\..\..\CoreEngine\src\renderObjects\Scene.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\..\..\CoreEngine\src\renderObjects\Relation.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
