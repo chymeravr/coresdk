@@ -54,7 +54,7 @@
     <ClCompile Include="..\..\..\..\..\CoreEngine\test\src\ModelModifierTest.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\..\..\..\CoreEngine\test\src\ModelBuilderTest.cpp">
+    <ClCompile Include="..\..\..\..\..\CoreEngine\test\src\CubeBuilderTest.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

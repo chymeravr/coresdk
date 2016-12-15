@@ -19,10 +19,11 @@ namespace cl{
         const std::string modelType = "model";
         std::unique_ptr<Model> model;
         std::unique_ptr<ModelModifier> modelModifier;
+        double precisionError = 0.01;
     };
 
     /*
-    * Limited Testing. Testing number of vertices only. Can't test each vertex as it is difficult.
+    * Limited Testing.
     */
     TEST_F(CubeBuilderTest, TestBuildInwardCube){
         CubeBuilder cubeBuilder(modelModifier.get());
@@ -34,6 +35,16 @@ namespace cl{
         EXPECT_EQ(36, indices.size());
         EXPECT_EQ(24, vertices.size());
         EXPECT_EQ(24, uvs.size());
+
+        //Check distance from center
+        double targetDistance = 1.732;
+        for (int i = 0; i < vertices.size(); i++){
+            float x = vertices[i].x;
+            float y = vertices[i].y;
+            float z = vertices[i].z;
+            double distance = sqrt(x*x + y*y + z*z);
+            EXPECT_NEAR(targetDistance, distance, precisionError);
+        }
     }
 
     /*
@@ -49,5 +60,16 @@ namespace cl{
         EXPECT_EQ(36, indices.size());
         EXPECT_EQ(24, vertices.size());
         EXPECT_EQ(24, uvs.size());
+
+
+        //Check distance from center
+        double targetDistance = 1.732;
+        for (int i = 0; i < vertices.size(); i++){
+            float x = vertices[i].x;
+            float y = vertices[i].y;
+            float z = vertices[i].z;
+            double distance = sqrt(x*x + y*y + z*z);
+            EXPECT_NEAR(targetDistance, distance, precisionError);
+        }
     }
 }
