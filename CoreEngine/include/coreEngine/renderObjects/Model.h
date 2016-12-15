@@ -9,6 +9,11 @@
 #include <coreEngine/renderObjects/IRenderable.h>
 
 namespace cl{
+    /*
+    * This model definition is based on assumption that triangles are used for faces (and not quads) and indices are used by default.
+    * Any model builder, while can have quads as representation in intermediate states, but should finally convert it into triangle
+    * and index representation.
+    */
     class Model : public Relation, public IScenable{
     public:
         virtual ~Model(){}

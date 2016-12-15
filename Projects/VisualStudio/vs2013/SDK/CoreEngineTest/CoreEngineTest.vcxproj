@@ -87,6 +87,8 @@
     <ClCompile Include="..\..\..\..\..\CoreEngine\test\src\CameraTest.cpp" />
     <ClCompile Include="..\..\..\..\..\CoreEngine\test\src\EventQueueTest.cpp" />
     <ClCompile Include="..\..\..\..\..\CoreEngine\test\src\MaterialTest.cpp" />
+    <ClCompile Include="..\..\..\..\..\CoreEngine\test\src\ModelBuilderTest.cpp" />
+    <ClCompile Include="..\..\..\..\..\CoreEngine\test\src\ModelModifierTest.cpp" />
     <ClCompile Include="..\..\..\..\..\CoreEngine\test\src\ModelTest.cpp" />
     <ClCompile Include="..\..\..\..\..\CoreEngine\test\src\RelationTest.cpp" />
     <ClCompile Include="..\..\..\..\..\CoreEngine\test\src\SceneTest.cpp" />

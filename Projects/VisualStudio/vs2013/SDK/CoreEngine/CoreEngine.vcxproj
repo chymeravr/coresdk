@@ -193,6 +193,8 @@
     <ClInclude Include="..\..\..\..\..\CoreEngine\include\coreEngine\factory\ITextureFactory.h" />
     <ClInclude Include="..\..\..\..\..\CoreEngine\include\coreEngine\IApplication.h" />
     <ClInclude Include="..\..\..\..\..\CoreEngine\include\coreEngine\IRenderer.h" />
+    <ClInclude Include="..\..\..\..\..\CoreEngine\include\coreEngine\modelBuilder\CubeBuilder.h" />
+    <ClInclude Include="..\..\..\..\..\CoreEngine\include\coreEngine\modifier\ModelModifier.h" />
     <ClInclude Include="..\..\..\..\..\CoreEngine\include\coreEngine\objectBuilders\ITexturedCubeBuilder.h" />
     <ClInclude Include="..\..\..\..\..\CoreEngine\include\coreEngine\renderObjects\Camera.h" />
     <ClInclude Include="..\..\..\..\..\CoreEngine\include\coreEngine\renderObjects\ComponentList.h" />
@@ -216,6 +218,8 @@
   <ItemGroup>
     <ClCompile Include="..\..\..\..\..\CoreEngine\src\conf\MathType.cpp" />
     <ClCompile Include="..\..\..\..\..\CoreEngine\src\events\EventQueue.cpp" />
+    <ClCompile Include="..\..\..\..\..\CoreEngine\src\modelBuilder\CubeBuilder.cpp" />
+    <ClCompile Include="..\..\..\..\..\CoreEngine\src\modifier\ModelModifier.cpp" />
     <ClCompile Include="..\..\..\..\..\CoreEngine\src\renderObjects\Camera.cpp" />
     <ClCompile Include="..\..\..\..\..\CoreEngine\src\renderObjects\Relation.cpp" />
     <ClCompile Include="..\..\..\..\..\CoreEngine\src\renderObjects\Scene.cpp" />
