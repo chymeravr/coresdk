@@ -38,4 +38,11 @@ namespace cl{
             0.0, 0.0, 0.0, 1.0);
     }
 
+    CL_Vec3 CL_CrossProduct(CL_Vec3 v1, CL_Vec3 v2){
+        return glm::cross(v1, v2);
+    }
+
+    CL_Vec3 CL_Normalize(CL_Vec3 v){
+        return glm::normalize(v);
+    }
 }

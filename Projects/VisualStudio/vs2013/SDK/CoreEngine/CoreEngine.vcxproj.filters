@@ -141,6 +141,9 @@
     <ClInclude Include="..\..\..\..\..\CoreEngine\include\coreEngine\modelBuilder\CubeBuilder.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\..\..\..\CoreEngine\include\coreEngine\modelBuilder\UVSphereBuilder.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\..\..\..\..\CoreEngine\src\events\EventQueue.cpp">
@@ -162,6 +165,9 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="..\..\..\..\..\CoreEngine\src\modelBuilder\CubeBuilder.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\..\..\CoreEngine\src\modelBuilder\UVSphereBuilder.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

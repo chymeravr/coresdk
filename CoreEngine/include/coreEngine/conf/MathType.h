@@ -14,6 +14,8 @@
 
 namespace cl {
 
+    #define CL_PI 3.14159265358979323846
+
     typedef glm::vec2 CL_Vec2;
     typedef glm::vec3 CL_Vec3;
     typedef glm::vec4 CL_Vec4;
@@ -85,6 +87,10 @@ namespace cl {
     CL_Mat44 CL_ScaleMatrix(CL_Vec3 scale);
 
     CL_Mat44 CL_IdentityMatrix4X4();
+
+    CL_Vec3 CL_CrossProduct(CL_Vec3 v1, CL_Vec3 v2);
+
+    CL_Vec3 CL_Normalize(CL_Vec3 v);
 }
 
 #endif //ANDROIDSDK_MATHTYPE_H

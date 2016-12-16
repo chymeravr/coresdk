@@ -93,6 +93,7 @@
     <ClCompile Include="..\..\..\..\..\CoreEngine\test\src\RelationTest.cpp" />
     <ClCompile Include="..\..\..\..\..\CoreEngine\test\src\SceneTest.cpp" />
     <ClCompile Include="..\..\..\..\..\CoreEngine\test\src\ShaderTest.cpp" />
+    <ClCompile Include="..\..\..\..\..\CoreEngine\test\src\UVSphereBuilderTest.cpp" />
     <ClCompile Include="..\..\..\..\..\CoreEngine\test\src\TextureTest.cpp" />
   </ItemGroup>
   <ItemGroup>

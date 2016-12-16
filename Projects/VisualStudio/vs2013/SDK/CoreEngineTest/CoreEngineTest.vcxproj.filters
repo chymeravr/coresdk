@@ -57,6 +57,9 @@
     <ClCompile Include="..\..\..\..\..\CoreEngine\test\src\CubeBuilderTest.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\..\..\..\CoreEngine\test\src\UVSphereBuilderTest.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\..\..\..\CoreEngine\test\include\coreEngineTest\mocks\EventMock.h">
