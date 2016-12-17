@@ -200,7 +200,6 @@
     <ClInclude Include="..\..\..\..\..\CoreEngine\include\coreEngine\renderObjects\Camera.h" />
     <ClInclude Include="..\..\..\..\..\CoreEngine\include\coreEngine\renderObjects\ComponentList.h" />
     <ClInclude Include="..\..\..\..\..\CoreEngine\include\coreEngine\renderObjects\IComponent.h" />
-    <ClInclude Include="..\..\..\..\..\CoreEngine\include\coreEngine\renderObjects\IComponentList.h" />
     <ClInclude Include="..\..\..\..\..\CoreEngine\include\coreEngine\renderObjects\Relation.h" />
     <ClInclude Include="..\..\..\..\..\CoreEngine\include\coreEngine\renderObjects\IRenderable.h" />
     <ClInclude Include="..\..\..\..\..\CoreEngine\include\coreEngine\renderObjects\IScenable.h" />
@@ -217,12 +216,15 @@
     <ClInclude Include="..\..\..\..\..\CoreEngine\include\coreEngine\util\UniquePointerHelper.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="..\..\..\..\..\CoreEngine\src\components\transform\TransformCamera.cpp" />
+    <ClCompile Include="..\..\..\..\..\CoreEngine\src\components\transform\TransformModel.cpp" />
     <ClCompile Include="..\..\..\..\..\CoreEngine\src\conf\MathType.cpp" />
     <ClCompile Include="..\..\..\..\..\CoreEngine\src\events\EventQueue.cpp" />
     <ClCompile Include="..\..\..\..\..\CoreEngine\src\modelBuilder\CubeBuilder.cpp" />
     <ClCompile Include="..\..\..\..\..\CoreEngine\src\modelBuilder\UVSphereBuilder.cpp" />
     <ClCompile Include="..\..\..\..\..\CoreEngine\src\modifier\ModelModifier.cpp" />
     <ClCompile Include="..\..\..\..\..\CoreEngine\src\renderObjects\Camera.cpp" />
+    <ClCompile Include="..\..\..\..\..\CoreEngine\src\renderObjects\ComponentList.cpp" />
     <ClCompile Include="..\..\..\..\..\CoreEngine\src\renderObjects\Relation.cpp" />
     <ClCompile Include="..\..\..\..\..\CoreEngine\src\renderObjects\Scene.cpp" />
   </ItemGroup>

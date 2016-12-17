@@ -7,13 +7,41 @@
 namespace cl{
     class Transform : public IComponent{
     public:
-        std::string getComponentType();
-        void setPosition(CL_Vec3 position);
-        CL_Vec3 getPosition();
-        void setRoation(CL_Vec3 rotation);
-        CL_Vec3 getRotation();
-        void setScale(CL_Vec3 scale);
-        CL_Vec3 getScale();
+        std::string getComponentType(){
+            return componentType;
+        }
+        void setPosition(CL_Vec3 position){
+            this->position = position;
+        }
+        CL_Vec3 getPosition(){
+            return this->position;
+        }
+        /*
+        * Rotation in euler angles format. Angle to be given in degrees.
+        * Order of multiplicatin is Ry * Rx * Rz.
+        */
+        void setRotation(CL_Vec3 rotation){
+            this->rotation = rotation;
+        }
+        /*
+        * Rotation in euler angles format. Angle to be given in degrees.
+        * Order of multiplicatin is Ry * Rx * Rz.
+        */
+        CL_Vec3 getRotation(){
+            return this->rotation;
+        }
+        void setScale(CL_Vec3 scale){
+            this->scale = scale;
+        }
+        CL_Vec3 getScale(){
+            return this->scale;
+        }
+
+    protected:
+        std::string componentType = "transform";
+        CL_Vec3 position;
+        CL_Vec3 rotation;
+        CL_Vec3 scale;
     };
 }
 

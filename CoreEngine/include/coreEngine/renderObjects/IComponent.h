@@ -3,6 +3,7 @@
 
 #include <string>
 #include <coreEngine/renderObjects/IRenderable.h>
+#include <coreEngine/renderObjects/Relation.h>
 
 namespace cl{
     class IComponent{

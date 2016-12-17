@@ -6,6 +6,7 @@
 #include <coreEngine/renderObjects/IRenderable.h>
 #include <coreEngine/renderObjects/Relation.h>
 #include <coreEngine/renderObjects/Scene.h>
+#include <coreEngine/renderObjects/ComponentList.h>
 
 namespace cl{
     class Camera : public IScenable, public Relation {
@@ -15,7 +16,10 @@ namespace cl{
         virtual IRenderable *getRenderable() = 0;
         std::string getSceneId();
         std::string getType();
-        std::string getUniqueIdentifier();
+        std::string getUniqueIdentifier(); 
+        ComponentList &getComponentList(){
+            return componentList;
+        }
         virtual void calculateViewMatrix();
         virtual void calculateProjectionMatrix();
         CL_Mat44 getViewMatrix();
@@ -34,6 +38,9 @@ namespace cl{
         void setAspect(const float &aspect);
         void setNearPlane(const float &nearPlane);
         void setFarPlane(const float &farPlane);
+        CL_Vec3 getLocalLookAtPoint();
+        CL_Vec3 getLocalUpVector();
+        CL_Vec3 getLocalLocation();
 
     protected:
         std::string sceneId = "";
@@ -56,6 +63,7 @@ namespace cl{
         CL_Vec3 localLocation = CL_Vec3(0.0, 0.0, 0.0);
         CL_Vec3 localLookAtPoint = CL_Vec3(0.0, 0.0, -1.0);
         CL_Vec3 localUpVector = CL_Vec3(0.0, 1.0, 0.0);
+        ComponentList componentList;
     };
 }
 

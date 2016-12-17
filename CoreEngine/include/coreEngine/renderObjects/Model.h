@@ -7,6 +7,7 @@
 #include <coreEngine/renderObjects/Relation.h>
 #include <coreEngine/renderObjects/IScenable.h>
 #include <coreEngine/renderObjects/IRenderable.h>
+#include <coreEngine/renderObjects/ComponentList.h>
 
 namespace cl{
     /*
@@ -30,6 +31,9 @@ namespace cl{
         }
         std::string getSceneId(){
             return this->sceneId;
+        }
+        ComponentList &getComponentList(){
+            return componentList;
         }
         void setModelMatrix(const CL_Mat44 &modelMatrix){
             this->modelMatrix = modelMatrix;
@@ -74,6 +78,7 @@ namespace cl{
         std::vector <CL_Vec3> normals;
         std::vector <CL_GLuint> indices;
         CL_Mat44 modelMatrix;
+        ComponentList componentList;
     };
 }
 

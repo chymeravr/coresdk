@@ -8,11 +8,15 @@
 namespace cl{
     class TransformModel : public Transform, public IRenderable{
     public:
-        TransformModel(Model *model);
+        TransformModel(Model *model, ILoggerFactory *loggerFactory);
         virtual IRenderable *getRenderable();
         virtual bool initialize();
         virtual void draw();
         virtual void deinitialize();
+
+    private:
+        Model *model = nullptr;
+        std::unique_ptr<ILogger> logger;
     };
 }
 

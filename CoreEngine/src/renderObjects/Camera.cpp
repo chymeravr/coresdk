@@ -61,4 +61,16 @@ namespace cl{
     void Camera::setFarPlane(const float &farPlane){
         this->farPlane = farPlane;
     }
+
+    CL_Vec3 Camera::getLocalLookAtPoint(){
+        return localLookAtPoint;
+    }
+
+    CL_Vec3 Camera::getLocalUpVector(){
+        return localUpVector;
+    }
+
+    CL_Vec3 Camera::getLocalLocation(){
+        return localLocation;
+    }
 }

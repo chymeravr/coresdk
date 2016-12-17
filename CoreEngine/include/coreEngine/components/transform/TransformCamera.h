@@ -8,11 +8,14 @@
 namespace cl{
     class TransformCamera : public Transform, public IRenderable{
     public:
-        TransformCamera(Camera *camera);
+        TransformCamera(Camera *camera, ILoggerFactory *loggerFactory);
         virtual IRenderable *getRenderable();
         virtual bool initialize();
         virtual void draw();
         virtual void deinitialize();
+    private:
+        Camera *camera = nullptr;
+        std::unique_ptr<ILogger> logger;
     };
 }
 

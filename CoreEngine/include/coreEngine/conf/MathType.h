@@ -47,16 +47,16 @@ namespace cl {
     /**
      * Get Rotation Matrix around X axis
      *
-     * @param angle: angle of rotation
+     * @param angle: angle of rotation. Angles in radians.
      *
      * @return A 4x4 matrix representing the rotation
      */
     CL_Mat44 CL_RotationMatrixX(float angle);
 
     /**
-     * Get Rotation Matrix around Y axis
+     * Get Rotation Matrix around Y axis.
      *
-     * @param angle: angle of rotation
+     * @param angle: angle of rotation. Angles in radians.
      *
      * @return A 4x4 matrix representing the rotation
      */
@@ -65,7 +65,7 @@ namespace cl {
     /**
      * Get Rotation Matrix around Y axis
      *
-     * @param angle: angle of rotation
+     * @param angle: angle of rotation. Angles in radians.
      *
      * @return A 4x4 matrix representing the rotation
      */

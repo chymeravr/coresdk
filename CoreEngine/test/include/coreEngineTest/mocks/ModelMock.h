@@ -3,6 +3,7 @@
 
 #include <gmock/gmock.h>
 #include <coreEngine/renderObjects/Model.h>
+#include <coreEngineTest/mocks/ComponentMock.h>
 
 namespace cl{
     class ModelMock : public Model{

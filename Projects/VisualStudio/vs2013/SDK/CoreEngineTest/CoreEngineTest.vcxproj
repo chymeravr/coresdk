@@ -85,6 +85,7 @@
   <ItemGroup>
     <ClCompile Include="..\..\..\..\..\CoreEngine\test\src\AllTests.cpp" />
     <ClCompile Include="..\..\..\..\..\CoreEngine\test\src\CameraTest.cpp" />
+    <ClCompile Include="..\..\..\..\..\CoreEngine\test\src\ComponentListTest.cpp" />
     <ClCompile Include="..\..\..\..\..\CoreEngine\test\src\EventQueueTest.cpp" />
     <ClCompile Include="..\..\..\..\..\CoreEngine\test\src\MaterialTest.cpp" />
     <ClCompile Include="..\..\..\..\..\CoreEngine\test\src\CubeBuilderTest.cpp" />
@@ -93,6 +94,8 @@
     <ClCompile Include="..\..\..\..\..\CoreEngine\test\src\RelationTest.cpp" />
     <ClCompile Include="..\..\..\..\..\CoreEngine\test\src\SceneTest.cpp" />
     <ClCompile Include="..\..\..\..\..\CoreEngine\test\src\ShaderTest.cpp" />
+    <ClCompile Include="..\..\..\..\..\CoreEngine\test\src\TransformCameraTest.cpp" />
+    <ClCompile Include="..\..\..\..\..\CoreEngine\test\src\TransformModelTest.cpp" />
     <ClCompile Include="..\..\..\..\..\CoreEngine\test\src\UVSphereBuilderTest.cpp" />
     <ClCompile Include="..\..\..\..\..\CoreEngine\test\src\TextureTest.cpp" />
   </ItemGroup>
@@ -103,6 +106,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\..\..\..\CoreEngine\test\include\coreEngineTest\mocks\CameraMock.h" />
+    <ClInclude Include="..\..\..\..\..\CoreEngine\test\include\coreEngineTest\mocks\ComponentMock.h" />
     <ClInclude Include="..\..\..\..\..\CoreEngine\test\include\coreEngineTest\mocks\EventMock.h" />
     <ClInclude Include="..\..\..\..\..\CoreEngine\test\include\coreEngineTest\mocks\LoggerFactoryMock.h" />
     <ClInclude Include="..\..\..\..\..\CoreEngine\test\include\coreEngineTest\mocks\LoggerMock.h" />
