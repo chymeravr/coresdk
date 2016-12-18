@@ -7,6 +7,7 @@
 namespace cl{
     class ComponentList {
     public:
+        std::vector<IComponent*> getComponents();
         IComponent *getComponent(std::string componentType);
         void addComponent(std::unique_ptr<IComponent> component);
         void removeComponent(std::string componentType);
