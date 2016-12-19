@@ -3,16 +3,21 @@
 
 #include <memory>
 #include <coreEngine/renderObjects/IRenderable.h>
-#include <glImplementation/renderObjects/CameraGLContainer.h>
+#include <glImplementation/renderObjects/CameraGL.h>
 #include <conf/GLTypes.h>
 
 namespace cl{
     class CameraGLContainer : public IRenderable{
     public:
-        CameraGLContainer(std::unique_ptr<CL_GLuint> viewMatrixId, std::unique_ptr<CL_GLuint> projectionMatrixId, CameraGL *cameraGL);
+        CameraGLContainer(CL_GLuint &viewMatrixId, CL_GLuint &projectionMatrixId, CameraGL *cameraGL);
         bool initialize();
         void draw();
         void deinitialize();
+
+    private:
+        CL_GLuint viewMatrixId;
+        CL_GLuint projectionMatrixId;
+        CameraGL *cameraGL;
     };
 }
 

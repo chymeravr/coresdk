@@ -32,12 +32,26 @@ namespace cl{
         virtual const unsigned int &getTextureDataSize(){
             return this->dataSize;
         }
+        unsigned int getWidth(){
+            return width;
+        }
+        void setWidth(const unsigned int &width){
+            this->width = width;
+        }
+        unsigned int getHeight(){
+            return this->height;
+        }
+        void setHeight(const unsigned int &height){
+            this->height = height;
+        }
 
     protected:
         std::string sceneId = "";
         std::unique_ptr<ILogger> logger = nullptr;
         std::unique_ptr<unsigned char> data;
         unsigned int dataSize;
+        unsigned int width;
+        unsigned int height;
     };
 }
 

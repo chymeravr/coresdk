@@ -8,13 +8,16 @@
 namespace cl{
     class TextureGL : public Texture, public IRenderable{
     public:
-        TextureGL(const std::string &sceneId); 
+        TextureGL(const std::string &sceneId, ILoggerFactory *loggerFactory);
         IRenderable *getRenderable();
         bool initialize();
         void draw();
         void deinitialize();
-
         CL_GLuint getTextureId();
+
+    private:
+        std::unique_ptr<ILogger> logger;
+        CL_GLuint textureId;
     };
 }
 

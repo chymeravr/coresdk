@@ -141,6 +141,9 @@
     <ClInclude Include="..\..\..\..\..\CoreEngine\include\coreEngine\modelBuilder\UVSphereBuilder.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\..\..\..\CoreEngine\include\coreEngine\modifier\TextureBMPLoader.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\..\..\..\..\CoreEngine\src\events\EventQueue.cpp">
@@ -174,6 +177,9 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="..\..\..\..\..\CoreEngine\src\components\transform\TransformCamera.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\..\..\CoreEngine\src\modifier\TextureBMPLoader.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

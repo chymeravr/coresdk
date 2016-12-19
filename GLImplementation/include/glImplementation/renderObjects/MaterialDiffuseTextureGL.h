@@ -9,12 +9,15 @@
 namespace cl{
     class MaterialDiffuseTextureGL : public MaterialDiffuseTexture, public IRenderable{
     public:
-        MaterialDiffuseTextureGL(const std::string &sceneId, IRelationStore *relationStore, ShaderDiffuseTextureGL *shader);
+        MaterialDiffuseTextureGL(const std::string &sceneId, ShaderDiffuseTextureGL *shader, ILoggerFactory *loggerFactory);
         IRenderable *getRenderable();
-        void setDiffuseTextureId(std::unique_ptr<CL_GLuint> textureUnitId);//To be set by respective shader
+        void setDiffuseTextureId(CL_GLuint diffuseTextureUniformId);//To be set by respective shader
         bool initialize();
         void draw();
         void deinitialize();
+    private:
+        std::unique_ptr<ILogger> logger;
+        CL_GLuint diffuseTextureUniformId;
     };
 }
 

@@ -70,8 +70,17 @@ namespace cl{
             return indices;
         }
 
+        void setIsStatic(bool &isStatic){
+            this->isStatic = isStatic;
+        }
+
+        bool getIsStatic(){
+            return this->isStatic;
+        }
+
     protected:
         std::string sceneId;
+        bool isStatic = true;
         std::string type = "model";
         std::vector <CL_Vec3> vertices;
         std::vector <CL_Vec2> uvs;

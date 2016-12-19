@@ -98,7 +98,7 @@
       <WarningLevel>Level3</WarningLevel>
       <Optimization>Disabled</Optimization>
       <SDLCheck>true</SDLCheck>
-      <AdditionalIncludeDirectories>E:\Chimera\workspace\AdNetwork\SDK\CoreEngine\include;E:\Chimera\workspace\AdNetwork\SDK\GLImplementation\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>E:\Chimera\workspace\AdNetwork\SDK\Repository\thirdParty\glew\glew-2.0.0\include;E:\Chimera\workspace\AdNetwork\SDK\CoreEngine\include;E:\Chimera\workspace\AdNetwork\SDK\GLImplementation\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <GenerateDebugInformation>true</GenerateDebugInformation>
@@ -169,12 +169,23 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClInclude Include="..\..\..\..\..\CoreEngine\include\conf\GLTypes.h" />
     <ClInclude Include="..\..\..\..\..\GLImplementation\include\glImplementation\renderObjects\CameraGL.h" />
     <ClInclude Include="..\..\..\..\..\GLImplementation\include\glImplementation\renderObjects\CameraGLContainer.h" />
     <ClInclude Include="..\..\..\..\..\GLImplementation\include\glImplementation\renderObjects\MaterialDiffuseTextureGL.h" />
     <ClInclude Include="..\..\..\..\..\GLImplementation\include\glImplementation\renderObjects\ModelGL.h" />
     <ClInclude Include="..\..\..\..\..\GLImplementation\include\glImplementation\renderObjects\ShaderDiffuseTextureGL.h" />
     <ClInclude Include="..\..\..\..\..\GLImplementation\include\glImplementation\renderObjects\TextureGL.h" />
+    <ClInclude Include="..\..\..\..\..\GLImplementation\include\glImplementation\util\ShaderProgramUtil.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="..\..\..\..\..\GLImplementation\src\renderObjects\CameraGL.cpp" />
+    <ClCompile Include="..\..\..\..\..\GLImplementation\src\renderObjects\CameraGLContainer.cpp" />
+    <ClCompile Include="..\..\..\..\..\GLImplementation\src\renderObjects\MaterialDiffuseTextureGL.cpp" />
+    <ClCompile Include="..\..\..\..\..\GLImplementation\src\renderObjects\ModelGL.cpp" />
+    <ClCompile Include="..\..\..\..\..\GLImplementation\src\renderObjects\ShaderDiffuseTextureGL.cpp" />
+    <ClCompile Include="..\..\..\..\..\GLImplementation\src\renderObjects\TextureGL.cpp" />
+    <ClCompile Include="..\..\..\..\..\GLImplementation\src\util\ShaderProgramUtil.cpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
