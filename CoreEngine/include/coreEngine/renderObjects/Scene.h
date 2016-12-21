@@ -3,6 +3,7 @@
 
 #include <memory>
 #include <unordered_map>
+#include <coreEngine/conf/Types.h>
 #include <coreEngine/renderObjects/IRenderable.h>
 #include <coreEngine/renderObjects/Relation.h>
 #include <coreEngine/renderObjects/IScenable.h>
@@ -15,6 +16,8 @@ namespace cl{
         std::string getType();
         std::string getUniqueIdentifier();
         virtual IRenderable *getRenderable() = 0;
+        virtual void setBackgroundColor(CL_Vec4 color) = 0;
+        virtual void setDepthTest(bool enable) = 0;
         /**
         * Add To Scene will add a Scenable object to the Scene. It should be provided with unique sceneId else it will abort.
         */

@@ -15,6 +15,9 @@ namespace cl{
 
         //read vertex shader status
         glGetShaderiv(vertexShaderId, GL_COMPILE_STATUS, &result);
+        if (!result){
+            logger->log(LOG_ERROR, "Vertex shader compilation failed.");
+        }
         glGetShaderiv(vertexShaderId, GL_INFO_LOG_LENGTH, &infoLogLength);
         if (infoLogLength > 0){
             std::vector<char> vertexShaderErrorMessage(infoLogLength + 1);
@@ -29,6 +32,9 @@ namespace cl{
 
         //read fragmentshader status
         glGetShaderiv(fragmentShaderId, GL_COMPILE_STATUS, &result);
+        if (!result){
+            logger->log(LOG_ERROR, "Fragment shader compilation failed.");
+        }
         glGetShaderiv(fragmentShaderId, GL_INFO_LOG_LENGTH, &infoLogLength);
         if (infoLogLength > 0){
             std::vector<char> fragmentShaderErrorMessage(infoLogLength + 1);
@@ -44,6 +50,9 @@ namespace cl{
 
         // Check the program
         glGetProgramiv(programId, GL_LINK_STATUS, &result);
+        if (!result){
+            logger->log(LOG_ERROR, "Linking shader program failed.");
+        }
         glGetProgramiv(programId, GL_INFO_LOG_LENGTH, &infoLogLength);
         if (infoLogLength > 0){
             std::vector<char> programErrorMessage(infoLogLength + 1);

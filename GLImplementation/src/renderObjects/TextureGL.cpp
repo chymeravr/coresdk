@@ -16,9 +16,16 @@ namespace cl{
         // Give the image to OpenGL
         assert(data != nullptr);
         glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, width, height, 0, GL_BGR, GL_UNSIGNED_BYTE, data.get());
-
+        // ... nice trilinear filtering.
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
+        glGenerateMipmap(GL_TEXTURE_2D);
         // OpenGL has now copied the data. Free our own version
         this->clearTextureData();
+        logger->log(LOG_INFO, "texture:" + sceneId + " initialized");
+        return true;
     }
     void TextureGL::draw(){
 
@@ -27,5 +34,6 @@ namespace cl{
         glDeleteTextures(1, &textureId);
     }
     CL_GLuint TextureGL::getTextureId(){
+        return this->textureId;
     }
 }

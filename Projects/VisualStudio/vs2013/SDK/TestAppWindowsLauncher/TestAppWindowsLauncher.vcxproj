@@ -52,9 +52,10 @@
       <PrecompiledHeader>Use</PrecompiledHeader>
       <WarningLevel>Level3</WarningLevel>
       <Optimization>Disabled</Optimization>
-      <PreprocessorDefinitions>WIN32;_DEBUG;_CONSOLE;_LIB;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>WIN32;_DEBUG;_CONSOLE;_LIB;_CRT_SECURE_NO_WARNINGS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <SDLCheck>true</SDLCheck>
-      <AdditionalIncludeDirectories>%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>E:\Chimera\workspace\AdNetwork\SDK\Repository\thirdParty\glm\glm-0.9.7.6\glm;E:\Chimera\workspace\AdNetwork\SDK\Repository\thirdParty\glew\glew-2.0.0\include;E:\Chimera\workspace\AdNetwork\SDK\Conf\include;E:\Chimera\workspace\AdNetwork\SDK\WindowsImplementation\include;E:\Chimera\workspace\AdNetwork\SDK\TestApp\include;E:\Chimera\workspace\AdNetwork\SDK\Renderer\include;E:\Chimera\workspace\AdNetwork\SDK\GLImplementation\include;E:\Chimera\workspace\AdNetwork\SDK\CoreEngine\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -93,6 +94,23 @@
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Create</PrecompiledHeader>
     </ClCompile>
     <ClCompile Include="TestAppWindowsLauncher.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\CoreEngine\CoreEngine.vcxproj">
+      <Project>{31bc4eeb-8a3d-4852-8edf-71ce2481c704}</Project>
+    </ProjectReference>
+    <ProjectReference Include="..\GLImplementation\GLImplementation.vcxproj">
+      <Project>{b8497c86-7615-42ee-94b2-ff02d1d68b9d}</Project>
+    </ProjectReference>
+    <ProjectReference Include="..\Renderer\Renderer.vcxproj">
+      <Project>{7bc75946-c10f-4320-a978-75c13666b37c}</Project>
+    </ProjectReference>
+    <ProjectReference Include="..\TestApp\TestApp.vcxproj">
+      <Project>{ff73bae7-0261-4149-8027-03d80c209fad}</Project>
+    </ProjectReference>
+    <ProjectReference Include="..\WindowsImplementation\WindowsImplementation.vcxproj">
+      <Project>{54fd5d63-f6b5-4784-935a-c3b2f1a64e27}</Project>
+    </ProjectReference>
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

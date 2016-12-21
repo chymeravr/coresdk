@@ -32,7 +32,7 @@
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
-    <ConfigurationType>Application</ConfigurationType>
+    <ConfigurationType>StaticLibrary</ConfigurationType>
     <UseDebugLibraries>true</UseDebugLibraries>
     <PlatformToolset>v120</PlatformToolset>
     <CharacterSet>MultiByte</CharacterSet>
@@ -98,7 +98,8 @@
       <WarningLevel>Level3</WarningLevel>
       <Optimization>Disabled</Optimization>
       <SDLCheck>true</SDLCheck>
-      <AdditionalIncludeDirectories>E:\Chimera\workspace\AdNetwork\SDK\Repository\thirdParty\glew\glew-2.0.0\include;E:\Chimera\workspace\AdNetwork\SDK\CoreEngine\include;E:\Chimera\workspace\AdNetwork\SDK\GLImplementation\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>E:\Chimera\workspace\AdNetwork\SDK\Repository\thirdParty\glm\glm-0.9.7.6\glm;E:\Chimera\workspace\AdNetwork\SDK\Conf\include;E:\Chimera\workspace\AdNetwork\SDK\Repository\thirdParty\glew\glew-2.0.0\include;E:\Chimera\workspace\AdNetwork\SDK\CoreEngine\include;E:\Chimera\workspace\AdNetwork\SDK\GLImplementation\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
     </ClCompile>
     <Link>
       <GenerateDebugInformation>true</GenerateDebugInformation>
@@ -170,10 +171,17 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClInclude Include="..\..\..\..\..\CoreEngine\include\conf\GLTypes.h" />
+    <ClInclude Include="..\..\..\..\..\GLImplementation\include\glImplementation\factory\CameraGLFactory.h" />
+    <ClInclude Include="..\..\..\..\..\GLImplementation\include\glImplementation\factory\MaterialDiffuseTextureGLFactory.h" />
+    <ClInclude Include="..\..\..\..\..\GLImplementation\include\glImplementation\factory\ModelGLFactory.h" />
+    <ClInclude Include="..\..\..\..\..\GLImplementation\include\glImplementation\factory\SceneGLFactory.h" />
+    <ClInclude Include="..\..\..\..\..\GLImplementation\include\glImplementation\factory\ShaderDiffuseTextureGLFactory.h" />
+    <ClInclude Include="..\..\..\..\..\GLImplementation\include\glImplementation\factory\TextureGLFactory.h" />
     <ClInclude Include="..\..\..\..\..\GLImplementation\include\glImplementation\renderObjects\CameraGL.h" />
     <ClInclude Include="..\..\..\..\..\GLImplementation\include\glImplementation\renderObjects\CameraGLContainer.h" />
     <ClInclude Include="..\..\..\..\..\GLImplementation\include\glImplementation\renderObjects\MaterialDiffuseTextureGL.h" />
     <ClInclude Include="..\..\..\..\..\GLImplementation\include\glImplementation\renderObjects\ModelGL.h" />
+    <ClInclude Include="..\..\..\..\..\GLImplementation\include\glImplementation\renderObjects\SceneGL.h" />
     <ClInclude Include="..\..\..\..\..\GLImplementation\include\glImplementation\renderObjects\ShaderDiffuseTextureGL.h" />
     <ClInclude Include="..\..\..\..\..\GLImplementation\include\glImplementation\renderObjects\TextureGL.h" />
     <ClInclude Include="..\..\..\..\..\GLImplementation\include\glImplementation\util\ShaderProgramUtil.h" />
@@ -183,6 +191,7 @@
     <ClCompile Include="..\..\..\..\..\GLImplementation\src\renderObjects\CameraGLContainer.cpp" />
     <ClCompile Include="..\..\..\..\..\GLImplementation\src\renderObjects\MaterialDiffuseTextureGL.cpp" />
     <ClCompile Include="..\..\..\..\..\GLImplementation\src\renderObjects\ModelGL.cpp" />
+    <ClCompile Include="..\..\..\..\..\GLImplementation\src\renderObjects\SceneGL.cpp" />
     <ClCompile Include="..\..\..\..\..\GLImplementation\src\renderObjects\ShaderDiffuseTextureGL.cpp" />
     <ClCompile Include="..\..\..\..\..\GLImplementation\src\renderObjects\TextureGL.cpp" />
     <ClCompile Include="..\..\..\..\..\GLImplementation\src\util\ShaderProgramUtil.cpp" />

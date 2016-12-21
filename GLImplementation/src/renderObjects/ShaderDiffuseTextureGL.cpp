@@ -38,9 +38,9 @@ namespace cl{
         CameraGL *camera = (CameraGL*)cameraRelations[0];
         CL_GLuint viewMatrixId = glGetUniformLocation(programId, "v");
         CL_GLuint projectionMatrixId = glGetUniformLocation(programId, "p");
-        cameraGLContainer = std::unique_ptr<CameraGLContainer>(new CameraGLContainer(viewMatrixId, projectionMatrixId, camera));
+        cameraGLContainer = std::unique_ptr<CameraGLContainer>(new CameraGLContainer(viewMatrixId, projectionMatrixId, camera, logger.get()));
         cameraGLContainer->initialize();
-        logger->log(LOG_DEBUG, "Initialized");
+        logger->log(LOG_INFO, "Shader: "+ sceneId + " initialized");
         return true;
     }
     void ShaderDiffuseTextureGL::draw(){

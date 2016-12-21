@@ -15,7 +15,15 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="..\..\..\..\..\WindowsImplementation\testApp\src\TestAppWindowsLauncher.cpp">
+    <ClInclude Include="..\..\..\..\..\WindowsImplementation\include\windowsImplementation\LoggerFactoryWindows.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\..\..\WindowsImplementation\include\windowsImplementation\LoggerWindows.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="..\..\..\..\..\WindowsImplementation\src\LoggerWindows.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

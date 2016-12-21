@@ -5,6 +5,7 @@
 
 namespace cl{
     class TextureBMPLoader{
+    public:
         bool loadImage(Texture *texture, std::string imagePath);
     };
 }

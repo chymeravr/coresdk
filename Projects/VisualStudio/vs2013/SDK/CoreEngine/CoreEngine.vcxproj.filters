@@ -144,6 +144,12 @@
     <ClInclude Include="..\..\..\..\..\CoreEngine\include\coreEngine\modifier\TextureBMPLoader.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\..\..\..\CoreEngine\include\coreEngine\components\transform\TransformCameraFactory.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\..\..\CoreEngine\include\coreEngine\components\transform\TransformModelFactory.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\..\..\..\..\CoreEngine\src\events\EventQueue.cpp">

@@ -14,6 +14,8 @@ namespace cl{
     }
     bool MaterialDiffuseTextureGL::initialize(){
         ((TextureGL*)diffuseTexture)->initialize();
+        logger->log(LOG_INFO, "material:" + sceneId + " initialized");
+        return true;
     }
     void MaterialDiffuseTextureGL::draw(){
         // Bind our diffuse texture in Texture Unit 0

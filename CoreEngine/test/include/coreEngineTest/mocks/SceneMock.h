@@ -9,6 +9,7 @@ namespace cl{
     public:
         SceneMock(ILoggerFactory *loggerFactory, std::string id) : Scene(loggerFactory, id){}
         MOCK_METHOD0(getRenderable, IRenderable* (void));
+        MOCK_METHOD1(setBackgroundColor, void (CL_Vec4));
     };
 
 }

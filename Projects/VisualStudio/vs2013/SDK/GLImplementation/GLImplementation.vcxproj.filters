@@ -39,6 +39,27 @@
     <ClInclude Include="..\..\..\..\..\GLImplementation\include\glImplementation\util\ShaderProgramUtil.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\..\..\..\GLImplementation\include\glImplementation\renderObjects\SceneGL.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\..\..\GLImplementation\include\glImplementation\factory\SceneGLFactory.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\..\..\GLImplementation\include\glImplementation\factory\ModelGLFactory.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\..\..\GLImplementation\include\glImplementation\factory\TextureGLFactory.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\..\..\GLImplementation\include\glImplementation\factory\MaterialDiffuseTextureGLFactory.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\..\..\GLImplementation\include\glImplementation\factory\ShaderDiffuseTextureGLFactory.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\..\..\GLImplementation\include\glImplementation\factory\CameraGLFactory.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\..\..\..\..\GLImplementation\src\renderObjects\ModelGL.cpp">
@@ -60,6 +81,9 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="..\..\..\..\..\GLImplementation\src\renderObjects\TextureGL.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\..\..\GLImplementation\src\renderObjects\SceneGL.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

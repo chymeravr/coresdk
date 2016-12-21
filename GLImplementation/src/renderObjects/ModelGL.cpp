@@ -33,7 +33,7 @@ namespace cl{
         if (indices.size() > 0) {
             createIndexBuffer();
         }
-        logger->log(LOG_DEBUG, "Initialized");
+        logger->log(LOG_INFO, "model:" + sceneId + " initialized");
         return true;
     }
 

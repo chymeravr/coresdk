@@ -2,10 +2,10 @@
 // Created by chimeralabs on 8/18/2016.
 //
 
-#ifndef ANDROIDSDK_GLTYPES_H
-#define ANDROIDSDK_GLTYPES_H
+#ifndef ANDROIDSDK_GLTYPESWINDOWS_H
+#define ANDROIDSDK_GLTYPESWINDOWS_H
 
-#include <GLES2/gl2.h>
+#include <GL/glew.h>
 
 namespace cl{
     typedef GLboolean CL_GLboolean;
@@ -29,10 +29,10 @@ namespace cl{
     typedef GLclampf CL_GLclampf;
     //typedef GLdouble CL_GLdouble;
     //typedef GLclampd CL_GLclampd;
-
+    
 #define CL_GL_VERTEX_SHADER GL_VERTEX_SHADER
 #define CL_GL_FRAGMENT_SHADER GL_FRAGMENT_SHADER
 #define CL_GL_FALSE GL_FALSE
-
+    
 }
-#endif //ANDROIDSDK_GLTYPES_H
+#endif //ANDROIDSDK_GLTYPESWINDOWS_H

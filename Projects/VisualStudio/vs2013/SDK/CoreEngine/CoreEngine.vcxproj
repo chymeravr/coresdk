@@ -100,8 +100,9 @@
       <WarningLevel>Level3</WarningLevel>
       <Optimization>Disabled</Optimization>
       <SDLCheck>true</SDLCheck>
-      <AdditionalIncludeDirectories>E:\Chimera\workspace\AdNetwork\SDK\Repository\thirdParty\glm\glm-0.9.7.6\glm;E:\Chimera\workspace\AdNetwork\SDK\CoreEngine\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>E:\Chimera\workspace\AdNetwork\SDK\Repository\thirdParty\glew\glew-2.0.0\include;E:\Chimera\workspace\AdNetwork\SDK\Conf\include;E:\Chimera\workspace\AdNetwork\SDK\Repository\thirdParty\glm\glm-0.9.7.6\glm;E:\Chimera\workspace\AdNetwork\SDK\CoreEngine\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
+      <PreprocessorDefinitions>_CRT_SECURE_NO_WARNINGS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
     </ClCompile>
     <Link>
       <GenerateDebugInformation>true</GenerateDebugInformation>
@@ -176,7 +177,9 @@
     <ClInclude Include="..\..\..\..\..\CoreEngine\include\coreEngine\components\transform\ITransformModelFactory.h" />
     <ClInclude Include="..\..\..\..\..\CoreEngine\include\coreEngine\components\transform\Transform.h" />
     <ClInclude Include="..\..\..\..\..\CoreEngine\include\coreEngine\components\transform\TransformCamera.h" />
+    <ClInclude Include="..\..\..\..\..\CoreEngine\include\coreEngine\components\transform\TransformCameraFactory.h" />
     <ClInclude Include="..\..\..\..\..\CoreEngine\include\coreEngine\components\transform\TransformModel.h" />
+    <ClInclude Include="..\..\..\..\..\CoreEngine\include\coreEngine\components\transform\TransformModelFactory.h" />
     <ClInclude Include="..\..\..\..\..\CoreEngine\include\coreEngine\conf\MathType.h" />
     <ClInclude Include="..\..\..\..\..\CoreEngine\include\coreEngine\conf\Types.h" />
     <ClInclude Include="..\..\..\..\..\CoreEngine\include\coreEngine\events\AppEvent.h" />

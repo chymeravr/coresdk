@@ -27,7 +27,11 @@
     </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="..\..\..\..\..\WindowsImplementation\testApp\src\TestAppWindowsLauncher.cpp" />
+    <ClInclude Include="..\..\..\..\..\WindowsImplementation\include\windowsImplementation\LoggerFactoryWindows.h" />
+    <ClInclude Include="..\..\..\..\..\WindowsImplementation\include\windowsImplementation\LoggerWindows.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="..\..\..\..\..\WindowsImplementation\src\LoggerWindows.cpp" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <ProjectGuid>{54FD5D63-F6B5-4784-935A-C3B2F1A64E27}</ProjectGuid>
@@ -35,7 +39,7 @@
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
-    <ConfigurationType>Application</ConfigurationType>
+    <ConfigurationType>StaticLibrary</ConfigurationType>
     <UseDebugLibraries>true</UseDebugLibraries>
     <PlatformToolset>v120</PlatformToolset>
     <CharacterSet>MultiByte</CharacterSet>
@@ -101,7 +105,8 @@
       <WarningLevel>Level3</WarningLevel>
       <Optimization>Disabled</Optimization>
       <SDLCheck>true</SDLCheck>
-      <AdditionalIncludeDirectories>E:\Chimera\workspace\AdNetwork\SDK\Repository\thirdParty\glfw\glfw-3.2.1.bin.WIN64\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>E:\Chimera\workspace\AdNetwork\SDK\Conf\include;E:\Chimera\workspace\AdNetwork\SDK\WindowsImplementation\include;E:\Chimera\workspace\AdNetwork\SDK\CoreEngine\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
     </ClCompile>
     <Link>
       <GenerateDebugInformation>true</GenerateDebugInformation>

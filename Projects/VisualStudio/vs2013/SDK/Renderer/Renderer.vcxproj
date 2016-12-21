@@ -26,13 +26,19 @@
       <Platform>x64</Platform>
     </ProjectConfiguration>
   </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="..\..\..\..\..\Renderer\include\renderer\RendererNoHMD.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="..\..\..\..\..\Renderer\src\RendererNoHMD.cpp" />
+  </ItemGroup>
   <PropertyGroup Label="Globals">
     <ProjectGuid>{7BC75946-C10F-4320-A978-75C13666B37C}</ProjectGuid>
     <RootNamespace>Renderer</RootNamespace>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
-    <ConfigurationType>Application</ConfigurationType>
+    <ConfigurationType>StaticLibrary</ConfigurationType>
     <UseDebugLibraries>true</UseDebugLibraries>
     <PlatformToolset>v120</PlatformToolset>
     <CharacterSet>MultiByte</CharacterSet>
@@ -98,7 +104,8 @@
       <WarningLevel>Level3</WarningLevel>
       <Optimization>Disabled</Optimization>
       <SDLCheck>true</SDLCheck>
-      <AdditionalIncludeDirectories>E:\Chimera\workspace\AdNetwork\SDK\Renderer\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>E:\Chimera\workspace\AdNetwork\SDK\Repository\thirdParty\glm\glm-0.9.7.6\glm;E:\Chimera\workspace\AdNetwork\SDK\Repository\thirdParty\glew\glew-2.0.0\include;E:\Chimera\workspace\AdNetwork\SDK\Conf\include;E:\Chimera\workspace\AdNetwork\SDK\CoreEngine\include;E:\Chimera\workspace\AdNetwork\SDK\Renderer\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
     </ClCompile>
     <Link>
       <GenerateDebugInformation>true</GenerateDebugInformation>

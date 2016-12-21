@@ -8,10 +8,10 @@ namespace cl{
     public:
         virtual bool start() = 0;
         virtual bool initialize(Scene *scene) = 0;
-        virtual bool update() = 0;
-        virtual bool draw(Scene *scene) = 0;
-        virtual bool deinitialize(Scene *scene) = 0;
-        virtual bool stop() = 0;
+        virtual void update() = 0;
+        virtual void draw(Scene *scene) = 0;
+        virtual void deinitialize(Scene *scene) = 0;
+        virtual void stop() = 0;
     };
 }
 

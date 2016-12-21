@@ -9,7 +9,7 @@
 namespace cl{
     class CameraGLContainer : public IRenderable{
     public:
-        CameraGLContainer(CL_GLuint &viewMatrixId, CL_GLuint &projectionMatrixId, CameraGL *cameraGL);
+        CameraGLContainer(CL_GLuint &viewMatrixId, CL_GLuint &projectionMatrixId, CameraGL *cameraGL, ILogger *logger);
         bool initialize();
         void draw();
         void deinitialize();
@@ -18,6 +18,7 @@ namespace cl{
         CL_GLuint viewMatrixId;
         CL_GLuint projectionMatrixId;
         CameraGL *cameraGL;
+        ILogger *logger;
     };
 }
 

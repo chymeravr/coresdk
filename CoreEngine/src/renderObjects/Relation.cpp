@@ -11,6 +11,7 @@ namespace cl{
         assert(relation != nullptr);
         assert(!exists(relation));
         relationMap[relation->getType()].push_back(relation);
+        logger->log(LOG_DEBUG, this->getUniqueIdentifier() + " got related to " + relation->getUniqueIdentifier());
     }
 
     bool Relation::exists(Relation *relation){
@@ -59,6 +60,7 @@ namespace cl{
         assert(!relation->exists(this));
         relation->createRelation(this);
         this->createRelation(relation);
+        logger->log(LOG_DEBUG, "Relation created between " + this->getUniqueIdentifier() + " and " + relation->getUniqueIdentifier());
     }
 
     void Relation::destroyBiRelation(Relation *relation){

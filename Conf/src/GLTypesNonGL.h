@@ -2,8 +2,8 @@
 // Created by chimeralabs on 11/15/2016.
 //
 
-#ifndef ANDROIDSDK_GLTYPES_H
-#define ANDROIDSDK_GLTYPES_H
+#ifndef ANDROIDSDK_GLTYPESNONGL_H
+#define ANDROIDSDK_GLTYPESNONGL_H
 
 #include <cstdint>
 
@@ -31,4 +31,4 @@ namespace cl{
     //typedef GLclampd CL_GLclampd;
 }
 
-#endif //ANDROIDSDK_GLTYPES_H
+#endif //ANDROIDSDK_GLTYPESNONGL_H

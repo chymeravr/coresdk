@@ -6,7 +6,8 @@
 
 namespace cl{
     class IModelFactory{
-        virtual std::unique_ptr<Model> create(const std::string &sceneTag, ILoggerFactory *loggerFactory) = 0;
+    public:
+        virtual std::unique_ptr<Model> create(const std::string &sceneId) = 0;
     };
 }
 

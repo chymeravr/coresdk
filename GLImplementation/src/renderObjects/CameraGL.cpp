@@ -14,6 +14,8 @@ namespace cl{
             IRenderable *renderable = (*it)->getRenderable();
             renderable->initialize();
         }
+        logger->log(LOG_INFO, "Camera:" + sceneId + " initialized.");
+        return true;
     }
     void CameraGL::draw(){
         ComponentList &componentList = getComponentList();
@@ -22,6 +24,8 @@ namespace cl{
             IRenderable *renderable = (*it)->getRenderable();
             renderable->draw();
         }
+        calculateProjectionMatrix();
+        calculateViewMatrix();
     }
     void CameraGL::deinitialize(){
         ComponentList &componentList = getComponentList();
