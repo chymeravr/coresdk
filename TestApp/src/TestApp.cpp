@@ -86,7 +86,7 @@ namespace cl{
         this->sphere->getComponentList().addComponent(std::move(transformSphereUptr));
 
         TransformCamera *transformCamera = (TransformCamera*)this->camera->getComponentList().getComponent("transform");
-        transformCamera->setPosition(CL_Vec3(0.0f, 0.0f, -5.0f));
+        transformCamera->setPosition(CL_Vec3(0.0f, 0.0f, 5.0f));
 
         TransformModel *transformSphere = (TransformModel*)this->sphere->getComponentList().getComponent("transform");
         transformSphere->setPosition(CL_Vec3(0.0f, 0.0f, 0.0f));

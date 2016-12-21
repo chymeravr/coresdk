@@ -402,8 +402,9 @@ void testRender(){
 
 void renderScene()
 {
-    //1application->draw();
-    testRender();
+    application->initialize();
+    application->draw();
+    //testRender();
     /*if (color < 0.0) color = 1.0;
     color -= 0.001;
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
