@@ -402,15 +402,12 @@ void testRender(){
 
 void renderScene()
 {
-    application->initialize();
     application->draw();
-    //testRender();
-    /*if (color < 0.0) color = 1.0;
-    color -= 0.001;
-    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-    glClearColor(color, 0.0, 0.0, 1.0);//clear red*/
-
     glutSwapBuffers();
+}
+
+void update(int w, int h){
+
 }
 
 /*
@@ -451,8 +448,8 @@ int _tmain(int argc, _TCHAR** argv)
     char ** argvTyped = (char **)argv;
     glutInit(&argc, argvTyped);
     glutInitDisplayMode(GLUT_DEPTH | GLUT_DOUBLE | GLUT_RGBA);
-    glutInitWindowPosition(500, 500);
-    glutInitWindowSize(800, 600);
+    glutInitWindowPosition(10, 10);
+    glutInitWindowSize(1200, 800);
     glutCreateWindow("OpenGL First Window");
     glewInit();
     if (glewIsSupported("GL_VERSION_4_5"))
@@ -491,9 +488,10 @@ int _tmain(int argc, _TCHAR** argv)
     
     // register callbacks
     application->start();
-    //application->initialize();
+    application->initialize();
     glutDisplayFunc(renderScene);
-    //glutIdleFunc(renderScene);
+    glutReshapeFunc(update);
+    glutIdleFunc(renderScene);
     glutMainLoop();
     return 0;
 }

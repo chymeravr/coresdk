@@ -68,7 +68,7 @@ namespace cl{
         imageTexture = textureFactory->create("imageTexture");
         assert(imageTexture != nullptr);
         TextureBMPLoader textureBMPLoader;
-        textureBMPLoader.loadImage(imageTexture.get(), "uvtemplate.bmp");
+        textureBMPLoader.loadImage(imageTexture.get(), "frame.bmp");
         this->imageTexture = imageTexture.get();
         scene->addToScene(std::move(imageTexture));
 
@@ -86,7 +86,8 @@ namespace cl{
         this->sphere->getComponentList().addComponent(std::move(transformSphereUptr));
 
         TransformCamera *transformCamera = (TransformCamera*)this->camera->getComponentList().getComponent("transform");
-        transformCamera->setPosition(CL_Vec3(0.0f, 0.0f, 5.0f));
+        transformCamera->setPosition(CL_Vec3(0.0f, 0.0f, 0.0f));
+        transformCamera->setRotation(CL_Vec3(-90.0f, 0.0f, 0.0f));
 
         TransformModel *transformSphere = (TransformModel*)this->sphere->getComponentList().getComponent("transform");
         transformSphere->setPosition(CL_Vec3(0.0f, 0.0f, 0.0f));
@@ -94,11 +95,11 @@ namespace cl{
         this->sphere->createBiRelation(this->materialDiffuseTexture);
 
         std::unique_ptr<ModelModifier> modelModifier(new ModelModifier); 
-        CubeBuilder cubeBuilder(modelModifier.get());
-        cubeBuilder.buildOutwardCube(this->sphere);
-        //UVSphereBuilder uvSphereBuilder(modelModifier.get());
-        //uvSphereBuilder.buildUnitSphere(this->sphere, 5);
-        //uvSphereBuilder.generateUVMapForAllVertices(this->sphere);
+        //CubeBuilder cubeBuilder(modelModifier.get());
+        //cubeBuilder.buildOutwardCube(this->sphere);
+        UVSphereBuilder uvSphereBuilder(modelModifier.get());
+        uvSphereBuilder.buildUnitSphere(this->sphere, 6);
+        uvSphereBuilder.generateUVMapForAllVertices(this->sphere);
 
         renderer->initialize(scene.get());
     }

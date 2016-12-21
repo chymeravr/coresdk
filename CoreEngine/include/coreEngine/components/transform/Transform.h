@@ -7,6 +7,11 @@
 namespace cl{
     class Transform : public IComponent{
     public:
+        Transform(){
+            position = CL_Vec3(0.0f, 0.0f, 0.0f);
+            rotation = CL_Vec3(0.0f, 0.0f, 0.0f);
+            scale = CL_Vec3(1.0f, 1.0f, 1.0f);
+        }
         std::string getComponentType(){
             return componentType;
         }

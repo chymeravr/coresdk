@@ -93,7 +93,7 @@ namespace cl{
             glDrawElements(
                 GL_TRIANGLES,      // mode
                 indices.size(),    // count
-                GL_UNSIGNED_SHORT,   // type
+                GL_UNSIGNED_INT,   // type
                 (void *)0           // element array buffer offset
                 );
         }
@@ -169,7 +169,7 @@ namespace cl{
     void ModelGL::createIndexBuffer() {
         glGenBuffers(1, &indexBufferId);
         glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, indexBufferId);
-        glBufferData(GL_ELEMENT_ARRAY_BUFFER, indices.size() * sizeof(unsigned short),
+        glBufferData(GL_ELEMENT_ARRAY_BUFFER, indices.size() * sizeof(CL_GLuint),
             &indices[0],
             (isStatic) ? GL_STATIC_DRAW : GL_DYNAMIC_DRAW);
     }

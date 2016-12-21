@@ -41,8 +41,8 @@ namespace cl{
                 vertices.push_back(getCartesianCoordinateFromThetaAndPhi(currentPhi, currentTheta));
                 unsigned int index1 = getIndex(iPhi - 1, iTheta - 1, nThetaDivisions);
                 unsigned int index2 = getIndex(iPhi - 1, iTheta, nThetaDivisions);
-                unsigned int index3 = getIndex(iPhi, iTheta - 1, nThetaDivisions);
-                unsigned int index4 = getIndex(iPhi, iTheta, nThetaDivisions);
+                unsigned int index3 = getIndex(iPhi, iTheta, nThetaDivisions);
+                unsigned int index4 = getIndex(iPhi, iTheta - 1, nThetaDivisions);
                 indices.push_back(index1);
                 indices.push_back(index2);
                 indices.push_back(index3);
