@@ -22,7 +22,10 @@
 #include <glImplementation/factory/CameraGLFactory.h>
 #include <coreEngine/components/transform/TransformCameraFactory.h>
 #include <coreEngine/components/transform/TransformModelFactory.h>
-
+#include <coreEngine/events/EventQueue.h>
+#include <coreEngine/events/EventKeyPress.h>
+#include <coreEngine/events/EventPassiveMouseMotion.h>
+#include <windowsImplementation/MutexLockWindows.h>
 #include <renderer/RendererNoHMD.h>
 
 using namespace std;
@@ -42,6 +45,7 @@ Glut tutorial http://www.lighthouse3d.com/tutorials/glut-tutorial/
 
 std::unique_ptr<IApplication> application;
 std::unique_ptr<ILogger> logger;
+std::unique_ptr<IEventQueue> eventQueue = nullptr;
 
 
 GLuint LoadShaders(const char * vertex_file_path, const char * fragment_file_path){
@@ -443,13 +447,55 @@ void startThread(void){
 }
 */
 
+void keyboard(unsigned char key,
+    int x, int y){
+    //logger->log(LOG_DEBUG, "Key presed:" + std::string(1, key));
+    std::unique_ptr<IEvent> keyPressEvent(new EventKeyPress((EventKeyPressListener*)(TestApp*)application.get(), key, x, y));
+    eventQueue->push(std::move(keyPressEvent));
+}
+
+void mouse(int button, int state,
+    int x, int y){
+    switch (button){
+    case GLUT_LEFT_BUTTON:
+        if (state == GLUT_UP){
+            logger->log(LOG_DEBUG, "Left button up at " + std::to_string(x) + "," + std::to_string(y));
+        }
+        else if(state == GLUT_DOWN){
+            logger->log(LOG_DEBUG, "Left button down at " + std::to_string(x) + "," + std::to_string(y));
+        }
+        break;
+    case GLUT_MIDDLE_BUTTON:
+        if (state == GLUT_UP){
+            logger->log(LOG_DEBUG, "Middle button up at " + std::to_string(x) + "," + std::to_string(y));
+        }
+        else if (state == GLUT_DOWN){
+            logger->log(LOG_DEBUG, "Middle button down at " + std::to_string(x) + "," + std::to_string(y));
+        }
+        break;
+    case GLUT_RIGHT_BUTTON:
+        if (state == GLUT_UP){
+            logger->log(LOG_DEBUG, "Right button up at " + std::to_string(x) + "," + std::to_string(y));
+        }
+        else if (state == GLUT_DOWN){
+            logger->log(LOG_DEBUG, "Right button down at " + std::to_string(x) + "," + std::to_string(y));
+        }
+        break;
+    }
+}
+
+void mousePassiveMotion(int x, int y){
+    std::unique_ptr<IEvent> mousePassiveEvent(new EventPassiveMouseMotion((EventPassiveMouseMotionListener*)(TestApp*)application.get(), x, y));
+    eventQueue->push(std::move(mousePassiveEvent));
+}
+
 int _tmain(int argc, _TCHAR** argv)
 {
     char ** argvTyped = (char **)argv;
     glutInit(&argc, argvTyped);
     glutInitDisplayMode(GLUT_DEPTH | GLUT_DOUBLE | GLUT_RGBA);
     glutInitWindowPosition(10, 10);
-    glutInitWindowSize(1200, 800);
+    glutInitWindowSize(1600, 1100);
     glutCreateWindow("OpenGL First Window");
     glewInit();
     if (glewIsSupported("GL_VERSION_4_5"))
@@ -475,6 +521,8 @@ int _tmain(int argc, _TCHAR** argv)
     std::unique_ptr<ITransformCameraFactory> transformCameraFactory(new TransformCameraFactory(loggerFactory.get()));
     std::unique_ptr<ITransformModelFactory> transformModelFactory(new TransformModelFactory(loggerFactory.get()));
     std::unique_ptr<ICameraFactory> cameraFactory(new CameraGLFactory(loggerFactory.get()));
+    std::unique_ptr<IMutexLock> mutexLock(new MutexLockWindows);
+    eventQueue = std::unique_ptr<IEventQueue>(new EventQueue(std::move(mutexLock)));
     application = std::unique_ptr<IApplication> (new TestApp(std::move(renderer),
         std::move(sceneFactory),
         std::move(modelFactory),
@@ -484,10 +532,14 @@ int _tmain(int argc, _TCHAR** argv)
         std::move(transformCameraFactory),
         std::move(transformModelFactory),
         std::move(cameraFactory),
+        eventQueue.get(),
         loggerFactory.get()));
     
     // register callbacks
     application->start();
+    glutKeyboardFunc(keyboard);
+    //glutMouseFunc(mouse);
+    glutPassiveMotionFunc(mousePassiveMotion);
     application->initialize();
     glutDisplayFunc(renderScene);
     glutReshapeFunc(update);

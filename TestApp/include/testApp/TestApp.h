@@ -10,17 +10,20 @@
 #include <coreEngine/factory/IMaterialDiffuseTextureFactory.h>
 #include <coreEngine/factory/IShaderDiffuseTextureFactory.h>
 #include <coreEngine/factory/ICameraFactory.h>
+#include <coreEngine/events/EventKeyPressListener.h>
+#include <coreEngine/events/EventPassiveMouseMotionListener.h>
+#include <coreEngine/events/IEventQueue.h>
 
 #include <coreEngine/components/transform/ITransformCameraFactory.h>
 #include <coreEngine/components/transform/ITransformModelFactory.h>
 
 namespace cl{
-    class TestApp : public IApplication{
+    class TestApp : public IApplication, public EventKeyPressListener, public EventPassiveMouseMotionListener{
     public:
         TestApp(std::unique_ptr<IRenderer> renderer, std::unique_ptr<ISceneFactory> sceneFactory, std::unique_ptr<IModelFactory> modelFactory, std::unique_ptr<ITextureFactory> textureFactory,
             std::unique_ptr<IMaterialDiffuseTextureFactory> materialDiffuseTextureFactory, std::unique_ptr<IShaderDiffuseTextureFactory> shaderDiffuseTextureFactory,
             std::unique_ptr<ITransformCameraFactory> transformCameraFactory, std::unique_ptr<ITransformModelFactory> transformModelFactory, std::unique_ptr<ICameraFactory> cameraFactory, 
-            ILoggerFactory *loggerFactory);
+            IEventQueue *eventQueue, ILoggerFactory *loggerFactory);
 
         //IApplication implementation
         void start();
@@ -29,7 +32,8 @@ namespace cl{
         void draw();
         void deinitialize();
         void stop();
-
+        void TestApp::onKeyPress(char key, int x, int y);
+        void onPassiveMouseMotion(int x, int y);
     private:
         std::unique_ptr<IRenderer> renderer;
         std::unique_ptr<ISceneFactory> sceneFactory;
@@ -47,6 +51,11 @@ namespace cl{
         MaterialDiffuseTexture *materialDiffuseTexture;
         Texture *imageTexture;
         Model *sphere;
+        IEventQueue *eventQueue;
+
+        int lastPassiveMousePositionX = -1;
+        int lastPassiveMousePositionY = -1;
+        float passiveMouseMotionSensitivity = 0.2f;
     };
 }
 

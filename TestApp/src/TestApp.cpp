@@ -8,7 +8,8 @@
 namespace cl{
     TestApp::TestApp(std::unique_ptr<IRenderer> renderer, std::unique_ptr<ISceneFactory> sceneFactory, std::unique_ptr<IModelFactory> modelFactory, std::unique_ptr<ITextureFactory> textureFactory,
         std::unique_ptr<IMaterialDiffuseTextureFactory> materialDiffuseTextureFactory, std::unique_ptr<IShaderDiffuseTextureFactory> shaderDiffuseTextureFactory,
-        std::unique_ptr<ITransformCameraFactory> transformCameraFactory, std::unique_ptr<ITransformModelFactory> transformModelFactory, std::unique_ptr<ICameraFactory> cameraFactory, ILoggerFactory *loggerFactory){
+        std::unique_ptr<ITransformCameraFactory> transformCameraFactory, std::unique_ptr<ITransformModelFactory> transformModelFactory, std::unique_ptr<ICameraFactory> cameraFactory,
+        IEventQueue *eventQueue, ILoggerFactory *loggerFactory){
         
         assert(renderer != nullptr);
         assert(sceneFactory != nullptr);
@@ -18,6 +19,7 @@ namespace cl{
         assert(shaderDiffuseTextureFactory != nullptr);
         assert(transformCameraFactory != nullptr);
         assert(transformModelFactory != nullptr);
+        assert(eventQueue != nullptr);
         assert(cameraFactory != nullptr);
         this->renderer = std::move(renderer);
         this->sceneFactory = std::move(sceneFactory);
@@ -28,6 +30,7 @@ namespace cl{
         this->transformCameraFactory = std::move(transformCameraFactory);
         this->transformModelFactory = std::move(transformModelFactory);
         this->cameraFactory = std::move(cameraFactory);
+        this->eventQueue = eventQueue;
         logger = loggerFactory->createLogger("testApp::TestApp: ");
     }
 
@@ -87,7 +90,7 @@ namespace cl{
 
         TransformCamera *transformCamera = (TransformCamera*)this->camera->getComponentList().getComponent("transform");
         transformCamera->setPosition(CL_Vec3(0.0f, 0.0f, 0.0f));
-        transformCamera->setRotation(CL_Vec3(-90.0f, 0.0f, 0.0f));
+        transformCamera->setRotation(CL_Vec3(0.0f, 0.0f, 0.0f));
 
         TransformModel *transformSphere = (TransformModel*)this->sphere->getComponentList().getComponent("transform");
         transformSphere->setPosition(CL_Vec3(0.0f, 0.0f, 0.0f));
@@ -103,10 +106,15 @@ namespace cl{
 
         renderer->initialize(scene.get());
     }
+
     void TestApp::update(){
         renderer->update();
     }
     void TestApp::draw(){
+        while (!eventQueue->empty()){
+            std::unique_ptr<IEvent> event = eventQueue->pop();
+            event->callListener();
+        }
         renderer->draw(scene.get());
     }
     void TestApp::deinitialize(){
@@ -114,5 +122,22 @@ namespace cl{
     }
     void TestApp::stop(){
         renderer->stop();
+    }
+
+    void TestApp::onKeyPress(char key, int x, int y){
+        //logger->log(LOG_DEBUG, "Key pressed:" + std::string(1, key));
+    }
+
+    void TestApp::onPassiveMouseMotion(int x, int y){
+        //logger->log(LOG_DEBUG, "Mouse move:" + std::to_string(x) + "," + std::to_string(y));
+        if (lastPassiveMousePositionX != -1){
+            float xoff = (x - lastPassiveMousePositionX)*passiveMouseMotionSensitivity;
+            float yoff = (lastPassiveMousePositionY - y)*passiveMouseMotionSensitivity;
+            Transform *transform = (Transform*)camera->getComponentList().getComponent("transform");
+            CL_Vec3 rotation = transform->getRotation();
+            transform->setRotation(CL_Vec3(rotation.x+yoff, rotation.y+xoff, rotation.z));
+        }
+        lastPassiveMousePositionX = x;
+        lastPassiveMousePositionY = y;
     }
 }

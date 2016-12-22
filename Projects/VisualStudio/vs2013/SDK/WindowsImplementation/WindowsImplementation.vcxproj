@@ -29,6 +29,7 @@
   <ItemGroup>
     <ClInclude Include="..\..\..\..\..\WindowsImplementation\include\windowsImplementation\LoggerFactoryWindows.h" />
     <ClInclude Include="..\..\..\..\..\WindowsImplementation\include\windowsImplementation\LoggerWindows.h" />
+    <ClInclude Include="..\..\..\..\..\WindowsImplementation\include\windowsImplementation\MutexLockWindows.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\..\..\..\..\WindowsImplementation\src\LoggerWindows.cpp" />

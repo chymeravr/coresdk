@@ -21,6 +21,9 @@
     <ClInclude Include="..\..\..\..\..\WindowsImplementation\include\windowsImplementation\LoggerWindows.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\..\..\..\WindowsImplementation\include\windowsImplementation\MutexLockWindows.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\..\..\..\..\WindowsImplementation\src\LoggerWindows.cpp">

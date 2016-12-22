@@ -184,6 +184,12 @@
     <ClInclude Include="..\..\..\..\..\CoreEngine\include\coreEngine\conf\Types.h" />
     <ClInclude Include="..\..\..\..\..\CoreEngine\include\coreEngine\events\AppEvent.h" />
     <ClInclude Include="..\..\..\..\..\CoreEngine\include\coreEngine\events\AppEventListener.h" />
+    <ClInclude Include="..\..\..\..\..\CoreEngine\include\coreEngine\events\EventKeyPress.h" />
+    <ClInclude Include="..\..\..\..\..\CoreEngine\include\coreEngine\events\EventKeyPressListener.h" />
+    <ClInclude Include="..\..\..\..\..\CoreEngine\include\coreEngine\events\EventMouse.h" />
+    <ClInclude Include="..\..\..\..\..\CoreEngine\include\coreEngine\events\EventMouseListener.h" />
+    <ClInclude Include="..\..\..\..\..\CoreEngine\include\coreEngine\events\EventPassiveMouseMotion.h" />
+    <ClInclude Include="..\..\..\..\..\CoreEngine\include\coreEngine\events\EventPassiveMouseMotionListener.h" />
     <ClInclude Include="..\..\..\..\..\CoreEngine\include\coreEngine\events\EventQueue.h" />
     <ClInclude Include="..\..\..\..\..\CoreEngine\include\coreEngine\events\IEventQueue.h" />
     <ClInclude Include="..\..\..\..\..\CoreEngine\include\coreEngine\events\EventQueueFactory.h" />
