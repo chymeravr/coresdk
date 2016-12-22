@@ -10,13 +10,13 @@ import org.json.JSONObject;
 
 /* A fake ad class implementation for testing. this doesnt do anything*/
 public class FakeAd extends Ad {
-    public FakeAd(Context context) {
-        super("test", context);
+    public FakeAd(Context context, AdListener adListener) {
+        super("test", context, adListener);
     }
 
     @Override
     public void loadAd(AdRequest adRequest) {
-
+        this.setLoading(true);
     }
 
     @Override

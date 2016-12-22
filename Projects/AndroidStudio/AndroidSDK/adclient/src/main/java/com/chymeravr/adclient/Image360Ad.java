@@ -1,12 +1,12 @@
 package com.chymeravr.adclient;
 
 
-import com.android.volley.toolbox.ImageRequest;
-import com.android.volley.toolbox.JsonObjectRequest;
-
 import android.content.Context;
 import android.graphics.Bitmap;
 import android.util.Log;
+
+import com.android.volley.toolbox.ImageRequest;
+import com.android.volley.toolbox.JsonObjectRequest;
 
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -28,6 +28,7 @@ import lombok.Getter;
         - call display methods for ad
         - request a new ad
  */
+
 public final class Image360Ad extends Ad {
     private static final String TAG = "ChymeraVRImage360";
     /* below are some private variables used for internal representation of ad data and
@@ -41,9 +42,9 @@ public final class Image360Ad extends Ad {
     private ServerListener<Bitmap> mediaServerListener;
     private RequestGenerator requestGenerator;
 
-    public Image360Ad(String adUnitID, Context context) {
-        super(adUnitID, context);
-        this.adServerListener = new Image360AdServerListener(this);
+    public Image360Ad(String adUnitID, Context context, AdListener adListener) {
+        super(adUnitID, context, adListener);
+        this.adServerListener = new AdServerListener(this);
         this.mediaServerListener = new Image360MediaServerListener(this);
         this.requestGenerator = new RequestGenerator(Type.IMAGE360);
     }
@@ -51,7 +52,7 @@ public final class Image360Ad extends Ad {
     /* Request AdServer for a new image360 ad.
     * It passes targeting parameters from AdRequest for better Ads*/
     public void loadAd(AdRequest adRequest) {
-        this.isLoading = true;
+        this.setLoaded(true);
         Log.i(TAG, "Requesting Server for a New 360 Image Ad");
 
         JsonObjectRequest jsonObjRequest =
@@ -72,10 +73,9 @@ public final class Image360Ad extends Ad {
 
             Log.i(TAG, "Ad Server response successfully processed. Proceeding to query Media Server");
         } catch (JSONException e) {
-            this.isLoading = false;
-            this.adListener.onAdFailedToLoad();
-            e.printStackTrace();
-            Log.e(TAG, "An exception occurred while processing the JSON Response from the ad server");
+            this.setLoading(false);
+            this.getAdListener().onAdFailedToLoad();
+            Log.e(TAG, "Exception", e);
         }
     }
 
@@ -83,9 +83,9 @@ public final class Image360Ad extends Ad {
     void onMediaServerResponseSuccess(Object media) {
         this.imageBitmap = (Bitmap) media;
         this.byteArray = Util.convertToByteArray(this.imageBitmap);
-        this.adListener.onAdLoaded();
-        this.isLoaded = true;
-        this.isLoading = false;
+        this.getAdListener().onAdLoaded();
+        this.setLoaded(true);
+        this.setLoading(false);
         Log.i(TAG, "Media Server Response Successful");
     }
 

@@ -8,21 +8,15 @@ import android.content.Context;
 import android.support.test.InstrumentationRegistry;
 import android.support.test.runner.AndroidJUnit4;
 
-import com.android.volley.Request;
 import com.android.volley.VolleyError;
+
+import junit.framework.Assert;
 
 import org.json.JSONObject;
 import org.junit.Before;
-import org.mockito.Mockito;
-
-
 import org.junit.Test;
 import org.junit.runner.RunWith;
-
-import static org.mockito.Matchers.any;
-import static org.mockito.Mockito.doNothing;
-import static org.mockito.Mockito.doThrow;
-import static org.mockito.Mockito.when;
+import org.mockito.Mockito;
 
 /**
  * Instrumentation test, which will execute on an Android device.
@@ -34,22 +28,18 @@ import static org.mockito.Mockito.when;
 to make network requests
  */
 @RunWith(AndroidJUnit4.class)
-//@RunWith(MockitoJUnitRunner.class)
 public class AdServerListenerTest {
     private static final String TAG = "AdServerListenerTest";
     private Context appContext = InstrumentationRegistry.getTargetContext();
     private ServerListener adServerListener;
 
     private VolleyError mockVolleyError;
-    private WebRequestQueue mockRequestQueue;
     private Ad mockAd;
-    //private Ad spyAd;
     private AdListener mockAdListener;
     private JSONObject jsonResponseObject;
 
     @Before
     public void setUp() throws Exception {
-        this.mockRequestQueue = Mockito.mock(WebRequestQueue.class);
         this.mockVolleyError = Mockito.mock(VolleyError.class);
         this.mockAdListener = new AdListener() {
             @Override
@@ -72,26 +62,15 @@ public class AdServerListenerTest {
             public void onAdLeftApplication() {
             }
         };
-        this.mockAd = new FakeAd(appContext);
-
+        this.mockAd = new FakeAd(appContext, mockAdListener);
+        this.mockAd.loadAd(null);
         this.jsonResponseObject = new JSONObject();
         this.jsonResponseObject.put("url", "");
 
-        doNothing().when(mockRequestQueue).addToRequestQueue(any(Request.class));
-        when(mockRequestQueue.getRequestQueue()).thenReturn(null);
+        this.adServerListener = new AdServerListener(mockAd);
 
-//        doNothing().when(mockAdListener).onAdFailedToLoad();
-//        doNothing().when(mockAdListener).onAdClosed();
-//        doNothing().when(mockAdListener).onAdOpened();
-//        doNothing().when(mockAdListener).onAdLoaded();
-//        doNothing().when(mockAdListener).onAdLeftApplication();
+        this.adServerListener.setRequestQueue(null);
 
-        mockAd.setAdListener(mockAdListener);
-        this.adServerListener = new Image360AdServerListener(mockAd);
-
-        this.adServerListener.setRequestQueue(mockRequestQueue.getRequestQueue());
-
-        doThrow(UnsupportedOperationException.class).when(mockVolleyError).printStackTrace();
     }
 
     @Test()
@@ -99,8 +78,10 @@ public class AdServerListenerTest {
         this.adServerListener.onResponse(jsonResponseObject);
     }
 
-    @Test(expected = UnsupportedOperationException.class)
+    @Test()
     public void onErrorResponseTest() throws Exception {
+        Assert.assertTrue(this.adServerListener.getAd().isLoading());
         this.adServerListener.onErrorResponse(mockVolleyError);
+        Assert.assertFalse(this.adServerListener.getAd().isLoading());
     }
 }

@@ -6,24 +6,16 @@ package com.chymeravr.adclient;
 
 import android.content.Context;
 import android.support.test.InstrumentationRegistry;
-import android.util.Log;
-
-import static org.hamcrest.MatcherAssert.assertThat;
-
-import org.mockito.runners.MockitoJUnitRunner;
-
 
 import org.junit.Test;
 import org.junit.runner.RunWith;
-
-import static org.junit.Assert.*;
+import org.mockito.runners.MockitoJUnitRunner;
 
 /**
  * Instrumentation test, which will execute on an Android device.
  *
  * @see <a href="http://d.android.com/tools/testing">Testing documentation</a>
  */
-//@RunWith(AndroidJUnit4.class)
 @RunWith(MockitoJUnitRunner.class)
 public class SDKTest {
 

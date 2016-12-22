@@ -6,24 +6,25 @@ import com.android.volley.VolleyError;
 
 import org.json.JSONObject;
 
+import lombok.NonNull;
+
 /**
  * Created by robin_chimera on 12/6/2016.
  */
 
-class Image360AdServerListener extends ServerListener<JSONObject> {
-    private final String TAG = "Image360AdServListener";
+class AdServerListener extends ServerListener<JSONObject> {
+    private final String TAG = "AdServListener";
 
-    public Image360AdServerListener(Ad ad) {
+    public AdServerListener(@NonNull Ad ad) {
         super(ad);
         this.setRequestQueue(WebRequestQueue.getInstance(ad.getContext()).getRequestQueue());
     }
 
     @Override
     public void onErrorResponse(VolleyError error) {
-        Log.e(TAG, "Ad Server Response Failure!");
-        this.getAd().isLoading = false;
-        this.getAd().adListener.onAdFailedToLoad();
-        error.printStackTrace();
+        this.getAd().setLoading(false);
+        this.getAd().getAdListener().onAdFailedToLoad();
+        Log.e(TAG, "Error", error);
     }
 
     @Override

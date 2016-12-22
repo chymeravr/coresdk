@@ -6,10 +6,14 @@ package com.chymeravr.adclient;
 
 public interface AdListener {
 
-    public abstract void onAdLoaded();
-    public abstract void onAdFailedToLoad();
-    public abstract void onAdOpened();
-    public abstract void onAdClosed();
-    public abstract void onAdLeftApplication();
+    public void onAdLoaded();
+
+    public void onAdFailedToLoad();
+
+    public void onAdOpened();
+
+    public void onAdClosed();
+
+    public void onAdLeftApplication();
 
 }

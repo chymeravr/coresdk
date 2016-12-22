@@ -21,18 +21,14 @@ final class Image360MediaServerListener extends ServerListener<Bitmap> {
 
     @Override
     public void onErrorResponse(VolleyError error) {
-        error.printStackTrace();
-        this.getAd().isLoading = false;
+        this.getAd().setLoading(false);
         this.getAd().getAdListener().onAdFailedToLoad();
-        Log.e(TAG, this.getClass() + " Media Server Response Failure!");
+        Log.e(TAG, "Error ", error);
     }
 
     @Override
-    public void onResponse(Bitmap response){
+    public void onResponse(Bitmap response) {
         this.getAd().onMediaServerResponseSuccess(response);
         Log.i(TAG, this.getClass() + " Media Server Response Success!");
-        Image360Ad test = (Image360Ad) this.getAd();
-        byte[] testB = test.getByteArray();
-        Log.v(TAG, "Byte Array : " + testB[0] + " " + testB[1]);
     }
 }

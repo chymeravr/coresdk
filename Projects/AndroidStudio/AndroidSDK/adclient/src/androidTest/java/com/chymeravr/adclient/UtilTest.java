@@ -20,8 +20,6 @@ import java.util.Map;
 
 import static android.support.test.InstrumentationRegistry.getInstrumentation;
 import static android.support.test.InstrumentationRegistry.getTargetContext;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertSame;
 
 /**
  * Created by robin_chimera on 12/2/2016.
@@ -29,7 +27,6 @@ import static org.junit.Assert.assertSame;
 
 @RunWith(AndroidJUnit4.class)
 @LargeTest
-//@RunWith(MockitoJUnitRunner.class)
 public class UtilTest {
     private static final String TAG = "UtilTest";
     Context context = getTargetContext();
@@ -79,7 +76,6 @@ public class UtilTest {
         for (int i = 0; i < result.length; i++) {
             resultString += " " + result[i];
         }
-        //Bitmap bitmap = BitmapFactory.decodeByteArray(result, 0, result.length);
         Bitmap bitmap = Bitmap.createBitmap(8, 1, Bitmap.Config.ARGB_8888);
         bitmap.copyPixelsFromBuffer(ByteBuffer.wrap(result));
 

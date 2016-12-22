@@ -1,41 +1,42 @@
 package com.chymeravr.adclient;
 
 import android.graphics.Bitmap;
-import android.widget.Toast;
 
 import com.android.volley.Request;
-import com.android.volley.Response;
-import com.android.volley.VolleyError;
 import com.android.volley.toolbox.ImageRequest;
 import com.android.volley.toolbox.JsonObjectRequest;
-import com.android.volley.toolbox.StringRequest;
-//import com.google.android.gms.ads.*;
 
 import org.json.JSONObject;
 
 import java.util.HashMap;
-import java.util.Map;
+
+import lombok.AccessLevel;
+import lombok.Getter;
+import lombok.NonNull;
+import lombok.RequiredArgsConstructor;
+import lombok.Setter;
 
 import static android.graphics.Bitmap.Config.ARGB_8888;
+
+//import com.google.android.gms.ads.*;
 
 /**
  * Created by robin_chimera on 12/9/2016.
  */
 
+@RequiredArgsConstructor(suppressConstructorProperties = true)
 final class RequestGenerator {
-    private Ad.Type adType;
-    //private HashMap<String, String> postParams;
 
-    public RequestGenerator(Ad.Type adType) {
-        this.adType = adType;
-    }
+    @Getter
+    @Setter(AccessLevel.PRIVATE)
+    @NonNull
+    private final Ad.Type adType;
 
-    public JsonObjectRequest getAdServerJsonRequest(final AdRequest adRequest,
-                                                    final ServerListener<JSONObject> jsonServerListener) {
-        assert (adRequest != null && adType != null);
 
-        HashMap<String, String> postParams = new HashMap<String, String>();
-        //postParams.put("Content-Type", "application/json; charset=utf-8");
+    public JsonObjectRequest getAdServerJsonRequest(@NonNull AdRequest adRequest,
+                                                    @NonNull ServerListener<JSONObject> jsonServerListener) {
+
+        HashMap<String, String> postParams = new HashMap<>();
         postParams.put("gender", adRequest.getGender().getValue());
         postParams.put("dob", adRequest.getBirthday().toString());
         postParams.put("lat", Double.toString(adRequest.getLocation().getLatitude()));
@@ -43,20 +44,20 @@ final class RequestGenerator {
         postParams.put("adType", adType.name());
 
         JSONObject jsonObjectParams = new JSONObject(postParams);
-        JsonObjectRequest res = new JsonObjectRequest(
-                Request.Method.POST, Config.adServer, jsonObjectParams,
-                jsonServerListener, jsonServerListener){
+        JsonObjectRequest requestResult = new JsonObjectRequest(Request.Method.POST, Config.adServer,
+                jsonObjectParams, jsonServerListener, jsonServerListener) {
             // we need to overwrite the default content type.
             @Override
-            public String getBodyContentType(){
+            public String getBodyContentType() {
                 return "application/json";
             }
         };
 
-        return res;
+        return requestResult;
     }
 
-    public ImageRequest getMediaServerRequest(String mediaUrl, ServerListener<Bitmap> mediaServerListener) {
+    public ImageRequest getMediaServerRequest(@NonNull String mediaUrl,
+                                              @NonNull ServerListener<Bitmap> mediaServerListener) {
         return new ImageRequest(mediaUrl, mediaServerListener, 0, 0,
                 null, ARGB_8888, mediaServerListener);
     }

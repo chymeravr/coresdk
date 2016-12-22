@@ -4,6 +4,7 @@ import android.content.Context;
 
 import org.json.JSONObject;
 
+import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.Setter;
@@ -15,30 +16,35 @@ import lombok.Setter;
 @RequiredArgsConstructor(suppressConstructorProperties = true)
 abstract class Ad {
 
-    public enum Type{
+    public enum Type {
         IMAGE360,
         VIDEO360,
         VREPERIENCE,
         TEXTUREAD
-    };
+    }
+
+    ;
 
     private final String adUnitID;
 
     @Getter
-    protected final Context context;
+    private final Context context;
 
     @Getter
     @Setter
-    protected AdListener adListener;
+    private final AdListener adListener;
+
+    @Getter(AccessLevel.PACKAGE)
+    @Setter(AccessLevel.PACKAGE)
+    private String mediaUrl;
 
     @Getter
-    @Setter
-    String mediaUrl;
+    @Setter(AccessLevel.PACKAGE)
+    private volatile boolean isLoading = false;
 
     @Getter
-    public volatile boolean isLoading = false;
-    @Getter
-    public volatile boolean isLoaded = false;
+    @Setter(AccessLevel.PACKAGE)
+    private volatile boolean isLoaded = false;
 
     public abstract void loadAd(AdRequest adRequest);
 
