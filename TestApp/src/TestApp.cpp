@@ -4,6 +4,7 @@
 #include <coreEngine/modelBuilder/UVSphereBuilder.h>
 #include <coreEngine/modifier/ModelModifier.h>
 #include <coreEngine/modelBuilder/CubeBuilder.h>
+#include <coreEngine/util/SimpleOBJLoader.h>
 
 namespace cl{
     TestApp::TestApp(std::unique_ptr<IRenderer> renderer, std::unique_ptr<ISceneFactory> sceneFactory, std::unique_ptr<IModelFactory> modelFactory, std::unique_ptr<ITextureFactory> textureFactory,
@@ -70,8 +71,8 @@ namespace cl{
 
         imageTexture = textureFactory->create("imageTexture");
         assert(imageTexture != nullptr);
-        TextureBMPLoader textureBMPLoader;
-        textureBMPLoader.loadImage(imageTexture.get(), "frame.bmp");
+        TextureBMPLoader textureBMPLoader(logger.get());
+        textureBMPLoader.loadImage(imageTexture.get(), "tex_current.bmp");
         this->imageTexture = imageTexture.get();
         scene->addToScene(std::move(imageTexture));
 
@@ -94,16 +95,32 @@ namespace cl{
 
         TransformModel *transformSphere = (TransformModel*)this->sphere->getComponentList().getComponent("transform");
         transformSphere->setPosition(CL_Vec3(0.0f, 0.0f, 0.0f));
-
+        
         this->sphere->createBiRelation(this->materialDiffuseTexture);
 
         std::unique_ptr<ModelModifier> modelModifier(new ModelModifier); 
         //CubeBuilder cubeBuilder(modelModifier.get());
         //cubeBuilder.buildOutwardCube(this->sphere);
         UVSphereBuilder uvSphereBuilder(modelModifier.get());
-        uvSphereBuilder.buildUnitSphere(this->sphere, 6);
-        uvSphereBuilder.generateUVMapForAllVertices(this->sphere);
+        uvSphereBuilder.buildUnitSphere(this->sphere, 5);
+        //uvSphereBuilder.generateUVMapForAllVertices(this->sphere);
+        //SimpleOBJLoader::load("uvsphere.obj", this->sphere);
+        //modelModifier->invertNormal(this->sphere);
+        //transformSphere->setRotation(CL_Vec3(180.0f, 0.0f, 0.0f));
 
+        /*std::vector<CL_Vec3> &vertices = this->sphere->getVertices();
+        std::vector<CL_Vec2> &uvs = this->sphere->getUvs();
+        std::vector<CL_GLuint> &indices = this->sphere->getIndices();
+        std::string logStr = "\n";
+        for (unsigned int i = 0; i < vertices.size(); i++){
+            logStr += "<" + std::to_string(vertices[i].x) + "," + std::to_string(vertices[i].y) + "," + std::to_string(vertices[i].z) + ">";
+            logStr += "<" + std::to_string(uvs[i].x) + "," + std::to_string(uvs[i].y) + ">\n";
+        }
+        for (unsigned int i = 0; i < indices.size(); i+=3){
+            logStr += std::to_string(indices[i]) + " " + std::to_string(indices[i + 1]) + " " + std::to_string(indices[i + 2]) + "\n";
+        }
+        logger->log(LOG_DEBUG, logStr);
+        */
         renderer->initialize(scene.get());
     }
 

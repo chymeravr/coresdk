@@ -17,7 +17,7 @@ namespace cl{
         */
         virtual void buildUnitSphere(Model *model, unsigned int nSubdivisionTimes);
         virtual CL_Vec2 getUVMap(CL_Vec3 vertex);
-        virtual void generateUVMapForAllVertices(Model *model);
+        virtual CL_Vec2 getUVMap(float longitude, float latitude);
 
     private:
         CL_Vec3 getCartesianCoordinateFromThetaAndPhi(float phi, float theta);

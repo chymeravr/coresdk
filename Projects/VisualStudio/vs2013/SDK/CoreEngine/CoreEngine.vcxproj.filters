@@ -168,6 +168,9 @@
     <ClInclude Include="..\..\..\..\..\CoreEngine\include\coreEngine\events\EventPassiveMouseMotionListener.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\..\..\..\CoreEngine\include\coreEngine\util\SimpleOBJLoader.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\..\..\..\..\CoreEngine\src\events\EventQueue.cpp">
@@ -204,6 +207,9 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="..\..\..\..\..\CoreEngine\src\modifier\TextureBMPLoader.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\..\..\CoreEngine\src\util\SimpleOBJLoader.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

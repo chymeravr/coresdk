@@ -9,36 +9,66 @@ namespace cl{
 
     void UVSphereBuilder::buildUnitSphere(Model *model, unsigned int nSubdivisionTimes){
         assert(model != nullptr);
-        // phi for latitudes - range from -(pi/2 - epsilon) to (pi/2 - epsilon)
-        // theta for longitudes - range from (epsion) to (2pi - epsilon)
-        // nSubdivisionTimes = 0 is the base case when there is only one equator and poles and four longitudes representing an octahedron
+        unsigned int extraRowsPerPole = 3;
         unsigned int nThetaDivisions = pow(2, nSubdivisionTimes + 2);
         unsigned int nPhiDivisions = pow(2, nSubdivisionTimes + 1);
+        unsigned int totalPhis = nPhiDivisions + extraRowsPerPole*2;//will make 3 extra rows at poles to minimize distortion
 
         std::vector<CL_Vec3> &vertices = model->getVertices();
+        std::vector<CL_Vec2> &uvs = model->getUvs();
         std::vector<CL_GLuint> &indices = model->getIndices();
         // initializing the south pole latitude vertices
-        float higherPhi = (CL_PI / 2 - epsilon);
+        float higherPhi = (CL_PI / 2);
         float lowerPhi = -higherPhi;
-        float stepPhi = (higherPhi - lowerPhi) / nPhiDivisions;
+        float stepPhi = CL_PI / nPhiDivisions;
 
-        float lowerTheta = epsilon;
-        float higherTheta = 2 * CL_PI - epsilon;
-        float stepTheta = (higherTheta - lowerTheta) / nThetaDivisions;
+        float lowerTheta = 0.0f;
+        float higherTheta = 2 * CL_PI;
+        float stepTheta = higherTheta / nThetaDivisions;
 
         float currentPhi = lowerPhi;
         float currentTheta = lowerTheta;
-        for (unsigned int iTheta = 0; iTheta <= nThetaDivisions; iTheta++){
-            currentTheta = lowerTheta + iTheta * stepTheta;
-            vertices.push_back(getCartesianCoordinateFromThetaAndPhi(currentPhi, currentTheta));
-        }
-        for (unsigned int iPhi = 1; iPhi <= nPhiDivisions; iPhi++){
+        for (unsigned int iPhi = 0; iPhi <= totalPhis; iPhi++){ 
+            float uvy;
+            if (iPhi <= extraRowsPerPole){
+                currentPhi = lowerPhi + iPhi*(stepPhi / (extraRowsPerPole + 1));
+                uvy = (iPhi / (extraRowsPerPole + 1.0f)) * (1.0f / nPhiDivisions);
+            }
+            else if (iPhi >= totalPhis-extraRowsPerPole){
+                currentPhi = lowerPhi + (totalPhis - (2.0f * extraRowsPerPole + 1)) * stepPhi + (iPhi - (totalPhis - (extraRowsPerPole + 1.0f)))*(stepPhi / (extraRowsPerPole + 1.0f));
+                uvy = 1.0f - 1.0f / nPhiDivisions + (iPhi - (totalPhis - extraRowsPerPole - 1.0f)) / (extraRowsPerPole + 1.0f) * 1.0f / nPhiDivisions;
+            }
+            else{
+                currentPhi = lowerPhi + (iPhi-extraRowsPerPole) * stepPhi;
+                uvy = ((iPhi-extraRowsPerPole) *1.0f) / nPhiDivisions;
+            }
             currentTheta = lowerTheta;
-            currentPhi = lowerPhi + iPhi*stepPhi;
-            vertices.push_back(getCartesianCoordinateFromThetaAndPhi(currentPhi, currentTheta));
-            for (unsigned int iTheta = 1; iTheta <= nThetaDivisions; iTheta++){
+            for (unsigned int iTheta = 0; iTheta <= nThetaDivisions; iTheta++){
                 currentTheta = lowerTheta + iTheta * stepTheta;
-                vertices.push_back(getCartesianCoordinateFromThetaAndPhi(currentPhi, currentTheta));
+                if (iTheta == nThetaDivisions){
+                    currentTheta = lowerTheta; //last vertex should be exactly same as first vertex of the row
+                }
+                float cosphi = cosf(currentPhi);
+                vertices.push_back(CL_Vec3(cosphi*cosf(currentTheta), sinf(currentPhi), cosphi*sinf(currentTheta)));
+                CL_Vec2 uv;
+                if (iPhi == 0 || iPhi == totalPhis){
+                    uv.x = 0.5f; //Using the middle value of texture. Helpful in getting just one seam as opposed to one seam per triangle at poles
+                }
+                else if (iTheta == nThetaDivisions){
+                    uv.x = 1.0f;
+                }
+                else{
+                    uv.x = iTheta * 1.0f / nThetaDivisions;
+                }
+                uv.y = uvy;
+                uvs.push_back(uv);
+                if (iTheta == 0){
+                    continue;
+                }
+                if (iPhi == 0){
+                    continue;
+                }
+
                 unsigned int index1 = getIndex(iPhi - 1, iTheta - 1, nThetaDivisions);
                 unsigned int index2 = getIndex(iPhi - 1, iTheta, nThetaDivisions);
                 unsigned int index3 = getIndex(iPhi, iTheta, nThetaDivisions);
@@ -50,6 +80,10 @@ namespace cl{
             }
         }
         modelModifier->convertQuadIndicesToTriangleIndices(model);
+    }
+    CL_Vec2 UVSphereBuilder::getUVMap(float longitude, float latitude){
+
+        return CL_Vec2(longitude / (2 * CL_PI), (latitude + CL_PI / 2) / CL_PI);
     }
 
     CL_Vec2 UVSphereBuilder::getUVMap(CL_Vec3 vertex){
@@ -104,24 +138,18 @@ namespace cl{
         return uv;
     }
 
-    void UVSphereBuilder::generateUVMapForAllVertices(Model *model){
-        assert(model != nullptr);
-        std::vector<CL_Vec3> &vertices = model->getVertices();
-        std::vector<CL_Vec2> &uvs = model->getUvs();
-        uvs.clear();
-        for (auto it = vertices.cbegin(); it != vertices.cend(); it++){
-            uvs.push_back(getUVMap(*it));
-        }
-    }
-
     unsigned int UVSphereBuilder::getIndex(unsigned int iPhi, unsigned int iTheta, unsigned int nThetaDivisions){
         return (nThetaDivisions + 1)*iPhi + iTheta;
     }
 
     CL_Vec3 UVSphereBuilder::getCartesianCoordinateFromThetaAndPhi(float phi, float theta){
-        float y = sin(phi);
-        float x = cos(phi)*cos(theta);
-        float z = cos(phi)*sin(theta);
+        float y = sinf(phi);
+        float cosphi = cosf(phi);
+        /*if ((1 - cosphi) < 2 * epsilon){
+            cosphi = 1 - 0.5*phi*phi;
+        }*/
+        float x = cosphi*cosf(theta);
+        float z = cosphi*sinf(theta);
         return CL_Vec3(x, y, z);
     }
 }

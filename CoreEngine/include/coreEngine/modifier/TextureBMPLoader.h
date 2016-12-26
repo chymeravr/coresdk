@@ -6,7 +6,10 @@
 namespace cl{
     class TextureBMPLoader{
     public:
+        TextureBMPLoader(ILogger *logger);
         bool loadImage(Texture *texture, std::string imagePath);
+    private:
+        ILogger* logger;
     };
 }
 

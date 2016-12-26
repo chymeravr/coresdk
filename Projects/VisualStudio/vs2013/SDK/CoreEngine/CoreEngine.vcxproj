@@ -223,6 +223,7 @@
     <ClInclude Include="..\..\..\..\..\CoreEngine\include\coreEngine\util\ILogger.h" />
     <ClInclude Include="..\..\..\..\..\CoreEngine\include\coreEngine\util\ILoggerFactory.h" />
     <ClInclude Include="..\..\..\..\..\CoreEngine\include\coreEngine\util\IMutexLock.h" />
+    <ClInclude Include="..\..\..\..\..\CoreEngine\include\coreEngine\util\SimpleOBJLoader.h" />
     <ClInclude Include="..\..\..\..\..\CoreEngine\include\coreEngine\util\UniquePointerHelper.h" />
   </ItemGroup>
   <ItemGroup>
@@ -238,6 +239,7 @@
     <ClCompile Include="..\..\..\..\..\CoreEngine\src\renderObjects\ComponentList.cpp" />
     <ClCompile Include="..\..\..\..\..\CoreEngine\src\renderObjects\Relation.cpp" />
     <ClCompile Include="..\..\..\..\..\CoreEngine\src\renderObjects\Scene.cpp" />
+    <ClCompile Include="..\..\..\..\..\CoreEngine\src\util\SimpleOBJLoader.cpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
