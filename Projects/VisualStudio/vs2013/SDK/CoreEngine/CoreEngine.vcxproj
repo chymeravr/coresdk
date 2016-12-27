@@ -220,6 +220,7 @@
     <ClInclude Include="..\..\..\..\..\CoreEngine\include\coreEngine\renderObjects\Shader.h" />
     <ClInclude Include="..\..\..\..\..\CoreEngine\include\coreEngine\renderObjects\ShaderDiffuseTexture.h" />
     <ClInclude Include="..\..\..\..\..\CoreEngine\include\coreEngine\renderObjects\Texture.h" />
+    <ClInclude Include="..\..\..\..\..\CoreEngine\include\coreEngine\renderObjects\TextureCubeMap.h" />
     <ClInclude Include="..\..\..\..\..\CoreEngine\include\coreEngine\util\ILogger.h" />
     <ClInclude Include="..\..\..\..\..\CoreEngine\include\coreEngine\util\ILoggerFactory.h" />
     <ClInclude Include="..\..\..\..\..\CoreEngine\include\coreEngine\util\IMutexLock.h" />

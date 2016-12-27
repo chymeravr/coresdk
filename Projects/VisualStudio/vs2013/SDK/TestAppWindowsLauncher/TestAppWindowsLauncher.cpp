@@ -8,7 +8,7 @@
 #include <memory>
 #include <coreEngine/IApplication.h>
 #include <testApp/TestApp.h>
-
+#include <assert.h>
 
 #include <fstream>
 
@@ -221,7 +221,6 @@ GLuint loadBMP_custom(const char * imagepath){
     return textureID;
 }
 
-
 void testRender(){
     // Dark blue background
     glClearColor(0.0f, 0.0f, 0.4f, 0.0f);
@@ -234,7 +233,7 @@ void testRender(){
     GLuint VertexArrayID;
     glGenVertexArrays(1, &VertexArrayID);
     glBindVertexArray(VertexArrayID);
-    
+
     // Create and compile our GLSL program from the shaders
     GLuint programID = LoadShaders("TransformVertexShader.vertexshader", "TextureFragmentShader.fragmentshader");
 
@@ -262,7 +261,7 @@ void testRender(){
 
     // Get a handle for our "myTextureSampler" uniform
     GLuint TextureID = glGetUniformLocation(programID, "diffuseTexture");
-    
+
     // Our vertices. Tree consecutive floats give a 3D vertex; Three consecutive vertices give a triangle.
     // A cube has 6 faces with 2 triangles each, so this makes 6*2=12 triangles, and 12*3 vertices
     static const GLfloat g_vertex_buffer_data[] = {
@@ -355,6 +354,259 @@ void testRender(){
     glBufferData(GL_ARRAY_BUFFER, sizeof(g_uv_buffer_data), g_uv_buffer_data, GL_STATIC_DRAW);
 
 
+    // Clear the screen
+    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+    // Use our shader
+    glUseProgram(programID);
+
+    // Send our transformation to the currently bound shader, 
+    // in the "MVP" uniform
+    glUniformMatrix4fv(m, 1, GL_FALSE, &Model[0][0]);
+    glUniformMatrix4fv(v, 1, GL_FALSE, &View[0][0]);
+    glUniformMatrix4fv(p, 1, GL_FALSE, &Projection[0][0]);
+
+    // Bind our texture in Texture Unit 0
+    glActiveTexture(GL_TEXTURE0);
+    glBindTexture(GL_TEXTURE_2D, Texture);
+    // Set our "myTextureSampler" sampler to user Texture Unit 0
+    glUniform1i(TextureID, 0);
+
+    // 1rst attribute buffer : vertices
+    glEnableVertexAttribArray(0);
+    glBindBuffer(GL_ARRAY_BUFFER, vertexbuffer);
+    glVertexAttribPointer(
+        0,                  // attribute. No particular reason for 0, but must match the layout in the shader.
+        3,                  // size
+        GL_FLOAT,           // type
+        GL_FALSE,           // normalized?
+        0,                  // stride
+        (void*)0            // array buffer offset
+        );
+
+    // 2nd attribute buffer : UVs
+    glEnableVertexAttribArray(1);
+    glBindBuffer(GL_ARRAY_BUFFER, uvbuffer);
+    glVertexAttribPointer(
+        1,                                // attribute. No particular reason for 1, but must match the layout in the shader.
+        2,                                // size : U+V => 2
+        GL_FLOAT,                         // type
+        GL_FALSE,                         // normalized?
+        0,                                // stride
+        (void*)0                          // array buffer offset
+        );
+
+    // Draw the triangle !
+    glDrawArrays(GL_TRIANGLES, 0, 12 * 3); // 12*3 indices starting at 0 -> 12 triangles
+
+    glDisableVertexAttribArray(0);
+    glDisableVertexAttribArray(1);
+
+}
+
+
+unsigned char *loadBMPData(const char *imagepath, unsigned int &width, unsigned int &height, unsigned int &imageSize){
+
+    logger->log(LOG_DEBUG, "Reading image " + std::string(imagepath));
+    // Data read from the header of the BMP file
+    unsigned char header[54];
+    unsigned int dataPos;
+
+    // Open the file
+    logger->log(LOG_DEBUG, "checing for rb");
+    FILE * file = fopen(imagepath, "rb");
+    if (!file)							    { printf("%s could not be opened. Are you in the right directory ? Don't forget to read the FAQ !\n", imagepath); getchar(); return nullptr; }
+
+    // Read the header, i.e. the 54 first bytes
+
+    // If less than 54 bytes are read, problem
+    logger->log(LOG_DEBUG, "checing for 54");
+    if (fread(header, 1, 54, file) != 54){
+        printf("Not a correct BMP file\n");
+        return nullptr;
+    }
+    // A BMP files always begins with "BM"
+    logger->log(LOG_DEBUG, "checing for BM beginning");
+    if (header[0] != 'B' || header[1] != 'M'){
+        printf("Not a correct BMP file\n");
+        return nullptr;
+    }
+    // Make sure this is a 24bpp file
+    logger->log(LOG_DEBUG, "checing for 24 bpp");
+    if (*(int*)&(header[0x1E]) != 0)         { printf("Not a correct BMP file\n");    return nullptr; }
+    logger->log(LOG_DEBUG, "checing for 24 bpp");
+    if (*(int*)&(header[0x1C]) != 24)         { printf("Not a correct BMP file\n");    return nullptr; }
+
+    // Read the information about the image
+    dataPos = *(int*)&(header[0x0A]);
+    imageSize = *(int*)&(header[0x22]);
+    width = *(int*)&(header[0x12]);
+    height = *(int*)&(header[0x16]);
+
+    // Some BMP files are misformatted, guess missing information
+    if (imageSize == 0)    imageSize = width*height * 3; // 3 : one byte for each Red, Green and Blue component
+    if (dataPos == 0)      dataPos = 54; // The BMP header is done that way
+
+    // Create a buffer
+    unsigned char *data = new unsigned char[imageSize];
+
+    // Read the actual data from the file into the buffer
+    fread(data, 1, imageSize, file);
+
+    // Everything is in memory now, the file wan be closed
+    fclose(file);
+    return data;
+}
+
+GLuint loadBMPTextureCubeMap(){
+    GLuint textureID;
+
+    glGenTextures(1, &textureID);
+    glBindTexture(GL_TEXTURE_CUBE_MAP, textureID);
+    glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+    glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+    glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_R, GL_CLAMP_TO_EDGE);
+    glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+    glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+    //glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_BASE_LEVEL, 0);
+    //glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MAX_LEVEL, 0);
+    //Define all 6 faces
+    unsigned int width;
+    unsigned int height;
+    unsigned int imageSize;
+    unsigned char *imageData_pos_x = loadBMPData("cube_right.bmp", width, height, imageSize);
+    assert(imageData_pos_x != nullptr);
+    assert(width == 960);
+    assert(height == 960);
+    unsigned char *imageData_neg_x = loadBMPData("cube_left.bmp", width, height, imageSize);
+    assert(width == 960);
+    assert(height == 960);
+    unsigned char *imageData_pos_y = loadBMPData("cube_top.bmp", width, height, imageSize);
+    assert(width == 960);
+    assert(height == 960);
+    unsigned char *imageData_neg_y = loadBMPData("cube_bottom.bmp", width, height, imageSize);
+    assert(width == 960);
+    assert(height == 960);
+    unsigned char *imageData_pos_z = loadBMPData("cube_back.bmp", width, height, imageSize);
+    assert(width == 960);
+    assert(height == 960);
+    unsigned char *imageData_neg_z = loadBMPData("cube_front.bmp", width, height, imageSize);
+    assert(width == 960);
+    assert(height == 960);
+    glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X, 0, GL_RGB, width, height, 0, GL_BGR, GL_UNSIGNED_BYTE, imageData_pos_x);
+    glTexImage2D(GL_TEXTURE_CUBE_MAP_NEGATIVE_X, 0, GL_RGB, width, height, 0, GL_BGR, GL_UNSIGNED_BYTE, imageData_neg_x);
+    glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_Y, 0, GL_RGB, width, height, 0, GL_BGR, GL_UNSIGNED_BYTE, imageData_pos_y);
+    glTexImage2D(GL_TEXTURE_CUBE_MAP_NEGATIVE_Y, 0, GL_RGB, width, height, 0, GL_BGR, GL_UNSIGNED_BYTE, imageData_neg_y);
+    glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_Z, 0, GL_RGB, width, height, 0, GL_BGR, GL_UNSIGNED_BYTE, imageData_pos_z);
+    glTexImage2D(GL_TEXTURE_CUBE_MAP_NEGATIVE_Z, 0, GL_RGB, width, height, 0, GL_BGR, GL_UNSIGNED_BYTE, imageData_neg_z); 
+    return textureID;
+}
+
+void testRenderCubeMap(){
+    // Dark blue background
+    glClearColor(0.0f, 0.0f, 0.4f, 0.0f);
+
+    // Enable depth test
+    glEnable(GL_DEPTH_TEST);
+    // Accept fragment if it closer to the camera than the former one
+    glDepthFunc(GL_LESS);
+
+    GLuint VertexArrayID;
+    glGenVertexArrays(1, &VertexArrayID);
+    glBindVertexArray(VertexArrayID);
+    
+    // Create and compile our GLSL program from the shaders
+    GLuint programID = LoadShaders("TransformVertexShaderCubeMap.vertexshader", "TextureFragmentShaderCubeMap.fragmentshader");
+    if (glGetError() != GL_NO_ERROR){
+        logger->log(LOG_ERROR, "Error in loading shaders");
+    }
+    // Get a handle for our "MVP" uniform
+    GLuint mvpId = glGetUniformLocation(programID, "ProjectionModelviewMatrix");
+
+    // Projection matrix : 45° Field of View, 4:3 ratio, display range : 0.1 unit <-> 100 units
+    glm::mat4 Projection = glm::perspective(45.0f, 4.0f / 3.0f, 0.1f, 100.0f);
+    // Camera matrix
+    glm::mat4 View = glm::lookAt(
+        glm::vec3(0, 0, 0), // Camera is at (4,3,3), in World Space
+        glm::vec3(0, -1, 0), // and looks at the origin
+        glm::vec3(0, 0, -1)  // Head is up (set to 0,-1,0 to look upside-down)
+        );
+    // Model matrix : an identity matrix (model will be at the origin)
+    glm::mat4 Model = glm::mat4(1.0f);
+    // Our ModelViewProjection : multiplication of our 3 matrices
+    glm::mat4 MVP = Projection * View * Model; // Remember, matrix multiplication is the other way around
+
+    // Load the texture using any two methods
+    //GLuint Texture = loadBMP_custom("uvtemplate.bmp");
+    GLuint Texture = loadBMPTextureCubeMap();
+    GLenum error;
+    error = glGetError();
+    if (error != GL_NO_ERROR){
+        logger->log(LOG_ERROR, "Error in loading texture");
+        logger->log(LOG_ERROR, std::string((char*)gluErrorString(error)));
+    }
+    // Get a handle for our "myTextureSampler" uniform
+    GLuint TextureID = glGetUniformLocation(programID, "Texture0");
+    glBindTexture(GL_TEXTURE_CUBE_MAP, TextureID);
+
+    GLUquadricObj *sphere = NULL;
+    sphere = gluNewQuadric();
+    gluQuadricDrawStyle(sphere, GLU_FILL);
+    gluQuadricTexture(sphere, TRUE);
+    gluQuadricNormals(sphere, GLU_SMOOTH);
+    
+    //Making a display list
+    /*GLuint mysphereID = glGenLists(1);
+    glNewList(mysphereID, GL_COMPILE);
+    gluSphere(sphere, 1.0, 20, 20);
+    glEndList();
+    gluDeleteQuadric(sphere);
+    */
+    // Our vertices. Tree consecutive floats give a 3D vertex; Three consecutive vertices give a triangle.
+    // A cube has 6 faces with 2 triangles each, so this makes 6*2=12 triangles, and 12*3 vertices
+    /*static const GLfloat g_vertex_buffer_data[] = {
+        -1.0f, -1.0f, -1.0f,
+        -1.0f, -1.0f, 1.0f,
+        -1.0f, 1.0f, 1.0f,
+        1.0f, 1.0f, -1.0f,
+        -1.0f, -1.0f, -1.0f,
+        -1.0f, 1.0f, -1.0f,
+        1.0f, -1.0f, 1.0f,
+        -1.0f, -1.0f, -1.0f,
+        1.0f, -1.0f, -1.0f,
+        1.0f, 1.0f, -1.0f,
+        1.0f, -1.0f, -1.0f,
+        -1.0f, -1.0f, -1.0f,
+        -1.0f, -1.0f, -1.0f,
+        -1.0f, 1.0f, 1.0f,
+        -1.0f, 1.0f, -1.0f,
+        1.0f, -1.0f, 1.0f,
+        -1.0f, -1.0f, 1.0f,
+        -1.0f, -1.0f, -1.0f,
+        -1.0f, 1.0f, 1.0f,
+        -1.0f, -1.0f, 1.0f,
+        1.0f, -1.0f, 1.0f,
+        1.0f, 1.0f, 1.0f,
+        1.0f, -1.0f, -1.0f,
+        1.0f, 1.0f, -1.0f,
+        1.0f, -1.0f, -1.0f,
+        1.0f, 1.0f, 1.0f,
+        1.0f, -1.0f, 1.0f,
+        1.0f, 1.0f, 1.0f,
+        1.0f, 1.0f, -1.0f,
+        -1.0f, 1.0f, -1.0f,
+        1.0f, 1.0f, 1.0f,
+        -1.0f, 1.0f, -1.0f,
+        -1.0f, 1.0f, 1.0f,
+        1.0f, 1.0f, 1.0f,
+        -1.0f, 1.0f, 1.0f,
+        1.0f, -1.0f, 1.0f
+    };
+
+    GLuint vertexbuffer;
+    glGenBuffers(1, &vertexbuffer);
+    glBindBuffer(GL_ARRAY_BUFFER, vertexbuffer);
+    glBufferData(GL_ARRAY_BUFFER, sizeof(g_vertex_buffer_data), g_vertex_buffer_data, GL_STATIC_DRAW);
+*/
         // Clear the screen
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
         // Use our shader
@@ -362,18 +614,15 @@ void testRender(){
 
         // Send our transformation to the currently bound shader, 
         // in the "MVP" uniform
-        glUniformMatrix4fv(m, 1, GL_FALSE, &Model[0][0]);
-        glUniformMatrix4fv(v, 1, GL_FALSE, &View[0][0]);
-        glUniformMatrix4fv(p, 1, GL_FALSE, &Projection[0][0]);
+        glUniformMatrix4fv(mvpId, 1, GL_FALSE, &MVP[0][0]);
 
         // Bind our texture in Texture Unit 0
         glActiveTexture(GL_TEXTURE0);
-        glBindTexture(GL_TEXTURE_2D, Texture);
+        glBindTexture(GL_TEXTURE_CUBE_MAP, TextureID);
         // Set our "myTextureSampler" sampler to user Texture Unit 0
         glUniform1i(TextureID, 0);
-
-        // 1rst attribute buffer : vertices
-        glEnableVertexAttribArray(0);
+        
+       /* glEnableVertexAttribArray(0);
         glBindBuffer(GL_ARRAY_BUFFER, vertexbuffer);
         glVertexAttribPointer(
             0,                  // attribute. No particular reason for 0, but must match the layout in the shader.
@@ -384,29 +633,19 @@ void testRender(){
             (void*)0            // array buffer offset
             );
 
-        // 2nd attribute buffer : UVs
-        glEnableVertexAttribArray(1);
-        glBindBuffer(GL_ARRAY_BUFFER, uvbuffer);
-        glVertexAttribPointer(
-            1,                                // attribute. No particular reason for 1, but must match the layout in the shader.
-            2,                                // size : U+V => 2
-            GL_FLOAT,                         // type
-            GL_FALSE,                         // normalized?
-            0,                                // stride
-            (void*)0                          // array buffer offset
-            );
-
         // Draw the triangle !
         glDrawArrays(GL_TRIANGLES, 0, 12 * 3); // 12*3 indices starting at 0 -> 12 triangles
-
         glDisableVertexAttribArray(0);
-        glDisableVertexAttribArray(1);
-
+        */
+        gluSphere(sphere, 1.0, 20, 20);
+        //glCallList(mysphereID);
 }
 
 void renderScene()
 {
-    application->draw();
+    testRenderCubeMap();
+    //testRender();
+    //application->draw();
     glutSwapBuffers();
 }
 
@@ -537,13 +776,13 @@ int _tmain(int argc, _TCHAR** argv)
     
     // register callbacks
     application->start();
-    glutKeyboardFunc(keyboard);
+    //glutKeyboardFunc(keyboard);
     //glutMouseFunc(mouse);
-    glutPassiveMotionFunc(mousePassiveMotion);
-    application->initialize();
+    //glutPassiveMotionFunc(mousePassiveMotion);
+    //application->initialize();
     glutDisplayFunc(renderScene);
     glutReshapeFunc(update);
-    glutIdleFunc(renderScene);
+    //glutIdleFunc(renderScene);
     glutMainLoop();
     return 0;
 }
