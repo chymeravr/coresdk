@@ -6,7 +6,7 @@
 #include <GL/glew.h>
 #include <GL/freeglut.h>
 #include <memory>
-#include <testApp/TestApp.h>
+#include <image360/Image360.h>
 #include <assert.h>
 
 #include <fstream>
@@ -42,7 +42,7 @@ Threading and mutex from here https://msdn.microsoft.com/en-us/library/windows/d
 Glut tutorial http://www.lighthouse3d.com/tutorials/glut-tutorial/
 */
 
-std::unique_ptr<TestApp> application;
+std::unique_ptr<Image360> application;
 std::unique_ptr<ILogger> logger;
 std::unique_ptr<IEventQueue> eventQueue = nullptr;
 
@@ -496,7 +496,7 @@ GLuint loadBMPTextureCubeMap(){
     glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_Y, 0, GL_RGB, width, height, 0, GL_BGR, GL_UNSIGNED_BYTE, imageData_pos_y);
     glTexImage2D(GL_TEXTURE_CUBE_MAP_NEGATIVE_Y, 0, GL_RGB, width, height, 0, GL_BGR, GL_UNSIGNED_BYTE, imageData_neg_y);
     glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_Z, 0, GL_RGB, width, height, 0, GL_BGR, GL_UNSIGNED_BYTE, imageData_pos_z);
-    glTexImage2D(GL_TEXTURE_CUBE_MAP_NEGATIVE_Z, 0, GL_RGB, width, height, 0, GL_BGR, GL_UNSIGNED_BYTE, imageData_neg_z); 
+    glTexImage2D(GL_TEXTURE_CUBE_MAP_NEGATIVE_Z, 0, GL_RGB, width, height, 0, GL_BGR, GL_UNSIGNED_BYTE, imageData_neg_z);
     return textureID;
 }
 
@@ -512,7 +512,7 @@ void testRenderCubeMap(){
     GLuint VertexArrayID;
     glGenVertexArrays(1, &VertexArrayID);
     glBindVertexArray(VertexArrayID);
-    
+
     // Create and compile our GLSL program from the shaders
     GLuint programID = LoadShaders("TransformVertexShaderCubeMap.vertexshader", "TextureFragmentShaderCubeMap.fragmentshader");
     if (glGetError() != GL_NO_ERROR){
@@ -552,7 +552,7 @@ void testRenderCubeMap(){
     gluQuadricDrawStyle(sphere, GLU_FILL);
     gluQuadricTexture(sphere, TRUE);
     gluQuadricNormals(sphere, GLU_SMOOTH);
-    
+
     //Making a display list
     /*GLuint mysphereID = glGenLists(1);
     glNewList(mysphereID, GL_COMPILE);
@@ -563,81 +563,81 @@ void testRenderCubeMap(){
     // Our vertices. Tree consecutive floats give a 3D vertex; Three consecutive vertices give a triangle.
     // A cube has 6 faces with 2 triangles each, so this makes 6*2=12 triangles, and 12*3 vertices
     /*static const GLfloat g_vertex_buffer_data[] = {
-        -1.0f, -1.0f, -1.0f,
-        -1.0f, -1.0f, 1.0f,
-        -1.0f, 1.0f, 1.0f,
-        1.0f, 1.0f, -1.0f,
-        -1.0f, -1.0f, -1.0f,
-        -1.0f, 1.0f, -1.0f,
-        1.0f, -1.0f, 1.0f,
-        -1.0f, -1.0f, -1.0f,
-        1.0f, -1.0f, -1.0f,
-        1.0f, 1.0f, -1.0f,
-        1.0f, -1.0f, -1.0f,
-        -1.0f, -1.0f, -1.0f,
-        -1.0f, -1.0f, -1.0f,
-        -1.0f, 1.0f, 1.0f,
-        -1.0f, 1.0f, -1.0f,
-        1.0f, -1.0f, 1.0f,
-        -1.0f, -1.0f, 1.0f,
-        -1.0f, -1.0f, -1.0f,
-        -1.0f, 1.0f, 1.0f,
-        -1.0f, -1.0f, 1.0f,
-        1.0f, -1.0f, 1.0f,
-        1.0f, 1.0f, 1.0f,
-        1.0f, -1.0f, -1.0f,
-        1.0f, 1.0f, -1.0f,
-        1.0f, -1.0f, -1.0f,
-        1.0f, 1.0f, 1.0f,
-        1.0f, -1.0f, 1.0f,
-        1.0f, 1.0f, 1.0f,
-        1.0f, 1.0f, -1.0f,
-        -1.0f, 1.0f, -1.0f,
-        1.0f, 1.0f, 1.0f,
-        -1.0f, 1.0f, -1.0f,
-        -1.0f, 1.0f, 1.0f,
-        1.0f, 1.0f, 1.0f,
-        -1.0f, 1.0f, 1.0f,
-        1.0f, -1.0f, 1.0f
+    -1.0f, -1.0f, -1.0f,
+    -1.0f, -1.0f, 1.0f,
+    -1.0f, 1.0f, 1.0f,
+    1.0f, 1.0f, -1.0f,
+    -1.0f, -1.0f, -1.0f,
+    -1.0f, 1.0f, -1.0f,
+    1.0f, -1.0f, 1.0f,
+    -1.0f, -1.0f, -1.0f,
+    1.0f, -1.0f, -1.0f,
+    1.0f, 1.0f, -1.0f,
+    1.0f, -1.0f, -1.0f,
+    -1.0f, -1.0f, -1.0f,
+    -1.0f, -1.0f, -1.0f,
+    -1.0f, 1.0f, 1.0f,
+    -1.0f, 1.0f, -1.0f,
+    1.0f, -1.0f, 1.0f,
+    -1.0f, -1.0f, 1.0f,
+    -1.0f, -1.0f, -1.0f,
+    -1.0f, 1.0f, 1.0f,
+    -1.0f, -1.0f, 1.0f,
+    1.0f, -1.0f, 1.0f,
+    1.0f, 1.0f, 1.0f,
+    1.0f, -1.0f, -1.0f,
+    1.0f, 1.0f, -1.0f,
+    1.0f, -1.0f, -1.0f,
+    1.0f, 1.0f, 1.0f,
+    1.0f, -1.0f, 1.0f,
+    1.0f, 1.0f, 1.0f,
+    1.0f, 1.0f, -1.0f,
+    -1.0f, 1.0f, -1.0f,
+    1.0f, 1.0f, 1.0f,
+    -1.0f, 1.0f, -1.0f,
+    -1.0f, 1.0f, 1.0f,
+    1.0f, 1.0f, 1.0f,
+    -1.0f, 1.0f, 1.0f,
+    1.0f, -1.0f, 1.0f
     };
 
     GLuint vertexbuffer;
     glGenBuffers(1, &vertexbuffer);
     glBindBuffer(GL_ARRAY_BUFFER, vertexbuffer);
     glBufferData(GL_ARRAY_BUFFER, sizeof(g_vertex_buffer_data), g_vertex_buffer_data, GL_STATIC_DRAW);
-*/
-        // Clear the screen
-        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-        // Use our shader
-        glUseProgram(programID);
+    */
+    // Clear the screen
+    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+    // Use our shader
+    glUseProgram(programID);
 
-        // Send our transformation to the currently bound shader, 
-        // in the "MVP" uniform
-        glUniformMatrix4fv(mvpId, 1, GL_FALSE, &MVP[0][0]);
+    // Send our transformation to the currently bound shader, 
+    // in the "MVP" uniform
+    glUniformMatrix4fv(mvpId, 1, GL_FALSE, &MVP[0][0]);
 
-        // Bind our texture in Texture Unit 0
-        glActiveTexture(GL_TEXTURE0);
-        glBindTexture(GL_TEXTURE_CUBE_MAP, TextureID);
-        // Set our "myTextureSampler" sampler to user Texture Unit 0
-        glUniform1i(TextureID, 0);
-        
-       /* glEnableVertexAttribArray(0);
-        glBindBuffer(GL_ARRAY_BUFFER, vertexbuffer);
-        glVertexAttribPointer(
-            0,                  // attribute. No particular reason for 0, but must match the layout in the shader.
-            3,                  // size
-            GL_FLOAT,           // type
-            GL_FALSE,           // normalized?
-            0,                  // stride
-            (void*)0            // array buffer offset
-            );
+    // Bind our texture in Texture Unit 0
+    glActiveTexture(GL_TEXTURE0);
+    glBindTexture(GL_TEXTURE_CUBE_MAP, TextureID);
+    // Set our "myTextureSampler" sampler to user Texture Unit 0
+    glUniform1i(TextureID, 0);
 
-        // Draw the triangle !
-        glDrawArrays(GL_TRIANGLES, 0, 12 * 3); // 12*3 indices starting at 0 -> 12 triangles
-        glDisableVertexAttribArray(0);
-        */
-        gluSphere(sphere, 1.0, 20, 20);
-        //glCallList(mysphereID);
+    /* glEnableVertexAttribArray(0);
+    glBindBuffer(GL_ARRAY_BUFFER, vertexbuffer);
+    glVertexAttribPointer(
+    0,                  // attribute. No particular reason for 0, but must match the layout in the shader.
+    3,                  // size
+    GL_FLOAT,           // type
+    GL_FALSE,           // normalized?
+    0,                  // stride
+    (void*)0            // array buffer offset
+    );
+
+    // Draw the triangle !
+    glDrawArrays(GL_TRIANGLES, 0, 12 * 3); // 12*3 indices starting at 0 -> 12 triangles
+    glDisableVertexAttribArray(0);
+    */
+    gluSphere(sphere, 1.0, 20, 20);
+    //glCallList(mysphereID);
 }
 
 void renderScene()
@@ -654,41 +654,41 @@ void update(int w, int h){
 
 /*
 void startThread(void){
-    ghMutex = CreateMutex(
-        NULL,              // default security attributes
-        FALSE,             // initially not owned
-        NULL);             // unnamed mutex
+ghMutex = CreateMutex(
+NULL,              // default security attributes
+FALSE,             // initially not owned
+NULL);             // unnamed mutex
 
-    if (ghMutex == NULL)
-    {
-        printf("CreateMutex error: %d\n", GetLastError());
-    }
+if (ghMutex == NULL)
+{
+printf("CreateMutex error: %d\n", GetLastError());
+}
 
-    HANDLE aThread[1];
-    DWORD ThreadID;
-    aThread[0] = CreateThread(
-        NULL,       // default security attributes
-        0,          // default stack size
-        (LPTHREAD_START_ROUTINE)renderScene,
-        NULL,       // no thread function arguments
-        0,          // default creation flags
-        &ThreadID); // receive thread identifier
+HANDLE aThread[1];
+DWORD ThreadID;
+aThread[0] = CreateThread(
+NULL,       // default security attributes
+0,          // default stack size
+(LPTHREAD_START_ROUTINE)renderScene,
+NULL,       // no thread function arguments
+0,          // default creation flags
+&ThreadID); // receive thread identifier
 
-    if (aThread[0] == NULL)
-    {
-        printf("CreateThread error: %d\n", GetLastError());
-    }
+if (aThread[0] == NULL)
+{
+printf("CreateThread error: %d\n", GetLastError());
+}
 
-    WaitForSingleObject(aThread, INFINITE);
-    CloseHandle(aThread[0]);
-    CloseHandle(ghMutex);
+WaitForSingleObject(aThread, INFINITE);
+CloseHandle(aThread[0]);
+CloseHandle(ghMutex);
 }
 */
 
 void keyboard(unsigned char key,
     int x, int y){
     //logger->log(LOG_DEBUG, "Key presed:" + std::string(1, key));
-    std::unique_ptr<IEvent> keyPressEvent(new EventKeyPress((EventKeyPressListener*)(TestApp*)application.get(), key, x, y));
+    std::unique_ptr<IEvent> keyPressEvent(new EventKeyPress((EventKeyPressListener*)(Image360*)application.get(), key, x, y));
     eventQueue->push(std::move(keyPressEvent));
 }
 
@@ -699,7 +699,7 @@ void mouse(int button, int state,
         if (state == GLUT_UP){
             logger->log(LOG_DEBUG, "Left button up at " + std::to_string(x) + "," + std::to_string(y));
         }
-        else if(state == GLUT_DOWN){
+        else if (state == GLUT_DOWN){
             logger->log(LOG_DEBUG, "Left button down at " + std::to_string(x) + "," + std::to_string(y));
         }
         break;
@@ -723,7 +723,7 @@ void mouse(int button, int state,
 }
 
 void mousePassiveMotion(int x, int y){
-    std::unique_ptr<IEvent> mousePassiveEvent(new EventPassiveMouseMotion((EventPassiveMouseMotionListener*)(TestApp*)application.get(), x, y));
+    std::unique_ptr<IEvent> mousePassiveEvent(new EventPassiveMouseMotion((EventPassiveMouseMotionListener*)(Image360*)application.get(), x, y));
     eventQueue->push(std::move(mousePassiveEvent));
 }
 
@@ -744,7 +744,7 @@ int _tmain(int argc, _TCHAR** argv)
     {
         //std::cout << "GLEW 4.5 not supported\n ";
     }
-    
+
     std::unique_ptr<ILoggerFactory> loggerFactory(new LoggerFactoryWindows());
 
     cout << "TestAppWindowsLauncer" << endl;
@@ -760,7 +760,7 @@ int _tmain(int argc, _TCHAR** argv)
     std::unique_ptr<ICameraFactory> cameraFactory(new CameraGLFactory(loggerFactory.get()));
     std::unique_ptr<IMutexLock> mutexLock(new MutexLockWindows);
     eventQueue = std::unique_ptr<IEventQueue>(new EventQueue(std::move(mutexLock)));
-    application = std::unique_ptr<TestApp> (new TestApp(std::move(renderer),
+    application = std::unique_ptr<Image360>(new Image360(std::move(renderer),
         std::move(sceneFactory),
         std::move(modelFactory),
         std::move(diffuseTextureFactory),
@@ -770,7 +770,7 @@ int _tmain(int argc, _TCHAR** argv)
         std::move(cameraFactory),
         eventQueue.get(),
         loggerFactory.get()));
-    
+
     // register callbacks
     application->start();
     glutKeyboardFunc(keyboard);
