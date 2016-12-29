@@ -13,8 +13,6 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "GLImplementation", "GLImple
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "WindowsImplementation", "WindowsImplementation\WindowsImplementation.vcxproj", "{54FD5D63-F6B5-4784-935A-C3B2F1A64E27}"
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "TestAppWindowsLauncher", "TestAppWindowsLauncher\TestAppWindowsLauncher.vcxproj", "{EEE07970-D567-484A-B227-79A7F7CDD3CD}"
-EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "CoreEngineTest", "CoreEngineTest\CoreEngineTest.vcxproj", "{800DF27F-D12F-4346-8D8D-AA0405B833EB}"
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Image360", "Image360\Image360.vcxproj", "{4440CE9F-0D2E-4AD3-A30E-1A7408E0B61B}"
@@ -113,18 +111,6 @@ Global
 		{54FD5D63-F6B5-4784-935A-C3B2F1A64E27}.Release|Win32.Build.0 = Release|Win32
 		{54FD5D63-F6B5-4784-935A-C3B2F1A64E27}.Release|x64.ActiveCfg = Release|x64
 		{54FD5D63-F6B5-4784-935A-C3B2F1A64E27}.Release|x64.Build.0 = Release|x64
-		{EEE07970-D567-484A-B227-79A7F7CDD3CD}.Debug|ARM.ActiveCfg = Debug|Win32
-		{EEE07970-D567-484A-B227-79A7F7CDD3CD}.Debug|Mixed Platforms.ActiveCfg = Debug|Win32
-		{EEE07970-D567-484A-B227-79A7F7CDD3CD}.Debug|Mixed Platforms.Build.0 = Debug|Win32
-		{EEE07970-D567-484A-B227-79A7F7CDD3CD}.Debug|Win32.ActiveCfg = Debug|Win32
-		{EEE07970-D567-484A-B227-79A7F7CDD3CD}.Debug|Win32.Build.0 = Debug|Win32
-		{EEE07970-D567-484A-B227-79A7F7CDD3CD}.Debug|x64.ActiveCfg = Debug|Win32
-		{EEE07970-D567-484A-B227-79A7F7CDD3CD}.Release|ARM.ActiveCfg = Release|Win32
-		{EEE07970-D567-484A-B227-79A7F7CDD3CD}.Release|Mixed Platforms.ActiveCfg = Release|Win32
-		{EEE07970-D567-484A-B227-79A7F7CDD3CD}.Release|Mixed Platforms.Build.0 = Release|Win32
-		{EEE07970-D567-484A-B227-79A7F7CDD3CD}.Release|Win32.ActiveCfg = Release|Win32
-		{EEE07970-D567-484A-B227-79A7F7CDD3CD}.Release|Win32.Build.0 = Release|Win32
-		{EEE07970-D567-484A-B227-79A7F7CDD3CD}.Release|x64.ActiveCfg = Release|Win32
 		{800DF27F-D12F-4346-8D8D-AA0405B833EB}.Debug|ARM.ActiveCfg = Debug|Win32
 		{800DF27F-D12F-4346-8D8D-AA0405B833EB}.Debug|Mixed Platforms.ActiveCfg = Debug|Win32
 		{800DF27F-D12F-4346-8D8D-AA0405B833EB}.Debug|Mixed Platforms.Build.0 = Debug|Win32
