@@ -19,14 +19,11 @@ namespace cl{
         void sphereTestHelper(unsigned int nSubdivisionTimes){
             UVSphereBuilder sphereBuilder(modelModifier.get());
             double distanceFromCenter = 1.0;
-            unsigned int nTriangles = 16 * pow(2, 2 * nSubdivisionTimes);//2^(2*nSubdivisionTimes+1)
-
+            
             sphereBuilder.buildUnitSphere(model.get(), nSubdivisionTimes);
             std::vector<CL_GLuint> &indices = model->getIndices();
             std::vector<CL_Vec3> &vertices = model->getVertices();
-            //test number of triangles
-            ASSERT_EQ(nTriangles * 3, indices.size());
-
+            
             //Check distance from center
             for (unsigned int i = 0; i < vertices.size(); i++){
                 float x = vertices[i].x;
@@ -120,7 +117,6 @@ namespace cl{
         UVSphereBuilder sphereBuilder(modelModifier.get());
         unsigned int nSubdivisionTimes = 5;
         sphereBuilder.buildUnitSphere(model.get(), nSubdivisionTimes);
-        sphereBuilder.generateUVMapForAllVertices(model.get());
         EXPECT_EQ(model->getVertices().size(), model->getUvs().size());
     }
 }

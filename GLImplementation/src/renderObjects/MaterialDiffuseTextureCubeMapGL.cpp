@@ -1,31 +1,31 @@
-#include <glImplementation/renderObjects/MaterialDiffuseTextureGL.h>
-#include <glImplementation/renderObjects/TextureGL.h>
+#include <glImplementation/renderObjects/MaterialDiffuseTextureCubeMapGL.h>
+#include <glImplementation/renderObjects/TextureCubeMapGL.h>
 
 namespace cl{
-    MaterialDiffuseTextureGL::MaterialDiffuseTextureGL(const std::string &sceneId, ShaderDiffuseTextureGL *shader, ILoggerFactory *loggerFactory)
-    : MaterialDiffuseTexture(sceneId, shader, loggerFactory){
+    MaterialDiffuseTextureCubeMapGL::MaterialDiffuseTextureCubeMapGL(const std::string &sceneId, ShaderDiffuseTextureCubeMapGL *shader, ILoggerFactory *loggerFactory)
+        : MaterialDiffuseTextureCubeMap(sceneId, shader, loggerFactory){
         logger = loggerFactory->createLogger("glImplementation::MaterialDiffuseTextureGL: ");
     }
-    IRenderable *MaterialDiffuseTextureGL::getRenderable(){
+    IRenderable *MaterialDiffuseTextureCubeMapGL::getRenderable(){
         return this;
     }
-    void MaterialDiffuseTextureGL::setDiffuseTextureId(CL_GLuint diffuseTextureUniformId){
+    void MaterialDiffuseTextureCubeMapGL::setDiffuseTextureId(CL_GLuint diffuseTextureUniformId){
         this->diffuseTextureUniformId = diffuseTextureUniformId;
     }
-    bool MaterialDiffuseTextureGL::initialize(){
+    bool MaterialDiffuseTextureCubeMapGL::initialize(){
         IRenderable *textureRenderable = this->diffuseTexture->getRenderable();
         assert(textureRenderable != nullptr);
         textureRenderable->initialize();
         logger->log(LOG_INFO, "material:" + sceneId + " initialized");
         return true;
     }
-    void MaterialDiffuseTextureGL::draw(){
+    void MaterialDiffuseTextureCubeMapGL::draw(){
         // Bind our diffuse texture in Texture Unit 0
         glActiveTexture(GL_TEXTURE0);
         this->diffuseTexture->getRenderable()->draw();
         glUniform1i(diffuseTextureUniformId, 0);
     }
-    void MaterialDiffuseTextureGL::deinitialize(){
+    void MaterialDiffuseTextureCubeMapGL::deinitialize(){
         this->diffuseTexture->getRenderable()->deinitialize();
     }
 }

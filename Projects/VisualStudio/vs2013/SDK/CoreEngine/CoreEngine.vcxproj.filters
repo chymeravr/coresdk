@@ -90,16 +90,7 @@
     <ClInclude Include="..\..\..\..\..\CoreEngine\include\coreEngine\factory\IModelFactory.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\..\..\CoreEngine\include\coreEngine\factory\IMaterialDiffuseTextureFactory.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="..\..\..\..\..\CoreEngine\include\coreEngine\renderObjects\ShaderDiffuseTexture.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\..\..\..\CoreEngine\include\coreEngine\factory\IShaderDiffuseTextureFactory.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\..\..\..\CoreEngine\include\coreEngine\factory\ITextureFactory.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="..\..\..\..\..\CoreEngine\include\coreEngine\components\transform\ITransformModelFactory.h">
@@ -109,9 +100,6 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="..\..\..\..\..\CoreEngine\include\coreEngine\objectBuilders\ITexturedCubeBuilder.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\..\..\..\CoreEngine\include\coreEngine\IApplication.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="..\..\..\..\..\CoreEngine\include\coreEngine\events\EventQueueFactory.h">
@@ -139,9 +127,6 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="..\..\..\..\..\CoreEngine\include\coreEngine\modelBuilder\UVSphereBuilder.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\..\..\..\CoreEngine\include\coreEngine\modifier\TextureBMPLoader.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="..\..\..\..\..\CoreEngine\include\coreEngine\components\transform\TransformCameraFactory.h">
@@ -172,6 +157,27 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="..\..\..\..\..\CoreEngine\include\coreEngine\renderObjects\TextureCubeMap.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\..\..\CoreEngine\include\coreEngine\renderObjects\MaterialDiffuseTextureCubeMap.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\..\..\CoreEngine\include\coreEngine\renderObjects\ShaderDiffuseTextureCubeMap.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\..\..\CoreEngine\include\coreEngine\factory\IDiffuseTextureFactory.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\..\..\CoreEngine\include\coreEngine\factory\IDiffuseTextureCubeMapFactory.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\..\..\CoreEngine\include\coreEngine\modifier\ImageBMPLoader.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\..\..\CoreEngine\include\coreEngine\modifier\ImageModifier.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\..\..\CoreEngine\include\coreEngine\modifier\Image.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
@@ -209,10 +215,13 @@
     <ClCompile Include="..\..\..\..\..\CoreEngine\src\components\transform\TransformCamera.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\..\..\..\CoreEngine\src\modifier\TextureBMPLoader.cpp">
+    <ClCompile Include="..\..\..\..\..\CoreEngine\src\util\SimpleOBJLoader.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\..\..\..\CoreEngine\src\util\SimpleOBJLoader.cpp">
+    <ClCompile Include="..\..\..\..\..\CoreEngine\src\modifier\ImageBMPLoader.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\..\..\CoreEngine\src\modifier\ImageModifier.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

@@ -13,7 +13,6 @@ namespace cl{
         bool initialize();
         void draw();
         void deinitialize();
-        CL_GLuint getTextureId();
 
     private:
         std::unique_ptr<ILogger> logger;

@@ -6,7 +6,6 @@
 #include <GL/glew.h>
 #include <GL/freeglut.h>
 #include <memory>
-#include <coreEngine/IApplication.h>
 #include <testApp/TestApp.h>
 #include <assert.h>
 
@@ -16,9 +15,8 @@
 #include <windowsImplementation/LoggerFactoryWindows.h>
 #include <glImplementation/factory/SceneGLFactory.h>
 #include <glImplementation/factory/ModelGLFactory.h>
-#include <glImplementation/factory/MaterialDiffuseTextureGLFactory.h>
-#include <glImplementation/factory/ShaderDiffuseTextureGLFactory.h>
-#include <glImplementation/factory/TextureGLFactory.h>
+#include <glImplementation/factory/DiffuseTextureGLFactory.h>
+#include <glImplementation/factory/DiffuseTextureCubeMapGLFactory.h>
 #include <glImplementation/factory/CameraGLFactory.h>
 #include <coreEngine/components/transform/TransformCameraFactory.h>
 #include <coreEngine/components/transform/TransformModelFactory.h>
@@ -27,6 +25,7 @@
 #include <coreEngine/events/EventPassiveMouseMotion.h>
 #include <windowsImplementation/MutexLockWindows.h>
 #include <renderer/RendererNoHMD.h>
+#include <coreEngine/modifier/ImageBMPLoader.h>
 
 using namespace std;
 using namespace cl;
@@ -43,7 +42,7 @@ Threading and mutex from here https://msdn.microsoft.com/en-us/library/windows/d
 Glut tutorial http://www.lighthouse3d.com/tutorials/glut-tutorial/
 */
 
-std::unique_ptr<IApplication> application;
+std::unique_ptr<TestApp> application;
 std::unique_ptr<ILogger> logger;
 std::unique_ptr<IEventQueue> eventQueue = nullptr;
 
@@ -643,9 +642,9 @@ void testRenderCubeMap(){
 
 void renderScene()
 {
-    testRenderCubeMap();
+    //testRenderCubeMap();
     //testRender();
-    //application->draw();
+    application->draw();
     glutSwapBuffers();
 }
 
@@ -753,21 +752,19 @@ int _tmain(int argc, _TCHAR** argv)
     logger->log(LOG_DEBUG, "Testing logger.");
     std::unique_ptr<ISceneFactory> sceneFactory(new SceneGLFactory(loggerFactory.get()));
     std::unique_ptr<IModelFactory> modelFactory(new ModelGLFactory(loggerFactory.get()));
-    std::unique_ptr<IMaterialDiffuseTextureFactory> materialDiffuseFactory(new MaterialDiffuseTextureGLFactory(loggerFactory.get()));
-    std::unique_ptr<IShaderDiffuseTextureFactory> shaderDiffuseFactory(new ShaderDiffuseTextureGLFactory(loggerFactory.get()));
-    std::unique_ptr<ITextureFactory> textureFactory(new TextureGLFactory(loggerFactory.get()));
+    std::unique_ptr<IDiffuseTextureFactory> diffuseTextureFactory(new DiffuseTextureGLFactory(loggerFactory.get()));
+    std::unique_ptr<IDiffuseTextureCubeMapFactory> diffuseTextureCubeMapFactory(new DiffuseTextureCubeMapGLFactory(loggerFactory.get()));
     std::unique_ptr<IRenderer> renderer(new RendererNoHMD());
     std::unique_ptr<ITransformCameraFactory> transformCameraFactory(new TransformCameraFactory(loggerFactory.get()));
     std::unique_ptr<ITransformModelFactory> transformModelFactory(new TransformModelFactory(loggerFactory.get()));
     std::unique_ptr<ICameraFactory> cameraFactory(new CameraGLFactory(loggerFactory.get()));
     std::unique_ptr<IMutexLock> mutexLock(new MutexLockWindows);
     eventQueue = std::unique_ptr<IEventQueue>(new EventQueue(std::move(mutexLock)));
-    application = std::unique_ptr<IApplication> (new TestApp(std::move(renderer),
+    application = std::unique_ptr<TestApp> (new TestApp(std::move(renderer),
         std::move(sceneFactory),
         std::move(modelFactory),
-        std::move(textureFactory),
-        std::move(materialDiffuseFactory),
-        std::move(shaderDiffuseFactory),
+        std::move(diffuseTextureFactory),
+        std::move(diffuseTextureCubeMapFactory),
         std::move(transformCameraFactory),
         std::move(transformModelFactory),
         std::move(cameraFactory),
@@ -776,13 +773,36 @@ int _tmain(int argc, _TCHAR** argv)
     
     // register callbacks
     application->start();
-    //glutKeyboardFunc(keyboard);
-    //glutMouseFunc(mouse);
-    //glutPassiveMotionFunc(mousePassiveMotion);
-    //application->initialize();
+    glutKeyboardFunc(keyboard);
+    glutMouseFunc(mouse);
+    glutPassiveMotionFunc(mousePassiveMotion);
+
+
+    ImageBMPLoader imageBMPLoader(logger.get());
+    std::vector< std::unique_ptr<Image> > textureImages;
+    TEXTURE_MAP_MODE mode = EQUIRECTANGULAR_MAP_MODE;
+
+    switch (mode){
+    case CUBE_MAP_MODE_SINGLE_IMAGE:
+        textureImages.push_back(imageBMPLoader.loadImage("cubemap_current.bmp"));
+        break;
+    case CUBE_MAP_MODE_SIX_IMAGES:
+        textureImages.push_back(imageBMPLoader.loadImage("cubemap_geo_front.bmp"));
+        textureImages.push_back(imageBMPLoader.loadImage("cubemap_geo_left.bmp"));
+        textureImages.push_back(imageBMPLoader.loadImage("cubemap_geo_back.bmp"));
+        textureImages.push_back(imageBMPLoader.loadImage("cubemap_geo_right.bmp"));
+        textureImages.push_back(imageBMPLoader.loadImage("cubemap_geo_top.bmp"));
+        textureImages.push_back(imageBMPLoader.loadImage("cubemap_geo_bottom.bmp"));
+        break;
+    case EQUIRECTANGULAR_MAP_MODE:
+        textureImages.push_back(imageBMPLoader.loadImage("tex_current.bmp"));
+        break;
+    }
+
+    application->initialize(mode, textureImages);
     glutDisplayFunc(renderScene);
     glutReshapeFunc(update);
-    //glutIdleFunc(renderScene);
+    glutIdleFunc(renderScene);
     glutMainLoop();
     return 0;
 }

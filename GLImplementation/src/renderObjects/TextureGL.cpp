@@ -28,12 +28,9 @@ namespace cl{
         return true;
     }
     void TextureGL::draw(){
-
+        glBindTexture(GL_TEXTURE_2D, textureId);
     }
     void TextureGL::deinitialize(){
         glDeleteTextures(1, &textureId);
-    }
-    CL_GLuint TextureGL::getTextureId(){
-        return this->textureId;
     }
 }

@@ -1,12 +1,12 @@
 #include <string>
-#include <coreEngine/modifier/TextureBMPLoader.h>
+#include <coreEngine/modifier/ImageBMPLoader.h>
 
 namespace cl{
-    TextureBMPLoader::TextureBMPLoader(ILogger *logger){
+    ImageBMPLoader::ImageBMPLoader(ILogger *logger){
         this->logger = logger;
     }
 
-    bool TextureBMPLoader::loadImage(Texture *texture, std::string imagePath){
+    std::unique_ptr<Image> ImageBMPLoader::loadImage(std::string imagePath){
         // Data read from the header of the BMP file
         unsigned char header[54];
         unsigned int dataPos;
@@ -20,7 +20,7 @@ namespace cl{
         if (!file){ 
             logger->log(LOG_ERROR, imagePath + " could not be opened. Are you in the right directory ?");
             getchar(); 
-            return 0; 
+            return nullptr; 
         }
 
         // Read the header, i.e. the 54 first bytes
@@ -28,21 +28,21 @@ namespace cl{
         // If less than 54 bytes are read, problem
         if (fread(header, 1, 54, file) != 54){
             logger->log(LOG_ERROR, imagePath + ": Incorrect format");
-            return false;
+            return nullptr;
         }
         // A BMP files always begins with "BM"
         if (header[0] != 'B' || header[1] != 'M'){
             logger->log(LOG_ERROR, imagePath + ": Not correct BMP file");
-            return false;
+            return nullptr;
         }
         // Make sure this is a 24bpp file
         if (*(int*)&(header[0x1E]) != 0)         { 
             logger->log(LOG_ERROR, imagePath + ": Not correct BMP file");
-            return false; 
+            return nullptr; 
         }
         if (*(int*)&(header[0x1C]) != 24)         { 
             logger->log(LOG_ERROR, imagePath + ": Not correct BMP file");
-            return false; 
+            return nullptr; 
         }
 
         // Read the information about the image
@@ -63,10 +63,11 @@ namespace cl{
 
         // Everything is in memory now, the file wan be closed
         fclose(file);
-        texture->setTextureData(std::move(data));
-        texture->setTextureDataSize(imageSize);
-        texture->setWidth(width);
-        texture->setHeight(height);
-        return true;
+        std::unique_ptr<Image> image(new Image);
+        image->data = std::move(data);
+        image->width = width;
+        image->height = height;
+        image->dataSize = imageSize;
+        return std::move(image);
     }
 }

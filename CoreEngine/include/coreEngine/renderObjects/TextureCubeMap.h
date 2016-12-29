@@ -32,7 +32,7 @@ namespace cl{
         }
         virtual void setTextureDataSize(TEXTURE_CUBE_MAP_FACE face, const unsigned int &dataSize){
             this->dataSize[face] = dataSize;
-        }
+        } 
         virtual const unsigned int &getTextureDataSize(TEXTURE_CUBE_MAP_FACE face){
             return this->dataSize[face];
         }
@@ -49,7 +49,7 @@ namespace cl{
             this->height[face] = height;
         }
 
-    private:
+    protected:
         std::unique_ptr<ILogger> logger = nullptr;
         std::unique_ptr<unsigned char> data[6];
         unsigned int dataSize[6];

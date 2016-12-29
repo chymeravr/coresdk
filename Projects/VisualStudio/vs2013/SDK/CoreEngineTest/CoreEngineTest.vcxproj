@@ -55,7 +55,7 @@
       <Optimization>Disabled</Optimization>
       <PreprocessorDefinitions>WIN32;_DEBUG;_CONSOLE;_LIB;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
-      <AdditionalIncludeDirectories>E:\Chimera\workspace\AdNetwork\SDK\Conf\include;E:\Chimera\workspace\AdNetwork\SDK\Repository\thirdParty\glm\glm-0.9.7.6\glm;E:\Chimera\workspace\AdNetwork\SDK\CoreEngine\test\include;E:\Chimera\workspace\AdNetwork\SDK\CoreEngine\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>E:\Chimera\workspace\AdNetwork\SDK\Repository\thirdParty\glew\glew-2.0.0\include;E:\Chimera\workspace\AdNetwork\SDK\Conf\include;E:\Chimera\workspace\AdNetwork\SDK\Repository\thirdParty\glm\glm-0.9.7.6\glm;E:\Chimera\workspace\AdNetwork\SDK\CoreEngine\test\include;E:\Chimera\workspace\AdNetwork\SDK\CoreEngine\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -87,6 +87,7 @@
     <ClCompile Include="..\..\..\..\..\CoreEngine\test\src\CameraTest.cpp" />
     <ClCompile Include="..\..\..\..\..\CoreEngine\test\src\ComponentListTest.cpp" />
     <ClCompile Include="..\..\..\..\..\CoreEngine\test\src\EventQueueTest.cpp" />
+    <ClCompile Include="..\..\..\..\..\CoreEngine\test\src\ImageModifierTest.cpp" />
     <ClCompile Include="..\..\..\..\..\CoreEngine\test\src\MaterialTest.cpp" />
     <ClCompile Include="..\..\..\..\..\CoreEngine\test\src\CubeBuilderTest.cpp" />
     <ClCompile Include="..\..\..\..\..\CoreEngine\test\src\ModelModifierTest.cpp" />

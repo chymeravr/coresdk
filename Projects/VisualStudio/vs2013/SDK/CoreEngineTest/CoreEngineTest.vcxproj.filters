@@ -69,6 +69,9 @@
     <ClCompile Include="..\..\..\..\..\CoreEngine\test\src\TransformCameraTest.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\..\..\..\CoreEngine\test\src\ImageModifierTest.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\..\..\..\CoreEngine\test\include\coreEngineTest\mocks\EventMock.h">

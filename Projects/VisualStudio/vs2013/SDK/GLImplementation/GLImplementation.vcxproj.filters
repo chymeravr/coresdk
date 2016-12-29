@@ -48,16 +48,22 @@
     <ClInclude Include="..\..\..\..\..\GLImplementation\include\glImplementation\factory\ModelGLFactory.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\..\..\GLImplementation\include\glImplementation\factory\TextureGLFactory.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\..\..\..\GLImplementation\include\glImplementation\factory\MaterialDiffuseTextureGLFactory.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\..\..\..\GLImplementation\include\glImplementation\factory\ShaderDiffuseTextureGLFactory.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="..\..\..\..\..\GLImplementation\include\glImplementation\factory\CameraGLFactory.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\..\..\GLImplementation\include\glImplementation\renderObjects\TextureCubeMapGL.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\..\..\GLImplementation\include\glImplementation\renderObjects\ShaderDiffuseTextureCubeMapGL.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\..\..\GLImplementation\include\glImplementation\renderObjects\MaterialDiffuseTextureCubeMapGL.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\..\..\GLImplementation\include\glImplementation\factory\DiffuseTextureGLFactory.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\..\..\GLImplementation\include\glImplementation\factory\DiffuseTextureCubeMapGLFactory.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
@@ -84,6 +90,15 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="..\..\..\..\..\GLImplementation\src\renderObjects\SceneGL.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\..\..\GLImplementation\src\renderObjects\TextureCubeMapGL.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\..\..\GLImplementation\src\renderObjects\MaterialDiffuseTextureCubeMapGL.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\..\..\GLImplementation\src\renderObjects\ShaderDiffuseTextureCubeMapGL.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
