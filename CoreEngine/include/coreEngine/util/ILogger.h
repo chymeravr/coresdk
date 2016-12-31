@@ -12,15 +12,14 @@
 
 #include <string>
 
-
 namespace cl {
-    enum LOG_LEVEL {
-        LOG_DEBUG, LOG_INFO, LOG_WARN, LOG_ERROR, LOG_FATAL
-    };
+	enum LOG_LEVEL {
+		LOG_DEBUG, LOG_INFO, LOG_WARN, LOG_ERROR, LOG_FATAL
+	};
 
-    class ILogger {
-    public:
-        virtual void log(LOG_LEVEL level, std::string logString) = 0;
-    };
+	class ILogger {
+	public:
+		virtual void log(LOG_LEVEL level, std::string logString) = 0;
+	};
 }
 #endif //LOGGER_H

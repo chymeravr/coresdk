@@ -5,10 +5,10 @@
 #include <coreEngine/events/IEvent.h>
 
 namespace cl{
-    class EventMock : public IEvent{
-    public:
-        MOCK_METHOD0(callListener, void(void));
-    };
+	class EventMock : public IEvent{
+	public:
+		MOCK_METHOD0(callListener, void(void));
+	};
 }
 
 #endif //COREENGINETEST_EVENTMOCK_H

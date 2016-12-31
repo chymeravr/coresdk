@@ -10,16 +10,15 @@
 #include <coreEngine/events/IEvent.h>
 
 namespace cl{
-    /*
-    * Thread safe event queue
-    */
-    class IEventQueue{
-    public:
-        virtual ~IEventQueue(){}
-        virtual void push(std::unique_ptr<IEvent> event) = 0;
-        virtual bool empty() = 0;
-        virtual std::unique_ptr<IEvent> pop() = 0;
-    };
-
+	/*
+	* Thread safe event queue
+	*/
+	class IEventQueue{
+	public:
+		virtual ~IEventQueue(){}
+		virtual void push(std::unique_ptr<IEvent> event) = 0;
+		virtual bool empty() = 0;
+		virtual std::unique_ptr<IEvent> pop() = 0;
+	};
 }
 #endif //ANDROIDSDK_IEVENTQUEUE_H

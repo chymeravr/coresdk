@@ -6,11 +6,11 @@
 #include <coreEngine/renderObjects/Relation.h>
 
 namespace cl{
-    class IComponent{
-    public:
-        virtual std::string getComponentType() = 0;
-        virtual IRenderable *getRenderable() = 0;
-    };
+	class IComponent{
+	public:
+		virtual std::string getComponentType() = 0;
+		virtual IRenderable *getRenderable() = 0;
+	};
 }
 
 #endif //COREENGINE_ICOMPONENT_H

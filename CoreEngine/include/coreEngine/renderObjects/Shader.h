@@ -8,26 +8,26 @@
 #include <coreEngine/renderObjects/Scene.h>
 
 namespace cl{
-    class Shader : public Relation, public IScenable{
-    public:
-        Shader(const std::string &sceneId, ILoggerFactory *loggerFactory, Scene *scene) : Relation(loggerFactory){
-            this->sceneId = sceneId;
-            this->createBiRelation(scene);
-        }
-        virtual IRenderable *getRenderable() = 0;
-        std::string getType(){
-            return this->type;
-        }
-        std::string getUniqueIdentifier(){
-            return this->sceneId;
-        }
-        std::string getSceneId(){
-            return this->sceneId;
-        }
-    protected:
-        std::string sceneId = "";
-        std::string type = "shader";
-    };
+	class Shader : public Relation, public IScenable{
+	public:
+		Shader(const std::string &sceneId, ILoggerFactory *loggerFactory, Scene *scene) : Relation(loggerFactory){
+			this->sceneId = sceneId;
+			this->createBiRelation(scene);
+		}
+		virtual IRenderable *getRenderable() = 0;
+		std::string getType(){
+			return this->type;
+		}
+		std::string getUniqueIdentifier(){
+			return this->sceneId;
+		}
+		std::string getSceneId(){
+			return this->sceneId;
+		}
+	protected:
+		std::string sceneId = "";
+		const std::string type = "shader";
+	};
 }
 
 #endif //COREENGINE_SHADER_H

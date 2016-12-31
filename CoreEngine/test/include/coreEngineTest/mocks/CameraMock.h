@@ -5,11 +5,11 @@
 #include <coreEngine/renderObjects/Camera.h>
 
 namespace cl{
-    class CameraMock : public Camera{
-    public:
-        CameraMock(const std::string &sceneId, ILoggerFactory *loggerFactory, Scene *scene) :Camera(sceneId, loggerFactory, scene){}
-        MOCK_METHOD0(getRenderable, IRenderable *(void));
-    };
+	class CameraMock : public Camera{
+	public:
+		CameraMock(const std::string &sceneId, ILoggerFactory *loggerFactory, Scene *scene) :Camera(sceneId, loggerFactory, scene){}
+		MOCK_METHOD0(getRenderable, IRenderable *(void));
+	};
 }
 
 #endif //COREENGINETEST_CAMERAMOCK_H

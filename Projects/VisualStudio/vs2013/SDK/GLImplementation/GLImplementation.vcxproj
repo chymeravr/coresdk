@@ -50,7 +50,7 @@
     <CharacterSet>MultiByte</CharacterSet>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="Configuration">
-    <ConfigurationType>Application</ConfigurationType>
+    <ConfigurationType>StaticLibrary</ConfigurationType>
     <UseDebugLibraries>false</UseDebugLibraries>
     <PlatformToolset>v120</PlatformToolset>
     <WholeProgramOptimization>true</WholeProgramOptimization>
@@ -98,7 +98,7 @@
       <WarningLevel>Level3</WarningLevel>
       <Optimization>Disabled</Optimization>
       <SDLCheck>true</SDLCheck>
-      <AdditionalIncludeDirectories>E:\Chimera\workspace\AdNetwork\SDK\Repository\thirdParty\glm\glm-0.9.7.6\glm;E:\Chimera\workspace\AdNetwork\SDK\Conf\include;E:\Chimera\workspace\AdNetwork\SDK\Repository\thirdParty\glew\glew-2.0.0\include;E:\Chimera\workspace\AdNetwork\SDK\CoreEngine\include;E:\Chimera\workspace\AdNetwork\SDK\GLImplementation\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>C:\Users\robin_chimera\Documents\SDK\Conf\include;C:\Users\robin_chimera\Documents\SDK\GLImplementation\include;C:\Users\robin_chimera\Documents\SDK\Repository\thirdParty\glew\glew-2.0.0\include;C:\Users\robin_chimera\Documents\SDK\CoreEngine\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
     </ClCompile>
     <Link>
@@ -134,11 +134,15 @@
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <SDLCheck>true</SDLCheck>
+      <AdditionalIncludeDirectories>C:\Users\robin_chimera\Documents\SDK\GLImplementation\include;C:\Users\robin_chimera\Documents\SDK\Repository\thirdParty\glew\glew-2.0.0\include;C:\Users\robin_chimera\Documents\SDK\Repository\thirdParty\glm\glm-0.9.7.6\glm;C:\Users\robin_chimera\Documents\SDK\CoreEngine\include;C:\Users\robin_chimera\Documents\SDK\Conf\include</AdditionalIncludeDirectories>
+      <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
     </ClCompile>
     <Link>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
+      <AdditionalLibraryDirectories>C:\Users\robin_chimera\Documents\SDK\Repository\thirdParty\glew\glew-2.0.0\lib\Release\Win32;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalDependencies>opengl32.lib;glu32.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
@@ -170,20 +174,19 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClInclude Include="..\..\..\..\..\CoreEngine\include\conf\GLTypes.h" />
     <ClInclude Include="..\..\..\..\..\GLImplementation\include\glImplementation\factory\CameraGLFactory.h" />
-    <ClInclude Include="..\..\..\..\..\GLImplementation\include\glImplementation\factory\DiffuseTextureCubeMapGLFactory.h" />
-    <ClInclude Include="..\..\..\..\..\GLImplementation\include\glImplementation\factory\DiffuseTextureGLFactory.h" />
     <ClInclude Include="..\..\..\..\..\GLImplementation\include\glImplementation\factory\ModelGLFactory.h" />
+    <ClInclude Include="..\..\..\..\..\GLImplementation\include\glImplementation\factory\opengl\DiffuseTextureCubeMapGLFactory.h" />
+    <ClInclude Include="..\..\..\..\..\GLImplementation\include\glImplementation\factory\opengl\DiffuseTextureGLFactory.h" />
     <ClInclude Include="..\..\..\..\..\GLImplementation\include\glImplementation\factory\SceneGLFactory.h" />
     <ClInclude Include="..\..\..\..\..\GLImplementation\include\glImplementation\renderObjects\CameraGL.h" />
     <ClInclude Include="..\..\..\..\..\GLImplementation\include\glImplementation\renderObjects\CameraGLContainer.h" />
-    <ClInclude Include="..\..\..\..\..\GLImplementation\include\glImplementation\renderObjects\MaterialDiffuseTextureCubeMapGL.h" />
-    <ClInclude Include="..\..\..\..\..\GLImplementation\include\glImplementation\renderObjects\MaterialDiffuseTextureGL.h" />
     <ClInclude Include="..\..\..\..\..\GLImplementation\include\glImplementation\renderObjects\ModelGL.h" />
+    <ClInclude Include="..\..\..\..\..\GLImplementation\include\glImplementation\renderObjects\opengl\MaterialDiffuseTextureCubeMapGL.h" />
+    <ClInclude Include="..\..\..\..\..\GLImplementation\include\glImplementation\renderObjects\opengl\MaterialDiffuseTextureGL.h" />
+    <ClInclude Include="..\..\..\..\..\GLImplementation\include\glImplementation\renderObjects\opengl\ShaderDiffuseTextureCubeMapGL.h" />
+    <ClInclude Include="..\..\..\..\..\GLImplementation\include\glImplementation\renderObjects\opengl\ShaderDiffuseTextureGL.h" />
     <ClInclude Include="..\..\..\..\..\GLImplementation\include\glImplementation\renderObjects\SceneGL.h" />
-    <ClInclude Include="..\..\..\..\..\GLImplementation\include\glImplementation\renderObjects\ShaderDiffuseTextureCubeMapGL.h" />
-    <ClInclude Include="..\..\..\..\..\GLImplementation\include\glImplementation\renderObjects\ShaderDiffuseTextureGL.h" />
     <ClInclude Include="..\..\..\..\..\GLImplementation\include\glImplementation\renderObjects\TextureCubeMapGL.h" />
     <ClInclude Include="..\..\..\..\..\GLImplementation\include\glImplementation\renderObjects\TextureGL.h" />
     <ClInclude Include="..\..\..\..\..\GLImplementation\include\glImplementation\util\ShaderProgramUtil.h" />
@@ -191,15 +194,20 @@
   <ItemGroup>
     <ClCompile Include="..\..\..\..\..\GLImplementation\src\renderObjects\CameraGL.cpp" />
     <ClCompile Include="..\..\..\..\..\GLImplementation\src\renderObjects\CameraGLContainer.cpp" />
-    <ClCompile Include="..\..\..\..\..\GLImplementation\src\renderObjects\MaterialDiffuseTextureCubeMapGL.cpp" />
-    <ClCompile Include="..\..\..\..\..\GLImplementation\src\renderObjects\MaterialDiffuseTextureGL.cpp" />
     <ClCompile Include="..\..\..\..\..\GLImplementation\src\renderObjects\ModelGL.cpp" />
+    <ClCompile Include="..\..\..\..\..\GLImplementation\src\renderObjects\opengl\MaterialDiffuseTextureCubeMapGL.cpp" />
+    <ClCompile Include="..\..\..\..\..\GLImplementation\src\renderObjects\opengl\MaterialDiffuseTextureGL.cpp" />
+    <ClCompile Include="..\..\..\..\..\GLImplementation\src\renderObjects\opengl\ShaderDiffuseTextureCubeMapGL.cpp" />
+    <ClCompile Include="..\..\..\..\..\GLImplementation\src\renderObjects\opengl\ShaderDiffuseTextureGL.cpp" />
     <ClCompile Include="..\..\..\..\..\GLImplementation\src\renderObjects\SceneGL.cpp" />
-    <ClCompile Include="..\..\..\..\..\GLImplementation\src\renderObjects\ShaderDiffuseTextureCubeMapGL.cpp" />
-    <ClCompile Include="..\..\..\..\..\GLImplementation\src\renderObjects\ShaderDiffuseTextureGL.cpp" />
     <ClCompile Include="..\..\..\..\..\GLImplementation\src\renderObjects\TextureCubeMapGL.cpp" />
     <ClCompile Include="..\..\..\..\..\GLImplementation\src\renderObjects\TextureGL.cpp" />
     <ClCompile Include="..\..\..\..\..\GLImplementation\src\util\ShaderProgramUtil.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\CoreEngine\CoreEngine.vcxproj">
+      <Project>{31bc4eeb-8a3d-4852-8edf-71ce2481c704}</Project>
+    </ProjectReference>
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

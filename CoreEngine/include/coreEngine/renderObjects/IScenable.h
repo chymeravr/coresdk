@@ -4,10 +4,10 @@
 #include <string>
 
 namespace cl{
-    class IScenable {
-    public:
-        virtual std::string getSceneId() = 0;
-    };
+	class IScenable {
+	public:
+		virtual std::string getSceneId() = 0;
+	};
 }
 
 #endif //COREENGINE_ISCENABLE

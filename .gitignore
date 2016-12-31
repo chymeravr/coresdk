@@ -1,1 +1,9 @@
 /Repository
+*.iml
+.gradle/
+build/
+.idea/
+Release/
+Debug/
+
+

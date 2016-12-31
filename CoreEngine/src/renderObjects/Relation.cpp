@@ -2,72 +2,72 @@
 #include <assert.h>
 
 namespace cl{
-    Relation::Relation(ILoggerFactory *loggerFactory){
-        assert(loggerFactory != nullptr);
-        this->logger = loggerFactory->createLogger("CoreEngine::Relation: ");
-    }
+	Relation::Relation(ILoggerFactory *loggerFactory){
+		assert(loggerFactory != nullptr);
+		this->logger = loggerFactory->createLogger("CoreEngine::Relation: ");
+	}
 
-    void Relation::createRelation(Relation *relation){
-        assert(relation != nullptr);
-        assert(!exists(relation));
-        relationMap[relation->getType()].push_back(relation);
-        logger->log(LOG_DEBUG, this->getUniqueIdentifier() + " got related to " + relation->getUniqueIdentifier());
-    }
+	void Relation::createRelation(Relation *relation){
+		assert(relation != nullptr);
+		assert(!exists(relation));
+		relationMap[relation->getType()].push_back(relation);
+		logger->log(LOG_DEBUG, this->getUniqueIdentifier() + " got related to " + relation->getUniqueIdentifier());
+	}
 
-    bool Relation::exists(Relation *relation){
-        assert(relation != nullptr);
-        std::string type = relation->getType();
-        if (relationMap.find(type) == relationMap.cend()){
-            return false;
-        }
-        else{
-            std::vector<Relation*> &relations = relationMap[type];
-            for (auto it = relations.cbegin(); it != relations.cend(); it++){
-                if ((*it)->getUniqueIdentifier() == relation->getUniqueIdentifier()){
-                    return true;
-                }
-            }
-            return false;
-        }
-    }
+	bool Relation::exists(Relation *relation){
+		assert(relation != nullptr);
+		std::string type = relation->getType();
+		if (relationMap.find(type) == relationMap.cend()){
+			return false;
+		}
+		else{
+			std::vector<Relation*> &relations = relationMap[type];
+			for (auto it = relations.cbegin(); it != relations.cend(); it++){
+				if ((*it)->getUniqueIdentifier() == relation->getUniqueIdentifier()){
+					return true;
+				}
+			}
+			return false;
+		}
+	}
 
-    std::vector<Relation*> Relation::getRelations(std::string targetRelationType){
-        if (relationMap.find(targetRelationType) == relationMap.cend()){
-            return std::vector<Relation*>();
-        }
-        else{
-            return relationMap[targetRelationType];
-        }
-    }
+	std::vector<Relation*> Relation::getRelations(std::string targetRelationType){
+		if (relationMap.find(targetRelationType) == relationMap.cend()){
+			return std::vector<Relation*>();
+		}
+		else{
+			return relationMap[targetRelationType];
+		}
+	}
 
-    void Relation::destroyRelation(Relation *relation){
-        assert(relation != nullptr);
-        assert(exists(relation));
-        std::vector<Relation*> &relations = relationMap[relation->getType()];
-        for (auto it = relations.begin(); it != relations.end(); it++){
-            if ((*it)->getUniqueIdentifier() == relation->getUniqueIdentifier()){
-                Relation *swap = relations.back();
-                (*it) = swap;
-                relations.pop_back();
-                return;
-            }
-        }
-    }
+	void Relation::destroyRelation(Relation *relation){
+		assert(relation != nullptr);
+		assert(exists(relation));
+		std::vector<Relation*> &relations = relationMap[relation->getType()];
+		for (auto it = relations.begin(); it != relations.end(); it++){
+			if ((*it)->getUniqueIdentifier() == relation->getUniqueIdentifier()){
+				Relation *swap = relations.back();
+				(*it) = swap;
+				relations.pop_back();
+				return;
+			}
+		}
+	}
 
-    void Relation::createBiRelation(Relation *relation){
-        assert(relation != nullptr);
-        assert(!exists(relation));
-        assert(!relation->exists(this));
-        relation->createRelation(this);
-        this->createRelation(relation);
-        logger->log(LOG_DEBUG, "Relation created between " + this->getUniqueIdentifier() + " and " + relation->getUniqueIdentifier());
-    }
+	void Relation::createBiRelation(Relation *relation){
+		assert(relation != nullptr);
+		assert(!exists(relation));
+		assert(!relation->exists(this));
+		relation->createRelation(this);
+		this->createRelation(relation);
+		logger->log(LOG_DEBUG, "Relation created between " + this->getUniqueIdentifier() + " and " + relation->getUniqueIdentifier());
+	}
 
-    void Relation::destroyBiRelation(Relation *relation){
-        assert(relation != nullptr);
-        assert(exists(relation));
-        assert(relation->exists(this));
-        relation->destroyRelation(this);
-        this->destroyRelation(relation);
-    }
+	void Relation::destroyBiRelation(Relation *relation){
+		assert(relation != nullptr);
+		assert(exists(relation));
+		assert(relation->exists(this));
+		relation->destroyRelation(this);
+		this->destroyRelation(relation);
+	}
 }

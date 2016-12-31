@@ -5,7 +5,11 @@
 #ifndef ANDROIDSDK_GLTYPESGLES2_0_H
 #define ANDROIDSDK_GLTYPESGLES2_0_H
 
-#include <GLES2/gl2.h>
+// #include <GLES2/gl2.h>
+// #include <EGL/egl.h>
+// #include <EGL/eglext.h>
+#include <GLES3/gl3.h>
+// #include <GLES3/gl3ext.h>
 
 namespace cl{
     typedef GLboolean CL_GLboolean;

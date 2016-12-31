@@ -7,19 +7,19 @@
 #include <conf/GLTypes.h>
 
 namespace cl{
-    class CameraGLContainer : public IRenderable{
-    public:
-        CameraGLContainer(CL_GLuint &viewMatrixId, CL_GLuint &projectionMatrixId, CameraGL *cameraGL, ILogger *logger);
-        bool initialize();
-        void draw();
-        void deinitialize();
+	class CameraGLContainer : public IRenderable{
+	public:
+		CameraGLContainer(CL_GLuint &viewMatrixId, CL_GLuint &projectionMatrixId, CameraGL *cameraGL, ILogger *logger);
+		bool initialize();
+		void draw();
+		void deinitialize();
 
-    private:
-        CL_GLuint viewMatrixId;
-        CL_GLuint projectionMatrixId;
-        CameraGL *cameraGL;
-        ILogger *logger;
-    };
+	private:
+		CL_GLuint viewMatrixId;
+		CL_GLuint projectionMatrixId;
+		CameraGL *cameraGL;
+		ILogger *logger;
+	};
 }
 
 #endif //GLIMPLEMENTATION_CAMERAGLCONTAINER_H

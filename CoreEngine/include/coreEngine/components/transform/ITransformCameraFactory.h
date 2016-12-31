@@ -5,10 +5,10 @@
 #include <coreEngine/components/transform/TransformCamera.h>
 
 namespace cl{
-    class ITransformCameraFactory{
-    public:
-        virtual std::unique_ptr<TransformCamera> create(Camera *camera) = 0;
-    };
+	class ITransformCameraFactory{
+	public:
+		virtual std::unique_ptr<TransformCamera> create(Camera *camera) = 0;
+	};
 }
 
 #endif //COREENGINE_ITRANSFORMCAMERAFACTORY_H

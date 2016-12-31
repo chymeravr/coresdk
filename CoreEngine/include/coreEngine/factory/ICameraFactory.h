@@ -5,10 +5,10 @@
 #include <coreEngine/renderObjects/Camera.h>
 
 namespace cl{
-    class ICameraFactory{
-    public:
-        virtual std::unique_ptr<Camera> create(const std::string &sceneId, Scene *scene) = 0;
-    };
+	class ICameraFactory{
+	public:
+		virtual std::unique_ptr<Camera> create(const std::string &sceneId, Scene *scene) = 0;
+	};
 }
 
 #endif //COREENGINE_ICAMERAFACTORY_H

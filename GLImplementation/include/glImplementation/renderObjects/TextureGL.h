@@ -6,18 +6,18 @@
 #include <conf/GLTypes.h>
 
 namespace cl{
-    class TextureGL : public Texture, public IRenderable{
-    public:
-        TextureGL(const std::string &sceneId, ILoggerFactory *loggerFactory);
-        IRenderable *getRenderable();
-        bool initialize();
-        void draw();
-        void deinitialize();
+	class TextureGL : public Texture, public IRenderable{
+	public:
+		TextureGL(const std::string &sceneId, ILoggerFactory *loggerFactory);
+		IRenderable *getRenderable();
+		bool initialize();
+		void draw();
+		void deinitialize();
 
-    private:
-        std::unique_ptr<ILogger> logger;
-        CL_GLuint textureId;
-    };
+	private:
+		std::unique_ptr<ILogger> logger;
+		CL_GLuint textureId;
+	};
 }
 
 #endif //GLIMPLEMENTATION_TEXTUREGL_H

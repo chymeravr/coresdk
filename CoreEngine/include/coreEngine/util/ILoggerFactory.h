@@ -9,10 +9,10 @@
 #include <coreEngine/util/ILogger.h>
 
 namespace cl{
-    class ILoggerFactory{
-    public:
-        virtual std::unique_ptr<ILogger> createLogger(std::string tag) = 0;
-    };
+	class ILoggerFactory{
+	public:
+		virtual std::unique_ptr<ILogger> createLogger(std::string tag) = 0;
+	};
 }
 
 #endif //ANDROIDSDK_LOGGERFACTORY_H

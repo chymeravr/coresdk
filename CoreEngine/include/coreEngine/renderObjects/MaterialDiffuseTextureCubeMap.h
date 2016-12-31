@@ -6,19 +6,19 @@
 #include <coreEngine/renderObjects/ShaderDiffuseTextureCubeMap.h>
 
 namespace cl{
-    class MaterialDiffuseTextureCubeMap : public Material {
-    public:
-        virtual ~MaterialDiffuseTextureCubeMap(){}
-        MaterialDiffuseTextureCubeMap(const std::string &sceneId, ShaderDiffuseTextureCubeMap *shader, ILoggerFactory *loggerFactory) : Material(sceneId, shader, loggerFactory){}
-        void setDiffuseTexture(Texture *texture){
-            this->diffuseTexture = texture;
-        }
-        Texture *getDiffuseTexture(){
-            return this->diffuseTexture;
-        }
-    protected:
-        Texture *diffuseTexture;
-    };
+	class MaterialDiffuseTextureCubeMap : public Material {
+	public:
+		virtual ~MaterialDiffuseTextureCubeMap(){}
+		MaterialDiffuseTextureCubeMap(const std::string &sceneId, ShaderDiffuseTextureCubeMap *shader, ILoggerFactory *loggerFactory) : Material(sceneId, shader, loggerFactory){}
+		void setDiffuseTexture(Texture *texture){
+			this->diffuseTexture = texture;
+		}
+		Texture *getDiffuseTexture(){
+			return this->diffuseTexture;
+		}
+	protected:
+		Texture *diffuseTexture;
+	};
 }
 
 #endif //COREENGINE_MATERIALDIFFUSETEXTURECUBEMAP_H

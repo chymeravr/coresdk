@@ -5,10 +5,10 @@
 #include <coreEngine/renderObjects/Model.h>
 
 namespace cl{
-    class IModelFactory{
-    public:
-        virtual std::unique_ptr<Model> create(const std::string &sceneId) = 0;
-    };
+	class IModelFactory{
+	public:
+		virtual std::unique_ptr<Model> create(const std::string &sceneId) = 0;
+	};
 }
 
 #endif //COREENGINE_IMODELFACTORY_H

@@ -6,19 +6,19 @@
 #include <coreEngine/renderObjects/ShaderDiffuseTexture.h>
 
 namespace cl{
-    class MaterialDiffuseTexture : public Material{
-    public:
-        virtual ~MaterialDiffuseTexture(){}
-        MaterialDiffuseTexture(const std::string &sceneId, ShaderDiffuseTexture *shader, ILoggerFactory *loggerFactory) : Material(sceneId, shader, loggerFactory){}
-        void setDiffuseTexture(Texture *texture){
-            this->diffuseTexture = texture;
-        }
-        Texture *getDiffuseTexture(){
-            return this->diffuseTexture;
-        }
-    protected:
-        Texture *diffuseTexture;
-    };
+	class MaterialDiffuseTexture : public Material{
+	public:
+		virtual ~MaterialDiffuseTexture(){}
+		MaterialDiffuseTexture(const std::string &sceneId, ShaderDiffuseTexture *shader, ILoggerFactory *loggerFactory) : Material(sceneId, shader, loggerFactory){}
+		void setDiffuseTexture(Texture *texture){
+			this->diffuseTexture = texture;
+		}
+		Texture *getDiffuseTexture(){
+			return this->diffuseTexture;
+		}
+	protected:
+		Texture *diffuseTexture;
+	};
 }
 
 #endif //COREENGINE_MATERIALDIFFUSETEXTURE_H
