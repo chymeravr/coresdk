@@ -17,6 +17,7 @@ namespace cl{
 	private:
 		std::unique_ptr<ILogger> logger;
 		CL_GLuint textureId;
+		void swapColorChannels(unsigned char* data, unsigned int width, unsigned int height, unsigned int dataSize);
 	};
 }
 

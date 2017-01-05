@@ -15,7 +15,9 @@ namespace cl{
 
 		// Give the image to OpenGL
 		assert(data != nullptr);
-		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, width, height, 0, GL_BGR, GL_UNSIGNED_BYTE, data.get());
+		swapColorChannels(data.get(), width, height, dataSize);
+
+		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, width, height, 0, GL_RGB, GL_UNSIGNED_BYTE, data.get());
 		// ... nice trilinear filtering.
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
@@ -32,5 +34,19 @@ namespace cl{
 	}
 	void TextureGL::deinitialize(){
 		glDeleteTextures(1, &textureId);
+	}
+
+	void TextureGL::swapColorChannels(unsigned char* data, unsigned int width, unsigned int height, unsigned int dataSize)
+	{
+		unsigned int pixels = width*height;
+		unsigned int channels = dataSize / pixels;
+		for (int i = 0; i < pixels - 2; i++)
+		{
+			unsigned int firstIndex = i*channels + 0;
+			unsigned int lastIndex = i*channels + 2;
+			unsigned char temp = data[firstIndex];
+			data[firstIndex] = data[lastIndex];
+			data[lastIndex] = temp;
+		}
 	}
 }

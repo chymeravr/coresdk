@@ -1,0 +1,7 @@
+include ':testgraphicssdk'
+include ':coreEngine'
+include ':glImplementation'
+include ':image360'
+include ':image360Android'
+include ':renderer'
+include ':ovr_sdk_mobile'

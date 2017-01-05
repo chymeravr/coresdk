@@ -14,8 +14,6 @@
 #include <windowsImplementation/LoggerFactoryWindows.h>
 #include <glImplementation/factory/SceneGLFactory.h>
 #include <glImplementation/factory/ModelGLFactory.h>
-//#include <glImplementation/factory/DiffuseTextureGLFactory.h>
-//#include <glImplementation/factory/DiffuseTextureCubeMapGLFactory.h>
 #include <glImplementation/factory/opengl/DiffuseTextureCubeMapGLFactory.h>
 #include <glImplementation/factory/opengl/DiffuseTextureGLFactory.h>
 #include <glImplementation/factory/CameraGLFactory.h>
@@ -635,42 +633,8 @@ void renderScene()
 void update(int w, int h){
 }
 
-/*
-void startThread(void){
-ghMutex = CreateMutex(
-NULL,              // default security attributes
-FALSE,             // initially not owned
-NULL);             // unnamed mutex
-
-if (ghMutex == NULL)
-{
-printf("CreateMutex error: %d\n", GetLastError());
-}
-
-HANDLE aThread[1];
-DWORD ThreadID;
-aThread[0] = CreateThread(
-NULL,       // default security attributes
-0,          // default stack size
-(LPTHREAD_START_ROUTINE)renderScene,
-NULL,       // no thread function arguments
-0,          // default creation flags
-&ThreadID); // receive thread identifier
-
-if (aThread[0] == NULL)
-{
-printf("CreateThread error: %d\n", GetLastError());
-}
-
-WaitForSingleObject(aThread, INFINITE);
-CloseHandle(aThread[0]);
-CloseHandle(ghMutex);
-}
-*/
-
 void keyboard(unsigned char key,
 	int x, int y){
-	//logger->log(LOG_DEBUG, "Key presed:" + std::string(1, key));
 	std::unique_ptr<IEvent> keyPressEvent(new EventKeyPress((EventKeyPressListener*)(Image360*)application.get(), key, x, y));
 	eventQueue->push(std::move(keyPressEvent));
 }

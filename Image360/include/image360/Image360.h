@@ -22,9 +22,16 @@ namespace cl{
 	};
 	class Image360 : public EventKeyPressListener, public EventPassiveMouseMotionListener{
 	public:
-		Image360(std::unique_ptr<IRenderer> renderer, std::unique_ptr<ISceneFactory> sceneFactory, std::unique_ptr<IModelFactory> modelFactory, std::unique_ptr<IDiffuseTextureFactory> diffuseTextureFactory,
-			std::unique_ptr<IDiffuseTextureCubeMapFactory> diffuseTextureCubeMapFactory, std::unique_ptr<ITransformCameraFactory> transformCameraFactory, std::unique_ptr<ITransformModelFactory> transformModelFactory, std::unique_ptr<ICameraFactory> cameraFactory,
-			IEventQueue *eventQueue, ILoggerFactory *loggerFactory);
+		Image360(std::unique_ptr<IRenderer> renderer, 
+				 std::unique_ptr<ISceneFactory> sceneFactory, 
+				 std::unique_ptr<IModelFactory> modelFactory, 
+				 std::unique_ptr<IDiffuseTextureFactory> diffuseTextureFactory, 
+				 std::unique_ptr<IDiffuseTextureCubeMapFactory> diffuseTextureCubeMapFactory, 
+				 std::unique_ptr<ITransformCameraFactory> transformCameraFactory, 
+				 std::unique_ptr<ITransformModelFactory> transformModelFactory, 
+				 std::unique_ptr<ICameraFactory> cameraFactory,
+				 IEventQueue *eventQueue, 
+				 ILoggerFactory *loggerFactory);
 
 		//IApplication implementation
 		void start();
