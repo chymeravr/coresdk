@@ -5,6 +5,7 @@ def confRoot = "../../../../Conf"
 def glmRoot = "../../../../Repository/thirdParty/glm/glm-0.9.7.6/"
 def image360AndroidRoot = "../../../../AndroidImplementation"
 def ovr_mobile_root = "${project.rootDir}/ovr_sdk_mobile"
+def image360Android = "${project.rootDir}/image360Android"
 
 model {
     repositories{
@@ -47,6 +48,8 @@ model {
             cppFlags.add("-std=c++11")
             cppFlags.add("-frtti ")
             cppFlags.add("-fexceptions")
+
+            cppFlags.addAll(["-I" + file("${image360Android}/Include").absolutePath])
             // -I cppFlag -I is used for include files. In absence of this files will not recognize include statement with <> brackets
             cppFlags.add("-I" + file("${glmRoot}/glm").absolutePath)
             cppFlags.add("-I" + file("${image360AndroidRoot}/Include").absolutePath)
@@ -65,6 +68,7 @@ model {
                 jni{
                     source{
                         srcDir "${image360AndroidRoot}/src"
+                        srcDir "${image360Android}/src"
                     }
                     dependencies{
                         library 'libovrkernel' linkage 'static'

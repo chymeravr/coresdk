@@ -1,4 +1,4 @@
-include ':testgraphicssdk'
+include ':appNoHMD', ':appGearVR'
 include ':coreEngine'
 include ':glImplementation'
 include ':image360'

@@ -1,5 +1,5 @@
 //
-// Created by robin_chimera on 1/2/2017.
+// Created by robin_chimera on 1/9/2017.
 //
 
 #ifndef GRAPHICSSDK_RENDERERGEARVR_H
@@ -11,11 +11,15 @@
 #include <ctime>
 #include <sys/prctl.h>
 #include <unistd.h>
+//#include <commonFramework/include/Renderer.h>
 #include <coreEngine/IRenderer.h>
 #include <android/native_window.h> // requires ndk r5 or newer
 #include <android/native_window_jni.h> // requires ndk r5 or newer
+//#include <commonFramework/include/Logger.h>
 #include <coreEngine/util/ILogger.h>
-#include <LoggerAndroid.h>
+//#include <androidImplementations/include/LoggerAndroidImpl.h>
+
+#include <android/log.h>
 
 #include <VrApi.h>
 #include <VrApi_Helpers.h>
@@ -76,7 +80,31 @@ namespace cl {
 // Must use EGLSyncKHR because the VrApi still supports OpenGL ES 2.0
 #define EGL_SYNC
 
+#define DEBUG 1
+#define LOG_TAG "Image360Native"
 
+#define ALOGE(...) __android_log_print( ANDROID_LOG_ERROR, LOG_TAG, __VA_ARGS__ )
+#if DEBUG
+#define ALOGV(...) __android_log_print( ANDROID_LOG_VERBOSE, LOG_TAG, __VA_ARGS__ )
+#else
+#define ALOGV(...)
+#endif
+
+    // framebuffers
+    static const char * GlFrameBufferStatusString( GLenum status )
+    {
+        switch ( status )
+        {
+            case GL_FRAMEBUFFER_UNDEFINED:						return "GL_FRAMEBUFFER_UNDEFINED";
+            case GL_FRAMEBUFFER_INCOMPLETE_ATTACHMENT:			return "GL_FRAMEBUFFER_INCOMPLETE_ATTACHMENT";
+            case GL_FRAMEBUFFER_INCOMPLETE_MISSING_ATTACHMENT:	return "GL_FRAMEBUFFER_INCOMPLETE_MISSING_ATTACHMENT";
+            case GL_FRAMEBUFFER_UNSUPPORTED:					return "GL_FRAMEBUFFER_UNSUPPORTED";
+            case GL_FRAMEBUFFER_INCOMPLETE_MULTISAMPLE:			return "GL_FRAMEBUFFER_INCOMPLETE_MULTISAMPLE";
+            default:											return "unknown";
+        }
+    }
+
+#define CHECK_GL_ERRORS
 
 #ifdef CHECK_GL_ERRORS
 
@@ -90,7 +118,7 @@ namespace cl {
         case GL_INVALID_OPERATION:				return "GL_INVALID_OPERATION";
         case GL_INVALID_FRAMEBUFFER_OPERATION:	return "GL_INVALID_FRAMEBUFFER_OPERATION";
         case GL_OUT_OF_MEMORY:					return "GL_OUT_OF_MEMORY";
-        default: return "unknown";
+        default:                                return "unknown";
     }
 }
 
@@ -119,15 +147,49 @@ static void GLCheckErrors( int line )
     static const int GPU_LEVEL = 3;
     static const int NUM_MULTI_SAMPLES = 4;
 
-#define REDUCED_LATENCY 0
+#define MULTI_THREADED			0
+#define REDUCED_LATENCY			0
 
-    class RendererGearVR : public IRenderer{
+    typedef struct
+    {
+#if defined( EGL_SYNC )
+        EGLDisplay	Display;
+        EGLSyncKHR	Sync;
+#else
+        GLsync		Sync;
+#endif
+    } ovrFence;
+
+    typedef struct
+    {
+        int						Width;
+        int						Height;
+        int						Multisamples;
+        int						TextureSwapChainLength;
+        int						TextureSwapChainIndex;
+        bool					UseMultiview;
+        ovrTextureSwapChain *	ColorTextureSwapChain;
+        GLuint *				DepthBuffers;
+        GLuint *				FrameBuffers;
+    } ovrFramebuffer;
+
+    typedef struct
+    {
+        ovrVector3f			CurrentRotation;
+    } ovrSimulation;
+
+    typedef struct
+    {
+        ovrFramebuffer	FrameBuffer[VRAPI_FRAME_LAYER_EYE_MAX];
+        ovrFence *		Fence[VRAPI_FRAME_LAYER_EYE_MAX];
+        ovrMatrix4f		ProjectionMatrix;
+        ovrMatrix4f		TexCoordsTanAnglesMatrix;
+        int				NumBuffers;
+    } ovrRenderer;
+
+    class RendererGearVR : public IRenderer {
         class OpenGLExtensions_t;
         class EGLParams;
-        class OvrFrameBuffer;
-        class OvrRenderer;
-        class OvrFence;
-        class OvrSimulation;
 
         class OpenGLExtensions_t {
         public:
@@ -141,8 +203,8 @@ static void GLCheckErrors( int line )
             EGLDisplay display;
             EGLConfig config;
             EGLint numConfigs;
-            EGLSurface surface;
             EGLSurface tinySurface;
+            EGLSurface mainSurface;
             EGLContext context;
             EGLint width;
             EGLint height;
@@ -162,80 +224,9 @@ static void GLCheckErrors( int line )
             static std::string getEglErrorString(const EGLint error);
         };
 
-        class OvrFrameBuffer {
-        public:
-            int width;
-            int height;
-            int multisamples;
-            int textureSwapChainLength;
-            int textureSwapChainIndex;
-            bool useMultiView;
-            ovrTextureSwapChain *colorTextureSwapChain;
-            GLuint *depthBuffers;
-            GLuint *frameBuffers;
-        private:
-            ILogger *logger;
-        public:
-            OvrFrameBuffer();
-            void clear();
-            bool create(const bool useMultiview, const ovrTextureFormat colorFormat,
-                        const int width, const int height, const int multisamples);
-            void destroy();
-            void setCurrent();
-            static void setNone();
-            void resolve();
-            void advance();
-            static std::string frameBufferStatusString(GLenum error);
-        };
-
-        class OvrRenderer {
-        public:
-            OvrFrameBuffer frameBuffer[VRAPI_FRAME_LAYER_EYE_MAX];
-            OvrFence *fence[VRAPI_FRAME_LAYER_EYE_MAX];
-            ovrMatrix4f projectionMatrix;
-            ovrMatrix4f texCoordsTanAnglesMatrix;
-            int numBuffers;
-        private:
-            ILogger *logger;
-        public:
-            OvrRenderer();
-
-            void clear();
-
-            void create(const ovrJava *java, const bool useMultiview);
-
-            void destroy();
-
-            ovrFrameParms renderFrame(const ovrJava *java, long long frameIndex,
-                                      int minimumVsyncs,
-                                      const ovrPerformanceParms *perfParms,
-                                      const OvrSimulation *simulation,
-                                      const ovrTracking *tracking, ovrMobile *ovr);
-        };
-
-        class OvrFence {
-        public:
-#if defined( EGL_SYNC )
-            EGLDisplay	display;
-            EGLSyncKHR	sync;
-#else
-            GLsync sync;
-#endif
-        public:
-            void create();
-            void destroy();
-            void insert();
-        };
-
-        class OvrSimulation {
-            ovrVector3f currentRotation;
-        public:
-            void clear();
-            void advance(double predictedDisplayTime);
-        };
 
     private:
-        ILogger *logger;
+        std::unique_ptr<ILogger> logger;
         ANativeWindow *window;
         ovrJava java;
         JavaVM *javaVM;
@@ -244,20 +235,24 @@ static void GLCheckErrors( int line )
         ovrPerformanceParms perfParms;
 
         OpenGLExtensions_t glExtensions;
-        EGLParams eglParams;
-        OvrRenderer renderer;
-        OvrSimulation ovrSimulation;
+        EGLParams* eglParams;
+        ovrRenderer OVRRenderer;
+        ovrSimulation OVRSimulation;
 
         bool useMultiView;
         long long frameIndex;
         int minimumVSyncs;
+
+        ILoggerFactory *loggerFactory;
+
     public:
-        RendererGearVR(JNIEnv *env, jobject activityObject);
+        RendererGearVR(JNIEnv *env, jobject activityObject, ILoggerFactory* loggerFactory);
         bool start();
-        bool initialize();
+        bool initialize(Scene* scene);
         void update();
-        void draw();
-        void destroy();
+        void draw(Scene* scene);
+        void deinitialize(Scene* scene);
+        void stop();
         void setWindow(ANativeWindow *window);
         ANativeWindow* getWindow();
     private:
@@ -265,6 +260,5 @@ static void GLCheckErrors( int line )
         void leaveVrMode();
     };
 }
-
 
 #endif //GRAPHICSSDK_RENDERERGEARVR_H

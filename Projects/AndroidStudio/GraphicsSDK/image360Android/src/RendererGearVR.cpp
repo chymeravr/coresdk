@@ -1,17 +1,19 @@
 //
-// Created by robin_chimera on 1/2/2017.
+// Created by robin_chimera on 1/9/2017.
 //
 
-//#include <assert.h>
 #include <VrApi_Types.h>
-#include <cassert>
+#include "../Include/RendererGearVR.h"
+#include <coreEngine/util/ILoggerFactory.h>
+#include <coreEngine/renderObjects/Scene.h>
 #include <coreEngine/renderObjects/Camera.h>
 #include <coreEngine/renderObjects/Shader.h>
 #include <coreEngine/renderObjects/Material.h>
 #include <coreEngine/renderObjects/Model.h>
 #include <LoggerAndroid.h>
-#include "VrApi_Types.h"
-#include "../Include/RendererGearVR.h"
+#include <android/log.h>
+#include <RendererGearVR.h>
+#include <CameraGLOVR.h>
 
 namespace cl {
 
@@ -24,147 +26,6 @@ namespace cl {
     PFNEGLGETSYNCATTRIBKHRPROC eglGetSyncAttribKHR;
 #endif
 
-
-    /**
-     *
-     * RendererGearVR class methods
-     *
-     */
-
-    RendererGearVR::RendererGearVR(JNIEnv *env, jobject activityObject)
-            : logger(new LoggerAndroid("RendererGearVR")),
-              window(NULL),
-              ovrM(NULL),
-              frameIndex(0),
-              minimumVSyncs(1)
-    {
-        logger->log(LOG_INFO, "Renderer created");
-        env->GetJavaVM(&this->javaVM);
-        this->activityObject = env->NewGlobalRef(activityObject);
-    }
-
-    bool RendererGearVR::start() {
-        java.Vm = this->javaVM;
-        java.Vm->AttachCurrentThread(&java.Env, NULL);
-        java.ActivityObject = this->activityObject;
-
-        prctl(PR_SET_NAME, (long) "CL::Main", 0, 0, 0);
-        logger->log(LOG_DEBUG, "SystemActivities_Init()");
-        //SystemActivities_Init(&java);
-
-        logger->log(LOG_DEBUG, "vrapi_DefaultInitParms()");
-        const ovrInitParms initParms = vrapi_DefaultInitParms(&java);
-        logger->log(LOG_DEBUG, "vrapi_Initialize()");
-        int32_t initResult = vrapi_Initialize(&initParms);
-
-        if (initResult != VRAPI_INITIALIZE_SUCCESS) {
-            char const *msg = initResult == VRAPI_INITIALIZE_PERMISSIONS_ERROR ?
-                              "Thread priority security exception. Make sure the APK is signed." :
-                              "VrApi initialization error.";
-            //SystemActivities_DisplayError(&java, SYSTEM_ACTIVITIES_FATAL_ERROR_OSIG, __FILE__, msg);
-        }
-        logger->log(LOG_DEBUG, "eglParams.createEGLContext()");
-        eglParams.createEGLContext();
-        this->glExtensions.eglInitExtensions();
-        this->useMultiView &= (glExtensions.multiView &&
-                               vrapi_GetSystemPropertyInt(&java,
-                                                          VRAPI_SYS_PROP_MULTIVIEW_AVAILABLE));
-        logger->log(LOG_DEBUG, "UseMultiview : " + this->useMultiView);
-
-        this->perfParms = vrapi_DefaultPerformanceParms();
-        perfParms.CpuLevel = CPU_LEVEL;
-        perfParms.GpuLevel = GPU_LEVEL;
-        perfParms.MainThreadTid = gettid();
-
-        /*
-         * Creating renderer specific config
-         */
-        renderer.create(&java, this->useMultiView);
-    }
-
-    bool RendererGearVR::initialize() {
-        this->enterIntoVrMode();
-    }
-
-    void RendererGearVR::update() { }
-
-    void RendererGearVR::draw() {
-        // This is the only place the frame index is incremented, right before
-        // calling vrapi_GetPredictedDisplayTime().
-        this->frameIndex++;
-
-        // Get the HMD pose, predicted for the middle of the time period during which
-        // the new eye images will be displayed. The number of frames predicted ahead
-        // depends on the pipeline depth of the engine and the synthesis rate.
-        // The better the prediction, the less black will be pulled in at the edges.
-        const double predictedDisplayTime = vrapi_GetPredictedDisplayTime(this->ovrM,
-                                                                          this->frameIndex);
-        const ovrTracking baseTracking = vrapi_GetPredictedTracking(this->ovrM,
-                                                                    predictedDisplayTime);
-
-        // Apply the head-on-a-stick model if there is no positional tracking.
-        const ovrHeadModelParms headModelParms = vrapi_DefaultHeadModelParms();
-        const ovrTracking tracking = vrapi_ApplyHeadModel(&headModelParms, &baseTracking);
-        ovrSimulation.advance(predictedDisplayTime);
-
-        // Render eye images and setup ovrFrameParms using ovrTracking.
-        const ovrFrameParms frameParms = this->renderer.renderFrame(&this->java, this->frameIndex, this->minimumVSyncs, &this->perfParms, /*scene,*/ &this->ovrSimulation, &tracking, this->ovrM);
-
-        // Hand over the eye images to the time warp.
-        vrapi_SubmitFrame( this->ovrM, &frameParms);
-    }
-
-    void RendererGearVR::destroy() {
-        this->renderer.destroy();
-        this->eglParams.destroyEGLContext();
-        vrapi_Shutdown();
-
-        //SystemActivities_Shutdown( &java );
-
-        this->java.Vm->DetachCurrentThread();
-    }
-
-    void RendererGearVR::setWindow(ANativeWindow *window) {
-        this->window = window;
-        logger->log(LOG_INFO, "Windows Set");
-    }
-
-    ANativeWindow* RendererGearVR::getWindow() {
-        //this->window = window;
-        logger->log(LOG_INFO, "Windows Get");
-        return this->window;
-    }
-
-
-    void RendererGearVR::enterIntoVrMode() {
-        if (this->ovrM == NULL) {
-            ovrModeParms parms = vrapi_DefaultModeParms(&this->java);
-            // Must reset the FLAG_FULLSCREEN window flag when using a SurfaceView
-            parms.Flags |= VRAPI_MODE_FLAG_RESET_WINDOW_FULLSCREEN;
-
-            parms.Flags |= VRAPI_MODE_FLAG_NATIVE_WINDOW;
-            parms.Display = (size_t) this->eglParams.display;
-            parms.WindowSurface = (size_t) this->window;
-            parms.ShareContext = (size_t) this->eglParams.context;
-
-            logger->log(LOG_DEBUG, "vrapi_EnterVrMode()");
-
-            this->ovrM = vrapi_EnterVrMode(&parms);
-
-            // If entering VR mode failed then the ANativeWindow was not valid.
-            if (this->ovrM == NULL) {
-                logger->log(LOG_ERROR, "Invalid ANativeWindow!");
-                this->window = NULL;
-            }
-        }
-    }
-
-    void RendererGearVR::leaveVrMode() {
-        logger->log(LOG_DEBUG, "vrapi_LeaveVrMode()");
-        vrapi_LeaveVrMode(this->ovrM);
-        this->ovrM = NULL;
-
-    }
 
     /**
      *
@@ -197,9 +58,8 @@ namespace cl {
      *
      */
 
-    RendererGearVR::EGLParams::EGLParams()
-            //: logger(new LoggerAndroidImpl("RendererGearVR::EGLParams"))
-    {
+    RendererGearVR::EGLParams::EGLParams() :
+            logger(new LoggerAndroid("RendererGearVR::EGLParams")) {
     }
 
     void RendererGearVR::EGLParams::clear() {
@@ -207,15 +67,23 @@ namespace cl {
         this->minorVersion = 0;
         this->display = 0;
         this->config = 0;
+//        this->numConfigs = 0;
         this->tinySurface = EGL_NO_SURFACE;
-        //this->mainsurface = EGL_NO_SURFACE;
+        this->mainSurface = EGL_NO_SURFACE;
         this->context = EGL_NO_CONTEXT;
+//        this->width = 0;
+//        this->height = 0;
     }
 
     void RendererGearVR::EGLParams::createEGLContext() {
-        display = eglGetDisplay(EGL_DEFAULT_DISPLAY);
+        if( this->display != 0)
+        {
+            return;
+        }
 
-        logger->log(LOG_DEBUG, "EGL initialized");
+        this->display = eglGetDisplay(EGL_DEFAULT_DISPLAY);
+        this->logger->log(LOG_DEBUG, "EGL initialized");
+
         eglInitialize(display, &majorVersion, &minorVersion);
 
         // Do NOT use eglChooseConfig, because the Android EGL code pushes in multisample
@@ -228,6 +96,7 @@ namespace cl {
         if (eglGetConfigs(display, configs, MAX_CONFIGS, &numConfigs) == EGL_FALSE) {
             logger->log(LOG_ERROR,
                         "eglGetConfigs() failed: " + this->getEglErrorString(glGetError()));
+            return;
         }
 
         const EGLint configAttribs[] =
@@ -241,19 +110,19 @@ namespace cl {
                         EGL_SAMPLES, 0,
                         EGL_NONE
                 };
-        config = 0;
+        this->config = 0;
 
         for (int i = 0; i < numConfigs; i++) {
             EGLint value = 0;
 
-            eglGetConfigAttrib(display, configs[i], EGL_RENDERABLE_TYPE, &value);
+            eglGetConfigAttrib(this->display, configs[i], EGL_RENDERABLE_TYPE, &value);
             if ((value & EGL_OPENGL_ES3_BIT_KHR) != EGL_OPENGL_ES3_BIT_KHR) {
                 continue;
             }
 
             // The pbuffer config also needs to be compatible with normal window rendering
             // so it can share textures with the window context.
-            eglGetConfigAttrib(display, configs[i], EGL_SURFACE_TYPE, &value);
+            eglGetConfigAttrib(this->display, configs[i], EGL_SURFACE_TYPE, &value);
             if ((value & (EGL_WINDOW_BIT | EGL_PBUFFER_BIT)) !=
                 (EGL_WINDOW_BIT | EGL_PBUFFER_BIT)) {
                 continue;
@@ -261,7 +130,7 @@ namespace cl {
 
             int j = 0;
             for (; configAttribs[j] != EGL_NONE; j += 2) {
-                eglGetConfigAttrib(display, configs[i], configAttribs[j], &value);
+                eglGetConfigAttrib(this->display, configs[i], configAttribs[j], &value);
                 if (value != configAttribs[j + 1]) {
                     break;
                 }
@@ -271,7 +140,7 @@ namespace cl {
                 break;
             }
         }
-        if (config == 0) {
+        if (this->config == 0) {
             logger->log(LOG_ERROR,
                         "eglChooseConfig() failed: " + this->getEglErrorString(eglGetError()));
             return;
@@ -282,11 +151,11 @@ namespace cl {
                         EGL_NONE
                 };
 
-        logger->log(LOG_DEBUG, "eglCreateContext");
-        context = eglCreateContext(display, config, EGL_NO_CONTEXT, contextAttribs);
+        this->logger->log(LOG_DEBUG, "eglCreateContext");
+        this->context = eglCreateContext(display, config, EGL_NO_CONTEXT, contextAttribs);
 
-        if (context == EGL_NO_CONTEXT) {
-            logger->log(LOG_ERROR,
+        if (this->context == EGL_NO_CONTEXT) {
+            this->logger->log(LOG_ERROR,
                         "eglCreateContext() failed: " + this->getEglErrorString(eglGetError()));
             return;
         }
@@ -298,393 +167,471 @@ namespace cl {
                         EGL_NONE
                 };
 
-        logger->log(LOG_DEBUG, "eglCreatePbufferSurface");
-        tinySurface = eglCreatePbufferSurface(display, config, surfaceAttribs);
+        this->logger->log(LOG_DEBUG, "eglCreatePbufferSurface");
+        this->tinySurface = eglCreatePbufferSurface(this->display, this->config, surfaceAttribs);
 
-        if (tinySurface == EGL_NO_SURFACE) {
-            logger->log(LOG_ERROR, "eglCreatePbufferSurface() failed: " +
+        if (this->tinySurface == EGL_NO_SURFACE) {
+            this->logger->log(LOG_ERROR, "eglCreatePbufferSurface() failed: " +
                                    this->getEglErrorString(eglGetError()));
-            eglDestroyContext(display, context);
-            context = EGL_NO_CONTEXT;
+            eglDestroyContext(this->display, this->context);
+            this->context = EGL_NO_CONTEXT;
             return;
         }
 
-        logger->log(LOG_DEBUG, "eglMakeCurrent( Display, TinySurface, TinySurface, Context )");
-        if (eglMakeCurrent(display, tinySurface, tinySurface, context) == EGL_FALSE) {
-            logger->log(LOG_ERROR,
+        this->logger->log(LOG_DEBUG, "eglMakeCurrent( Display, TinySurface, TinySurface, Context )");
+        if (eglMakeCurrent(this->display, this->tinySurface, this->tinySurface, this->context) == EGL_FALSE) {
+            this->logger->log(LOG_ERROR,
                         "eglMakeCurrent() failed: " + this->getEglErrorString(eglGetError()));
-            eglDestroySurface(display, tinySurface);
-            eglDestroyContext(display, context);
-            context = EGL_NO_CONTEXT;
+            eglDestroySurface(this->display, this->tinySurface);
+            eglDestroyContext(this->display, this->context);
+            this->context = EGL_NO_CONTEXT;
             return;
         }
     }
 
+    /* TODO : write a destructor if this is really necessary */
     void RendererGearVR::EGLParams::destroyEGLContext() {
-        if (display != 0) {
-            logger->log(LOG_DEBUG,
+        if (this->display != 0) {
+            this->logger->log(LOG_DEBUG,
                         "eglMakeCurrent (display, EGL_NO_SURFACE, EGL_NO_SURFACE, EGL_NO_CONTEXT)");
-            if (eglMakeCurrent(display, EGL_NO_SURFACE, EGL_NO_SURFACE, EGL_NO_CONTEXT) ==
+            if (eglMakeCurrent(this->display, EGL_NO_SURFACE, EGL_NO_SURFACE, EGL_NO_CONTEXT) ==
                 EGL_FALSE) {
-                logger->log(LOG_ERROR,
+                this->logger->log(LOG_ERROR,
                             "eglMakeCurrent failed: " + getEglErrorString(eglGetError()));
             }
         }
-        if (context != EGL_NO_CONTEXT) {
-            logger->log(LOG_DEBUG, "eglDestroyContext(display, context)");
-            if (eglDestroyContext(display, context) == EGL_FALSE) {
-                logger->log(LOG_ERROR, "eglDestroyContext(display, context) failed: " +
+        if (this->context != EGL_NO_CONTEXT) {
+            this->logger->log(LOG_DEBUG, "eglDestroyContext(display, context)");
+            if (eglDestroyContext(this->display, this->context) == EGL_FALSE) {
+                this->logger->log(LOG_ERROR, "eglDestroyContext(display, context) failed: " +
                                        getEglErrorString(eglGetError()));
             }
-            context = EGL_NO_CONTEXT;
+            this->context = EGL_NO_CONTEXT;
         }
-        if (tinySurface != EGL_NO_SURFACE) {
-            logger->log(LOG_DEBUG, "eglDestroySurface(display, surface)");
-            if (eglDestroySurface(display, surface) == EGL_FALSE) {
-                logger->log(LOG_ERROR, "eglDestroySurface(display, surface) failed: " +
+        if (this->tinySurface != EGL_NO_SURFACE) {
+            this->logger->log(LOG_DEBUG, "eglDestroySurface(display, surface)");
+            if (eglDestroySurface(this->display, this->tinySurface) == EGL_FALSE) {
+                this->logger->log(LOG_ERROR, "eglDestroySurface(display, surface) failed: " +
                                        getEglErrorString(eglGetError()));
             }
-            tinySurface = EGL_NO_SURFACE;
+            this->tinySurface = EGL_NO_SURFACE;
         }
-        if (display != 0) {
-            logger->log(LOG_DEBUG, "eglTerminate(display)");
-            if (eglTerminate(display) == EGL_FALSE) {
-                logger->log(LOG_ERROR,
+        if (this->display != 0) {
+            this->logger->log(LOG_DEBUG, "eglTerminate(display)");
+            if (eglTerminate(this->display) == EGL_FALSE) {
+                this->logger->log(LOG_ERROR,
                             "eglTerminate(display) failed:" + getEglErrorString(eglGetError()));
             }
-            display = 0;
+            this->display = 0;
         }
     }
 
     std::string RendererGearVR::EGLParams::getEglErrorString(const EGLint error) {
         switch (error) {
-            case EGL_SUCCESS:
-                return "EGL_SUCCESS";
-            case EGL_NOT_INITIALIZED:
-                return "EGL_NOT_INITIALIZED";
-            case EGL_BAD_ACCESS:
-                return "EGL_BAD_ACCESS";
-            case EGL_BAD_ALLOC:
-                return "EGL_BAD_ALLOC";
-            case EGL_BAD_ATTRIBUTE:
-                return "EGL_BAD_ATTRIBUTE";
-            case EGL_BAD_CONTEXT:
-                return "EGL_BAD_CONTEXT";
-            case EGL_BAD_CONFIG:
-                return "EGL_BAD_CONFIG";
-            case EGL_BAD_CURRENT_SURFACE:
-                return "EGL_BAD_CURRENT_SURFACE";
-            case EGL_BAD_DISPLAY:
-                return "EGL_BAD_DISPLAY";
-            case EGL_BAD_SURFACE:
-                return "EGL_BAD_SURFACE";
-            case EGL_BAD_MATCH:
-                return "EGL_BAD_MATCH";
-            case EGL_BAD_PARAMETER:
-                return "EGL_BAD_PARAMETER";
-            case EGL_BAD_NATIVE_PIXMAP:
-                return "EGL_BAD_NATIVE_PIXMAP";
-            case EGL_BAD_NATIVE_WINDOW:
-                return "EGL_BAD_NATIVE_WINDOW";
-            case EGL_CONTEXT_LOST:
-                return "EGL_CONTEXT_LOST";
-            default:
-                return "unknown";
+            case EGL_SUCCESS:                           return "EGL_SUCCESS";
+            case EGL_NOT_INITIALIZED:                   return "EGL_NOT_INITIALIZED";
+            case EGL_BAD_ACCESS:                        return "EGL_BAD_ACCESS";
+            case EGL_BAD_ALLOC:                         return "EGL_BAD_ALLOC";
+            case EGL_BAD_ATTRIBUTE:                     return "EGL_BAD_ATTRIBUTE";
+            case EGL_BAD_CONTEXT:                       return "EGL_BAD_CONTEXT";
+            case EGL_BAD_CONFIG:                        return "EGL_BAD_CONFIG";
+            case EGL_BAD_CURRENT_SURFACE:               return "EGL_BAD_CURRENT_SURFACE";
+            case EGL_BAD_DISPLAY:                       return "EGL_BAD_DISPLAY";
+            case EGL_BAD_SURFACE:                       return "EGL_BAD_SURFACE";
+            case EGL_BAD_MATCH:                         return "EGL_BAD_MATCH";
+            case EGL_BAD_PARAMETER:                     return "EGL_BAD_PARAMETER";
+            case EGL_BAD_NATIVE_PIXMAP:                 return "EGL_BAD_NATIVE_PIXMAP";
+            case EGL_BAD_NATIVE_WINDOW:                 return "EGL_BAD_NATIVE_WINDOW";
+            case EGL_CONTEXT_LOST:                      return "EGL_CONTEXT_LOST";
+            default:                                    return "unknown";
         }
     }
 
     /**
      *
-     * OvrFrameRendere class methods
+     * OvrFrameBuffer class methods
      *
      */
-    RendererGearVR::OvrFrameBuffer::OvrFrameBuffer()
-             : logger(new LoggerAndroid("RendererGearVR::OvrFrameBuffer"))
+    static void ovrFramebuffer_Clear( ovrFramebuffer * frameBuffer )
     {
+        frameBuffer->Width = 0;
+        frameBuffer->Height = 0;
+        frameBuffer->Multisamples = 0;
+        frameBuffer->TextureSwapChainLength = 0;
+        frameBuffer->TextureSwapChainIndex = 0;
+        frameBuffer->UseMultiview = false;
+        frameBuffer->ColorTextureSwapChain = NULL;
+        frameBuffer->DepthBuffers = NULL;
+        frameBuffer->FrameBuffers = NULL;
     }
 
-    void RendererGearVR::OvrFrameBuffer::clear() {
-        this->width = 0;
-        this->height = 0;
-        this->multisamples = 0;
-        this->textureSwapChainLength = 0;
-        this->textureSwapChainIndex = 0;
-        this->useMultiView = false;
-        this->colorTextureSwapChain = NULL;
-        this->depthBuffers = NULL;
-        this->frameBuffers = NULL;
-    }
-
-    bool RendererGearVR::OvrFrameBuffer::create(const bool useMultiview,
-                                                const ovrTextureFormat colorFormat, const int width,
-                                                const int height, const int multisamples) {
+    static bool ovrFramebuffer_Create( ovrFramebuffer * frameBuffer, const bool useMultiview,
+                                       const ovrTextureFormat colorFormat, const int width,
+                                       const int height, const int multisamples )
+    {
         PFNGLRENDERBUFFERSTORAGEMULTISAMPLEEXTPROC glRenderbufferStorageMultisampleEXT =
-                (PFNGLRENDERBUFFERSTORAGEMULTISAMPLEEXTPROC) eglGetProcAddress(
-                        "glRenderbufferStorageMultisampleEXT");
+                (PFNGLRENDERBUFFERSTORAGEMULTISAMPLEEXTPROC)eglGetProcAddress( "glRenderbufferStorageMultisampleEXT" );
         PFNGLFRAMEBUFFERTEXTURE2DMULTISAMPLEEXTPROC glFramebufferTexture2DMultisampleEXT =
-                (PFNGLFRAMEBUFFERTEXTURE2DMULTISAMPLEEXTPROC) eglGetProcAddress(
-                        "glFramebufferTexture2DMultisampleEXT");
+                (PFNGLFRAMEBUFFERTEXTURE2DMULTISAMPLEEXTPROC)eglGetProcAddress( "glFramebufferTexture2DMultisampleEXT" );
 
         PFNGLFRAMEBUFFERTEXTUREMULTIVIEWOVRPROC glFramebufferTextureMultiviewOVR =
-                (PFNGLFRAMEBUFFERTEXTUREMULTIVIEWOVRPROC) eglGetProcAddress(
-                        "glFramebufferTextureMultiviewOVR");
+                (PFNGLFRAMEBUFFERTEXTUREMULTIVIEWOVRPROC) eglGetProcAddress( "glFramebufferTextureMultiviewOVR" );
         PFNGLFRAMEBUFFERTEXTUREMULTISAMPLEMULTIVIEWOVRPROC glFramebufferTextureMultisampleMultiviewOVR =
-                (PFNGLFRAMEBUFFERTEXTUREMULTISAMPLEMULTIVIEWOVRPROC) eglGetProcAddress(
-                        "glFramebufferTextureMultisampleMultiviewOVR");
+                (PFNGLFRAMEBUFFERTEXTUREMULTISAMPLEMULTIVIEWOVRPROC) eglGetProcAddress( "glFramebufferTextureMultisampleMultiviewOVR" );
 
-        this->width = width;
-        this->height = height;
-        this->multisamples = multisamples;
-        this->useMultiView = useMultiview;
+        frameBuffer->Width = width;
+        frameBuffer->Height = height;
+        frameBuffer->Multisamples = multisamples;
+        frameBuffer->UseMultiview = ( useMultiview && ( glFramebufferTextureMultiviewOVR != NULL ) ) ? true : false;
 
-        this->colorTextureSwapChain = vrapi_CreateTextureSwapChain(
-                this->useMultiView ? VRAPI_TEXTURE_TYPE_2D_ARRAY : VRAPI_TEXTURE_TYPE_2D,
-                colorFormat, this->width, this->height, 1, true);
-        this->textureSwapChainLength = vrapi_GetTextureSwapChainLength(this->colorTextureSwapChain);
-        this->depthBuffers = (GLuint *) malloc(this->textureSwapChainLength * sizeof(GLuint));
-        this->frameBuffers = (GLuint *) malloc(this->textureSwapChainLength * sizeof(GLuint));
+        frameBuffer->ColorTextureSwapChain = vrapi_CreateTextureSwapChain( frameBuffer->UseMultiview ? VRAPI_TEXTURE_TYPE_2D_ARRAY : VRAPI_TEXTURE_TYPE_2D,
+                                                                           colorFormat, width, height, 1, true );
+        frameBuffer->TextureSwapChainLength = vrapi_GetTextureSwapChainLength( frameBuffer->ColorTextureSwapChain );
+        frameBuffer->DepthBuffers = (GLuint *)malloc( frameBuffer->TextureSwapChainLength * sizeof( GLuint ) );
+        frameBuffer->FrameBuffers = (GLuint *)malloc( frameBuffer->TextureSwapChainLength * sizeof( GLuint ) );
 
-        logger->log(LOG_DEBUG, "OvrFrameBuffer->useMultiView:" + this->useMultiView);
+        ALOGV( "        frameBuffer->UseMultiview = %d", frameBuffer->UseMultiview );
 
-        for (int i = 0; i < this->textureSwapChainLength; i++) {
-            //create color buffer texture
-            const GLuint colorTexture = vrapi_GetTextureSwapChainHandle(this->colorTextureSwapChain,
-                                                                        i);
-            GLenum colorTextureTarget = this->useMultiView ? GL_TEXTURE_2D_ARRAY : GL_TEXTURE_2D;
-            GL(glBindTexture(colorTextureTarget, colorTexture));
-            GL(glTexParameteri(colorTextureTarget, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE));
-            GL(glTexParameteri(colorTextureTarget, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE));
-            GL(glTexParameteri(colorTextureTarget, GL_TEXTURE_MIN_FILTER, GL_LINEAR));
-            GL(glTexParameteri(colorTextureTarget, GL_TEXTURE_MAG_FILTER, GL_LINEAR));
-            GL(glBindTexture(colorTextureTarget, 0));
+        for ( int i = 0; i < frameBuffer->TextureSwapChainLength; i++ )
+        {
+            // Create the color buffer texture.
+            const GLuint colorTexture = vrapi_GetTextureSwapChainHandle( frameBuffer->ColorTextureSwapChain, i );
+            GLenum colorTextureTarget = frameBuffer->UseMultiview ? GL_TEXTURE_2D_ARRAY : GL_TEXTURE_2D;
+            GL( glBindTexture( colorTextureTarget, colorTexture ) );
+            GL( glTexParameteri( colorTextureTarget, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE ) );
+            GL( glTexParameteri( colorTextureTarget, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE ) );
+            GL( glTexParameteri( colorTextureTarget, GL_TEXTURE_MIN_FILTER, GL_LINEAR ) );
+            GL( glTexParameteri( colorTextureTarget, GL_TEXTURE_MAG_FILTER, GL_LINEAR ) );
+            GL( glBindTexture( colorTextureTarget, 0 ) );
 
-            if (this->useMultiView) {
-                //Create depth buffer texture
-                GL(glGenTextures(1, &this->depthBuffers[i]));
-                GL(glBindTexture(GL_TEXTURE_2D_ARRAY, this->depthBuffers[i]));
-                GL(glTexStorage3D(GL_TEXTURE_2D_ARRAY, 1, GL_DEPTH_COMPONENT24, this->width,
-                                  this->height, 2));
-                GL(glBindTexture(GL_TEXTURE_2D_ARRAY, 0));
+            if ( frameBuffer->UseMultiview )
+            {
+                // Create the depth buffer texture.
+                GL( glGenTextures( 1, &frameBuffer->DepthBuffers[i] ) );
+                GL( glBindTexture( GL_TEXTURE_2D_ARRAY, frameBuffer->DepthBuffers[i] ) );
+                GL( glTexStorage3D( GL_TEXTURE_2D_ARRAY, 1, GL_DEPTH_COMPONENT24, width, height, 2 ) );
+                GL( glBindTexture( GL_TEXTURE_2D_ARRAY, 0 ) );
 
-                //create Frame buffer
-                GL(glGenFramebuffers(1, &this->frameBuffers[i]));
-                GL(glBindFramebuffer(GL_DRAW_FRAMEBUFFER, this->frameBuffers[i]));
-                if (this->multisamples > 1 &&
-                    (glFramebufferTextureMultisampleMultiviewOVR != NULL)) {
-                    GL(glFramebufferTextureMultisampleMultiviewOVR(GL_DRAW_FRAMEBUFFER,
-                                                                   GL_DEPTH_ATTACHMENT,
-                                                                   this->depthBuffers[i],
-                                                                   0 /* level */,
-                                                                   this->multisamples /* samples */,
-                                                                   0 /* baseViewIndex */,
-                                                                   2 /* numViews */ ))
-                    GL(glFramebufferTextureMultisampleMultiviewOVR(GL_DRAW_FRAMEBUFFER,
-                                                                   GL_COLOR_ATTACHMENT0,
-                                                                   colorTexture, 0 /* level */,
-                                                                   multisamples /* samples */,
-                                                                   0 /* baseViewIndex */,
-                                                                   2 /* numViews */ ));
-                } else {
-                    GL(glFramebufferTextureMultiviewOVR(GL_DRAW_FRAMEBUFFER, GL_DEPTH_ATTACHMENT,
-                                                        this->depthBuffers[i], 0 /* level */,
-                                                        0 /* baseViewIndex */, 2 /* numViews */ ));
-                    GL(glFramebufferTextureMultiviewOVR(GL_DRAW_FRAMEBUFFER, GL_COLOR_ATTACHMENT0,
-                                                        colorTexture, 0 /* level */,
-                                                        0 /* baseViewIndex */, 2 /* numViews */ ));
+                // Create the frame buffer.
+                GL( glGenFramebuffers( 1, &frameBuffer->FrameBuffers[i] ) );
+                GL( glBindFramebuffer( GL_DRAW_FRAMEBUFFER, frameBuffer->FrameBuffers[i] ) );
+                if ( multisamples > 1 && ( glFramebufferTextureMultisampleMultiviewOVR != NULL ) )
+                {
+                    GL( glFramebufferTextureMultisampleMultiviewOVR( GL_DRAW_FRAMEBUFFER, GL_DEPTH_ATTACHMENT,
+                                                                     frameBuffer->DepthBuffers[i], 0 /* level */,
+                                                                     multisamples /* samples */, 0 /* baseViewIndex */, 2 /* numViews */ ) );
+                    GL( glFramebufferTextureMultisampleMultiviewOVR( GL_DRAW_FRAMEBUFFER, GL_COLOR_ATTACHMENT0,
+                                                                     colorTexture, 0 /* level */, multisamples /* samples */,
+                                                                     0 /* baseViewIndex */, 2 /* numViews */ ) );
                 }
-                GL(GLenum renderFrameBufferStatus = glCheckFramebufferStatus(GL_DRAW_FRAMEBUFFER));
-                GL(glBindFramebuffer(GL_DRAW_FRAMEBUFFER, 0));
-                if (renderFrameBufferStatus != GL_FRAMEBUFFER_COMPLETE) {
-                    logger->log(LOG_ERROR, "Incomplete frame buffer object: " +
-                                           frameBufferStatusString(renderFrameBufferStatus));
+                else
+                {
+                    GL( glFramebufferTextureMultiviewOVR( GL_DRAW_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, frameBuffer->DepthBuffers[i],
+                                                          0 /* level */, 0 /* baseViewIndex */, 2 /* numViews */ ) );
+                    GL( glFramebufferTextureMultiviewOVR( GL_DRAW_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, colorTexture, 0 /* level */, 0 /* baseViewIndex */, 2 /* numViews */ ) );
+                }
+
+                GL( GLenum renderFramebufferStatus = glCheckFramebufferStatus( GL_DRAW_FRAMEBUFFER ) );
+                GL( glBindFramebuffer( GL_DRAW_FRAMEBUFFER, 0 ) );
+                if ( renderFramebufferStatus != GL_FRAMEBUFFER_COMPLETE )
+                {
+                    ALOGE( "Incomplete frame buffer object: %s", GlFrameBufferStatusString( renderFramebufferStatus ) );
                     return false;
                 }
+            }
+            else
+            {
+                if ( multisamples > 1 && glRenderbufferStorageMultisampleEXT != NULL && glFramebufferTexture2DMultisampleEXT != NULL )
+                {
+                    // Create multisampled depth buffer.
+                    GL( glGenRenderbuffers( 1, &frameBuffer->DepthBuffers[i] ) );
+                    GL( glBindRenderbuffer( GL_RENDERBUFFER, frameBuffer->DepthBuffers[i] ) );
+                    GL( glRenderbufferStorageMultisampleEXT( GL_RENDERBUFFER, multisamples, GL_DEPTH_COMPONENT24, width, height ) );
+                    GL( glBindRenderbuffer( GL_RENDERBUFFER, 0 ) );
 
-            } else { //useMultiView
-                if (this->multisamples > 1 && glRenderbufferStorageMultisampleEXT != NULL &&
-                    glFramebufferTexture2DMultisampleEXT != NULL) {
-                    //create multisample depth buffer
-                    GL(glGenRenderbuffers(1, &this->depthBuffers[i]));
-                    GL(glBindRenderbuffer(GL_RENDERBUFFER, this->depthBuffers[i]));
-                    GL(glRenderbufferStorageMultisampleEXT(GL_RENDERBUFFER, this->multisamples,
-                                                           GL_DEPTH_COMPONENT24, width, height));
-                    GL(glBindRenderbuffer(GL_RENDERBUFFER, 0));
-
-                    //create framebuffer
-                    GL(glGenFramebuffers(1, &this->frameBuffers[i]));
-                    GL(glBindFramebuffer(GL_FRAMEBUFFER, this->frameBuffers[i]));
-                    GL(glFramebufferTexture2DMultisampleEXT(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0,
-                                                            GL_TEXTURE_2D, colorTexture, 0,
-                                                            this->multisamples));
-                    GL(glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT,
-                                                 GL_RENDERBUFFER, this->depthBuffers[i]));
-                    GL(GLenum renderFrameBufferStatus = glCheckFramebufferStatus(GL_FRAMEBUFFER));
-                    GL(glBindFramebuffer(GL_FRAMEBUFFER, 0));
-                    if (renderFrameBufferStatus != GL_FRAMEBUFFER_COMPLETE) {
-                        logger->log(LOG_ERROR, "Incomplete frame buffer object:" +
-                                               frameBufferStatusString(renderFrameBufferStatus));
+                    // Create the frame buffer.
+                    // NOTE: glFramebufferTexture2DMultisampleEXT only works with GL_FRAMEBUFFER.
+                    GL( glGenFramebuffers( 1, &frameBuffer->FrameBuffers[i] ) );
+                    GL( glBindFramebuffer( GL_FRAMEBUFFER, frameBuffer->FrameBuffers[i] ) );
+                    GL( glFramebufferTexture2DMultisampleEXT( GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, colorTexture, 0, multisamples ) );
+                    GL( glFramebufferRenderbuffer( GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_RENDERBUFFER, frameBuffer->DepthBuffers[i] ) );
+                    GL( GLenum renderFramebufferStatus = glCheckFramebufferStatus( GL_FRAMEBUFFER ) );
+                    GL( glBindFramebuffer( GL_FRAMEBUFFER, 0 ) );
+                    if ( renderFramebufferStatus != GL_FRAMEBUFFER_COMPLETE )
+                    {
+                        ALOGE( "Incomplete frame buffer object: %s", GlFrameBufferStatusString( renderFramebufferStatus ) );
                         return false;
                     }
-                } else {
-                    //create depth buffers
-                    GL(glGenRenderbuffers(1, &this->depthBuffers[i]));
-                    GL(glBindRenderbuffer(GL_RENDERBUFFER, this->depthBuffers[i]));
-                    GL(glRenderbufferStorage(GL_FRAMEBUFFER, GL_DEPTH_COMPONENT24, width, height));
-                    GL(glBindFramebuffer(GL_RENDERBUFFER, 0));
+                }
+                else
+                {
+                    // Create depth buffer.
+                    GL( glGenRenderbuffers( 1, &frameBuffer->DepthBuffers[i] ) );
+                    GL( glBindRenderbuffer( GL_RENDERBUFFER, frameBuffer->DepthBuffers[i] ) );
+                    GL( glRenderbufferStorage( GL_RENDERBUFFER, GL_DEPTH_COMPONENT24, width, height ) );
+                    GL( glBindRenderbuffer( GL_RENDERBUFFER, 0 ) );
 
-                    //create framebuffer
-                    GL(glGenFramebuffers(1, &this->frameBuffers[i]));
-                    GL(glBindFramebuffer(GL_DRAW_FRAMEBUFFER, this->frameBuffers[i]));
-                    GL(glFramebufferRenderbuffer(GL_DRAW_FRAMEBUFFER, GL_DEPTH_ATTACHMENT,
-                                                 GL_RENDERBUFFER, this->frameBuffers[i]));
-                    GL(glFramebufferTexture2D(GL_DRAW_FRAMEBUFFER, GL_COLOR_ATTACHMENT0,
-                                              GL_TEXTURE_2D, colorTexture, 0));
-                    GL(GLenum renderFrameBufferStatus = glCheckFramebufferStatus(
-                               GL_DRAW_FRAMEBUFFER));
-                    GL(glBindFramebuffer(GL_DRAW_FRAMEBUFFER, 0));
-                    if (renderFrameBufferStatus != GL_FRAMEBUFFER_COMPLETE) {
-                        logger->log(LOG_ERROR, "Incomplete frame buffer object:" +
-                                               frameBufferStatusString(renderFrameBufferStatus));
+                    // Create the frame buffer.
+                    GL( glGenFramebuffers( 1, &frameBuffer->FrameBuffers[i] ) );
+                    GL( glBindFramebuffer( GL_DRAW_FRAMEBUFFER, frameBuffer->FrameBuffers[i] ) );
+                    GL( glFramebufferRenderbuffer( GL_DRAW_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_RENDERBUFFER, frameBuffer->DepthBuffers[i] ) );
+                    GL( glFramebufferTexture2D( GL_DRAW_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, colorTexture, 0 ) );
+                    GL( GLenum renderFramebufferStatus = glCheckFramebufferStatus( GL_DRAW_FRAMEBUFFER ) );
+                    GL( glBindFramebuffer( GL_DRAW_FRAMEBUFFER, 0 ) );
+                    if ( renderFramebufferStatus != GL_FRAMEBUFFER_COMPLETE )
+                    {
+                        ALOGE( "Incomplete frame buffer object: %s", GlFrameBufferStatusString( renderFramebufferStatus ) );
                         return false;
                     }
                 }
             }
-
         }
+
         return true;
     }
 
-    void RendererGearVR::OvrFrameBuffer::destroy() {
-        GL(glDeleteFramebuffers(this->textureSwapChainLength, this->frameBuffers));
-        if (this->useMultiView) {
-            GL(glDeleteTextures(this->textureSwapChainLength, this->depthBuffers));
+    static void ovrFramebuffer_Destroy( ovrFramebuffer * frameBuffer )
+    {
+        GL( glDeleteFramebuffers( frameBuffer->TextureSwapChainLength, frameBuffer->FrameBuffers ) );
+        if ( frameBuffer->UseMultiview )
+        {
+            GL( glDeleteTextures( frameBuffer->TextureSwapChainLength, frameBuffer->DepthBuffers ) );
         }
-        else {
-            GL(glDeleteRenderbuffers(this->textureSwapChainLength, this->depthBuffers));
+        else
+        {
+            GL( glDeleteRenderbuffers( frameBuffer->TextureSwapChainLength, frameBuffer->DepthBuffers ) );
         }
-        vrapi_DestroyTextureSwapChain(this->colorTextureSwapChain);
+        vrapi_DestroyTextureSwapChain( frameBuffer->ColorTextureSwapChain );
 
-        free(this->depthBuffers);
-        free(this->frameBuffers);
+        free( frameBuffer->DepthBuffers );
+        free( frameBuffer->FrameBuffers );
 
-        this->clear();
+        ovrFramebuffer_Clear( frameBuffer );
     }
 
-    void RendererGearVR::OvrFrameBuffer::setCurrent() {
-        GL(glBindFramebuffer(GL_DRAW_FRAMEBUFFER, this->frameBuffers[this->textureSwapChainIndex]));
+    static void ovrFramebuffer_SetCurrent( ovrFramebuffer * frameBuffer )
+    {
+        GL( glBindFramebuffer( GL_DRAW_FRAMEBUFFER, frameBuffer->FrameBuffers[frameBuffer->TextureSwapChainIndex] ) );
     }
 
-    void RendererGearVR::OvrFrameBuffer::setNone() {
-        GL(glBindFramebuffer(GL_DRAW_FRAMEBUFFER, 0));
+    static void ovrFramebuffer_SetNone()
+    {
+        GL( glBindFramebuffer( GL_DRAW_FRAMEBUFFER, 0 ) );
     }
 
-    void RendererGearVR::OvrFrameBuffer::resolve() {
-        const GLenum depthAttachment[1] = {GL_DEPTH_ATTACHMENT};
-        glInvalidateFramebuffer(GL_DRAW_FRAMEBUFFER, 1, depthAttachment);
+    static void ovrFramebuffer_Resolve( ovrFramebuffer * frameBuffer )
+    {
+        // Discard the depth buffer, so the tiler won't need to write it back out to memory.
+        const GLenum depthAttachment[1] = { GL_DEPTH_ATTACHMENT };
+        glInvalidateFramebuffer( GL_DRAW_FRAMEBUFFER, 1, depthAttachment );
 
-        //Flush this frame worth of commands
+        // Flush this frame worth of commands.
         glFlush();
     }
 
-    void RendererGearVR::OvrFrameBuffer::advance() {
-        this->textureSwapChainIndex =
-                (this->textureSwapChainIndex + 1) % this->textureSwapChainLength;
+    static void ovrFramebuffer_Advance( ovrFramebuffer * frameBuffer )
+    {
+        // Advance to the next texture from the set.
+        frameBuffer->TextureSwapChainIndex = ( frameBuffer->TextureSwapChainIndex + 1 ) % frameBuffer->TextureSwapChainLength;
     }
 
-    std::string RendererGearVR::OvrFrameBuffer::frameBufferStatusString(GLenum error) {
-        switch ( error )
-        {
-            case GL_FRAMEBUFFER_UNDEFINED:						return "GL_FRAMEBUFFER_UNDEFINED";
-            case GL_FRAMEBUFFER_INCOMPLETE_ATTACHMENT:			return "GL_FRAMEBUFFER_INCOMPLETE_ATTACHMENT";
-            case GL_FRAMEBUFFER_INCOMPLETE_MISSING_ATTACHMENT:	return "GL_FRAMEBUFFER_INCOMPLETE_MISSING_ATTACHMENT";
-            case GL_FRAMEBUFFER_UNSUPPORTED:					return "GL_FRAMEBUFFER_UNSUPPORTED";
-            case GL_FRAMEBUFFER_INCOMPLETE_MULTISAMPLE:			return "GL_FRAMEBUFFER_INCOMPLETE_MULTISAMPLE";
-            default:											return "unknown";
-        }
+
+
+    static void ovrFence_Create( ovrFence * fence )
+    {
+#if defined( EGL_SYNC )
+        fence->Display = 0;
+        fence->Sync = EGL_NO_SYNC_KHR;
+#else
+        fence->Sync = 0;
+#endif
     }
+
+    static void ovrFence_Destroy( ovrFence * fence )
+    {
+#if defined( EGL_SYNC )
+        if ( fence->Sync != EGL_NO_SYNC_KHR )
+        {
+            if ( eglDestroySyncKHR( fence->Display, fence->Sync ) ==  EGL_FALSE )
+            {
+                ALOGE( "eglDestroySyncKHR() : EGL_FALSE" );
+                return;
+            }
+            fence->Display = 0;
+            fence->Sync = EGL_NO_SYNC_KHR;
+        }
+#else
+        if ( fence->Sync != 0 )
+	{
+		glDeleteSync( fence->Sync );
+		fence->Sync = 0;
+	}
+#endif
+    }
+
+    static void ovrFence_Insert( ovrFence * fence )
+    {
+        ovrFence_Destroy( fence );
+
+#if defined( EGL_SYNC )
+        fence->Display = eglGetCurrentDisplay();
+        fence->Sync = eglCreateSyncKHR( fence->Display, EGL_SYNC_FENCE_KHR, NULL );
+        if ( fence->Sync == EGL_NO_SYNC_KHR )
+        {
+            ALOGE( "eglCreateSyncKHR() : EGL_NO_SYNC_KHR" );
+            return;
+        }
+        // Force flushing the commands.
+        // Note that some drivers will already flush when calling eglCreateSyncKHR.
+        if ( eglClientWaitSyncKHR( fence->Display, fence->Sync, EGL_SYNC_FLUSH_COMMANDS_BIT_KHR, 0 ) == EGL_FALSE )
+        {
+            ALOGE( "eglClientWaitSyncKHR() : EGL_FALSE" );
+            return;
+        }
+#else
+        // Create and insert a new sync object.
+	fence->Sync = glFenceSync( GL_SYNC_GPU_COMMANDS_COMPLETE, 0 );
+	// Force flushing the commands.
+	// Note that some drivers will already flush when calling glFenceSync.
+	glClientWaitSync( fence->Sync, GL_SYNC_FLUSH_COMMANDS_BIT, 0 );
+#endif
+    }
+
+    /**
+     *
+     * OvrSimulation class methods
+     *
+     */
+
+    static void ovrSimulation_Clear( ovrSimulation * simulation )
+    {
+        simulation->CurrentRotation.x = 0.0f;
+        simulation->CurrentRotation.y = 0.0f;
+        simulation->CurrentRotation.z = 0.0f;
+    }
+
+    static void ovrSimulation_Advance( ovrSimulation * simulation, double predictedDisplayTime )
+    {
+        // Update rotation.
+        simulation->CurrentRotation.x = (float)( predictedDisplayTime );
+        simulation->CurrentRotation.y = (float)( predictedDisplayTime );
+        simulation->CurrentRotation.z = (float)( predictedDisplayTime );
+    }
+
 
     /**
      *
      * OvrRenderer class methods
      *
      */
-    RendererGearVR::OvrRenderer::OvrRenderer()
-             : logger(new LoggerAndroid("RendererGearVR::OvrRenderer"))
+
+    static void ovrRenderer_Clear( ovrRenderer * renderer )
     {
-    }
-
-    void RendererGearVR::OvrRenderer::clear() {
-
-        for (int eye = 0; eye < VRAPI_FRAME_LAYER_EYE_MAX; eye++) {
-            this->clear();
-            //ovrFramebuffer_Clear( &renderer->FrameBuffer[eye] );
+        for ( int eye = 0; eye < VRAPI_FRAME_LAYER_EYE_MAX; eye++ )
+        {
+            ovrFramebuffer_Clear( &renderer->FrameBuffer[eye] );
         }
-        this->projectionMatrix = ovrMatrix4f_CreateIdentity();
-        this->texCoordsTanAnglesMatrix = ovrMatrix4f_CreateIdentity();
-        this->numBuffers = VRAPI_FRAME_LAYER_EYE_MAX;
+        renderer->ProjectionMatrix = ovrMatrix4f_CreateIdentity();
+        renderer->TexCoordsTanAnglesMatrix = ovrMatrix4f_CreateIdentity();
+        renderer->NumBuffers = VRAPI_FRAME_LAYER_EYE_MAX;
     }
 
-    void RendererGearVR::OvrRenderer::create(const ovrJava *java, const bool useMultiview) {
-        this->numBuffers = useMultiview ? 1 : VRAPI_FRAME_LAYER_EYE_MAX;
+    static void ovrRenderer_Create( ovrRenderer * renderer, const ovrJava * java, const bool useMultiview )
+    {
+        renderer->NumBuffers = useMultiview ? 1 : VRAPI_FRAME_LAYER_EYE_MAX;
 
-        //create frame buffers
-        for (int eye = 0; eye < this->numBuffers; eye++) {
-            this->frameBuffer[eye].create(useMultiview,
-                                          VRAPI_TEXTURE_FORMAT_8888,
-                                          vrapi_GetSystemPropertyInt(java,
-                                                                     VRAPI_SYS_PROP_SUGGESTED_EYE_TEXTURE_WIDTH),
-                                          vrapi_GetSystemPropertyInt(java,
-                                                                     VRAPI_SYS_PROP_SUGGESTED_EYE_TEXTURE_HEIGHT),
-                                          NUM_MULTI_SAMPLES);
-            this->fence[eye] = (OvrFence *) malloc(
-                    this->frameBuffer[eye].textureSwapChainLength * sizeof(OvrFence));
-            for (int i = 0; i < this->frameBuffer[eye].textureSwapChainLength; i++) {
-                this->fence[eye][i].create();
+        // Create the frame buffers.
+        for ( int eye = 0; eye < renderer->NumBuffers; eye++ )
+        {
+            ovrFramebuffer_Create( &renderer->FrameBuffer[eye], useMultiview,
+                                   VRAPI_TEXTURE_FORMAT_8888,
+                                   vrapi_GetSystemPropertyInt( java, VRAPI_SYS_PROP_SUGGESTED_EYE_TEXTURE_WIDTH ),
+                                   vrapi_GetSystemPropertyInt( java, VRAPI_SYS_PROP_SUGGESTED_EYE_TEXTURE_HEIGHT ),
+                                   NUM_MULTI_SAMPLES );
+
+            renderer->Fence[eye] = (ovrFence *) malloc( renderer->FrameBuffer[eye].TextureSwapChainLength * sizeof( ovrFence ) );
+            for ( int i = 0; i < renderer->FrameBuffer[eye].TextureSwapChainLength; i++ )
+            {
+                ovrFence_Create( &renderer->Fence[eye][i] );
             }
         }
 
-        //setup projection matrix
-        this->projectionMatrix = ovrMatrix4f_CreateProjectionFov(
-                vrapi_GetSystemPropertyFloat(java, VRAPI_SYS_PROP_SUGGESTED_EYE_FOV_DEGREES_X),
-                vrapi_GetSystemPropertyFloat(java, VRAPI_SYS_PROP_SUGGESTED_EYE_FOV_DEGREES_Y),
-                0.0f, 0.0f, 1.0f, 0.0f);
-        this->texCoordsTanAnglesMatrix = ovrMatrix4f_TanAngleMatrixFromProjection(
-                &this->projectionMatrix);
+        // Setup the projection matrix.
+        renderer->ProjectionMatrix = ovrMatrix4f_CreateProjectionFov(
+                vrapi_GetSystemPropertyFloat( java, VRAPI_SYS_PROP_SUGGESTED_EYE_FOV_DEGREES_X ),
+                vrapi_GetSystemPropertyFloat( java, VRAPI_SYS_PROP_SUGGESTED_EYE_FOV_DEGREES_Y ),
+                0.0f, 0.0f, 1.0f, 0.0f );
+        renderer->TexCoordsTanAnglesMatrix = ovrMatrix4f_TanAngleMatrixFromProjection( &renderer->ProjectionMatrix );
     }
 
-    void RendererGearVR::OvrRenderer::destroy() {
-        for (int eye = 0; eye < this->numBuffers; eye++) {
-            for (int i = 0; i < this->frameBuffer[eye].textureSwapChainLength; i++) {
-                this->fence[eye][i].destroy();
+    static void ovrRenderer_Destroy( ovrRenderer * renderer )
+    {
+        for ( int eye = 0; eye < renderer->NumBuffers; eye++ )
+        {
+            for ( int i = 0; i < renderer->FrameBuffer[eye].TextureSwapChainLength; i++ )
+            {
+                ovrFence_Destroy( &renderer->Fence[eye][i] );
             }
-            free(this->fence[eye]);
+            free( renderer->Fence[eye] );
 
-            this->frameBuffer[eye].destroy();
+            ovrFramebuffer_Destroy( &renderer->FrameBuffer[eye] );
         }
-        this->projectionMatrix = ovrMatrix4f_CreateIdentity();
-        this->texCoordsTanAnglesMatrix = ovrMatrix4f_CreateIdentity();
+        renderer->ProjectionMatrix = ovrMatrix4f_CreateIdentity();
+        renderer->TexCoordsTanAnglesMatrix = ovrMatrix4f_CreateIdentity();
     }
 
-    ovrFrameParms RendererGearVR::OvrRenderer::renderFrame(const ovrJava *java,
-                                                           long long frameIndex, int minimumVsyncs,
-                                                           const ovrPerformanceParms *perfParms,
-                                                           const OvrSimulation *simulation,
-                                                           const ovrTracking *tracking,
-                                                           ovrMobile *ovr) {
-        ovrFrameParms parms = vrapi_DefaultFrameParms(java, VRAPI_FRAME_INIT_DEFAULT, vrapi_GetTimeInSeconds(), NULL);
+    void ovrRenderer_drawScene(Scene* scene)
+    {
+        IRenderable *sceneRenderer = scene->getRenderable();
+        sceneRenderer->draw();
+
+        std::vector<Relation*> cameraRelations = scene->getRelations("camera");
+        assert(cameraRelations.size() == 1);
+        ((Camera*)cameraRelations[0])->getRenderable()->draw();
+
+        std::vector<Relation*> shaderRelations = scene->getRelations("shader");
+        for (auto it = shaderRelations.cbegin(); it != shaderRelations.cend(); it++){
+            Shader* shader = (Shader*)(*it);
+            shader->getRenderable()->draw();
+
+            std::vector<Relation*> materialRelations = shader->getRelations("material");
+            for (auto it = materialRelations.cbegin(); it != materialRelations.cend(); it++){
+                Material *material = (Material*)(*it);
+                material->getRenderable()->draw();
+
+                std::vector<Relation*> modelRelations = material->getRelations("model");
+                for (auto it = modelRelations.cbegin(); it != modelRelations.cend(); it++){
+                    Model *model = (Model*)(*it);
+                    model->getRenderable()->draw();
+                }
+            }
+        }
+    }
+
+    static ovrFrameParms ovrRenderer_RenderFrame( ovrRenderer * renderer, const ovrJava * java,
+                                                  long long frameIndex, int minimumVsyncs, const ovrPerformanceParms * perfParms,
+                                                  Scene * scene, const ovrSimulation * simulation,
+                                                  const ovrTracking * tracking, ovrMobile * ovr )
+    {
+        ovrFrameParms parms = vrapi_DefaultFrameParms( java, VRAPI_FRAME_INIT_DEFAULT, vrapi_GetTimeInSeconds(), NULL );
         parms.FrameIndex = frameIndex;
         parms.MinimumVsyncs = minimumVsyncs;
         parms.PerformanceParms = *perfParms;
-        parms.Layers[VRAPI_FRAME_LAYER_TYPE_WORLD].Flags |= VRAPI_FRAME_LAYER_FLAG_CHROMATIC_ABERRATION_CORRECTION;
+
+
 
         const ovrHeadModelParms headModelParms = vrapi_DefaultHeadModelParms();
 
 #if REDUCED_LATENCY
-        ovrTracking updatedTracking = vrapi_GetPredictedTracking(ovr, tracking->HeadPose.TimeInSeconds);
-        updatedTracking.HeadPose.Pose.Position = tracking->HeadPose.Pose.Position;
+        // Update orientation, not position.
+	ovrTracking updatedTracking = vrapi_GetPredictedTracking( ovr, tracking->HeadPose.TimeInSeconds );
+	updatedTracking.HeadPose.Pose.Position = tracking->HeadPose.Pose.Position;
 #else
         ovrTracking updatedTracking = *tracking;
 #endif
+
+        std::vector<Relation*> cameraRelations = scene->getRelations("camera");
+        CameraGLOVR *camera = (CameraGLOVR*)cameraRelations[0];
 
         // Calculate the view matrix.
         const ovrMatrix4f centerEyeViewMatrix = vrapi_GetCenterEyeViewMatrix( &headModelParms, &updatedTracking, NULL );
@@ -698,146 +645,332 @@ namespace cl {
         eyeViewMatrixTransposed[1] = ovrMatrix4f_Transpose( &eyeViewMatrix[1] );
 
         ovrMatrix4f projectionMatrixTransposed;
-        projectionMatrixTransposed = ovrMatrix4f_Transpose(&this->projectionMatrix);
+        projectionMatrixTransposed = ovrMatrix4f_Transpose( &renderer->ProjectionMatrix );
 
-        for(int eye=0; eye < VRAPI_FRAME_LAYER_EYE_MAX; eye++){
-            OvrFrameBuffer *frameBuffer = &this->frameBuffer[this->numBuffers == 1 ? 0 : eye];
-            parms.Layers[VRAPI_FRAME_LAYER_TYPE_WORLD].Textures[eye].ColorTextureSwapChain = frameBuffer->colorTextureSwapChain;
-            parms.Layers[VRAPI_FRAME_LAYER_TYPE_WORLD].Textures[eye].TextureSwapChainIndex = frameBuffer->textureSwapChainIndex;
-            parms.Layers[VRAPI_FRAME_LAYER_TYPE_WORLD].Textures[eye].TexCoordsFromTanAngles = this->texCoordsTanAnglesMatrix;
-            parms.Layers[VRAPI_FRAME_LAYER_TYPE_WORLD].Textures[eye].HeadPose = updatedTracking.HeadPose;
+
+
+        for ( int eye = 0; eye < VRAPI_FRAME_LAYER_EYE_MAX; eye++ )
+        {
+            ovrFramebuffer * frameBuffer = &renderer->FrameBuffer[renderer->NumBuffers == 1 ? 0 : eye];
+            parms.Layers[0].Textures[eye].ColorTextureSwapChain = frameBuffer->ColorTextureSwapChain;
+            parms.Layers[0].Textures[eye].TextureSwapChainIndex = frameBuffer->TextureSwapChainIndex;
+            parms.Layers[0].Textures[eye].TexCoordsFromTanAngles = renderer->TexCoordsTanAnglesMatrix;
+            parms.Layers[0].Textures[eye].HeadPose = updatedTracking.HeadPose;
         }
+
+        parms.Layers[0].Flags |= VRAPI_FRAME_LAYER_FLAG_CHROMATIC_ABERRATION_CORRECTION;
 
         unsigned long long completionFence[VRAPI_FRAME_LAYER_EYE_MAX] = { 0 };
 
-        for(int eye=0; eye<this->numBuffers; eye++){
+        auto tempProjectionMat = renderer->ProjectionMatrix;
+        CL_Mat44 sceneProjectionMat = { tempProjectionMat.M[0][0], tempProjectionMat.M[0][1], tempProjectionMat.M[0][2], tempProjectionMat.M[0][3],
+                                        tempProjectionMat.M[1][0], tempProjectionMat.M[1][1], tempProjectionMat.M[1][2], tempProjectionMat.M[1][3],
+                                        tempProjectionMat.M[2][0], tempProjectionMat.M[2][1], tempProjectionMat.M[2][2], tempProjectionMat.M[2][3],
+                                        tempProjectionMat.M[3][0], tempProjectionMat.M[3][1], tempProjectionMat.M[3][2], tempProjectionMat.M[3][3]};
+        camera->setProjectionMatrix(sceneProjectionMat);
+
+        // Render the eye images.
+        for ( int eye = 0; eye < renderer->NumBuffers; eye++ )
+        {
             // NOTE: In the non-mv case, latency can be further reduced by updating the sensor prediction
             // for each eye (updates orientation, not position)
-            OvrFrameBuffer * frameBuffer = &this->frameBuffer[eye];
-            frameBuffer->setCurrent();
-            GL( glEnable( GL_SCISSOR_TEST ) );
-            GL( glDepthMask( GL_TRUE ) );
-            GL( glEnable( GL_DEPTH_TEST ) );
-            GL( glDepthFunc( GL_LEQUAL ) );
-            GL( glEnable( GL_CULL_FACE ) );
-            GL( glCullFace( GL_BACK ) );
-            GL( glViewport( 0, 0, frameBuffer->width, frameBuffer->height ) );
-            GL( glScissor( 0, 0, frameBuffer->width, frameBuffer->height ) );
-            GL( glClearColor( 0.125f, 0.0f, 0.125f, 1.0f ) );
-            GL( glClear( GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT ) );
-            //GL( glBindVertexArray( scene->Cube.VertexArrayObject ) );
-            //GL( glDrawElementsInstanced( GL_TRIANGLES, scene->Cube.IndexCount, GL_UNSIGNED_SHORT, NULL, NUM_INSTANCES ) );
-            //GL( glBindVertexArray( 0 ) );
+            auto tempViewMat = eyeViewMatrixTransposed[eye];
 
+            CL_Mat44 sceneViewMat = { tempViewMat.M[0][0], tempViewMat.M[0][1], tempViewMat.M[0][2], tempViewMat.M[0][3],
+                                      tempViewMat.M[1][0], tempViewMat.M[1][1], tempViewMat.M[1][2], tempViewMat.M[1][3],
+                                      tempViewMat.M[2][0], tempViewMat.M[2][1], tempViewMat.M[2][2], tempViewMat.M[2][3],
+                                      tempViewMat.M[3][0], tempViewMat.M[3][1], tempViewMat.M[3][2], tempViewMat.M[3][3]};
+            camera->setViewMatrix(sceneViewMat);
+
+
+            ovrFramebuffer * frameBuffer = &renderer->FrameBuffer[eye];
+            ovrFramebuffer_SetCurrent( frameBuffer );
+
+
+            GL( glEnable( GL_SCISSOR_TEST ) );
+//            GL( glDepthMask( GL_TRUE ) );
+//            GL( glEnable( GL_DEPTH_TEST ) );
+//            GL( glDepthFunc( GL_LEQUAL ) );
+//            GL( glEnable( GL_CULL_FACE ) );
+//            GL( glCullFace( GL_BACK ) );
+            GL( glViewport( 0, 0, frameBuffer->Width, frameBuffer->Height ) );
+            GL( glScissor( 0, 0, frameBuffer->Width, frameBuffer->Height ) );
+//            GL( glClearColor( 0.0f, 0.0f, 0.0f, 1.0f ) );
+//            GL( glClear( GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT ) );
+
+
+            ovrRenderer_drawScene(scene);
 
             // Explicitly clear the border texels to black because OpenGL-ES does not support GL_CLAMP_TO_BORDER.
             {
                 // Clear to fully opaque black.
                 GL( glClearColor( 0.0f, 0.0f, 0.0f, 1.0f ) );
                 // bottom
-                GL( glScissor( 0, 0, frameBuffer->width, 1 ) );
+                GL( glScissor( 0, 0, frameBuffer->Width, 1 ) );
                 GL( glClear( GL_COLOR_BUFFER_BIT ) );
                 // top
-                GL( glScissor( 0, frameBuffer->height - 1, frameBuffer->width, 1 ) );
+                GL( glScissor( 0, frameBuffer->Height - 1, frameBuffer->Width, 1 ) );
                 GL( glClear( GL_COLOR_BUFFER_BIT ) );
                 // left
-                GL( glScissor( 0, 0, 1, frameBuffer->height ) );
+                GL( glScissor( 0, 0, 1, frameBuffer->Height ) );
                 GL( glClear( GL_COLOR_BUFFER_BIT ) );
                 // right
-                GL( glScissor( frameBuffer->width - 1, 0, 1, frameBuffer->height ) );
+                GL( glScissor( frameBuffer->Width - 1, 0, 1, frameBuffer->Height ) );
                 GL( glClear( GL_COLOR_BUFFER_BIT ) );
             }
 
-            frameBuffer->resolve();
-            OvrFence * fence = &this->fence[eye][frameBuffer->textureSwapChainIndex];
-            fence->insert();
-            completionFence[eye] = (size_t)fence->sync;
 
-            frameBuffer->advance();
+
+            ovrFramebuffer_Resolve( frameBuffer );
+
+            ovrFence * fence = &renderer->Fence[eye][frameBuffer->TextureSwapChainIndex];
+            ovrFence_Insert( fence );
+            completionFence[eye] = (size_t)fence->Sync;
+
+            ovrFramebuffer_Advance( frameBuffer );
         }
+
         for ( int eye = 0; eye < VRAPI_FRAME_LAYER_EYE_MAX; eye++ )
         {
-            parms.Layers[VRAPI_FRAME_LAYER_TYPE_WORLD].Textures[eye].CompletionFence =
-                    completionFence[this->numBuffers == 1 ? 0 : eye];
+            parms.Layers[0].Textures[eye].CompletionFence =
+                    completionFence[renderer->NumBuffers == 1 ? 0 : eye];
         }
-        OvrFrameBuffer::setNone();
+
+        ovrFramebuffer_SetNone();
 
         return parms;
     }
 
+
     /**
      *
-     * OvrFence class methods
+     * RendererGearVR class methods
      *
      */
-    void RendererGearVR::OvrFence::create() {
-#if defined( EGL_SYNC )
-        this->display = 0;
-        this->sync = EGL_NO_SYNC_KHR;
-#else
-        this->sync = 0;
-#endif
-    }
 
-    void RendererGearVR::OvrFence::destroy() {
-#if defined( EGL_SYNC )
-        if (this->sync != EGL_NO_SYNC_KHR) {
-            if (eglDestroySyncKHR(this->display, this->sync) == EGL_FALSE) {
-                //ALOGE( "eglDestroySyncKHR() : EGL_FALSE" );
-                return;
-            }
-            this->display = 0;
-            this->sync = EGL_NO_SYNC_KHR;
-        }
-#else
-        if ( this->sync != 0 )
+    RendererGearVR::RendererGearVR(JNIEnv *env, jobject activityObject, ILoggerFactory* loggerFactory)
+            : window(NULL),
+              ovrM(NULL),
+              frameIndex(0),
+              minimumVSyncs(1),
+              IRenderer()
     {
-        glDeleteSync( this->sync );
-        this->sync = 0;
-    }
-#endif
+        this->logger = loggerFactory->createLogger("RendererGearVR");//log(LOG_INFO, "Renderer created");
+
+        this->eglParams = new EGLParams();
+        this->eglParams->clear();
+
+        //this->glExtensions = new OpenGLExtensions_t();
+
+//        this->ovrRenderer = new OvrRenderer();
+        //ovrRenderer_Clear(this->ovrRenderer);
+//        this->ovrRenderer->clear();
+        ovrRenderer_Clear(&this->OVRRenderer);
+
+//        this->ovrSimulation = new OvrSimulation();
+//        this->ovrSimulation->clear();
+        ovrSimulation_Clear(&this->OVRSimulation);
+
+//        this->ovrFrameBuffer = new OvrFrameBuffer();
+//        this->ovrFrameBuffer->clear();
+
+        //logger->log(LOG_INFO, "Renderer created");
+        //(*env)->GetJavaVM( env, &this->javaVM);
+        env->GetJavaVM(&this->javaVM);
+        this->java.Env = env;
+        this->activityObject = env->NewGlobalRef(activityObject);
     }
 
-    void RendererGearVR::OvrFence::insert() {
-        this->destroy();
-#if defined( EGL_SYNC )
-        this->display = eglGetCurrentDisplay();
-        this->sync = eglCreateSyncKHR(this->display, EGL_SYNC_FENCE_KHR, NULL);
-        if (this->sync == EGL_NO_SYNC_KHR) {
-            //ALOGE("eglCreateSyncKHR() : EGL_NO_SYNC_KHR");
-            return;
+    bool RendererGearVR::start() {
+        java.Vm = this->javaVM;
+        java.Vm->AttachCurrentThread(&java.Env, NULL);
+        java.ActivityObject = this->activityObject;
+
+        prctl(PR_SET_NAME, (long) "CL::Main", 0, 0, 0);
+
+
+        this->logger->log(LOG_DEBUG, "vrapi_DefaultInitParms()");
+        const ovrInitParms initParms = vrapi_DefaultInitParms(&java);
+        this->logger->log(LOG_DEBUG, "vrapi_Initialize()");
+        int32_t initResult = vrapi_Initialize(&initParms);
+
+        if (initResult != VRAPI_INITIALIZE_SUCCESS) {
+            char const *msg = initResult == VRAPI_INITIALIZE_PERMISSIONS_ERROR ?
+                              "Thread priority security exception. Make sure the APK is signed." :
+                              "VrApi initialization error.";
+            logger->log(LOG_ERROR, "Thread priority security exception. Make sure the APK is signed."
+                    "VrApi initialization error.");
         }
-        // Force flushing the commands.
-        // Note that some drivers will already flush when calling eglCreateSyncKHR.
-        if (eglClientWaitSyncKHR(this->display, this->sync, EGL_SYNC_FLUSH_COMMANDS_BIT_KHR, 0) ==
-            EGL_FALSE) {
-            //ALOGE("eglClientWaitSyncKHR() : EGL_FALSE");
-            return;
+        logger->log(LOG_DEBUG, "eglParams.createEGLContext()");
+        eglParams->createEGLContext();
+        this->glExtensions.eglInitExtensions();
+        this->useMultiView &= (glExtensions.multiView &&
+                               vrapi_GetSystemPropertyInt(&java,
+                                                          VRAPI_SYS_PROP_MULTIVIEW_AVAILABLE));
+        logger->log(LOG_DEBUG, "UseMultiview : " + this->useMultiView);
+
+        this->perfParms = vrapi_DefaultPerformanceParms();
+        perfParms.CpuLevel = CPU_LEVEL;
+        perfParms.GpuLevel = GPU_LEVEL;
+        perfParms.MainThreadTid = gettid();
+
+        /*
+         * Creating renderer specific config
+         */
+        //this->ovrRenderer->create(&java, this->useMultiView);
+        ovrRenderer_Create(&this->OVRRenderer, &java, this->useMultiView);
+    }
+
+    bool RendererGearVR::initialize(Scene* scene) {
+        IRenderable *sceneRenderer = scene->getRenderable();
+        sceneRenderer->initialize();
+        std::vector<Relation*> cameraRelations = scene->getRelations("camera");
+        assert(cameraRelations.size() == 1);
+        ((Camera*)cameraRelations[0])->getRenderable()->initialize();
+
+        std::vector<Relation*> shaderRelations = scene->getRelations("shader");
+        for (auto it = shaderRelations.cbegin(); it != shaderRelations.cend(); it++){
+            Shader* shader = (Shader*)(*it);
+            shader->getRenderable()->initialize();
+
+            std::vector<Relation*> materialRelations = shader->getRelations("material");
+            for (auto it = materialRelations.cbegin(); it != materialRelations.cend(); it++){
+                Material *material = (Material*)(*it);
+                material->getRenderable()->initialize();
+
+                std::vector<Relation*> modelRelations = material->getRelations("model");
+                for (auto it = modelRelations.cbegin(); it != modelRelations.cend(); it++){
+                    Model *model = (Model*)(*it);
+                    model->getRenderable()->initialize();
+                }
+            }
         }
-#else
-        // Create and insert a new sync object.
-    this->sync = glFenceSync( GL_SYNC_GPU_COMMANDS_COMPLETE, 0 );
-    // Force flushing the commands.
-    // Note that some drivers will already flush when calling glFenceSync.
-    glClientWaitSync( this->sync, GL_SYNC_FLUSH_COMMANDS_BIT, 0 );
-#endif
+
+        this->enterIntoVrMode();
+
+        /**
+         * TODO: vrapi initial frame submit
+         */
+        return true;
+    }
+
+    void RendererGearVR::update() { }
+
+
+    void RendererGearVR::draw(Scene* scene) {
+        // This is the only place the frame index is incremented, right before
+        // calling vrapi_GetPredictedDisplayTime().
+        this->frameIndex++;
+
+        // Get the HMD pose, predicted for the middle of the time period during which
+        // the new eye images will be displayed. The number of frames predicted ahead
+        // depends on the pipeline depth of the engine and the synthesis rate.
+        // The better the prediction, the less black will be pulled in at the edges.
+        const double predictedDisplayTime = vrapi_GetPredictedDisplayTime(this->ovrM,
+                                                                          this->frameIndex);
+        const ovrTracking baseTracking = vrapi_GetPredictedTracking(this->ovrM,
+                                                                    predictedDisplayTime);
+
+        // Apply the head-on-a-stick model if there is no positional tracking.
+        const ovrHeadModelParms headModelParms = vrapi_DefaultHeadModelParms();
+        const ovrTracking tracking = vrapi_ApplyHeadModel(&headModelParms, &baseTracking);
+//        this->OVRSimulation.advance(predictedDisplayTime);
+        ovrSimulation_Advance(&this->OVRSimulation, predictedDisplayTime);
+
+        // Create the scene
+//        ovrScene scen;
+        bool UseMultiview = this->useMultiView;
+//        ovrScene_Create( &scen, UseMultiview);
+
+        // Render eye images and setup ovrFrameParms using ovrTracking.
+        const ovrFrameParms frameParms = ovrRenderer_RenderFrame(&this->OVRRenderer, &this->java, this->frameIndex,
+                                                                 this->minimumVSyncs, &this->perfParms,
+                                                                  scene, &this->OVRSimulation,
+                                                                  &tracking, this->ovrM);
+//                this->OVRRenderer.renderFrame(&this->java, this->frameIndex,
+//                                                                        this->minimumVSyncs, &this->perfParms,
+//                /*scene,*/ this->OVRSimulation, scene,  &tracking, this->ovrM);
+
+        // Hand over the eye images to the time warp.
+        vrapi_SubmitFrame( this->ovrM, &frameParms);
+    }
+
+
+
+    void RendererGearVR::deinitialize(Scene* scene) {
+        IRenderable *sceneRenderer = scene->getRenderable();
+        sceneRenderer->deinitialize();
+
+        std::vector<Relation*> cameraRelations = scene->getRelations("camera");
+        assert(cameraRelations.size() == 1);
+        ((Camera*)cameraRelations[0])->getRenderable()->deinitialize();
+
+        std::vector<Relation*> shaderRelations = scene->getRelations("shader");
+        for (auto it = shaderRelations.cbegin(); it != shaderRelations.cend(); it++){
+            Shader* shader = (Shader*)(*it);
+            shader->getRenderable()->deinitialize();
+
+            std::vector<Relation*> materialRelations = shader->getRelations("material");
+            for (auto it = materialRelations.cbegin(); it != materialRelations.cend(); it++){
+                Material *material = (Material*)(*it);
+                material->getRenderable()->deinitialize();
+
+                std::vector<Relation*> modelRelations = material->getRelations("model");
+                for (auto it = modelRelations.cbegin(); it != modelRelations.cend(); it++){
+                    Model *model = (Model*)(*it);
+                    model->getRenderable()->deinitialize();
+                }
+            }
+        }
+
+//        this->ovrRenderer->destroy();
+        ovrRenderer_Destroy(&this->OVRRenderer);
+        this->eglParams->destroyEGLContext();
+        vrapi_Shutdown();
+
+        this->java.Vm->DetachCurrentThread();
+    }
+
+    void RendererGearVR::setWindow(ANativeWindow *window) {
+        this->window = window;
+        //this->logger->log(LOG_INFO, "Windows Set");
+    }
+
+    ANativeWindow* RendererGearVR::getWindow(){
+        return this->window;
+    }
+
+    void RendererGearVR::stop(){}
+
+    void RendererGearVR::enterIntoVrMode() {
+        if (this->ovrM == NULL) {
+            ovrModeParms parms = vrapi_DefaultModeParms(&this->java);
+            // Must reset the FLAG_FULLSCREEN window flag when using a SurfaceView
+            parms.Flags |= VRAPI_MODE_FLAG_RESET_WINDOW_FULLSCREEN;
+
+            parms.Flags |= VRAPI_MODE_FLAG_NATIVE_WINDOW;
+            parms.Display = (size_t) this->eglParams->display;
+            parms.WindowSurface = (size_t) this->window;
+            parms.ShareContext = (size_t) this->eglParams->context;
+
+            logger->log(LOG_DEBUG, "vrapi_EnterVrMode()");
+
+            this->ovrM = vrapi_EnterVrMode(&parms);
+
+            // If entering VR mode failed then the ANativeWindow was not valid.
+            if (this->ovrM == NULL) {
+                logger->log(LOG_ERROR, "Invalid ANativeWindow!");
+                this->window = NULL;
+            }
+        }
+    }
+
+    void RendererGearVR::leaveVrMode() {
+        logger->log(LOG_DEBUG, "vrapi_LeaveVrMode()");
+        vrapi_LeaveVrMode(this->ovrM);
+        this->ovrM = NULL;
 
     }
 
-    /**
-     *
-     * OvrSimulation class methods
-     *
-     */
-    void RendererGearVR::OvrSimulation::clear() {
-        this->currentRotation.x = 0.0f;
-        this->currentRotation.y = 0.0f;
-        this->currentRotation.z = 0.0f;
-    }
 
-    void RendererGearVR::OvrSimulation::advance(double predictedDisplayTime) {
-        this->currentRotation.x = (float) (predictedDisplayTime);
-        this->currentRotation.y = (float) (predictedDisplayTime);
-        this->currentRotation.z = (float) (predictedDisplayTime);
-    }
 }

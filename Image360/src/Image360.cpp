@@ -29,13 +29,13 @@ namespace cl{
 		this->transformModelFactory = std::move(transformModelFactory);
 		this->cameraFactory = std::move(cameraFactory);
 		this->eventQueue = eventQueue;
-		logger = loggerFactory->createLogger("image360::Image360: ");
+		this->logger = loggerFactory->createLogger("image360::Image360: ");
 	}
 
 	//IApplication implementation
 	void Image360::start(){
-		renderer->start();
-		logger->log(LOG_INFO, "Application started.");
+		this->renderer->start();
+		this->logger->log(LOG_INFO, "Application started.");
 	}
 	void Image360::initialize(TEXTURE_MAP_MODE mapMode, std::vector<std::unique_ptr<Image>> &textureImages){
 		std::unique_ptr<Camera> camera;
@@ -237,5 +237,10 @@ namespace cl{
 		}
 		lastPassiveMousePositionX = x;
 		lastPassiveMousePositionY = y;
+	}
+
+	IRenderer* Image360::getRenderer()
+	{
+		return this->renderer.get();
 	}
 }

@@ -46,6 +46,7 @@ namespace cl{
 		void stop();
 		void onKeyPress(char key, int x, int y);
 		void onPassiveMouseMotion(int x, int y);
+		IRenderer* getRenderer();
 	private:
 		std::unique_ptr<IRenderer> renderer;
 		std::unique_ptr<ISceneFactory> sceneFactory;
