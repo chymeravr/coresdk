@@ -11,24 +11,23 @@
 #include <ctime>
 #include <sys/prctl.h>
 #include <unistd.h>
-//#include <commonFramework/include/Renderer.h>
 #include <coreEngine/IRenderer.h>
-#include <android/native_window.h> // requires ndk r5 or newer
-#include <android/native_window_jni.h> // requires ndk r5 or newer
-//#include <commonFramework/include/Logger.h>
+#include <android/native_window.h>                                                                  // requires ndk r5 or newer
+#include <android/native_window_jni.h>                                                              // requires ndk r5 or newer
 #include <coreEngine/util/ILogger.h>
-//#include <androidImplementations/include/LoggerAndroidImpl.h>
+#include <CameraGLOVR.h>
 
 #include <android/log.h>
 
 #include <VrApi.h>
 #include <VrApi_Helpers.h>
-//#include <SystemActivities.h>
 
 #include <EGL/egl.h>
 #include <EGL/eglext.h>
 #include <GLES3/gl3.h>
 #include <GLES3/gl3ext.h>
+
+#include <pthread.h>
 
 namespace cl {
 #if !defined( EGL_OPENGL_ES3_BIT_KHR )
@@ -89,6 +88,30 @@ namespace cl {
 #else
 #define ALOGV(...)
 #endif
+
+    // egl errors
+    static const char * EglErrorString( const EGLint error )
+    {
+        switch ( error )
+        {
+            case EGL_SUCCESS:				return "EGL_SUCCESS";
+            case EGL_NOT_INITIALIZED:		return "EGL_NOT_INITIALIZED";
+            case EGL_BAD_ACCESS:			return "EGL_BAD_ACCESS";
+            case EGL_BAD_ALLOC:				return "EGL_BAD_ALLOC";
+            case EGL_BAD_ATTRIBUTE:			return "EGL_BAD_ATTRIBUTE";
+            case EGL_BAD_CONTEXT:			return "EGL_BAD_CONTEXT";
+            case EGL_BAD_CONFIG:			return "EGL_BAD_CONFIG";
+            case EGL_BAD_CURRENT_SURFACE:	return "EGL_BAD_CURRENT_SURFACE";
+            case EGL_BAD_DISPLAY:			return "EGL_BAD_DISPLAY";
+            case EGL_BAD_SURFACE:			return "EGL_BAD_SURFACE";
+            case EGL_BAD_MATCH:				return "EGL_BAD_MATCH";
+            case EGL_BAD_PARAMETER:			return "EGL_BAD_PARAMETER";
+            case EGL_BAD_NATIVE_PIXMAP:		return "EGL_BAD_NATIVE_PIXMAP";
+            case EGL_BAD_NATIVE_WINDOW:		return "EGL_BAD_NATIVE_WINDOW";
+            case EGL_CONTEXT_LOST:			return "EGL_CONTEXT_LOST";
+            default:						return "unknown";
+        }
+    }
 
     // framebuffers
     static const char * GlFrameBufferStatusString( GLenum status )
@@ -152,6 +175,24 @@ static void GLCheckErrors( int line )
 
     typedef struct
     {
+        bool multi_view;			// GL_OVR_multiview, GL_OVR_multiview2
+    } OpenGLExtensions_t;
+
+
+    typedef struct
+    {
+        EGLint		MajorVersion;
+        EGLint		MinorVersion;
+        EGLDisplay	Display;
+        EGLConfig	Config;
+        EGLSurface	TinySurface;
+        EGLSurface	MainSurface;
+        EGLContext	Context;
+    } ovrEgl;
+
+
+    typedef struct
+    {
 #if defined( EGL_SYNC )
         EGLDisplay	Display;
         EGLSyncKHR	Sync;
@@ -188,42 +229,6 @@ static void GLCheckErrors( int line )
     } ovrRenderer;
 
     class RendererGearVR : public IRenderer {
-        class OpenGLExtensions_t;
-        class EGLParams;
-
-        class OpenGLExtensions_t {
-        public:
-            bool multiView;
-        public:
-            void eglInitExtensions();
-        };
-
-        class EGLParams {
-        public:
-            EGLDisplay display;
-            EGLConfig config;
-            EGLint numConfigs;
-            EGLSurface tinySurface;
-            EGLSurface mainSurface;
-            EGLContext context;
-            EGLint width;
-            EGLint height;
-            EGLint majorVersion;
-            EGLint minorVersion;
-        private:
-            ILogger *logger;
-        public:
-            EGLParams();
-
-            void clear();
-
-            void createEGLContext();
-
-            void destroyEGLContext();
-
-            static std::string getEglErrorString(const EGLint error);
-        };
-
 
     private:
         std::unique_ptr<ILogger> logger;
@@ -235,7 +240,7 @@ static void GLCheckErrors( int line )
         ovrPerformanceParms perfParms;
 
         OpenGLExtensions_t glExtensions;
-        EGLParams* eglParams;
+        ovrEgl eglParams;
         ovrRenderer OVRRenderer;
         ovrSimulation OVRSimulation;
 
@@ -243,7 +248,11 @@ static void GLCheckErrors( int line )
         long long frameIndex;
         int minimumVSyncs;
 
+        CameraGLOVR* renderCamera;
+
         ILoggerFactory *loggerFactory;
+
+
 
     public:
         RendererGearVR(JNIEnv *env, jobject activityObject, ILoggerFactory* loggerFactory);
@@ -255,9 +264,11 @@ static void GLCheckErrors( int line )
         void stop();
         void setWindow(ANativeWindow *window);
         ANativeWindow* getWindow();
+        ovrMobile* getOvr();
     private:
         void enterIntoVrMode();
         void leaveVrMode();
+
     };
 }
 

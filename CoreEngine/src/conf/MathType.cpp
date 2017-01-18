@@ -43,4 +43,9 @@ namespace cl{
 	CL_Vec3 CL_Normalize(CL_Vec3 v){
 		return glm::normalize(v);
 	}
+
+	CL_Mat44 CL_Make_Mat44(float mat[16])
+	{
+		return glm::make_mat4(mat);
+	}
 }

@@ -9,6 +9,7 @@
 #include <glm/vec3.hpp>
 #include <glm/vec4.hpp>
 #include <glm/mat4x4.hpp>
+#include <glm/gtc/type_ptr.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtx/euler_angles.hpp>
 
@@ -90,6 +91,8 @@ namespace cl {
 	CL_Vec3 CL_CrossProduct(CL_Vec3 v1, CL_Vec3 v2);
 
 	CL_Vec3 CL_Normalize(CL_Vec3 v);
+
+	CL_Mat44 CL_Make_Mat44(float mat[16]);
 }
 
 #endif //ANDROIDSDK_MATHTYPE_H

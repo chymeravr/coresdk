@@ -60,7 +60,7 @@ model {
 //            CFlags.add("-std=c99")
             cppFlags.add("-frtti ")
             cppFlags.add("-fexceptions")
-            cppFlags.addAll(["-I" + file('src/main/jni/glesNative').absolutePath])
+            cppFlags.addAll(["-I" + file('src/main/jni').absolutePath])
             stl = "gnustl_shared"
 
             cppFlags.add("-I" + file("${image360Android}/Include").absolutePath)

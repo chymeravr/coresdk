@@ -17,7 +17,7 @@ namespace cl{
 		glClearColor(color[0], color[1], color[2], color[3]);
 		if (depthTest){
 			glEnable(GL_DEPTH_TEST);
-			glDepthFunc(GL_LESS);
+			glDepthFunc(GL_LEQUAL);
 		}
 		else{
 			glDisable(GL_DEPTH_TEST);

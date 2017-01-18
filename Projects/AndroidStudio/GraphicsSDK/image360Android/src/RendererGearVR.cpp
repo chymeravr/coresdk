@@ -4,16 +4,14 @@
 
 #include <VrApi_Types.h>
 #include "../Include/RendererGearVR.h"
-#include <coreEngine/util/ILoggerFactory.h>
-#include <coreEngine/renderObjects/Scene.h>
 #include <coreEngine/renderObjects/Camera.h>
 #include <coreEngine/renderObjects/Shader.h>
 #include <coreEngine/renderObjects/Material.h>
 #include <coreEngine/renderObjects/Model.h>
+#include <coreEngine/conf/MathType.h>
 #include <LoggerAndroid.h>
-#include <android/log.h>
-#include <RendererGearVR.h>
 #include <CameraGLOVR.h>
+#include <RendererGearVR.h>
 
 namespace cl {
 
@@ -27,122 +25,113 @@ namespace cl {
 #endif
 
 
-    /**
-     *
-     * OpenglExtensions_t class
-     *
-     */
-    void RendererGearVR::OpenGLExtensions_t::eglInitExtensions() {
+
+    static void EglInitExtensions( OpenGLExtensions_t *glExtensions)
+    {
 #if defined EGL_SYNC
-        eglCreateSyncKHR = (PFNEGLCREATESYNCKHRPROC) eglGetProcAddress("eglCreateSyncKHR");
-        eglDestroySyncKHR = (PFNEGLDESTROYSYNCKHRPROC) eglGetProcAddress("eglDestroySyncKHR");
-        eglClientWaitSyncKHR = (PFNEGLCLIENTWAITSYNCKHRPROC) eglGetProcAddress(
-                "eglClientWaitSyncKHR");
-        eglSignalSyncKHR = (PFNEGLSIGNALSYNCKHRPROC) eglGetProcAddress("eglSignalSyncKHR");
-        eglGetSyncAttribKHR = (PFNEGLGETSYNCATTRIBKHRPROC) eglGetProcAddress("eglGetSyncAttribKHR");
+        eglCreateSyncKHR		= (PFNEGLCREATESYNCKHRPROC)			eglGetProcAddress( "eglCreateSyncKHR" );
+        eglDestroySyncKHR		= (PFNEGLDESTROYSYNCKHRPROC)		eglGetProcAddress( "eglDestroySyncKHR" );
+        eglClientWaitSyncKHR	= (PFNEGLCLIENTWAITSYNCKHRPROC)		eglGetProcAddress( "eglClientWaitSyncKHR" );
+        eglSignalSyncKHR		= (PFNEGLSIGNALSYNCKHRPROC)			eglGetProcAddress( "eglSignalSyncKHR" );
+        eglGetSyncAttribKHR		= (PFNEGLGETSYNCATTRIBKHRPROC)		eglGetProcAddress( "eglGetSyncAttribKHR" );
 #endif
 
         // get extension pointers
-        const char *allExtensions = (const char *) glGetString(GL_EXTENSIONS);
-        if (allExtensions != NULL) {
-            this->multiView = strstr(allExtensions, "GL_OVR_multiview2") &&
-                              strstr(allExtensions,
-                                     "GL_OVR_multiview_multisampled_render_to_texture");
+        const char * allExtensions = (const char *)glGetString( GL_EXTENSIONS );
+        if ( allExtensions != NULL )
+        {
+            glExtensions->multi_view = strstr( allExtensions, "GL_OVR_multiview2" ) &&
+                                      strstr( allExtensions, "GL_OVR_multiview_multisampled_render_to_texture" );
         }
     }
 
 
     /**
      *
-     * EGLParams class methods
+     * EGLParams methods
      *
      */
 
-    RendererGearVR::EGLParams::EGLParams() :
-            logger(new LoggerAndroid("RendererGearVR::EGLParams")) {
+    static void ovrEgl_Clear( ovrEgl * egl )
+    {
+        egl->MajorVersion = 0;
+        egl->MinorVersion = 0;
+        egl->Display = 0;
+        egl->Config = 0;
+        egl->TinySurface = EGL_NO_SURFACE;
+        egl->MainSurface = EGL_NO_SURFACE;
+        egl->Context = EGL_NO_CONTEXT;
     }
 
-    void RendererGearVR::EGLParams::clear() {
-        this->majorVersion = 0;
-        this->minorVersion = 0;
-        this->display = 0;
-        this->config = 0;
-//        this->numConfigs = 0;
-        this->tinySurface = EGL_NO_SURFACE;
-        this->mainSurface = EGL_NO_SURFACE;
-        this->context = EGL_NO_CONTEXT;
-//        this->width = 0;
-//        this->height = 0;
-    }
-
-    void RendererGearVR::EGLParams::createEGLContext() {
-        if( this->display != 0)
+    static void ovrEgl_CreateContext( ovrEgl * egl, const ovrEgl * shareEgl )
+    {
+        if ( egl->Display != 0 )
         {
             return;
         }
 
-        this->display = eglGetDisplay(EGL_DEFAULT_DISPLAY);
-        this->logger->log(LOG_DEBUG, "EGL initialized");
-
-        eglInitialize(display, &majorVersion, &minorVersion);
-
+        egl->Display = eglGetDisplay( EGL_DEFAULT_DISPLAY );
+        ALOGV( "        eglInitialize( Display, &MajorVersion, &MinorVersion )" );
+        eglInitialize( egl->Display, &egl->MajorVersion, &egl->MinorVersion );
         // Do NOT use eglChooseConfig, because the Android EGL code pushes in multisample
         // flags in eglChooseConfig if the user has selected the "force 4x MSAA" option in
         // settings, and that is completely wasted for our warp target.
         const int MAX_CONFIGS = 1024;
         EGLConfig configs[MAX_CONFIGS];
         EGLint numConfigs = 0;
-
-        if (eglGetConfigs(display, configs, MAX_CONFIGS, &numConfigs) == EGL_FALSE) {
-            logger->log(LOG_ERROR,
-                        "eglGetConfigs() failed: " + this->getEglErrorString(glGetError()));
+        if ( eglGetConfigs( egl->Display, configs, MAX_CONFIGS, &numConfigs ) == EGL_FALSE )
+        {
+            ALOGE( "        eglGetConfigs() failed: %s", EglErrorString( eglGetError() ) );
             return;
         }
-
         const EGLint configAttribs[] =
                 {
-                        EGL_RED_SIZE, 8,
-                        EGL_GREEN_SIZE, 8,
-                        EGL_BLUE_SIZE, 8,
-                        EGL_ALPHA_SIZE, 8, // need alpha for the multi-pass timewarp compositor
-                        EGL_DEPTH_SIZE, 0,
-                        EGL_STENCIL_SIZE, 0,
-                        EGL_SAMPLES, 0,
+                        EGL_RED_SIZE,		8,
+                        EGL_GREEN_SIZE,		8,
+                        EGL_BLUE_SIZE,		8,
+                        EGL_ALPHA_SIZE,		8, // need alpha for the multi-pass timewarp compositor
+                        EGL_DEPTH_SIZE,		0,
+                        EGL_STENCIL_SIZE,	0,
+                        EGL_SAMPLES,		0,
                         EGL_NONE
                 };
-        this->config = 0;
-
-        for (int i = 0; i < numConfigs; i++) {
+        egl->Config = 0;
+        for ( int i = 0; i < numConfigs; i++ )
+        {
             EGLint value = 0;
 
-            eglGetConfigAttrib(this->display, configs[i], EGL_RENDERABLE_TYPE, &value);
-            if ((value & EGL_OPENGL_ES3_BIT_KHR) != EGL_OPENGL_ES3_BIT_KHR) {
+            eglGetConfigAttrib( egl->Display, configs[i], EGL_RENDERABLE_TYPE, &value );
+            if ( ( value & EGL_OPENGL_ES3_BIT_KHR ) != EGL_OPENGL_ES3_BIT_KHR )
+            {
                 continue;
             }
 
             // The pbuffer config also needs to be compatible with normal window rendering
             // so it can share textures with the window context.
-            eglGetConfigAttrib(this->display, configs[i], EGL_SURFACE_TYPE, &value);
-            if ((value & (EGL_WINDOW_BIT | EGL_PBUFFER_BIT)) !=
-                (EGL_WINDOW_BIT | EGL_PBUFFER_BIT)) {
+            eglGetConfigAttrib( egl->Display, configs[i], EGL_SURFACE_TYPE, &value );
+            if ( ( value & ( EGL_WINDOW_BIT | EGL_PBUFFER_BIT ) ) != ( EGL_WINDOW_BIT | EGL_PBUFFER_BIT ) )
+            {
                 continue;
             }
 
-            int j = 0;
-            for (; configAttribs[j] != EGL_NONE; j += 2) {
-                eglGetConfigAttrib(this->display, configs[i], configAttribs[j], &value);
-                if (value != configAttribs[j + 1]) {
+            int	j = 0;
+            for ( ; configAttribs[j] != EGL_NONE; j += 2 )
+            {
+                eglGetConfigAttrib( egl->Display, configs[i], configAttribs[j], &value );
+                if ( value != configAttribs[j + 1] )
+                {
                     break;
                 }
             }
-            if (configAttribs[j] == EGL_NONE) {
-                config = configs[i];
+            if ( configAttribs[j] == EGL_NONE )
+            {
+                egl->Config = configs[i];
                 break;
             }
         }
-        if (this->config == 0) {
-            logger->log(LOG_ERROR,
-                        "eglChooseConfig() failed: " + this->getEglErrorString(eglGetError()));
+        if ( egl->Config == 0 )
+        {
+            ALOGE( "        eglChooseConfig() failed: %s", EglErrorString( eglGetError() ) );
             return;
         }
         EGLint contextAttribs[] =
@@ -150,106 +139,81 @@ namespace cl {
                         EGL_CONTEXT_CLIENT_VERSION, 3,
                         EGL_NONE
                 };
-
-        this->logger->log(LOG_DEBUG, "eglCreateContext");
-        this->context = eglCreateContext(display, config, EGL_NO_CONTEXT, contextAttribs);
-
-        if (this->context == EGL_NO_CONTEXT) {
-            this->logger->log(LOG_ERROR,
-                        "eglCreateContext() failed: " + this->getEglErrorString(eglGetError()));
+        ALOGV( "        Context = eglCreateContext( Display, Config, EGL_NO_CONTEXT, contextAttribs )" );
+        egl->Context = eglCreateContext( egl->Display, egl->Config, ( shareEgl != NULL ) ? shareEgl->Context : EGL_NO_CONTEXT, contextAttribs );
+        if ( egl->Context == EGL_NO_CONTEXT )
+        {
+            ALOGE( "        eglCreateContext() failed: %s", EglErrorString( eglGetError() ) );
             return;
         }
-
         const EGLint surfaceAttribs[] =
                 {
                         EGL_WIDTH, 16,
                         EGL_HEIGHT, 16,
                         EGL_NONE
                 };
-
-        this->logger->log(LOG_DEBUG, "eglCreatePbufferSurface");
-        this->tinySurface = eglCreatePbufferSurface(this->display, this->config, surfaceAttribs);
-
-        if (this->tinySurface == EGL_NO_SURFACE) {
-            this->logger->log(LOG_ERROR, "eglCreatePbufferSurface() failed: " +
-                                   this->getEglErrorString(eglGetError()));
-            eglDestroyContext(this->display, this->context);
-            this->context = EGL_NO_CONTEXT;
+        ALOGV( "        TinySurface = eglCreatePbufferSurface( Display, Config, surfaceAttribs )" );
+        egl->TinySurface = eglCreatePbufferSurface( egl->Display, egl->Config, surfaceAttribs );
+        if ( egl->TinySurface == EGL_NO_SURFACE )
+        {
+            ALOGE( "        eglCreatePbufferSurface() failed: %s", EglErrorString( eglGetError() ) );
+            eglDestroyContext( egl->Display, egl->Context );
+            egl->Context = EGL_NO_CONTEXT;
             return;
         }
-
-        this->logger->log(LOG_DEBUG, "eglMakeCurrent( Display, TinySurface, TinySurface, Context )");
-        if (eglMakeCurrent(this->display, this->tinySurface, this->tinySurface, this->context) == EGL_FALSE) {
-            this->logger->log(LOG_ERROR,
-                        "eglMakeCurrent() failed: " + this->getEglErrorString(eglGetError()));
-            eglDestroySurface(this->display, this->tinySurface);
-            eglDestroyContext(this->display, this->context);
-            this->context = EGL_NO_CONTEXT;
+        ALOGV( "        eglMakeCurrent( Display, TinySurface, TinySurface, Context )" );
+        if ( eglMakeCurrent( egl->Display, egl->TinySurface, egl->TinySurface, egl->Context ) == EGL_FALSE )
+        {
+            ALOGE( "        eglMakeCurrent() failed: %s", EglErrorString( eglGetError() ) );
+            eglDestroySurface( egl->Display, egl->TinySurface );
+            eglDestroyContext( egl->Display, egl->Context );
+            egl->Context = EGL_NO_CONTEXT;
             return;
         }
     }
 
-    /* TODO : write a destructor if this is really necessary */
-    void RendererGearVR::EGLParams::destroyEGLContext() {
-        if (this->display != 0) {
-            this->logger->log(LOG_DEBUG,
-                        "eglMakeCurrent (display, EGL_NO_SURFACE, EGL_NO_SURFACE, EGL_NO_CONTEXT)");
-            if (eglMakeCurrent(this->display, EGL_NO_SURFACE, EGL_NO_SURFACE, EGL_NO_CONTEXT) ==
-                EGL_FALSE) {
-                this->logger->log(LOG_ERROR,
-                            "eglMakeCurrent failed: " + getEglErrorString(eglGetError()));
+    static void ovrEgl_DestroyContext( ovrEgl * egl )
+    {
+        if ( egl->Display != 0 )
+        {
+            ALOGE( "        eglMakeCurrent( Display, EGL_NO_SURFACE, EGL_NO_SURFACE, EGL_NO_CONTEXT )" );
+            if ( eglMakeCurrent( egl->Display, EGL_NO_SURFACE, EGL_NO_SURFACE, EGL_NO_CONTEXT ) == EGL_FALSE )
+            {
+                ALOGE( "        eglMakeCurrent() failed: %s", EglErrorString( eglGetError() ) );
             }
         }
-        if (this->context != EGL_NO_CONTEXT) {
-            this->logger->log(LOG_DEBUG, "eglDestroyContext(display, context)");
-            if (eglDestroyContext(this->display, this->context) == EGL_FALSE) {
-                this->logger->log(LOG_ERROR, "eglDestroyContext(display, context) failed: " +
-                                       getEglErrorString(eglGetError()));
+        if ( egl->Context != EGL_NO_CONTEXT )
+        {
+            ALOGE( "        eglDestroyContext( Display, Context )" );
+            if ( eglDestroyContext( egl->Display, egl->Context ) == EGL_FALSE )
+            {
+                ALOGE( "        eglDestroyContext() failed: %s", EglErrorString( eglGetError() ) );
             }
-            this->context = EGL_NO_CONTEXT;
+            egl->Context = EGL_NO_CONTEXT;
         }
-        if (this->tinySurface != EGL_NO_SURFACE) {
-            this->logger->log(LOG_DEBUG, "eglDestroySurface(display, surface)");
-            if (eglDestroySurface(this->display, this->tinySurface) == EGL_FALSE) {
-                this->logger->log(LOG_ERROR, "eglDestroySurface(display, surface) failed: " +
-                                       getEglErrorString(eglGetError()));
+        if ( egl->TinySurface != EGL_NO_SURFACE )
+        {
+            ALOGE( "        eglDestroySurface( Display, TinySurface )" );
+            if ( eglDestroySurface( egl->Display, egl->TinySurface ) == EGL_FALSE )
+            {
+                ALOGE( "        eglDestroySurface() failed: %s", EglErrorString( eglGetError() ) );
             }
-            this->tinySurface = EGL_NO_SURFACE;
+            egl->TinySurface = EGL_NO_SURFACE;
         }
-        if (this->display != 0) {
-            this->logger->log(LOG_DEBUG, "eglTerminate(display)");
-            if (eglTerminate(this->display) == EGL_FALSE) {
-                this->logger->log(LOG_ERROR,
-                            "eglTerminate(display) failed:" + getEglErrorString(eglGetError()));
+        if ( egl->Display != 0 )
+        {
+            ALOGE( "        eglTerminate( Display )" );
+            if ( eglTerminate( egl->Display ) == EGL_FALSE )
+            {
+                ALOGE( "        eglTerminate() failed: %s", EglErrorString( eglGetError() ) );
             }
-            this->display = 0;
-        }
-    }
-
-    std::string RendererGearVR::EGLParams::getEglErrorString(const EGLint error) {
-        switch (error) {
-            case EGL_SUCCESS:                           return "EGL_SUCCESS";
-            case EGL_NOT_INITIALIZED:                   return "EGL_NOT_INITIALIZED";
-            case EGL_BAD_ACCESS:                        return "EGL_BAD_ACCESS";
-            case EGL_BAD_ALLOC:                         return "EGL_BAD_ALLOC";
-            case EGL_BAD_ATTRIBUTE:                     return "EGL_BAD_ATTRIBUTE";
-            case EGL_BAD_CONTEXT:                       return "EGL_BAD_CONTEXT";
-            case EGL_BAD_CONFIG:                        return "EGL_BAD_CONFIG";
-            case EGL_BAD_CURRENT_SURFACE:               return "EGL_BAD_CURRENT_SURFACE";
-            case EGL_BAD_DISPLAY:                       return "EGL_BAD_DISPLAY";
-            case EGL_BAD_SURFACE:                       return "EGL_BAD_SURFACE";
-            case EGL_BAD_MATCH:                         return "EGL_BAD_MATCH";
-            case EGL_BAD_PARAMETER:                     return "EGL_BAD_PARAMETER";
-            case EGL_BAD_NATIVE_PIXMAP:                 return "EGL_BAD_NATIVE_PIXMAP";
-            case EGL_BAD_NATIVE_WINDOW:                 return "EGL_BAD_NATIVE_WINDOW";
-            case EGL_CONTEXT_LOST:                      return "EGL_CONTEXT_LOST";
-            default:                                    return "unknown";
+            egl->Display = 0;
         }
     }
 
     /**
      *
-     * OvrFrameBuffer class methods
+     * OvrFrameBuffer methods
      *
      */
     static void ovrFramebuffer_Clear( ovrFramebuffer * frameBuffer )
@@ -499,7 +463,7 @@ namespace cl {
 
     /**
      *
-     * OvrSimulation class methods
+     * OvrSimulation methods
      *
      */
 
@@ -521,7 +485,7 @@ namespace cl {
 
     /**
      *
-     * OvrRenderer class methods
+     * OvrRenderer methods
      *
      */
 
@@ -560,7 +524,7 @@ namespace cl {
         renderer->ProjectionMatrix = ovrMatrix4f_CreateProjectionFov(
                 vrapi_GetSystemPropertyFloat( java, VRAPI_SYS_PROP_SUGGESTED_EYE_FOV_DEGREES_X ),
                 vrapi_GetSystemPropertyFloat( java, VRAPI_SYS_PROP_SUGGESTED_EYE_FOV_DEGREES_Y ),
-                0.0f, 0.0f, 1.0f, 0.0f );
+                0.0f, 0.0f, 0.1f, 0.0f );
         renderer->TexCoordsTanAnglesMatrix = ovrMatrix4f_TanAngleMatrixFromProjection( &renderer->ProjectionMatrix );
     }
 
@@ -610,6 +574,7 @@ namespace cl {
 
     static ovrFrameParms ovrRenderer_RenderFrame( ovrRenderer * renderer, const ovrJava * java,
                                                   long long frameIndex, int minimumVsyncs, const ovrPerformanceParms * perfParms,
+                                                  CameraGLOVR* camera,
                                                   Scene * scene, const ovrSimulation * simulation,
                                                   const ovrTracking * tracking, ovrMobile * ovr )
     {
@@ -630,8 +595,7 @@ namespace cl {
         ovrTracking updatedTracking = *tracking;
 #endif
 
-        std::vector<Relation*> cameraRelations = scene->getRelations("camera");
-        CameraGLOVR *camera = (CameraGLOVR*)cameraRelations[0];
+
 
         // Calculate the view matrix.
         const ovrMatrix4f centerEyeViewMatrix = vrapi_GetCenterEyeViewMatrix( &headModelParms, &updatedTracking, NULL );
@@ -662,24 +626,18 @@ namespace cl {
 
         unsigned long long completionFence[VRAPI_FRAME_LAYER_EYE_MAX] = { 0 };
 
-        auto tempProjectionMat = renderer->ProjectionMatrix;
-        CL_Mat44 sceneProjectionMat = { tempProjectionMat.M[0][0], tempProjectionMat.M[0][1], tempProjectionMat.M[0][2], tempProjectionMat.M[0][3],
-                                        tempProjectionMat.M[1][0], tempProjectionMat.M[1][1], tempProjectionMat.M[1][2], tempProjectionMat.M[1][3],
-                                        tempProjectionMat.M[2][0], tempProjectionMat.M[2][1], tempProjectionMat.M[2][2], tempProjectionMat.M[2][3],
-                                        tempProjectionMat.M[3][0], tempProjectionMat.M[3][1], tempProjectionMat.M[3][2], tempProjectionMat.M[3][3]};
+        /* update camera projection matrix - it remains the same for each of the eye */
+        CL_Mat44 sceneProjectionMat = CL_Make_Mat44(&projectionMatrixTransposed.M[0][0]);//&renderer->ProjectionMatrix.M[0][0]);
         camera->setProjectionMatrix(sceneProjectionMat);
 
         // Render the eye images.
         for ( int eye = 0; eye < renderer->NumBuffers; eye++ )
         {
-            // NOTE: In the non-mv case, latency can be further reduced by updating the sensor prediction
+           // NOTE: In the non-mv case, latency can be further reduced by updating the sensor prediction
             // for each eye (updates orientation, not position)
-            auto tempViewMat = eyeViewMatrixTransposed[eye];
 
-            CL_Mat44 sceneViewMat = { tempViewMat.M[0][0], tempViewMat.M[0][1], tempViewMat.M[0][2], tempViewMat.M[0][3],
-                                      tempViewMat.M[1][0], tempViewMat.M[1][1], tempViewMat.M[1][2], tempViewMat.M[1][3],
-                                      tempViewMat.M[2][0], tempViewMat.M[2][1], tempViewMat.M[2][2], tempViewMat.M[2][3],
-                                      tempViewMat.M[3][0], tempViewMat.M[3][1], tempViewMat.M[3][2], tempViewMat.M[3][3]};
+            /* Update the view matrix for each eye */
+            CL_Mat44 sceneViewMat = CL_Make_Mat44(&eyeViewMatrixTransposed[eye].M[0][0]);
             camera->setViewMatrix(sceneViewMat);
 
 
@@ -688,20 +646,14 @@ namespace cl {
 
 
             GL( glEnable( GL_SCISSOR_TEST ) );
-//            GL( glDepthMask( GL_TRUE ) );
-//            GL( glEnable( GL_DEPTH_TEST ) );
-//            GL( glDepthFunc( GL_LEQUAL ) );
-//            GL( glEnable( GL_CULL_FACE ) );
-//            GL( glCullFace( GL_BACK ) );
+            GL( glEnable( GL_CULL_FACE ) );
+            GL( glCullFace( GL_BACK ) );
             GL( glViewport( 0, 0, frameBuffer->Width, frameBuffer->Height ) );
             GL( glScissor( 0, 0, frameBuffer->Width, frameBuffer->Height ) );
-//            GL( glClearColor( 0.0f, 0.0f, 0.0f, 1.0f ) );
-//            GL( glClear( GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT ) );
-
 
             ovrRenderer_drawScene(scene);
 
-            // Explicitly clear the border texels to black because OpenGL-ES does not support GL_CLAMP_TO_BORDER.
+//             Explicitly clear the border texels to black because OpenGL-ES does not support GL_CLAMP_TO_BORDER.
             {
                 // Clear to fully opaque black.
                 GL( glClearColor( 0.0f, 0.0f, 0.0f, 1.0f ) );
@@ -718,7 +670,6 @@ namespace cl {
                 GL( glScissor( frameBuffer->Width - 1, 0, 1, frameBuffer->Height ) );
                 GL( glClear( GL_COLOR_BUFFER_BIT ) );
             }
-
 
 
             ovrFramebuffer_Resolve( frameBuffer );
@@ -751,31 +702,20 @@ namespace cl {
     RendererGearVR::RendererGearVR(JNIEnv *env, jobject activityObject, ILoggerFactory* loggerFactory)
             : window(NULL),
               ovrM(NULL),
-              frameIndex(0),
+              frameIndex(1),
               minimumVSyncs(1),
               IRenderer()
     {
-        this->logger = loggerFactory->createLogger("RendererGearVR");//log(LOG_INFO, "Renderer created");
+        this->logger = loggerFactory->createLogger("RendererGearVR");
 
-        this->eglParams = new EGLParams();
-        this->eglParams->clear();
+        EglInitExtensions( &this->glExtensions );
 
-        //this->glExtensions = new OpenGLExtensions_t();
+        ovrEgl_Clear( &this->eglParams );
 
-//        this->ovrRenderer = new OvrRenderer();
-        //ovrRenderer_Clear(this->ovrRenderer);
-//        this->ovrRenderer->clear();
         ovrRenderer_Clear(&this->OVRRenderer);
 
-//        this->ovrSimulation = new OvrSimulation();
-//        this->ovrSimulation->clear();
         ovrSimulation_Clear(&this->OVRSimulation);
 
-//        this->ovrFrameBuffer = new OvrFrameBuffer();
-//        this->ovrFrameBuffer->clear();
-
-        //logger->log(LOG_INFO, "Renderer created");
-        //(*env)->GetJavaVM( env, &this->javaVM);
         env->GetJavaVM(&this->javaVM);
         this->java.Env = env;
         this->activityObject = env->NewGlobalRef(activityObject);
@@ -802,9 +742,12 @@ namespace cl {
                     "VrApi initialization error.");
         }
         logger->log(LOG_DEBUG, "eglParams.createEGLContext()");
-        eglParams->createEGLContext();
-        this->glExtensions.eglInitExtensions();
-        this->useMultiView &= (glExtensions.multiView &&
+
+        ovrEgl_CreateContext(&this->eglParams, nullptr);
+
+        EglInitExtensions( &this->glExtensions );
+
+        this->useMultiView &= (this->glExtensions.multi_view &&
                                vrapi_GetSystemPropertyInt(&java,
                                                           VRAPI_SYS_PROP_MULTIVIEW_AVAILABLE));
         logger->log(LOG_DEBUG, "UseMultiview : " + this->useMultiView);
@@ -817,7 +760,7 @@ namespace cl {
         /*
          * Creating renderer specific config
          */
-        //this->ovrRenderer->create(&java, this->useMultiView);
+
         ovrRenderer_Create(&this->OVRRenderer, &java, this->useMultiView);
     }
 
@@ -845,6 +788,8 @@ namespace cl {
                 }
             }
         }
+
+        this->renderCamera = (CameraGLOVR*)cameraRelations[0];
 
         this->enterIntoVrMode();
 
@@ -874,22 +819,18 @@ namespace cl {
         // Apply the head-on-a-stick model if there is no positional tracking.
         const ovrHeadModelParms headModelParms = vrapi_DefaultHeadModelParms();
         const ovrTracking tracking = vrapi_ApplyHeadModel(&headModelParms, &baseTracking);
-//        this->OVRSimulation.advance(predictedDisplayTime);
+
         ovrSimulation_Advance(&this->OVRSimulation, predictedDisplayTime);
 
         // Create the scene
-//        ovrScene scen;
         bool UseMultiview = this->useMultiView;
-//        ovrScene_Create( &scen, UseMultiview);
 
         // Render eye images and setup ovrFrameParms using ovrTracking.
         const ovrFrameParms frameParms = ovrRenderer_RenderFrame(&this->OVRRenderer, &this->java, this->frameIndex,
-                                                                 this->minimumVSyncs, &this->perfParms,
+                                                                 this->minimumVSyncs, &this->perfParms, this->renderCamera,
                                                                   scene, &this->OVRSimulation,
                                                                   &tracking, this->ovrM);
-//                this->OVRRenderer.renderFrame(&this->java, this->frameIndex,
-//                                                                        this->minimumVSyncs, &this->perfParms,
-//                /*scene,*/ this->OVRSimulation, scene,  &tracking, this->ovrM);
+
 
         // Hand over the eye images to the time warp.
         vrapi_SubmitFrame( this->ovrM, &frameParms);
@@ -923,9 +864,11 @@ namespace cl {
             }
         }
 
-//        this->ovrRenderer->destroy();
+
+
         ovrRenderer_Destroy(&this->OVRRenderer);
-        this->eglParams->destroyEGLContext();
+
+        ovrEgl_DestroyContext( &this->eglParams );
         vrapi_Shutdown();
 
         this->java.Vm->DetachCurrentThread();
@@ -933,11 +876,15 @@ namespace cl {
 
     void RendererGearVR::setWindow(ANativeWindow *window) {
         this->window = window;
-        //this->logger->log(LOG_INFO, "Windows Set");
     }
 
     ANativeWindow* RendererGearVR::getWindow(){
         return this->window;
+    }
+
+    ovrMobile* RendererGearVR::getOvr()
+    {
+        return this->ovrM;
     }
 
     void RendererGearVR::stop(){}
@@ -949,9 +896,9 @@ namespace cl {
             parms.Flags |= VRAPI_MODE_FLAG_RESET_WINDOW_FULLSCREEN;
 
             parms.Flags |= VRAPI_MODE_FLAG_NATIVE_WINDOW;
-            parms.Display = (size_t) this->eglParams->display;
+            parms.Display = (size_t) this->eglParams.Display;
             parms.WindowSurface = (size_t) this->window;
-            parms.ShareContext = (size_t) this->eglParams->context;
+            parms.ShareContext = (size_t) this->eglParams.Context;
 
             logger->log(LOG_DEBUG, "vrapi_EnterVrMode()");
 
