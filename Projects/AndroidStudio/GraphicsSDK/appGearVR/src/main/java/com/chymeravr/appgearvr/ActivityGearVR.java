@@ -23,7 +23,7 @@ public class ActivityGearVR extends Activity implements SurfaceHolder.Callback{
 
     // Native methods for Activity lifecyle
     private native long onCreateNative(Activity activity, AssetManager assetManager);
-    private native void onStartNative(long handle );
+    private native void onStartNative(Activity activity, long handle );
     private native void onPauseNative(long handle );
     private native void onResumeNative(long handle );
     private native void onStopNative(long handle );
@@ -75,7 +75,7 @@ public class ActivityGearVR extends Activity implements SurfaceHolder.Callback{
         super.onStart();
 
         // call native start
-        onStartNative( mNativeHandle);
+        onStartNative(  this, mNativeHandle);
     }
 
     @Override

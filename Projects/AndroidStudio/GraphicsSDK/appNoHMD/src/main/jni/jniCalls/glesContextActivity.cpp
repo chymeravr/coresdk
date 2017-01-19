@@ -2,7 +2,6 @@
 #include "glesNative.h"
 
 
-
 #ifdef __cplusplus
 extern "C" {
 #endif

@@ -3,13 +3,9 @@
 //
 
 #include <VrApi_Types.h>
-#include "../Include/RendererGearVR.h"
-#include <coreEngine/renderObjects/Camera.h>
 #include <coreEngine/renderObjects/Shader.h>
 #include <coreEngine/renderObjects/Material.h>
 #include <coreEngine/renderObjects/Model.h>
-#include <coreEngine/conf/MathType.h>
-#include <LoggerAndroid.h>
 #include <CameraGLOVR.h>
 #include <RendererGearVR.h>
 
@@ -708,8 +704,6 @@ namespace cl {
     {
         this->logger = loggerFactory->createLogger("RendererGearVR");
 
-        EglInitExtensions( &this->glExtensions );
-
         ovrEgl_Clear( &this->eglParams );
 
         ovrRenderer_Clear(&this->OVRRenderer);
@@ -762,6 +756,8 @@ namespace cl {
          */
 
         ovrRenderer_Create(&this->OVRRenderer, &java, this->useMultiView);
+
+        this->enterIntoVrMode();
     }
 
     bool RendererGearVR::initialize(Scene* scene) {
@@ -790,8 +786,6 @@ namespace cl {
         }
 
         this->renderCamera = (CameraGLOVR*)cameraRelations[0];
-
-        this->enterIntoVrMode();
 
         /**
          * TODO: vrapi initial frame submit
@@ -864,14 +858,6 @@ namespace cl {
             }
         }
 
-
-
-        ovrRenderer_Destroy(&this->OVRRenderer);
-
-        ovrEgl_DestroyContext( &this->eglParams );
-        vrapi_Shutdown();
-
-        this->java.Vm->DetachCurrentThread();
     }
 
     void RendererGearVR::setWindow(ANativeWindow *window) {
@@ -882,12 +868,24 @@ namespace cl {
         return this->window;
     }
 
-    ovrMobile* RendererGearVR::getOvr()
+    ovrMobile** RendererGearVR::getOvr()
     {
-        return this->ovrM;
+        return &this->ovrM;
     }
 
-    void RendererGearVR::stop(){}
+    void RendererGearVR::stop(){
+
+        this->leaveVrMode();
+
+        ovrRenderer_Destroy(&this->OVRRenderer);
+
+        ovrEgl_DestroyContext( &this->eglParams );
+        vrapi_Shutdown();
+
+        this->java.Vm->DetachCurrentThread();
+
+
+    }
 
     void RendererGearVR::enterIntoVrMode() {
         if (this->ovrM == NULL) {
