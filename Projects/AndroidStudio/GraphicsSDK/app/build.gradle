@@ -1,0 +1,132 @@
+apply plugin: 'com.android.model.application'
+
+def coreEngineRoot = "../../../../CoreEngine"
+def confRoot = "../../../../Conf"
+def glmRoot = "../../../../thirdParty/glm/glm-0.9.7.6/"
+def GLImplementationRoot = "../../../../GLImplementation"
+def androidImage360Root = "${project.rootDir}/androidImage360"
+def image360Root = "../../../../Image360"
+def ovr_mobile_root = "${project.rootDir}/ovr_sdk_mobile"
+
+model {
+    repositories{
+        libs(PrebuiltLibraries) {
+            libopenglloader{
+                headers.srcDir "${ovr_mobile_root}/1stParty/OpengGL_Loader/Include"
+                binaries.withType(StaticLibraryBinary){
+                    staticLibraryFile = file("${ovr_mobile_root}/1stParty/OpenGL_Loader/Libs/Android/${targetPlatform.getName()}/libopenglloader.a")
+                }
+            }
+            vrapi{
+                headers.srcDir "${ovr_mobile_root}/VrApi/Include"
+                binaries.withType(SharedLibraryBinary){
+                    sharedLibraryFile = file("${ovr_mobile_root}/VrApi/Libs/Android/${targetPlatform.getName()}/Release/libvrapi.so")
+                }
+            }
+            libovrkernel{
+                headers.srcDir "${ovr_mobile_root}/LibOVRKernel/Src"
+                binaries.withType(StaticLibraryBinary){
+                    staticLibraryFile = file("${ovr_mobile_root}/LibOVRKernel/Libs/Android/${targetPlatform.getName()}/Release/libovrkernel.a")
+                }
+            }
+            libcoreengineloader{
+                headers.srcDir "${coreEngineRoot}/include"
+                binaries.withType(SharedLibraryBinary){
+                    sharedLibraryFile = file("${project.rootDir}/coreEngine/build/outputs/native/release/lib/${targetPlatform.getName()}/libcoreEngine.so")
+                }
+            }
+            libglimplementationloader{
+                headers.srcDir "${GLImplementationRoot}/include"
+                binaries.withType(SharedLibraryBinary){
+                    sharedLibraryFile = file("${project.rootDir}/glImplementation/build/outputs/native/release/arm7/lib/${targetPlatform.getName()}/libglImplementation.so")
+                }
+            }
+            libandroidimage360loader{
+                headers.srcDir "${androidImage360Root}/include"
+                binaries.withType(SharedLibraryBinary){
+                    sharedLibraryFile = file("${project.rootDir}/androidImage360/build/outputs/native/debug/arm7/lib/${targetPlatform.getName()}/libandroidImage360.so")
+                }
+            }
+            libimage360loader{
+                headers.srcDir "${image360Root}/include"
+                binaries.withType(SharedLibraryBinary){
+                    sharedLibraryFile = file("${project.rootDir}/image360/build/outputs/native/release/arm7/lib/${targetPlatform.getName()}/libimage360.so")
+                }
+            }
+        }
+    }
+
+    android {
+        compileSdkVersion = 23
+        buildToolsVersion = "23.0.3"
+
+        defaultConfig.with {
+            applicationId = "com.chymeravr.graphicssdk"
+            minSdkVersion.apiLevel = 23
+            targetSdkVersion.apiLevel = 24
+            versionCode = 1
+            versionName = "1.0"
+            testInstrumentationRunner = "android.support.test.runner.AndroidJUnitRunner"
+        }
+        buildTypes {
+            release {
+                minifyEnabled = false
+                proguardFiles.add(file('proguard-android.txt'))
+            }
+        }
+
+        ndk {
+            moduleName = "native-lib"
+            cppFlags.add("-std=c++11")
+            cppFlags.add("-frtti ")
+            cppFlags.add("-fexceptions")
+            cppFlags.add("-I" + file("src/main/jni").absolutePath)
+            stl = "gnustl_shared"
+            // Add the necessary GVR .so files for all architectures.
+            cppFlags.add("-I" + file("${confRoot}/include").absolutePath)
+            cppFlags.add("-I" + file("${glmRoot}/glm").absolutePath)
+            cppFlags.add("-I" + file("${coreEngineRoot}/include").absolutePath)
+            cppFlags.add("-I" + file("${image360Root}/include").absolutePath)
+            cppFlags.add("-I" + file("${androidImage360Root}/include").absolutePath)
+            cppFlags.add("-I" + file("${GLImplementationRoot}/include").absolutePath)
+            ldLibs.addAll(["log", "android", "GLESv3", "EGL"])
+
+            abiFilters.addAll(['armeabi-v7a'])
+        }
+
+        sources{
+            main{
+                jni{
+//                    source{
+//                        srcDir "${androidImage360Root}/src"
+//                    }
+                    dependencies{
+                        library 'libopenglloader' linkage 'static'
+                        library 'libovrkernel' linkage 'static'
+                        library 'vrapi' linkage 'shared'
+                        library 'libcoreengineloader' linkage 'shared'
+                        library 'libglimplementationloader' linkage 'shared'
+                        library 'libandroidimage360loader' linkage 'shared'
+                        library 'libimage360loader' linkage 'shared'
+                    }
+                }
+            }
+        }
+
+        productFlavors {
+            create("arm7") {
+                ndk.abiFilters.add("armeabi-v7a")
+            }
+        }
+    }
+
+}
+
+dependencies {
+    compile fileTree(dir: 'libs', include: ['*.jar'])
+    androidTestCompile('com.android.support.test.espresso:espresso-core:2.2.2', {
+        exclude group: 'com.android.support', module: 'support-annotations'
+    })
+    compile 'com.android.support:appcompat-v7:24.2.1'
+    testCompile 'junit:junit:4.12'
+}

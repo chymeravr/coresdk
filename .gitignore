@@ -1,3 +1,9 @@
-/360ImageDisplay
-/Android
-/repository
+/Repository
+*.iml
+.gradle/
+build/
+.idea/
+Release/
+Debug/
+
+
