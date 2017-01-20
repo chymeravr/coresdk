@@ -6,4 +6,4 @@ build/
 Release/
 Debug/
 
-
+**/local.properties
