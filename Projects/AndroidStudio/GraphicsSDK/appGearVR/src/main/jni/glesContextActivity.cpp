@@ -255,7 +255,7 @@ typedef struct
     bool            Started;
     pthread_t       Thread;
     ovrMessageQueue MessageQueue;
-//    ANativeWindow*  NativeWindow;
+    ANativeWindow*  NativeWindow;
 } ovrAppThread;
 
 static void ovrApp_HandleVrModeChanges( RendererGearVR * renderer, bool Resumed )
@@ -329,7 +329,7 @@ void * AppThreadFunction( void * parm ) {
                     break;
                 }
                 case MESSAGE_ON_SURFACE_DESTROYED: {
-//                    renderer->setWindow(NULL);
+                    renderer->setWindow(NULL);
                     break;
                 }
                 case MESSAGE_ON_KEY_EVENT: {
@@ -399,6 +399,7 @@ static void ovrAppThread_Create( ovrAppThread * appThread, Image360* application
     appThread->Resumed = false;
     appThread->Started = false;
     appThread->ovrM = NULL;
+    appThread->NativeWindow = NULL;
     ovrMessageQueue_Create( &appThread->MessageQueue );     // lets just assume the message queue works for now
 
     const int createErr = pthread_create( &appThread->Thread, NULL, AppThreadFunction, appThread );
@@ -556,10 +557,8 @@ Java_com_chymeravr_appgearvr_ActivityGearVR_onDestroyNative(JNIEnv *env, jobject
 JNIEXPORT void JNICALL
 Java_com_chymeravr_appgearvr_ActivityGearVR_onSurfaceCreatedNative(JNIEnv *env, jobject obj,
                                                                    jlong handle, jobject surface) {
-    ovrAppThread *appThread = (ovrAppThread *) ((size_t) handle);
     logger->log(LOG_DEBUG, "onSurfaceCreatedNative() Begin");
-
-
+    ovrAppThread *appThread = (ovrAppThread *) ((size_t) handle);
     ANativeWindow *newNativeWindow = ANativeWindow_fromSurface(env, surface);
 
     if (ANativeWindow_getWidth(newNativeWindow) < ANativeWindow_getHeight(newNativeWindow)) {
@@ -574,13 +573,13 @@ Java_com_chymeravr_appgearvr_ActivityGearVR_onSurfaceCreatedNative(JNIEnv *env, 
     /*
      * TODO: send the window as a message param instead of this
      */
-    auto renderer = (RendererGearVR *) appThread->Application->getRenderer();
-    renderer->setWindow(newNativeWindow);
+//    auto renderer = (RendererGearVR *) appThread->Application->getRenderer();
+//    renderer->setWindow(newNativeWindow);
 
-
+    appThread->NativeWindow = newNativeWindow;
     ovrMessage message;
     ovrMessage_Init( &message, MESSAGE_ON_SURFACE_CREATED, MQ_WAIT_PROCESSED);
-    ovrMessage_SetPointerParm( &message, 0, newNativeWindow);
+    ovrMessage_SetPointerParm( &message, 0, appThread->NativeWindow);
     ovrMessageQueue_PostMessage( &appThread->MessageQueue, &message);
 }
 
@@ -600,31 +599,31 @@ Java_com_chymeravr_appgearvr_ActivityGearVR_onSurfaceChangedNative(JNIEnv *env, 
         ALOGE( "        Surface not in landscape mode!" );
     }
 
-    auto renderer = (RendererGearVR *) appThread->Application->getRenderer();
-    auto currentWindow = renderer->getWindow();
-    if ( newNativeWindow != currentWindow)                                                // we have a new window
+//    auto renderer = (RendererGearVR *) appThread->Application->getRenderer();
+//    auto currentWindow = renderer->getWindow();
+    if ( newNativeWindow != appThread->NativeWindow)                                                // we have a new window
     {
-        if ( currentWindow != NULL)                                                       // there is already a window in this appthread - release it from your slavery !!!
+        if ( appThread->NativeWindow != NULL)                                                       // there is already a window in this appthread - release it from your slavery !!!
         {
             ovrMessage message;
             ovrMessage_Init( &message, MESSAGE_ON_SURFACE_DESTROYED, MQ_WAIT_PROCESSED );
             ovrMessageQueue_PostMessage( &appThread->MessageQueue, &message );
             ALOGV( "        ANativeWindow_release( NativeWindow )" );
-            ANativeWindow_release(currentWindow);
-            renderer->setWindow(NULL);
+            ANativeWindow_release(appThread->NativeWindow);
+            //renderer->setWindow(NULL);
 
         }
         if ( newNativeWindow != NULL)                                                               // the new window is not null - wohoO!!
         {
             ALOGV( "         NativeWindow = ANativeWindow_fromSurface( env, surface ) " );
-
+            appThread->NativeWindow = newNativeWindow;
             //renderer->setWindow(newNativeWindow);
             ovrMessage message;
             ovrMessage_Init( &message, MESSAGE_ON_SURFACE_CREATED, MQ_WAIT_PROCESSED );
             /*
              * TODO: figure out why the below does not work
              */
-            ovrMessage_SetPointerParm( &message, 0, newNativeWindow );
+            ovrMessage_SetPointerParm( &message, 0, appThread->NativeWindow );
             ovrMessageQueue_PostMessage( &appThread->MessageQueue, &message );
         }
     }
@@ -636,8 +635,7 @@ Java_com_chymeravr_appgearvr_ActivityGearVR_onSurfaceChangedNative(JNIEnv *env, 
 
 JNIEXPORT void JNICALL
 Java_com_chymeravr_appgearvr_ActivityGearVR_onSurfaceDestroyedNative(JNIEnv *env, jobject obj,
-                                                                     jlong handle,
-                                                                     jobject surface) {
+                                                                     jlong handle) {
     ovrAppThread *appThread = (ovrAppThread *) ((size_t) handle);
     logger->log(LOG_DEBUG, "onSurfaceDestroyedNative()");
 
@@ -646,15 +644,11 @@ Java_com_chymeravr_appgearvr_ActivityGearVR_onSurfaceDestroyedNative(JNIEnv *env
     ovrMessage message;
     ovrMessage_Init( &message, MESSAGE_ON_SURFACE_DESTROYED, MQ_WAIT_PROCESSED );
     ovrMessageQueue_PostMessage( &appThread->MessageQueue, &message );
-    ANativeWindow_release(renderer->getWindow());
-    renderer->setWindow(NULL);
+    ANativeWindow_release(appThread->NativeWindow);
+    appThread->NativeWindow = NULL;
 
 
 }
-
-#ifdef __cplusplus
-}
-#endif
 
 
 /*
@@ -696,3 +690,7 @@ Java_com_chymeravr_appgearvr_ActivityGearVR_onTouchEventNative(JNIEnv *env, jobj
     ovrMessage_SetFloatParm( &message, 2, y );
     ovrMessageQueue_PostMessage( &appThread->MessageQueue, &message );
 }
+
+#ifdef __cplusplus
+}
+#endif
