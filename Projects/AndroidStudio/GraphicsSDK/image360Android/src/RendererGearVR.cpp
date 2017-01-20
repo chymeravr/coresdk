@@ -757,7 +757,7 @@ namespace cl {
 
         ovrRenderer_Create(&this->OVRRenderer, &java, this->useMultiView);
 
-        this->enterIntoVrMode();
+//        this->enterIntoVrMode();
     }
 
     bool RendererGearVR::initialize(Scene* scene) {
@@ -875,7 +875,7 @@ namespace cl {
 
     void RendererGearVR::stop(){
 
-        this->leaveVrMode();
+//        this->leaveVrMode();
 
         ovrRenderer_Destroy(&this->OVRRenderer);
 

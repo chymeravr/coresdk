@@ -252,10 +252,32 @@ typedef struct
     AAssetManager*  mgr;
     ovrMobile**      ovrM;
     bool            Resumed;
+    bool            Started;
     pthread_t       Thread;
     ovrMessageQueue MessageQueue;
 //    ANativeWindow*  NativeWindow;
 } ovrAppThread;
+
+static void ovrApp_HandleVrModeChanges( RendererGearVR * renderer, bool Resumed )
+{
+    if ( Resumed != false && renderer->getWindow() != NULL )
+    {
+        renderer->enterIntoVrMode();
+    }
+    else
+    {
+        if ( *renderer->getOvr() != NULL )
+        {
+            ALOGV( "        eglGetCurrentSurface( EGL_DRAW ) = %p", eglGetCurrentSurface( EGL_DRAW ) );
+
+            ALOGV( "        vrapi_LeaveVrMode()" );
+
+            renderer->leaveVrMode();
+
+            ALOGV( "        eglGetCurrentSurface( EGL_DRAW ) = %p", eglGetCurrentSurface( EGL_DRAW ) );
+        }
+    }
+}
 
 // the ovr app running on a separate thread does its magic here
 void * AppThreadFunction( void * parm ) {
@@ -263,6 +285,8 @@ void * AppThreadFunction( void * parm ) {
 
     auto renderer = (RendererGearVR*) appThread->Application->getRenderer();
     appThread->ovrM = renderer->getOvr();
+
+    appThread->Application->start();
 
     for (bool destroyed = false; destroyed == false; )                                              // initialize and cond test
     {
@@ -277,7 +301,6 @@ void * AppThreadFunction( void * parm ) {
 
             switch (message.Id) {
                 case MESSAGE_ON_CREATE: {
-
                     break;
                 }
                 case MESSAGE_ON_START: {
@@ -289,7 +312,6 @@ void * AppThreadFunction( void * parm ) {
                 }
                 case MESSAGE_ON_PAUSE: {
                     appThread->Resumed = false;
-                    appThread->Application->stop();
                     break;
                 }
                 case MESSAGE_ON_STOP: {
@@ -297,48 +319,17 @@ void * AppThreadFunction( void * parm ) {
                 }
                 case MESSAGE_ON_DESTROY: {
                     appThread->ovrM = NULL;             // how to handle this
+                    renderer->setWindow(NULL);
                     destroyed = true;
-//                    appThread->Application->deinitialize();
                     break;
                 }
                 case MESSAGE_ON_SURFACE_CREATED: {
-
-                    appThread->Application->start();
-
-                    ImageBMPLoaderAndroid imageBMPLoader(logger.get());
-                    std::vector<std::unique_ptr<Image> > textureImages;
-                    TEXTURE_MAP_MODE mode = CUBE_MAP_MODE_SIX_IMAGES; //EQUIRECTANGULAR_MAP_MODE;
-
-
-                    switch (mode) {
-                        case CUBE_MAP_MODE_SINGLE_IMAGE:
-                            textureImages.push_back(imageBMPLoader.loadImage(appThread->mgr, "images/cubemap_current.bmp"));
-                            break;
-                        case CUBE_MAP_MODE_SIX_IMAGES:
-                            textureImages.push_back(imageBMPLoader.loadImage(appThread->mgr, "images/cubemap_geo_front.bmp"));
-                            textureImages.push_back(imageBMPLoader.loadImage(appThread->mgr, "images/cubemap_geo_left.bmp"));
-                            textureImages.push_back(imageBMPLoader.loadImage(appThread->mgr, "images/cubemap_geo_back.bmp"));
-                            textureImages.push_back(imageBMPLoader.loadImage(appThread->mgr, "images/cubemap_geo_right.bmp"));
-                            textureImages.push_back(imageBMPLoader.loadImage(appThread->mgr, "images/cubemap_geo_top.bmp"));
-                            textureImages.push_back(imageBMPLoader.loadImage(appThread->mgr, "images/cubemap_geo_bottom.bmp"));
-                            break;
-                        case EQUIRECTANGULAR_MAP_MODE:
-                            textureImages.push_back(imageBMPLoader.loadImage(appThread->mgr, "images/tex_current.bmp"));
-                            break;
-                    }
-
-                    appThread->Application->initialize(mode, textureImages);
-
-//                    appThread->Resumed = true;
-                    appThread->Application->draw();
+                    auto newNativeWindow = (ANativeWindow *)ovrMessage_GetPointerParm( &message, 0);
+                    renderer->setWindow(newNativeWindow);
                     break;
                 }
                 case MESSAGE_ON_SURFACE_DESTROYED: {
-//                    appThread->Application->stop();
-                    appThread->Application->deinitialize();
-//
-                    ANativeWindow_release(renderer->getWindow());
-                    renderer->setWindow(NULL);
+//                    renderer->setWindow(NULL);
                     break;
                 }
                 case MESSAGE_ON_KEY_EVENT: {
@@ -349,11 +340,42 @@ void * AppThreadFunction( void * parm ) {
                 }
 
             }
+            ovrApp_HandleVrModeChanges(renderer, appThread->Resumed);
         }
 
         if(*appThread->ovrM == NULL)
         {
             continue;
+        }
+
+        if ( !appThread->Started)
+        {
+            ImageBMPLoaderAndroid imageBMPLoader(logger.get());
+            std::vector<std::unique_ptr<Image> > textureImages;
+            TEXTURE_MAP_MODE mode = CUBE_MAP_MODE_SIX_IMAGES; //EQUIRECTANGULAR_MAP_MODE;
+
+
+            switch (mode) {
+                case CUBE_MAP_MODE_SINGLE_IMAGE:
+                    textureImages.push_back(imageBMPLoader.loadImage(appThread->mgr, "images/cubemap_current.bmp"));
+                    break;
+                case CUBE_MAP_MODE_SIX_IMAGES:
+                    textureImages.push_back(imageBMPLoader.loadImage(appThread->mgr, "images/cubemap_geo_front.bmp"));
+                    textureImages.push_back(imageBMPLoader.loadImage(appThread->mgr, "images/cubemap_geo_left.bmp"));
+                    textureImages.push_back(imageBMPLoader.loadImage(appThread->mgr, "images/cubemap_geo_back.bmp"));
+                    textureImages.push_back(imageBMPLoader.loadImage(appThread->mgr, "images/cubemap_geo_right.bmp"));
+                    textureImages.push_back(imageBMPLoader.loadImage(appThread->mgr, "images/cubemap_geo_top.bmp"));
+                    textureImages.push_back(imageBMPLoader.loadImage(appThread->mgr, "images/cubemap_geo_bottom.bmp"));
+                    break;
+                case EQUIRECTANGULAR_MAP_MODE:
+                    textureImages.push_back(imageBMPLoader.loadImage(appThread->mgr, "images/tex_current.bmp"));
+                    break;
+            }
+
+            appThread->Application->initialize(mode, textureImages);
+
+            appThread->Started = true;
+            appThread->Application->draw();
         }
 
         if(appThread->Resumed)
@@ -362,6 +384,9 @@ void * AppThreadFunction( void * parm ) {
         }
 
     }
+
+//    appThread->Application->stop();
+
     return NULL;
 }
 
@@ -371,8 +396,8 @@ static void ovrAppThread_Create( ovrAppThread * appThread, Image360* application
     appThread->Thread = 0;                                  // is this initialization necessary?
     appThread->Application = application;
     appThread->mgr = assetManager;
-//    appThread->NativeWindow = NULL;
     appThread->Resumed = false;
+    appThread->Started = false;
     appThread->ovrM = NULL;
     ovrMessageQueue_Create( &appThread->MessageQueue );     // lets just assume the message queue works for now
 
@@ -479,17 +504,6 @@ Java_com_chymeravr_appgearvr_ActivityGearVR_onResumeNative(JNIEnv *env, jobject 
     ovrAppThread *appThread = (ovrAppThread *) ((size_t) handle);
     logger->log(LOG_DEBUG, "onResumeNative()");
 
-    isEnabled = true;
-    auto renderer = (RendererGearVR*)appThread->Application->getRenderer();
-
-    if( renderer->getWindow() != NULL ) {
-//        const int createErr = pthread_create(&renderingThread, NULL, renderFunc,
-//                                             (void *) application.get());
-//        if (createErr != 0) {
-//            logger->log(LOG_DEBUG, "pthread_create returned errir");
-//        }
-    }
-
     ovrMessage message;
     ovrMessage_Init( &message, MESSAGE_ON_RESUME, MQ_WAIT_PROCESSED );
     ovrMessageQueue_PostMessage( &appThread->MessageQueue, &message );
@@ -500,8 +514,6 @@ Java_com_chymeravr_appgearvr_ActivityGearVR_onPauseNative(JNIEnv *env, jobject o
     ovrAppThread *appThread = (ovrAppThread *) ((size_t) handle);
     logger->log(LOG_DEBUG, "onPauseNative()");
 
-    isEnabled = false;
-
     ovrMessage message;
     ovrMessage_Init( &message, MESSAGE_ON_PAUSE, MQ_WAIT_PROCESSED );
     ovrMessageQueue_PostMessage( &appThread->MessageQueue, &message );
@@ -511,8 +523,6 @@ JNIEXPORT void JNICALL
 Java_com_chymeravr_appgearvr_ActivityGearVR_onStopNative(JNIEnv *env, jobject obj, jlong handle) {
     ovrAppThread *appThread = (ovrAppThread *) ((size_t) handle);
     logger->log(LOG_DEBUG, "onStopNative()");
-
-//    application->stop();
 
     ovrMessage message;
     ovrMessage_Init( &message, MESSAGE_ON_STOP, MQ_WAIT_PROCESSED );
@@ -559,19 +569,15 @@ Java_com_chymeravr_appgearvr_ActivityGearVR_onSurfaceCreatedNative(JNIEnv *env, 
         // The surface is immediately replaced with a new surface with the correct orientation.
         logger->log(LOG_ERROR, " Surface not in landscape model! ");
     }
-    logger->log(LOG_DEBUG,
-                "       NativeWindow = ANativeWIndow_fromSurface( env, surface )");
+    logger->log(LOG_DEBUG,  "       NativeWindow = ANativeWIndow_fromSurface( env, surface )");
+
+    /*
+     * TODO: send the window as a message param instead of this
+     */
     auto renderer = (RendererGearVR *) appThread->Application->getRenderer();
     renderer->setWindow(newNativeWindow);
 
-//    app->start();
-//
-//    /*
-//     * Rendering to Surface must happen on a separate thread - not only is it bad practice not to
-//     * do so, Oculus VRAPI will not function
-//     */
 
-//    appThread->NativeWindow = newNativeWindow;
     ovrMessage message;
     ovrMessage_Init( &message, MESSAGE_ON_SURFACE_CREATED, MQ_WAIT_PROCESSED);
     ovrMessage_SetPointerParm( &message, 0, newNativeWindow);
@@ -595,7 +601,6 @@ Java_com_chymeravr_appgearvr_ActivityGearVR_onSurfaceChangedNative(JNIEnv *env, 
     }
 
     auto renderer = (RendererGearVR *) appThread->Application->getRenderer();
-    renderer->setWindow(newNativeWindow);
     auto currentWindow = renderer->getWindow();
     if ( newNativeWindow != currentWindow)                                                // we have a new window
     {
@@ -605,12 +610,20 @@ Java_com_chymeravr_appgearvr_ActivityGearVR_onSurfaceChangedNative(JNIEnv *env, 
             ovrMessage_Init( &message, MESSAGE_ON_SURFACE_DESTROYED, MQ_WAIT_PROCESSED );
             ovrMessageQueue_PostMessage( &appThread->MessageQueue, &message );
             ALOGV( "        ANativeWindow_release( NativeWindow )" );
+            ANativeWindow_release(currentWindow);
+            renderer->setWindow(NULL);
+
         }
         if ( newNativeWindow != NULL)                                                               // the new window is not null - wohoO!!
         {
             ALOGV( "         NativeWindow = ANativeWindow_fromSurface( env, surface ) " );
+
+            //renderer->setWindow(newNativeWindow);
             ovrMessage message;
             ovrMessage_Init( &message, MESSAGE_ON_SURFACE_CREATED, MQ_WAIT_PROCESSED );
+            /*
+             * TODO: figure out why the below does not work
+             */
             ovrMessage_SetPointerParm( &message, 0, newNativeWindow );
             ovrMessageQueue_PostMessage( &appThread->MessageQueue, &message );
         }
@@ -628,13 +641,15 @@ Java_com_chymeravr_appgearvr_ActivityGearVR_onSurfaceDestroyedNative(JNIEnv *env
     ovrAppThread *appThread = (ovrAppThread *) ((size_t) handle);
     logger->log(LOG_DEBUG, "onSurfaceDestroyedNative()");
 
-    logger->log(LOG_INFO, "        ANativeWindow_release( NativeWindow )");
+    auto renderer = (RendererGearVR *) appThread->Application->getRenderer();
 
     ovrMessage message;
     ovrMessage_Init( &message, MESSAGE_ON_SURFACE_DESTROYED, MQ_WAIT_PROCESSED );
     ovrMessageQueue_PostMessage( &appThread->MessageQueue, &message );
-//    ANativeWindow_release( appThread->NativeWindow );
-//    appThread->NativeWindow = NULL;
+    ANativeWindow_release(renderer->getWindow());
+    renderer->setWindow(NULL);
+
+
 }
 
 #ifdef __cplusplus
