@@ -5,5 +5,7 @@ build/
 .idea/
 Release/
 Debug/
-
+**/gradle/
+**/gradlew.bat
+**/gradlew
 **/local.properties
