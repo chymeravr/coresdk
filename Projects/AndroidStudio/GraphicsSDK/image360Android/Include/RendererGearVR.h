@@ -264,10 +264,11 @@ static void GLCheckErrors( int line )
         void stop();
         void setWindow(ANativeWindow *window);
         ANativeWindow* getWindow();
-        ovrMobile** getOvr();
+        ovrMobile* getOvr();
 //    private:
         void enterIntoVrMode();
         void leaveVrMode();
+        void handleVrModeChanges(bool resumed);
 
     };
 }
