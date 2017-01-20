@@ -112,5 +112,7 @@ public class Image360Test {
         Thread.sleep(5000);
         byte[] byteArray = image360Ad.getByteArray();
         Assert.assertNotNull(byteArray);
+
+
     }
 }

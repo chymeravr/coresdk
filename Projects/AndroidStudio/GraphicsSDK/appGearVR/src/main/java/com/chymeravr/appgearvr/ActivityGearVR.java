@@ -18,7 +18,7 @@ public class ActivityGearVR extends Activity implements SurfaceHolder.Callback{
 
     // load the native library since it has all the native functions
     static {
-        System.loadLibrary("image360gearvr");
+        System.loadLibrary("image360Android");
     }
 
     // Native methods for Activity lifecyle
