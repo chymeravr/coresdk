@@ -1,41 +1,42 @@
-set(SUBPROJECT_NAME CoreEngine)
-set(SUBPROJECT_PATH ${PROJECT_SOURCE_DIR}/${SUBPROJECT_NAME})
+project(CoreEngine)
 
 #include the header files
-include_directories ("${REPO_PATH}/thirdParty/glm/glm-${GLM_VERSION}/glm" "${PROJECT_SOURCE_DIR}/Conf/include" "${SUBPROJECT_PATH}/include")
 
-set(SRC_DIR ${SUBPROJECT_PATH}/src)
-set(SOURCES 
-	${SRC_DIR}/components/transform/TransformCamera.cpp
-	${SRC_DIR}/components/transform/TransformModel.cpp
-	${SRC_DIR}/conf/MathType.cpp
-	${SRC_DIR}/events/EventQueue.cpp
-	${SRC_DIR}/modelBuilder/CubeBuilder.cpp
-	${SRC_DIR}/modelBuilder/UVSphereBuilder.cpp
-	${SRC_DIR}/modifier/ImageBMPLoader.cpp
-	${SRC_DIR}/modifier/ImageModifier.cpp
-	${SRC_DIR}/modifier/ModelModifier.cpp
-	${SRC_DIR}/renderObjects/Camera.cpp
-	${SRC_DIR}/renderObjects/ComponentList.cpp
-	${SRC_DIR}/renderObjects/Relation.cpp
-	${SRC_DIR}/renderObjects/Scene.cpp
-	${SRC_DIR}/util/SimpleOBJLoader.cpp)
-add_library(${SUBPROJECT_NAME} STATIC  ${SOURCES})
+include_directories (${REPO_PATH}/thirdParty/glm/glm-${GLM_VERSION}/glm 
+					 ${Conf_INCLUDE_DIRS} 
+					 ${PROJECT_SOURCE_DIR}/include)
+
+set(SOURCES ${PROJECT_SOURCE_DIR}/src/components/transform/TransformCamera.cpp
+			${PROJECT_SOURCE_DIR}/src/components/transform/TransformModel.cpp
+			${PROJECT_SOURCE_DIR}/src/conf/MathType.cpp
+			${PROJECT_SOURCE_DIR}/src/events/EventQueue.cpp
+			${PROJECT_SOURCE_DIR}/src/modelBuilder/CubeBuilder.cpp
+			${PROJECT_SOURCE_DIR}/src/modelBuilder/UVSphereBuilder.cpp
+			${PROJECT_SOURCE_DIR}/src/modifier/ImageBMPLoader.cpp
+			${PROJECT_SOURCE_DIR}/src/modifier/ImageModifier.cpp
+			${PROJECT_SOURCE_DIR}/src/modifier/ModelModifier.cpp
+			${PROJECT_SOURCE_DIR}/src/renderObjects/Camera.cpp
+			${PROJECT_SOURCE_DIR}/src/renderObjects/ComponentList.cpp
+			${PROJECT_SOURCE_DIR}/src/renderObjects/Relation.cpp
+			${PROJECT_SOURCE_DIR}/src/renderObjects/Scene.cpp
+			${PROJECT_SOURCE_DIR}/src/util/SimpleOBJLoader.cpp
+)
+add_library(${PROJECT_NAME} STATIC  ${SOURCES})
 
 #######################################################################################
 # CoreEngineTests
 #######################################################################################
 
-######################################################################
+#######################################################
 # Creating GMock/GTest integration
-######################################################################
+#######################################################
 if (CMAKE_VERSION VERSION_LESS 3.2)
     set(UPDATE_DISCONNECTED_IF_AVAILABLE "")
 else()
     set(UPDATE_DISCONNECTED_IF_AVAILABLE "UPDATE_DISCONNECTED 1")
 endif()
 
-include(${PROJECT_SOURCE_DIR}/DownloadProject.cmake)
+include(${CMAKE_SOURCE_DIR}/DownloadProject.cmake)
 download_project(PROJ                googletest
                  GIT_REPOSITORY      https://github.com/google/googletest.git
                  GIT_TAG             master
@@ -58,29 +59,29 @@ if (CMAKE_VERSION VERSION_LESS 2.8.11)
 endif()
 
 
-######################################################################
+#####################################################
 # Building CoreEngineTest
-######################################################################
-set(TEST_SRC_DIR ${SUBPROJECT_PATH}/test/src)
-include_directories ("${SUBPROJECT_PATH}/test/include")
+#####################################################
+set(TEST_SRC_DIR ${PROJECT_SOURCE_DIR}/test/src)
+include_directories ("${PROJECT_SOURCE_DIR}/test/include")
 include (CTest)
-set(TEST_SOURCES 
-	${TEST_SRC_DIR}/AllTests.cpp
-	${TEST_SRC_DIR}/ComponentListTest.cpp
-	${TEST_SRC_DIR}/EventQueueTest.cpp
-	${TEST_SRC_DIR}/MaterialTest.cpp
-	${TEST_SRC_DIR}/ModelTest.cpp
-	${TEST_SRC_DIR}/SceneTest.cpp
-	${TEST_SRC_DIR}/TextureTest.cpp
-	${TEST_SRC_DIR}/TransformModelTest.cpp
-	${TEST_SRC_DIR}/CameraTest.cpp
-	${TEST_SRC_DIR}/CubeBuilderTest.cpp
-	${TEST_SRC_DIR}/ImageModifierTest.cpp
-	${TEST_SRC_DIR}/ModelModifierTest.cpp
-	${TEST_SRC_DIR}/RelationTest.cpp
-	${TEST_SRC_DIR}/ShaderTest.cpp
-	${TEST_SRC_DIR}/TransformCameraTest.cpp
-	${TEST_SRC_DIR}/UVSphereBuilderTest.cpp
+set(TEST_SOURCES	${PROJECT_SOURCE_DIR}/test/src/AllTests.cpp
+					${PROJECT_SOURCE_DIR}/test/src/CameraTest.cpp
+					${PROJECT_SOURCE_DIR}/test/src/ComponentListTest.cpp
+					${PROJECT_SOURCE_DIR}/test/src/CubeBuilderTest.cpp
+					${PROJECT_SOURCE_DIR}/test/src/EventQueueTest.cpp
+					${PROJECT_SOURCE_DIR}/test/src/ImageModifierTest.cpp
+					${PROJECT_SOURCE_DIR}/test/src/MaterialTest.cpp
+					${PROJECT_SOURCE_DIR}/test/src/ModelModifierTest.cpp
+					${PROJECT_SOURCE_DIR}/test/src/ModelTest.cpp
+					${PROJECT_SOURCE_DIR}/test/src/RelationTest.cpp
+					${PROJECT_SOURCE_DIR}/test/src/SceneTest.cpp
+					${PROJECT_SOURCE_DIR}/test/src/ShaderTest.cpp
+					${PROJECT_SOURCE_DIR}/test/src/TextureTest.cpp
+					${PROJECT_SOURCE_DIR}/test/src/TransformCameraTest.cpp
+					${PROJECT_SOURCE_DIR}/test/src/TransformModelTest.cpp
+					${PROJECT_SOURCE_DIR}/test/src/UVSphereBuilderTest.cpp
+
 )
 
 # Building test executable
