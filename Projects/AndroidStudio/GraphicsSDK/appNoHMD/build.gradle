@@ -82,7 +82,7 @@ model {
                         project ':coreEngine' linkage 'shared'
                         project ':glImplementation' linkage 'shared'
                         project ':image360' linkage 'shared'
-                        project ':image360Android' linkage 'shared'
+                        project ':image360AndroidNative' linkage 'shared'
                         project ':renderer' linkage 'shared'
                     }
                 }

@@ -61,4 +61,10 @@ final class RequestGenerator {
         return new ImageRequest(mediaUrl, mediaServerListener, 0, 0,
                 null, ARGB_8888, mediaServerListener);
     }
+
+    public InputStreamVolleyRequest getMediaDownloadRequest(@NonNull String mediaUrl,
+                                                            @NonNull ServerListener<byte[]> mediaDownloadServerListener)
+    {
+        return new InputStreamVolleyRequest(Request.Method.GET, mediaUrl, mediaDownloadServerListener, mediaDownloadServerListener, null);
+    }
 }

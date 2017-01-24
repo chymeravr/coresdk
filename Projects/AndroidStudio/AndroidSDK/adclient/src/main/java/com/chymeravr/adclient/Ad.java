@@ -19,7 +19,7 @@ abstract class Ad {
     public enum Type {
         IMAGE360,
         VIDEO360,
-        VREPERIENCE,
+        VREXPERIENCE,
         TEXTUREAD
     }
 

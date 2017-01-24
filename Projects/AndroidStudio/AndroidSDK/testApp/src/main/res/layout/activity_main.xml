@@ -8,24 +8,29 @@
     android:paddingTop="@dimen/activity_vertical_margin"
     tools:context="com.chymeravr.testApp.MainActivity">
 
-    <Button
-        android:id="@+id/button1"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="Button - Check if image loaded" />
+
 
     <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
         xmlns:tools="http://schemas.android.com/tools"
         android:id="@+id/container"
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:orientation="vertical"
-        tools:context="com.javacodegeeks.androidsurfaceviewexample.AndroidSurfaceviewExample" >
+        android:layout_width="fill_parent"
+        android:layout_height="wrap_content"
+        android:layout_alignParentTop="true"
+        android:layout_centerHorizontal="true">
 
-        <ImageView android:layout_width="wrap_content"
+        <Button
+            android:id="@+id/button1"
+            android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:id="@+id/ImageView"></ImageView>
+            android:text="Button - Check if image loaded" />
 
     </LinearLayout>
+
+    <ImageView android:layout_width="fill_parent"
+        android:layout_height="fill_parent"
+        android:id="@+id/ImageView"
+        android:layout_alignParentLeft="true"
+        android:layout_alignParentStart="true"
+        android:layout_below="@+id/container"></ImageView>
 
 </RelativeLayout>

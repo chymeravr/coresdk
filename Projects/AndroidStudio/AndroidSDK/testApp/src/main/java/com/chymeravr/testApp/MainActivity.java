@@ -1,10 +1,8 @@
 package com.chymeravr.testApp;
 
 
-import android.graphics.Bitmap;
-import android.graphics.Canvas;
-import android.graphics.Paint;
 import android.location.Location;
+import android.net.Uri;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
@@ -18,11 +16,12 @@ import com.chymeravr.adclient.AdRequest;
 import com.chymeravr.adclient.ChymeraVRAndroidSDK;
 import com.chymeravr.adclient.Image360Ad;
 
+import java.io.File;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 
 public class MainActivity extends AppCompatActivity {
-    String msg = "TestAppImg360";
+    String msg = "TestAppImage360";
 
     Image360Ad imageAd;
     Button button;
@@ -155,31 +154,38 @@ public class MainActivity extends AppCompatActivity {
 
                 MainActivity.this.imageAd.show();
 
-                byte[] testByteArray = imageAd.getByteArray();
-                Toast.makeText(MainActivity.this, "Success!!! " + MainActivity.this.imageAd.isLoading() + " "
-                                + MainActivity.this.imageAd.isLoading() +
-                                (testByteArray == null),
-                        Toast.LENGTH_LONG).show();
-                Log.v(msg, "Testing image loading");
+//                byte[] testByteArray = imageAd.getByteArray();
+//                Toast.makeText(MainActivity.this, "Success!!! " + MainActivity.this.imageAd.isLoading() + " "
+//                                + MainActivity.this.imageAd.isLoading() +
+//                                (testByteArray == null),
+//                        Toast.LENGTH_LONG).show();
+//                Log.v(msg, "Testing image loading");
+//
+//                if (MainActivity.this.imageAd.isLoaded()) {
+//                    Bitmap bmp = MainActivity.this.imageAd.getImageBitmap();
+//                    Bitmap mutableBitmap = bmp.copy(Bitmap.Config.ARGB_8888, true);
+//                    Log.v(msg, "Bitmap : " + mutableBitmap.getPixel(1, 1) + " " + mutableBitmap.getPixel(2, 2) + " ");
+//
+//                    Canvas canvas = new Canvas(mutableBitmap);
+//                    Paint paint = new Paint();
+//                    canvas.drawBitmap(bmp, 0, 0, paint);
+//                    MainActivity.this.imgView.setImageBitmap(mutableBitmap);
+//
+//                } else if (MainActivity.this.imageAd.isLoading()) {
+//                    Toast.makeText(MainActivity.this, "Still loading an image ad. No image360Ad to show.",
+//                            Toast.LENGTH_LONG).show();
+//                } else {
+//                    Toast.makeText(MainActivity.this, "No image ad requested. Load an ad and try again.",
+//                            Toast.LENGTH_LONG).show();
+//                }
 
-                if (MainActivity.this.imageAd.isLoaded()) {
-                    Bitmap bmp = MainActivity.this.imageAd.getImageBitmap();
-                    Bitmap mutableBitmap = bmp.copy(Bitmap.Config.ARGB_8888, true);
-                    Log.v(msg, "Bitmap : " + mutableBitmap.getPixel(1, 1) + " " + mutableBitmap.getPixel(2, 2) + " ");
+                if(MainActivity.this.imageAd.isLoaded()) {
 
-                    Canvas canvas = new Canvas(mutableBitmap);
-                    Paint paint = new Paint();
-                    canvas.drawBitmap(bmp, 0, 0, paint);
-                    MainActivity.this.imgView.setImageBitmap(mutableBitmap);
-
-                } else if (MainActivity.this.imageAd.isLoading()) {
-                    Toast.makeText(MainActivity.this, "Still loading an image ad. No image360Ad to show.",
-                            Toast.LENGTH_LONG).show();
-                } else {
-                    Toast.makeText(MainActivity.this, "No image ad requested. Load an ad and try again.",
-                            Toast.LENGTH_LONG).show();
+                    File file = MainActivity.this.getFilesDir();
+                    File imageFile = new File(file, "chymeraSDKAssets/image360/image360Ad.bmp");
+                    Uri uri = Uri.fromFile(imageFile);
+                    MainActivity.this.imgView.setImageURI(uri);
                 }
-
             }
 
         });

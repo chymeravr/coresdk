@@ -1,20 +1,6 @@
 apply plugin: 'com.android.model.application'
 
-
-def image360Android = "${project.rootDir}/image360Android"
-
 model {
-    repositories {
-        libs(PrebuiltLibraries) {
-            image360Android {
-                headers.srcDir "${image360Android}/Include"
-                binaries.withType(SharedLibraryBinary) {
-                    sharedLibraryFile = file("${image360Android}/build/outputs/native/release/lib/${targetPlatform.getName()}/libimage360Android.so")
-                }
-            }
-
-        }
-    }
 
     android {
         compileSdkVersion = 23
@@ -46,6 +32,16 @@ model {
 
 }
 
+
+allprojects {
+    repositories {
+        jcenter()
+        flatDir {
+            dirs 'libs'
+        }
+    }
+}
+
 dependencies {
     compile fileTree(dir: 'libs', include: ['*.jar'])
     androidTestCompile('com.android.support.test.espresso:espresso-core:2.2.2', {
@@ -53,6 +49,7 @@ dependencies {
     })
     compile 'com.android.support:appcompat-v7:23.2.1'
     testCompile 'junit:junit:4.12'
+    compile project(':adclient')
 }
 
 task clean(type: Delete) {

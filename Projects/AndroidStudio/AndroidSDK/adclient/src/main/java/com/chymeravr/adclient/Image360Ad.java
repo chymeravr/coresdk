@@ -5,7 +5,6 @@ import android.content.Context;
 import android.graphics.Bitmap;
 import android.util.Log;
 
-import com.android.volley.toolbox.ImageRequest;
 import com.android.volley.toolbox.JsonObjectRequest;
 
 import org.json.JSONException;
@@ -40,12 +39,15 @@ public final class Image360Ad extends Ad {
     private Bitmap imageBitmap;
     private ServerListener<JSONObject> adServerListener;
     private ServerListener<Bitmap> mediaServerListener;
+    private ServerListener<byte[]> mediaDownloadServerListener;
+
     private RequestGenerator requestGenerator;
 
     public Image360Ad(String adUnitID, Context context, AdListener adListener) {
         super(adUnitID, context, adListener);
         this.adServerListener = new AdServerListener(this);
         this.mediaServerListener = new Image360MediaServerListener(this);
+        this.mediaDownloadServerListener = new Image360DownloadMediaServerListener(this);
         this.requestGenerator = new RequestGenerator(Type.IMAGE360);
     }
 
@@ -66,10 +68,13 @@ public final class Image360Ad extends Ad {
         try {
             this.setMediaUrl(response.getString("mediaUrl"));
             Log.v(TAG, "Returned Media Url : " + this.getMediaUrl());
-            ImageRequest imageRequest =
-                    this.requestGenerator.getMediaServerRequest(this.getMediaUrl(),
-                            this.mediaServerListener);
-            this.mediaServerListener.getRequestQueue().add(imageRequest);
+//            ImageRequest imageRequest =
+//                    this.requestGenerator.getMediaServerRequest(this.getMediaUrl(),
+//                            this.mediaServerListener);
+//            this.mediaServerListener.getRequestQueue().add(imageRequest);
+            InputStreamVolleyRequest mediaDownloadRequest = this.requestGenerator
+                    .getMediaDownloadRequest(this.getMediaUrl(), this.mediaDownloadServerListener);
+            this.mediaServerListener.getRequestQueue().add(mediaDownloadRequest);
 
             Log.i(TAG, "Ad Server response successfully processed. Proceeding to query Media Server");
         } catch (JSONException e) {

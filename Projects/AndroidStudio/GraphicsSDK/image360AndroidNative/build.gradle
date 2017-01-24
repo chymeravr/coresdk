@@ -1,0 +1,96 @@
+apply plugin: 'com.android.model.native'
+
+def coreEngineRoot = "../../../../CoreEngine"
+def confRoot = "../../../../Conf"
+def glmRoot = "../../../../Repository/thirdParty/glm/glm-0.9.7.6/"
+def GLImplementationRoot = "../../../../GLImplementation"
+def image360Root = "../../../../Image360"
+def rendererRoot = "../../../../Renderer"
+def image360AndroidRoot = "../../../../AndroidImplementation"
+def ovr_mobile_root = "${project.rootDir}/ovr_sdk_mobile"
+
+
+model {
+    repositories{
+        libs(PrebuiltLibraries) {
+            vrapi{
+                headers.srcDir "${ovr_mobile_root}/VrApi/Include"
+                binaries.withType(SharedLibraryBinary){
+                    sharedLibraryFile = file("${ovr_mobile_root}/VrApi/Libs/Android/${targetPlatform.getName()}/Release/libvrapi.so")
+                }
+            }
+            libovrkernel{
+                headers.srcDir "${ovr_mobile_root}/LibOVRKernel/Src"
+                binaries.withType(StaticLibraryBinary){
+                    staticLibraryFile = file("${ovr_mobile_root}/LibOVRKernel/Libs/Android/${targetPlatform.getName()}/Release/libovrkernel.a")
+                }
+            }
+        }
+    }
+
+    android {
+        compileSdkVersion = 23
+        buildToolsVersion = "23.0.3"
+
+        defaultConfig {
+            minSdkVersion.apiLevel = 19
+            targetSdkVersion.apiLevel = 23
+            versionCode = 1
+            versionName = "1.0"
+        }
+
+        buildTypes {
+            release {
+                minifyEnabled = false
+                proguardFiles.add(file('proguard-android.txt'))
+            }
+        }
+
+        ndk{
+            moduleName = "image360AndroidNative"
+            cppFlags.add("-std=c++11")
+            cppFlags.add("-frtti ")
+            cppFlags.add("-fexceptions")
+
+            // -I cppFlag -I is used for include files. In absence of this files will not recognize include statement with <> brackets
+            cppFlags.add("-I" + file("${glmRoot}/glm").absolutePath)
+            cppFlags.add("-I" + file("${confRoot}/include").absolutePath)
+            cppFlags.add("-I" + file("${coreEngineRoot}/include").absolutePath)
+            cppFlags.add("-I" + file("${ovr_mobile_root}/VrApi/Include").absolutePath)
+            cppFlags.add("-I" + file("${image360Root}/include").absolutePath)
+            cppFlags.add("-I" + file("${GLImplementationRoot}/include").absolutePath)
+            cppFlags.add("-I" + file("${rendererRoot}/include").absolutePath)
+            cppFlags.add("-I" + file("${image360AndroidRoot}/Include").absolutePath)
+            stl = "gnustl_shared"
+
+            cppFlags.addAll(['-Wall', '-fno-exceptions'])
+
+            ldLibs.addAll(["log", "android", "GLESv3", "EGL"])
+
+            abiFilters.addAll(['armeabi-v7a'])
+        }
+        sources{
+            main{
+                jni{
+                    source{
+                        srcDir "${image360AndroidRoot}/src"
+                    }
+                    dependencies{
+                        library 'libovrkernel' linkage 'static'
+                        library 'vrapi' linkage 'shared'
+
+                        project ':coreEngine' linkage 'shared'
+                        project ':glImplementation' linkage 'shared'
+                        project ':image360' linkage 'shared'
+                        project ':renderer' linkage 'shared'
+                    }
+                }
+            }
+        }
+
+    }
+}
+
+task clean(type: Delete) {
+    delete "${rootProject.rootDir}/image360AndroidNative/build"
+}
