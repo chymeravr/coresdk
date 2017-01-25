@@ -133,6 +133,6 @@ dependencies {
     compile "org.projectlombok:lombok:1.16.12"
     compile 'javax.annotation:javax.annotation-api:1.2'
 
-    compile 'com.google.android.gms:play-services-gcm:10.0.1'
+//    compile 'com.google.android.gms:play-services-gcm:10.0.1'
 
 }
