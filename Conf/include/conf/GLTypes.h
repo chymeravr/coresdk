@@ -5,8 +5,6 @@
 #ifndef ANDROIDSDK_GLTYPES_H
 #define ANDROIDSDK_GLTYPES_H
 
-#define GLES2_0
-
 #ifdef WINDOWS_GL
 #include "../../src/GLTypesWindows.h"
 #endif
