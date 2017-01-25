@@ -5,8 +5,6 @@ package com.chymeravr.adclient;
  */
 
 import android.content.Context;
-import android.graphics.Bitmap;
-import android.graphics.Color;
 import android.location.Location;
 import android.support.test.InstrumentationRegistry;
 import android.support.test.runner.AndroidJUnit4;
@@ -19,7 +17,6 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
-import java.util.Arrays;
 import java.util.Date;
 
 import static com.chymeravr.adclient.TestUtils.createDoB;
@@ -76,27 +73,27 @@ public class Image360Test {
         Assert.assertEquals(this.image360Ad.getMediaUrl(), "test");
     }
 
-    @Test()
-    public void onMediaServerResponseSuccessTest() throws Exception {
-        Log.v(TAG, "Commencing image 360 media server response success test");
-        Bitmap testBitmap = Bitmap.createBitmap(8, 1, Bitmap.Config.ARGB_8888);
-        testBitmap.setPixel(0, 0, Color.BLACK);
-        testBitmap.setPixel(1, 0, Color.BLUE);
-        testBitmap.setPixel(2, 0, Color.RED);
-        testBitmap.setPixel(3, 0, Color.BLACK);
-        testBitmap.setPixel(4, 0, Color.BLUE);
-        testBitmap.setPixel(5, 0, Color.GREEN);
-        testBitmap.setPixel(6, 0, Color.BLACK);
-        testBitmap.setPixel(7, 0, Color.BLUE);
-
-        this.image360Ad.onMediaServerResponseSuccess(testBitmap);
-
-        byte[] result = Util.convertToByteArray(testBitmap);
-
-        Assert.assertTrue(Arrays.equals(result, image360Ad.getByteArray()));
-        Assert.assertTrue(testBitmap.sameAs(image360Ad.getImageBitmap()));
-
-    }
+//    @Test()
+//    public void onMediaServerResponseSuccessTest() throws Exception {
+//        Log.v(TAG, "Commencing image 360 media server response success test");
+//        Bitmap testBitmap = Bitmap.createBitmap(8, 1, Bitmap.Config.ARGB_8888);
+//        testBitmap.setPixel(0, 0, Color.BLACK);
+//        testBitmap.setPixel(1, 0, Color.BLUE);
+//        testBitmap.setPixel(2, 0, Color.RED);
+//        testBitmap.setPixel(3, 0, Color.BLACK);
+//        testBitmap.setPixel(4, 0, Color.BLUE);
+//        testBitmap.setPixel(5, 0, Color.GREEN);
+//        testBitmap.setPixel(6, 0, Color.BLACK);
+//        testBitmap.setPixel(7, 0, Color.BLUE);
+//
+//        this.image360Ad.onMediaServerResponseSuccess(testBitmap);
+//
+//        byte[] result = Util.convertToByteArray(testBitmap);
+//
+//        Assert.assertTrue(Arrays.equals(result, image360Ad.getByteArray()));
+//        Assert.assertTrue(testBitmap.sameAs(image360Ad.getImageBitmap()));
+//
+//    }
 
     @Test()
     public void onLoadTest() throws Exception {

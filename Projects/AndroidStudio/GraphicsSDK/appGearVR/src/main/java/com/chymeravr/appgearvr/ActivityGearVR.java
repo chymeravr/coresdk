@@ -17,9 +17,11 @@ import java.util.Date;
 
 public class ActivityGearVR extends Activity {
 
-    public static final String TAG = "Image360::ActivityGVR";
+    public static final String TAG = "Image360::TestApp";
 
     Image360Ad image360TestAd;
+
+    public boolean isShowing = false;
 
     @Override
     protected void onCreate(Bundle icicle) {
@@ -109,26 +111,27 @@ public class ActivityGearVR extends Activity {
     protected void onDestroy() {
         Log.d(TAG, "onDestroy()");
         super.onDestroy();
-        this.image360TestAd.onDestroy();
     }
 
 
     @Override
     public boolean dispatchKeyEvent(KeyEvent event) {
-        Log.d(TAG, "dispatchKey - destroy add leave vr etc");
-//        this.image360TestAd.onStop();
-//        boolean result =  this.image360TestAd.dispatchKeyEvent(event);
-        this.image360TestAd.onDestroy();
+        Log.d(TAG, "dispatchKeyEvent");
         return true;
     }
 
     @Override
     public boolean dispatchTouchEvent(MotionEvent event) {
-        if (this.image360TestAd.isLoaded()) {
+        // display an ad. a bool flag is created to ensure multiple calls to render an ad are not made
+        // Its expensive to show an ad - it creates an activity - intializes native code etc.
+        if (this.image360TestAd.isLoaded() && !this.isShowing) {
+            this.isShowing = true;
             this.image360TestAd.show();
+        } else {
+            Log.d(TAG, "No Ad Loaded!! Try again after some time.");
         }
 
-        return this.image360TestAd.dispatchTouchEvent(event);
+        return true;
     }
 
 

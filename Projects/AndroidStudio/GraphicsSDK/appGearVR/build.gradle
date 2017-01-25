@@ -15,8 +15,12 @@ model {
             testInstrumentationRunner = "android.support.test.runner.AndroidJUnitRunner"
         }
         buildTypes {
+            debug{
+                minifyEnabled false
+                debuggable true
+            }
             release {
-                minifyEnabled = false
+                minifyEnabled false
                 proguardFiles.add(file('proguard-android.txt'))
             }
         }

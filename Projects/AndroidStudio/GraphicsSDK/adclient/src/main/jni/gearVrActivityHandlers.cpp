@@ -237,8 +237,6 @@ enum {
 
 typedef struct {
     Image360 *Application;
-    AAssetManager *mgr;
-//    ovrMobile **ovrM;
     jobject Activity;
     const char *appDir;
     bool Resumed;
@@ -340,7 +338,8 @@ void *AppThreadFunction(void *parm) {
                     break;
                 case EQUIRECTANGULAR_MAP_MODE:
                     textureImages.push_back(
-                            imageBMPLoader.loadImage(appThread->mgr, "images/tex_current.bmp"));
+                            imageBMPLoader.loadImage(std::string(appThread->appDir)
+                                                     + std::string("/chymeraSDKAssets/image360/cubemap_geo_front.bmp")));
                     break;
             }
 
@@ -362,9 +361,8 @@ void *AppThreadFunction(void *parm) {
 }
 
 static void ovrAppThread_Create(ovrAppThread *appThread, JNIEnv *env, jobject activity,
-                                AAssetManager *assetManager, jstring appDir) {
+                                jstring appDir) {
     appThread->Thread = 0;
-    appThread->mgr = assetManager;
     appThread->Resumed = false;
     appThread->Started = false;
     appThread->NativeWindow = NULL;
@@ -420,7 +418,7 @@ static void ovrAppThread_Create(ovrAppThread *appThread, JNIEnv *env, jobject ac
 static void ovrAppThread_Destroy(ovrAppThread *appThread, JNIEnv *env) {
     pthread_join(appThread->Thread, NULL);
     appThread->Application->deinitialize();
-    appThread->mgr = NULL;
+//    appThread->mgr = NULL;
     ovrMessageQueue_Destroy(&appThread->MessageQueue);
 }
 
@@ -434,18 +432,15 @@ static void ovrAppThread_Destroy(ovrAppThread *appThread, JNIEnv *env) {
 */
 
 JNIEXPORT jlong JNICALL
-Java_com_chymeravr_adclient_Image360Ad_onCreateNative(JNIEnv *env, jobject obj,
-                                                        jobject activity, jobject assetManager,
-                                                        jstring appDir) {
+Java_com_chymeravr_adclient_Image360Activity_onCreateNative(JNIEnv *env, jobject obj,
+                                                        jobject activity, jstring appDir) {
     ovrAppThread *appThread = (ovrAppThread *) malloc(sizeof(ovrAppThread));
 
     loggerFactory = std::unique_ptr<LoggerFactoryAndroid>(new LoggerFactoryAndroid());
     logger = loggerFactory->createLogger("Image360::Native Android");
     logger->log(LOG_DEBUG, "Native Logger Created Successfully");
 
-    auto mgr = AAssetManager_fromJava(env, assetManager);
-
-    ovrAppThread_Create(appThread, env, activity, mgr, appDir);
+    ovrAppThread_Create(appThread, env, activity, appDir);
 
     ovrMessageQueue_Enable(&appThread->MessageQueue, true);
     ovrMessage message;
@@ -457,12 +452,9 @@ Java_com_chymeravr_adclient_Image360Ad_onCreateNative(JNIEnv *env, jobject obj,
 }
 
 JNIEXPORT void JNICALL
-Java_com_chymeravr_adclient_Image360Ad_onStartNative(JNIEnv *env, jobject obj,
-                                                          jobject activity, jlong handle) {
-
-    ovrAppThread *appThread = (ovrAppThread *) ((size_t) handle);
+Java_com_chymeravr_adclient_Image360Activity_onStartNative(JNIEnv *env, jobject obj, jlong handle) {
     logger->log(LOG_DEBUG, "onStartNative()");
-
+    ovrAppThread *appThread = (ovrAppThread *) ((size_t) handle);
 
     ovrMessage message;
     ovrMessage_Init(&message, MESSAGE_ON_START, MQ_WAIT_PROCESSED);
@@ -470,7 +462,7 @@ Java_com_chymeravr_adclient_Image360Ad_onStartNative(JNIEnv *env, jobject obj,
 }
 
 JNIEXPORT void JNICALL
-Java_com_chymeravr_adclient_Image360Ad_onResumeNative(JNIEnv *env, jobject obj, jlong handle) {
+Java_com_chymeravr_adclient_Image360Activity_onResumeNative(JNIEnv *env, jobject obj, jlong handle) {
     ovrAppThread *appThread = (ovrAppThread *) ((size_t) handle);
     logger->log(LOG_DEBUG, "onResumeNative()");
 
@@ -480,7 +472,7 @@ Java_com_chymeravr_adclient_Image360Ad_onResumeNative(JNIEnv *env, jobject obj, 
 }
 
 JNIEXPORT void JNICALL
-Java_com_chymeravr_adclient_Image360Ad_onPauseNative(JNIEnv *env, jobject obj, jlong handle) {
+Java_com_chymeravr_adclient_Image360Activity_onPauseNative(JNIEnv *env, jobject obj, jlong handle) {
     ovrAppThread *appThread = (ovrAppThread *) ((size_t) handle);
     logger->log(LOG_DEBUG, "onPauseNative()");
 
@@ -490,7 +482,7 @@ Java_com_chymeravr_adclient_Image360Ad_onPauseNative(JNIEnv *env, jobject obj, j
 }
 
 JNIEXPORT void JNICALL
-Java_com_chymeravr_adclient_Image360Ad_onStopNative(JNIEnv *env, jobject obj, jlong handle) {
+Java_com_chymeravr_adclient_Image360Activity_onStopNative(JNIEnv *env, jobject obj, jlong handle) {
     ovrAppThread *appThread = (ovrAppThread *) ((size_t) handle);
     logger->log(LOG_DEBUG, "onStopNative()");
 
@@ -501,7 +493,7 @@ Java_com_chymeravr_adclient_Image360Ad_onStopNative(JNIEnv *env, jobject obj, jl
 }
 
 JNIEXPORT void JNICALL
-Java_com_chymeravr_adclient_Image360Ad_onDestroyNative(JNIEnv *env, jobject obj,
+Java_com_chymeravr_adclient_Image360Activity_onDestroyNative(JNIEnv *env, jobject obj,
                                                             jlong handle) {
     ovrAppThread *appThread = (ovrAppThread *) ((size_t) handle);
     logger->log(LOG_DEBUG, "onDestroyNative()");
@@ -524,7 +516,7 @@ Java_com_chymeravr_adclient_Image360Ad_onDestroyNative(JNIEnv *env, jobject obj,
 */
 
 JNIEXPORT void JNICALL
-Java_com_chymeravr_adclient_Image360Ad_onSurfaceCreatedNative(JNIEnv *env, jobject obj,
+Java_com_chymeravr_adclient_Image360Activity_onSurfaceCreatedNative(JNIEnv *env, jobject obj,
                                                                    jlong handle, jobject surface) {
     logger->log(LOG_DEBUG, "onSurfaceCreatedNative() Begin");
     ovrAppThread *appThread = (ovrAppThread *) ((size_t) handle);
@@ -548,7 +540,7 @@ Java_com_chymeravr_adclient_Image360Ad_onSurfaceCreatedNative(JNIEnv *env, jobje
 }
 
 JNIEXPORT void JNICALL
-Java_com_chymeravr_adclient_Image360Ad_onSurfaceChangedNative(JNIEnv *env, jobject obj,
+Java_com_chymeravr_adclient_Image360Activity_onSurfaceChangedNative(JNIEnv *env, jobject obj,
                                                                    jlong handle, jobject surface) {
     ovrAppThread *appThread = (ovrAppThread *) ((size_t) handle);
     logger->log(LOG_DEBUG, "onSurfaceChangedNative()");
@@ -590,7 +582,7 @@ Java_com_chymeravr_adclient_Image360Ad_onSurfaceChangedNative(JNIEnv *env, jobje
 }
 
 JNIEXPORT void JNICALL
-Java_com_chymeravr_adclient_Image360Ad_onSurfaceDestroyedNative(JNIEnv *env, jobject obj,
+Java_com_chymeravr_adclient_Image360Activity_onSurfaceDestroyedNative(JNIEnv *env, jobject obj,
                                                                      jlong handle) {
     ovrAppThread *appThread = (ovrAppThread *) ((size_t) handle);
     logger->log(LOG_DEBUG, "onSurfaceDestroyedNative()");
@@ -614,7 +606,7 @@ Java_com_chymeravr_adclient_Image360Ad_onSurfaceDestroyedNative(JNIEnv *env, job
  */
 
 JNIEXPORT void JNICALL
-Java_com_chymeravr_adclient_Image360Ad_onKeyEventNative(JNIEnv *env, jobject obj, jlong handle,
+Java_com_chymeravr_adclient_Image360Activity_onKeyEventNative(JNIEnv *env, jobject obj, jlong handle,
                                                              int keyCode, int action) {
     if (action == AKEY_EVENT_ACTION_UP) {
         ALOGV("    GLES3JNILib::onKeyEvent( %d, %d )", keyCode, action);
@@ -628,7 +620,7 @@ Java_com_chymeravr_adclient_Image360Ad_onKeyEventNative(JNIEnv *env, jobject obj
 }
 
 JNIEXPORT void JNICALL
-Java_com_chymeravr_adclient_Image360Ad_onTouchEventNative(JNIEnv *env, jobject obj,
+Java_com_chymeravr_adclient_Image360Activity_onTouchEventNative(JNIEnv *env, jobject obj,
                                                                jlong handle, int action, float x,
                                                                float y) {
     if (action == AMOTION_EVENT_ACTION_UP) {
