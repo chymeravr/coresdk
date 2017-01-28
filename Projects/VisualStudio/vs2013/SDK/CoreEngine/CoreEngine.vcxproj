@@ -91,16 +91,19 @@
   <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Release|ARM'" Label="PropertySheets">
     <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
   </ImportGroup>
-  <PropertyGroup Label="UserMacros" />
+  <PropertyGroup Label="UserMacros">
+    <NuGetPackageImportStamp>a18b14e3</NuGetPackageImportStamp>
+  </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <IncludePath>$(IncludePath)</IncludePath>
+    <LibraryPath>$(LibraryPath)</LibraryPath>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>
       <WarningLevel>Level3</WarningLevel>
       <Optimization>Disabled</Optimization>
       <SDLCheck>false</SDLCheck>
-      <AdditionalIncludeDirectories>C:\Users\robin_chimera\Documents\SDK\CoreEngine\include;C:\Users\robin_chimera\Documents\SDK\Conf\include</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>C:\opengl-wrappers\soil\Simple OpenGL Image Library\src;C:\Users\robin_chimera\Documents\SDK\Repository\thirdParty\glew\glew-2.0.0\include;C:\Users\robin_chimera\Documents\SDK\Repository\thirdParty\glm\glm-0.9.7.6\glm;C:\Users\robin_chimera\Documents\SDK\CoreEngine\include;C:\Users\robin_chimera\Documents\SDK\Conf\include</AdditionalIncludeDirectories>
       <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
       <PreprocessorDefinitions>_CRT_SECURE_NO_WARNINGS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
     </ClCompile>
@@ -138,7 +141,7 @@
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <SDLCheck>false</SDLCheck>
-      <AdditionalIncludeDirectories>C:\Users\robin_chimera\Documents\SDK\Repository\thirdParty\glew\glew-2.0.0\include;C:\Users\robin_chimera\Documents\SDK\Repository\thirdParty\glm\glm-0.9.7.6\glm;C:\Users\robin_chimera\Documents\SDK\CoreEngine\include;C:\Users\robin_chimera\Documents\SDK\Conf\include</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>C:\Users\robin_chimera\Documents\SDK\Projects\VisualStudio\vs2013\SDK\SOIL\src;C:\Users\robin_chimera\Documents\SDK\Repository\thirdParty\glew\glew-2.0.0\include;C:\Users\robin_chimera\Documents\SDK\Repository\thirdParty\glm\glm-0.9.7.6\glm;C:\Users\robin_chimera\Documents\SDK\Conf\include;C:\Users\robin_chimera\Documents\SDK\CoreEngine\include</AdditionalIncludeDirectories>
       <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
       <PreprocessorDefinitions>_CRT_SECURE_NO_WARNINGS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
     </ClCompile>
@@ -210,6 +213,7 @@
     <ClInclude Include="..\..\..\..\..\CoreEngine\include\coreEngine\modelBuilder\UVSphereBuilder.h" />
     <ClInclude Include="..\..\..\..\..\CoreEngine\include\coreEngine\modifier\Image.h" />
     <ClInclude Include="..\..\..\..\..\CoreEngine\include\coreEngine\modifier\ImageModifier.h" />
+    <ClInclude Include="..\..\..\..\..\CoreEngine\include\coreEngine\modifier\ImagePNGLoader.h" />
     <ClInclude Include="..\..\..\..\..\CoreEngine\include\coreEngine\modifier\ModelModifier.h" />
     <ClInclude Include="..\..\..\..\..\CoreEngine\include\coreEngine\modifier\ImageBMPLoader.h" />
     <ClInclude Include="..\..\..\..\..\CoreEngine\include\coreEngine\objectBuilders\ITexturedCubeBuilder.h" />
@@ -243,6 +247,7 @@
     <ClCompile Include="..\..\..\..\..\CoreEngine\src\modelBuilder\CubeBuilder.cpp" />
     <ClCompile Include="..\..\..\..\..\CoreEngine\src\modelBuilder\UVSphereBuilder.cpp" />
     <ClCompile Include="..\..\..\..\..\CoreEngine\src\modifier\ImageModifier.cpp" />
+    <ClCompile Include="..\..\..\..\..\CoreEngine\src\modifier\ImagePNGLoader.cpp" />
     <ClCompile Include="..\..\..\..\..\CoreEngine\src\modifier\ModelModifier.cpp" />
     <ClCompile Include="..\..\..\..\..\CoreEngine\src\modifier\ImageBMPLoader.cpp" />
     <ClCompile Include="..\..\..\..\..\CoreEngine\src\renderObjects\Camera.cpp" />
@@ -251,7 +256,23 @@
     <ClCompile Include="..\..\..\..\..\CoreEngine\src\renderObjects\Scene.cpp" />
     <ClCompile Include="..\..\..\..\..\CoreEngine\src\util\SimpleOBJLoader.cpp" />
   </ItemGroup>
+  <ItemGroup>
+    <None Include="packages.config" />
+  </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
+    <Import Project="..\packages\zlib.v120.windesktop.msvcstl.dyn.rt-dyn.1.2.8.8\build\native\zlib.v120.windesktop.msvcstl.dyn.rt-dyn.targets" Condition="Exists('..\packages\zlib.v120.windesktop.msvcstl.dyn.rt-dyn.1.2.8.8\build\native\zlib.v120.windesktop.msvcstl.dyn.rt-dyn.targets')" />
+    <Import Project="..\packages\zlib.v140.windesktop.msvcstl.dyn.rt-dyn.1.2.8.8\build\native\zlib.v140.windesktop.msvcstl.dyn.rt-dyn.targets" Condition="Exists('..\packages\zlib.v140.windesktop.msvcstl.dyn.rt-dyn.1.2.8.8\build\native\zlib.v140.windesktop.msvcstl.dyn.rt-dyn.targets')" />
+    <Import Project="..\packages\libpng.redist.1.6.28.1\build\native\libpng.redist.targets" Condition="Exists('..\packages\libpng.redist.1.6.28.1\build\native\libpng.redist.targets')" />
+    <Import Project="..\packages\libpng.1.6.28.1\build\native\libpng.targets" Condition="Exists('..\packages\libpng.1.6.28.1\build\native\libpng.targets')" />
   </ImportGroup>
+  <Target Name="EnsureNuGetPackageBuildImports" BeforeTargets="PrepareForBuild">
+    <PropertyGroup>
+      <ErrorText>This project references NuGet package(s) that are missing on this computer. Enable NuGet Package Restore to download them.  For more information, see http://go.microsoft.com/fwlink/?LinkID=322105. The missing file is {0}.</ErrorText>
+    </PropertyGroup>
+    <Error Condition="!Exists('..\packages\zlib.v120.windesktop.msvcstl.dyn.rt-dyn.1.2.8.8\build\native\zlib.v120.windesktop.msvcstl.dyn.rt-dyn.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\zlib.v120.windesktop.msvcstl.dyn.rt-dyn.1.2.8.8\build\native\zlib.v120.windesktop.msvcstl.dyn.rt-dyn.targets'))" />
+    <Error Condition="!Exists('..\packages\zlib.v140.windesktop.msvcstl.dyn.rt-dyn.1.2.8.8\build\native\zlib.v140.windesktop.msvcstl.dyn.rt-dyn.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\zlib.v140.windesktop.msvcstl.dyn.rt-dyn.1.2.8.8\build\native\zlib.v140.windesktop.msvcstl.dyn.rt-dyn.targets'))" />
+    <Error Condition="!Exists('..\packages\libpng.redist.1.6.28.1\build\native\libpng.redist.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\libpng.redist.1.6.28.1\build\native\libpng.redist.targets'))" />
+    <Error Condition="!Exists('..\packages\libpng.1.6.28.1\build\native\libpng.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\libpng.1.6.28.1\build\native\libpng.targets'))" />
+  </Target>
 </Project>

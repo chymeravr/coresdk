@@ -11,6 +11,7 @@ namespace cl{
 		std::unique_ptr<Image> loadImage(std::string imagePath);
 	private:
 		ILogger* logger;
+		void swapColorChannels(unsigned char* data, unsigned int width, unsigned int height, unsigned int dataSize);
 	};
 }
 
