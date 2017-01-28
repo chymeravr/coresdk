@@ -4,6 +4,7 @@ project(CoreEngine)
 
 include_directories (${REPO_PATH}/thirdParty/glm/glm-${GLM_VERSION}/glm 
 					 ${Conf_INCLUDE_DIRS} 
+					 ${SOIL_INCLUDE_DIRS}
 					 ${PROJECT_SOURCE_DIR}/include)
 
 set(SOURCES ${PROJECT_SOURCE_DIR}/src/components/transform/TransformCamera.cpp
@@ -13,6 +14,7 @@ set(SOURCES ${PROJECT_SOURCE_DIR}/src/components/transform/TransformCamera.cpp
 			${PROJECT_SOURCE_DIR}/src/modelBuilder/CubeBuilder.cpp
 			${PROJECT_SOURCE_DIR}/src/modelBuilder/UVSphereBuilder.cpp
 			${PROJECT_SOURCE_DIR}/src/modifier/ImageBMPLoader.cpp
+			${PROJECT_SOURCE_DIR}/src/modifier/ImagePNGLoader.cpp
 			${PROJECT_SOURCE_DIR}/src/modifier/ImageModifier.cpp
 			${PROJECT_SOURCE_DIR}/src/modifier/ModelModifier.cpp
 			${PROJECT_SOURCE_DIR}/src/renderObjects/Camera.cpp
@@ -22,7 +24,7 @@ set(SOURCES ${PROJECT_SOURCE_DIR}/src/components/transform/TransformCamera.cpp
 			${PROJECT_SOURCE_DIR}/src/util/SimpleOBJLoader.cpp
 )
 add_library(${PROJECT_NAME} STATIC  ${SOURCES})
-
+target_link_libraries(${PROJECT_NAME} SOIL)
 #######################################################################################
 # CoreEngineTests
 #######################################################################################

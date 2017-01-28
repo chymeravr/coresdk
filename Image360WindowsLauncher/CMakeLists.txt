@@ -10,6 +10,7 @@ include_directories(${Conf_INCLUDE_DIRS}
 					${CMAKE_SOURCE_DIR}/Renderer/include
 					${CMAKE_SOURCE_DIR}/Image360/include
 					${CMAKE_SOURCE_DIR}/WindowsImplementation/include
+					${CMAKE_SOURCE_DIR}/glfw/include
 					${PROJECT_SOURCE_DIR}/include)
 
 set(SOURCES ${PROJECT_SOURCE_DIR}/src/Image360WindowsLauncher.cpp
@@ -33,7 +34,7 @@ link_directories(${GLEW_LINK_DIRS}
 				 ${GLUT_LINK_DIRS})
 
 add_executable(${PROJECT_NAME} ${SOURCES})
-target_link_libraries(${PROJECT_NAME} freeglut glew32 CoreEngine GLImplementation Renderer Image360 WindowsImplementation)
+target_link_libraries(${PROJECT_NAME} freeglut glew32 CoreEngine GLImplementation Renderer Image360 WindowsImplementation glfw)
 
 add_custom_command(TARGET ${PROJECT_NAME} POST_BUILD        # Adds a post-build event to MyTest
     COMMAND ${CMAKE_COMMAND} -E copy_if_different  # which executes "cmake - E copy_if_different..."
