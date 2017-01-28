@@ -19,6 +19,13 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Image360", "Image360\Image3
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Image360WindowsLauncher", "Image360WindowsLauncher\Image360WindowsLauncher.vcxproj", "{B55EECC7-EE52-4753-B055-9C4B6B3A640A}"
 EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "SOIL", "SOIL\SOIL.vcxproj", "{55428E39-E96C-4302-8DD3-2BC69116A304}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{58E7B33B-7326-4683-A808-81640EB95838}"
+	ProjectSection(SolutionItems) = preProject
+		Performance1.psess = Performance1.psess
+	EndProjectSection
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|ARM = Debug|ARM
@@ -147,8 +154,23 @@ Global
 		{B55EECC7-EE52-4753-B055-9C4B6B3A640A}.Release|Win32.ActiveCfg = Release|Win32
 		{B55EECC7-EE52-4753-B055-9C4B6B3A640A}.Release|Win32.Build.0 = Release|Win32
 		{B55EECC7-EE52-4753-B055-9C4B6B3A640A}.Release|x64.ActiveCfg = Release|Win32
+		{55428E39-E96C-4302-8DD3-2BC69116A304}.Debug|ARM.ActiveCfg = Debug|Win32
+		{55428E39-E96C-4302-8DD3-2BC69116A304}.Debug|Mixed Platforms.ActiveCfg = Debug|Win32
+		{55428E39-E96C-4302-8DD3-2BC69116A304}.Debug|Mixed Platforms.Build.0 = Debug|Win32
+		{55428E39-E96C-4302-8DD3-2BC69116A304}.Debug|Win32.ActiveCfg = Debug|Win32
+		{55428E39-E96C-4302-8DD3-2BC69116A304}.Debug|Win32.Build.0 = Debug|Win32
+		{55428E39-E96C-4302-8DD3-2BC69116A304}.Debug|x64.ActiveCfg = Debug|Win32
+		{55428E39-E96C-4302-8DD3-2BC69116A304}.Release|ARM.ActiveCfg = Release|Win32
+		{55428E39-E96C-4302-8DD3-2BC69116A304}.Release|Mixed Platforms.ActiveCfg = Release|Win32
+		{55428E39-E96C-4302-8DD3-2BC69116A304}.Release|Mixed Platforms.Build.0 = Release|Win32
+		{55428E39-E96C-4302-8DD3-2BC69116A304}.Release|Win32.ActiveCfg = Release|Win32
+		{55428E39-E96C-4302-8DD3-2BC69116A304}.Release|Win32.Build.0 = Release|Win32
+		{55428E39-E96C-4302-8DD3-2BC69116A304}.Release|x64.ActiveCfg = Release|Win32
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(Performance) = preSolution
+		HasPerformanceSessions = true
 	EndGlobalSection
 EndGlobal

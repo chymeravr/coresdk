@@ -18,28 +18,37 @@
     <Text Include="ReadMe.txt" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="stdafx.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="targetver.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="ExitKeyListener.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-  </ItemGroup>
-  <ItemGroup>
-    <ClCompile Include="stdafx.cpp">
+    <ClCompile Include="src\image_DXT.c">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="Image360WindowsLauncher.cpp">
+    <ClCompile Include="src\image_helper.c">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="ExitKeyListener.cpp">
+    <ClCompile Include="src\SOIL.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\stb_image_aug.c">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <None Include="packages.config" />
+    <ClInclude Include="src\image_DXT.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="src\image_helper.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="src\SOIL.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="src\stb_image_aug.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="src\stbi_DDS_aug.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="src\stbi_DDS_aug_c.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>

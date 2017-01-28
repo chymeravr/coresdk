@@ -98,7 +98,7 @@
       <WarningLevel>Level3</WarningLevel>
       <Optimization>Disabled</Optimization>
       <SDLCheck>true</SDLCheck>
-      <AdditionalIncludeDirectories>C:\Users\robin_chimera\Documents\SDK\Conf\include;C:\Users\robin_chimera\Documents\SDK\GLImplementation\include;C:\Users\robin_chimera\Documents\SDK\Repository\thirdParty\glew\glew-2.0.0\include;C:\Users\robin_chimera\Documents\SDK\CoreEngine\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>C:\Users\robin_chimera\Documents\SDK\Repository\thirdParty\glm\glm-0.9.7.6\glm;C:\Users\robin_chimera\Documents\SDK\Conf\include;C:\Users\robin_chimera\Documents\SDK\GLImplementation\include;C:\Users\robin_chimera\Documents\SDK\Repository\thirdParty\glew\glew-2.0.0\include;C:\Users\robin_chimera\Documents\SDK\CoreEngine\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
     </ClCompile>
     <Link>
