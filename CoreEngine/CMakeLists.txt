@@ -7,6 +7,8 @@ include_directories (${REPO_PATH}/thirdParty/glm/glm-${GLM_VERSION}/glm
 					 ${SOIL_INCLUDE_DIRS}
 					 ${PROJECT_SOURCE_DIR}/include)
 
+FILE(GLOB_RECURSE HEADERS "include/**/*.h")
+
 set(SOURCES ${PROJECT_SOURCE_DIR}/src/components/transform/TransformCamera.cpp
 			${PROJECT_SOURCE_DIR}/src/components/transform/TransformModel.cpp
 			${PROJECT_SOURCE_DIR}/src/conf/MathType.cpp
@@ -23,7 +25,7 @@ set(SOURCES ${PROJECT_SOURCE_DIR}/src/components/transform/TransformCamera.cpp
 			${PROJECT_SOURCE_DIR}/src/renderObjects/Scene.cpp
 			${PROJECT_SOURCE_DIR}/src/util/SimpleOBJLoader.cpp
 )
-add_library(${PROJECT_NAME} STATIC  ${SOURCES})
+add_library(${PROJECT_NAME} STATIC ${HEADERS} ${SOURCES})
 target_link_libraries(${PROJECT_NAME} SOIL)
 #######################################################################################
 # CoreEngineTests

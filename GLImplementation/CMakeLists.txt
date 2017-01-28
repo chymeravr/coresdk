@@ -7,6 +7,8 @@ include_directories(${Conf_INCLUDE_DIRS}
 					${CMAKE_SOURCE_DIR}/CoreEngine/include
 					${PROJECT_SOURCE_DIR}/include)
 
+set (INCLUDE_DIRS ${PROJECT_SOURCE_DIR}/include)
+
 set(SOURCES ${PROJECT_SOURCE_DIR}/src/renderObjects/CameraGL.cpp
 			${PROJECT_SOURCE_DIR}/src/renderObjects/CameraGLContainer.cpp
 			${PROJECT_SOURCE_DIR}/src/renderObjects/MaterialDiffuseTextureCubeMapGL.cpp
@@ -20,5 +22,5 @@ set(SOURCES ${PROJECT_SOURCE_DIR}/src/renderObjects/CameraGL.cpp
 			${PROJECT_SOURCE_DIR}/src/util/ShaderProgramUtil.cpp
 )
 
-add_library(${PROJECT_NAME} STATIC ${SOURCES})
+add_library(${PROJECT_NAME} STATIC ${INCLUDE_DIRS} ${SOURCES})
 target_link_libraries(${PROJECT_NAME} CoreEngine)

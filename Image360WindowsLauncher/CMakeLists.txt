@@ -13,6 +13,8 @@ include_directories(${Conf_INCLUDE_DIRS}
 					${CMAKE_SOURCE_DIR}/glfw/include
 					${PROJECT_SOURCE_DIR}/include)
 
+set (INCLUDE_DIRS ${PROJECT_SOURCE_DIR}/include)
+
 set(SOURCES ${PROJECT_SOURCE_DIR}/src/Image360WindowsLauncher.cpp
 			${PROJECT_SOURCE_DIR}/src/stdafx.cpp
 )
@@ -33,7 +35,7 @@ endif()
 link_directories(${GLEW_LINK_DIRS}
 				 ${GLUT_LINK_DIRS})
 
-add_executable(${PROJECT_NAME} ${SOURCES})
+add_executable(${PROJECT_NAME} ${INCLUDE_DIRS} ${SOURCES})
 target_link_libraries(${PROJECT_NAME} freeglut glew32 CoreEngine GLImplementation Renderer Image360 WindowsImplementation glfw)
 
 add_custom_command(TARGET ${PROJECT_NAME} POST_BUILD        # Adds a post-build event to MyTest
