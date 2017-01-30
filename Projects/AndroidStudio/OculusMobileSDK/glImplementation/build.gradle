@@ -33,10 +33,10 @@ model {
             cppFlags.add("-fexceptions")
             // -I cppFlag -I is used for include files. In absence of this files will not recognize include statement with <> brackets
             cppFlags.add("-I" + file("${glmRoot}/glm").absolutePath)
-            cppFlags.add("-I" + file("${ovr_mobile_root}/1stParty/OpengGL_Loader/Include").absolutePath)
             cppFlags.add("-I" + file("${confRoot}/include").absolutePath)
             cppFlags.add("-I" + file("${coreEngineRoot}/include").absolutePath)
             cppFlags.add("-I" + file("${GLImplementationRoot}/include").absolutePath)
+            cppFlags.addAll(project.properties.commonCPPFlags)
             stl = "gnustl_shared"
 
             ldLibs.addAll(["log", "android", "GLESv3", "EGL"])

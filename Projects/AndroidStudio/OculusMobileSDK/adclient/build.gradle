@@ -74,7 +74,7 @@ model {
             cppFlags.add("-I" + file("${GLImplementationRoot}/include").absolutePath)
             cppFlags.add("-I" + file("${rendererRoot}/include").absolutePath)
             cppFlags.add("-I" + file("${image360AndroidRoot}/Include").absolutePath)
-
+            cppFlags.addAll(project.properties.commonCPPFlags)
             stl = "gnustl_shared"
 
             cppFlags.addAll(['-Wall', '-fno-exceptions'])

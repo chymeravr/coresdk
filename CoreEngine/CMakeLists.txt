@@ -8,23 +8,25 @@ include_directories (${REPO_PATH}/thirdParty/glm/glm-${GLM_VERSION}/glm
 					 ${PROJECT_SOURCE_DIR}/include)
 
 FILE(GLOB_RECURSE HEADERS "include/**/*.h")
+FILE(GLOB_RECURSE SOURCES "src/**/*.cpp")
+#set(SOURCES ${PROJECT_SOURCE_DIR}/src/components/transform/TransformCamera.cpp
+#			${PROJECT_SOURCE_DIR}/src/components/transform/TransformModel.cpp
+#			${PROJECT_SOURCE_DIR}/src/conf/MathType.cpp
+#			${PROJECT_SOURCE_DIR}/src/events/EventQueue.cpp
+#			${PROJECT_SOURCE_DIR}/src/modelBuilder/CubeBuilder.cpp
+#			${PROJECT_SOURCE_DIR}/src/modelBuilder/UVSphereBuilder.cpp
+#			${PROJECT_SOURCE_DIR}/src/modifier/ImageBMPLoader.cpp
+#			${PROJECT_SOURCE_DIR}/src/modifier/ImagePNGLoader.cpp
+#			${PROJECT_SOURCE_DIR}/src/modifier/ImageModifier.cpp
+#			${PROJECT_SOURCE_DIR}/src/modifier/ModelModifier.cpp
+#			${PROJECT_SOURCE_DIR}/src/renderObjects/Camera.cpp
+#			${PROJECT_SOURCE_DIR}/src/renderObjects/ComponentList.cpp
+#			${PROJECT_SOURCE_DIR}/src/renderObjects/Relation.cpp
+#			${PROJECT_SOURCE_DIR}/src/renderObjects/Scene.cpp
+#			${PROJECT_SOURCE_DIR}/src/util/SimpleOBJLoader.cpp
+#)
 
-set(SOURCES ${PROJECT_SOURCE_DIR}/src/components/transform/TransformCamera.cpp
-			${PROJECT_SOURCE_DIR}/src/components/transform/TransformModel.cpp
-			${PROJECT_SOURCE_DIR}/src/conf/MathType.cpp
-			${PROJECT_SOURCE_DIR}/src/events/EventQueue.cpp
-			${PROJECT_SOURCE_DIR}/src/modelBuilder/CubeBuilder.cpp
-			${PROJECT_SOURCE_DIR}/src/modelBuilder/UVSphereBuilder.cpp
-			${PROJECT_SOURCE_DIR}/src/modifier/ImageBMPLoader.cpp
-			${PROJECT_SOURCE_DIR}/src/modifier/ImagePNGLoader.cpp
-			${PROJECT_SOURCE_DIR}/src/modifier/ImageModifier.cpp
-			${PROJECT_SOURCE_DIR}/src/modifier/ModelModifier.cpp
-			${PROJECT_SOURCE_DIR}/src/renderObjects/Camera.cpp
-			${PROJECT_SOURCE_DIR}/src/renderObjects/ComponentList.cpp
-			${PROJECT_SOURCE_DIR}/src/renderObjects/Relation.cpp
-			${PROJECT_SOURCE_DIR}/src/renderObjects/Scene.cpp
-			${PROJECT_SOURCE_DIR}/src/util/SimpleOBJLoader.cpp
-)
+
 add_library(${PROJECT_NAME} STATIC ${HEADERS} ${SOURCES})
 target_link_libraries(${PROJECT_NAME} SOIL)
 #######################################################################################

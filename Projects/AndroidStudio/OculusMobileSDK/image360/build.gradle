@@ -36,6 +36,7 @@ model {
             cppFlags.add("-I" + file("${confRoot}/include").absolutePath)
             cppFlags.add("-I" + file("${coreEngineRoot}/include").absolutePath)
             cppFlags.add("-I" + file("${image360Root}/include").absolutePath)
+            cppFlags.addAll(project.properties.commonCPPFlags)
             stl = "gnustl_shared"
 
             ldLibs.addAll(["log", "android"])

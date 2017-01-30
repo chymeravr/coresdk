@@ -1,4 +1,4 @@
-include ':appGearVR', ':adclient' //':Image360Ad'
+include ':appGearVR', ':adclient', ':soil' //':Image360Ad'
 include ':coreEngine'
 include ':glImplementation'
 include ':image360'

@@ -10,6 +10,7 @@
 #include <coreEngine/components/transform/TransformCameraFactory.h>
 #include <coreEngine/components/transform/TransformModelFactory.h>
 #include <coreEngine/events/EventQueue.h>
+#include <coreEngine/modifier/ImagePNGLoader.h>
 
 // GLImplementation Modules
 #include <glImplementation/factory/SceneGLFactory.h>
@@ -312,14 +313,15 @@ void *AppThreadFunction(void *parm) {
 
         if (!appThread->Started) {
             ImageBMPLoaderAndroid imageBMPLoader(logger.get());
+            ImagePNGLoader imagePNGLoader(logger.get());
             std::vector<std::unique_ptr<Image> > textureImages;
             TEXTURE_MAP_MODE mode = CUBE_MAP_MODE_SINGLE_IMAGE;
 
             switch (mode) {
                 case CUBE_MAP_MODE_SINGLE_IMAGE:
                     textureImages.push_back(
-                            imageBMPLoader.loadImage(std::string(appThread->appDir)
-                                                     + std::string("/chymeraSDKAssets/image360/image360Ad.bmp")));
+                            imagePNGLoader.loadImage(std::string(appThread->appDir)
+                                                     + std::string("/chymeraSDKAssets/image360/image360Ad.png")));
                     break;
                 case CUBE_MAP_MODE_SIX_IMAGES:
 
