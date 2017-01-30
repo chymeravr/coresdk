@@ -28,6 +28,7 @@
 #include <renderer/RendererNoHMD.h>
 #include <coreEngine/modifier/ImageBMPLoader.h>
 #include <coreEngine/modifier/ImagePNGLoader.h>
+#include <coreEngine/modifier/ImageJPEGLoader.h>
 
 
 #include <GLFW/glfw3.h>
@@ -177,12 +178,15 @@ int _tmain(int argc, _TCHAR** argv)
 
 	ImageBMPLoader imageBMPLoader(logger.get());
 	ImagePNGLoader imagePNGLoader(logger.get());
+	ImageJPEGLoader imageJPEGLoader(logger.get());
+
 	std::vector< std::unique_ptr<Image> > textureImages;
 	TEXTURE_MAP_MODE mode = CUBE_MAP_MODE_SINGLE_IMAGE; // image mode
 
 	switch (mode){
 	case CUBE_MAP_MODE_SINGLE_IMAGE:
-		textureImages.push_back(imagePNGLoader.loadImage("cubemap_current.png"));
+		//textureImages.push_back(imagePNGLoader.loadImage("cubemap_current.png"));
+		textureImages.push_back(imageJPEGLoader.loadImage("cubemap_current2.jpg"));
 		break;
 	case CUBE_MAP_MODE_SIX_IMAGES:
 		textureImages.push_back(imageBMPLoader.loadImage("cubemap_geo_front.bmp"));

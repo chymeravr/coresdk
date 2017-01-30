@@ -46,7 +46,7 @@ public class Image360DownloadMediaServerListener extends ServerListener<byte[]> 
                 Log.d(TAG, "image destination created");
 
                 FileOutputStream outputStream;
-                String name="image360Ad.png";
+                String name="image360Ad.jpg";
                 Log.d(TAG, "writing file to: " + dest_dir + name);
                 outputStream = new FileOutputStream(new File(dest_dir, name));//this.ad.getContext().openFileOutput(name, Context.MODE_PRIVATE);
                 outputStream.write(response);

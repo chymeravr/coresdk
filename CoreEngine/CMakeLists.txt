@@ -7,6 +7,7 @@ include_directories (${REPO_PATH}/thirdParty/glm/glm-${GLM_VERSION}/glm
 					 ${SOIL_INCLUDE_DIRS}
 					 ${PROJECT_SOURCE_DIR}/include)
 
+message("soil directories = '${SOIL_INCLUDE_DIRS}'")
 FILE(GLOB_RECURSE HEADERS "include/**/*.h")
 FILE(GLOB_RECURSE SOURCES "src/**/*.cpp")
 #set(SOURCES ${PROJECT_SOURCE_DIR}/src/components/transform/TransformCamera.cpp
