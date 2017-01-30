@@ -8,6 +8,9 @@ include_directories (${REPO_PATH}/thirdParty/glm/glm-${GLM_VERSION}/glm
 
 set(SOURCES ${PROJECT_SOURCE_DIR}/src/components/transform/TransformCamera.cpp
 			${PROJECT_SOURCE_DIR}/src/components/transform/TransformModel.cpp
+			${PROJECT_SOURCE_DIR}/src/components/transformTree/TransformTree.cpp
+			${PROJECT_SOURCE_DIR}/src/components/transformTree/TransformTreeModel.cpp
+			${PROJECT_SOURCE_DIR}/src/components/transformTree/TransformTreeCamera.cpp
 			${PROJECT_SOURCE_DIR}/src/conf/MathType.cpp
 			${PROJECT_SOURCE_DIR}/src/events/EventQueue.cpp
 			${PROJECT_SOURCE_DIR}/src/modelBuilder/CubeBuilder.cpp
@@ -80,6 +83,8 @@ set(TEST_SOURCES	${PROJECT_SOURCE_DIR}/test/src/AllTests.cpp
 					${PROJECT_SOURCE_DIR}/test/src/TextureTest.cpp
 					${PROJECT_SOURCE_DIR}/test/src/TransformCameraTest.cpp
 					${PROJECT_SOURCE_DIR}/test/src/TransformModelTest.cpp
+					${PROJECT_SOURCE_DIR}/test/src/TransformTreeCameraTest.cpp
+					${PROJECT_SOURCE_DIR}/test/src/TransformTreeModelTest.cpp
 					${PROJECT_SOURCE_DIR}/test/src/UVSphereBuilderTest.cpp
 
 )
