@@ -4,6 +4,11 @@
 #include <vector>
 #include <coreEngine/conf/MathType.h>
 
+/**
+* TransformTree and it's derivative classes can be used to have a hierarchy of transforms. TransformTree class provides core functionality of tranform hierarchy only.
+* It doesn't extends IRenderable or IComponent. Classes that extend TransformTree are expected to implement these interfaces. However, TransformTree itself can be used
+* for representing transform nodes that are non-renderable -- like nodes that are created to make definition of renderableObject Transform nodes easier.
+*/
 namespace cl{
 	class TransformTree{
 	public:
