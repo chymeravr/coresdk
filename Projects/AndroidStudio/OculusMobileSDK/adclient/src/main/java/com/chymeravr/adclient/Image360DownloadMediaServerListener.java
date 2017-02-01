@@ -3,6 +3,7 @@ package com.chymeravr.adclient;
 import android.util.Log;
 
 import com.android.volley.VolleyError;
+import com.chymeravr.common.WebRequestQueue;
 
 import java.io.File;
 import java.io.FileOutputStream;
@@ -46,7 +47,7 @@ public class Image360DownloadMediaServerListener extends ServerListener<byte[]> 
                 Log.d(TAG, "image destination created");
 
                 FileOutputStream outputStream;
-                String name="image360Ad.jpg";
+                String name="image360Ad.png";
                 Log.d(TAG, "writing file to: " + dest_dir + name);
                 outputStream = new FileOutputStream(new File(dest_dir, name));//this.ad.getContext().openFileOutput(name, Context.MODE_PRIVATE);
                 outputStream.write(response);

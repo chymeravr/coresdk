@@ -5,16 +5,15 @@ import android.graphics.Bitmap;
 import com.android.volley.Request;
 import com.android.volley.toolbox.ImageRequest;
 import com.android.volley.toolbox.JsonObjectRequest;
+import com.chymeravr.common.Config;
 
 import org.json.JSONObject;
 
 import java.util.HashMap;
 
-import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
-import lombok.Setter;
 
 import static android.graphics.Bitmap.Config.ARGB_8888;
 
@@ -28,7 +27,6 @@ import static android.graphics.Bitmap.Config.ARGB_8888;
 final class RequestGenerator {
 
     @Getter
-    @Setter(AccessLevel.PRIVATE)
     @NonNull
     private final Ad.Type adType;
 

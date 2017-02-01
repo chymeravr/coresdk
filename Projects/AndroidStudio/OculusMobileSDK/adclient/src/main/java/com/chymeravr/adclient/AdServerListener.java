@@ -3,6 +3,7 @@ package com.chymeravr.adclient;
 import android.util.Log;
 
 import com.android.volley.VolleyError;
+import com.chymeravr.common.WebRequestQueue;
 
 import org.json.JSONObject;
 

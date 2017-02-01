@@ -4,6 +4,7 @@ import android.graphics.Bitmap;
 import android.util.Log;
 
 import com.android.volley.VolleyError;
+import com.chymeravr.common.WebRequestQueue;
 
 /**
  * Created by robin_chimera on 12/6/2016.

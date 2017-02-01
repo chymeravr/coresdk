@@ -12,6 +12,7 @@ def ovr_mobile_root = "${project.rootDir}/ovr_sdk_mobile"
 def adclient = "${project.rootDir}/adclient"
 
 model {
+
     repositories{
         libs(PrebuiltLibraries) {
             vrapi{
@@ -48,14 +49,14 @@ model {
         }
 
         buildTypes {
-            debug{
+            debug {
                 minifyEnabled false
                 debuggable true
             }
             release {
                 minifyEnabled false
                 //proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
-                proguardFiles.add(file('proguard-android.txt'))
+//                proguardFiles.add(file('proguard-android.txt'))
             }
         }
 
@@ -110,29 +111,26 @@ model {
     android.lintOptions {
         disable 'InvalidPackage'
     }
-
 }
-
 
 dependencies {
     compile fileTree(dir: 'libs', include: ['*.jar'])
     androidTestCompile('com.android.support.test.espresso:espresso-core:2.2.2', {
-        exclude group: 'com.android.support',
-                module: 'support-annotations'
-
-
+        exclude group: 'com.android.support', module: 'support-annotations'
     })
     compile 'com.android.support:appcompat-v7:24.2.1'
     testCompile 'junit:junit:4.12'
-    testCompile 'org.mockito:mockito-core:1.10.19'
+
     androidTestCompile 'org.mockito:mockito-core:1.10.19'
-    compile 'com.android.volley:volley:1.0.0'
-    compile 'org.jetbrains:annotations-java5:15.0'
-    androidTestCompile 'com.google.dexmaker:dexmaker:1.1'
-    androidTestCompile 'com.google.dexmaker:dexmaker-mockito:1.1'
-    compile "org.projectlombok:lombok:1.16.12"
+    androidTestCompile 'com.google.dexmaker:dexmaker-mockito:1.2'
+
+    compile 'org.projectlombok:lombok:1.16.12'
     compile 'javax.annotation:javax.annotation-api:1.2'
+    compile 'com.android.volley:volley:1.0.0'
 
-//    compile 'com.google.android.gms:play-services-gcm:10.0.1'
+    compile project(':common')
+}
 
+task clean(type: Delete) {
+    delete "${rootProject.rootDir}/adclient/build"
 }

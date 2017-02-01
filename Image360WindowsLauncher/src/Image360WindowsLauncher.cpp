@@ -210,6 +210,25 @@ int _tmain(int argc, _TCHAR** argv)
 		glfwPollEvents();
 
 		application->draw();
+
+		glColor3ub(240, 240, 240);//white
+		glLineWidth(2.0);
+
+		int crossHair[8] =
+		{
+			WIDTH / 2 - 7, HEIGHT / 2, // horizontal line
+			WIDTH / 2 + 7, HEIGHT / 2,
+
+			WIDTH / 2, HEIGHT / 2 + 7, //vertical line
+			WIDTH / 2, HEIGHT / 2 - 7
+		};
+
+		glVertexPointer(2, GL_INT, 0, crossHair);
+
+		//draw primitive GL_LINES starting at the first vertex, use 2 total vertices
+		glDrawArrays(GL_LINES, 0, 2); //draw horizontal line
+		//Same as above but start at second vertex
+		glDrawArrays(GL_LINES, 2, 2); //draw vertical line
 	
 		// Swap the screen buffers
 		glfwSwapBuffers(window);

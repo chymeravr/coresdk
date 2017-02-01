@@ -1,4 +1,4 @@
-package com.chymeravr.appgearvr;
+package com.chymeravr.analytics;
 
 import android.content.Context;
 import android.support.test.InstrumentationRegistry;
@@ -21,6 +21,6 @@ public class ExampleInstrumentedTest {
         // Context of the app under test.
         Context appContext = InstrumentationRegistry.getTargetContext();
 
-        assertEquals("com.chymeravr.appgearvr", appContext.getPackageName());
+        assertEquals("com.chymeravr.analytics.test", appContext.getPackageName());
     }
 }

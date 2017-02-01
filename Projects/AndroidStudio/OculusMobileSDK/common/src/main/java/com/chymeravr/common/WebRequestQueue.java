@@ -1,6 +1,5 @@
-package com.chymeravr.adclient;
-
-/**
+package com.chymeravr.common;
+/*
  * Created by robin_chimera on 12/1/2016.
  */
 

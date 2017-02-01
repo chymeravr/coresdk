@@ -1,4 +1,4 @@
-package com.chymeravr.adclient;
+package com.chymeravr.common;
 
 import android.Manifest;
 import android.content.Context;
@@ -20,7 +20,7 @@ import lombok.NonNull;
  * Created by robin_chimera on 12/2/2016.
  */
 
-class Util {
+public class Util {
     public static Set<String> mandatoryPermissions =
             new HashSet<>(Arrays.asList(Manifest.permission.INTERNET,
                     Manifest.permission.ACCESS_NETWORK_STATE));

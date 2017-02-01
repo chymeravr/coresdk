@@ -1,42 +1,37 @@
-apply plugin: 'com.android.model.application'
+apply plugin: 'com.android.model.library'
 
 model {
 
     android {
-        compileSdkVersion = 24
-        buildToolsVersion = "25.0.0"
+        compileSdkVersion 24
+        buildToolsVersion "25.0.0"
 
         defaultConfig.with {
-            applicationId = "com.chymeravr.appgearvr"
             minSdkVersion.apiLevel = 23
             targetSdkVersion.apiLevel = 24
             versionCode = 1
             versionName = "1.0"
-            testInstrumentationRunner = "android.support.test.runner.AndroidJUnitRunner"
+
+            defaultPublishConfig 'release'
+            publishNonDefault true
+
+            testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
+
         }
+
         buildTypes {
-            debug{
+            debug {
                 minifyEnabled false
                 debuggable true
             }
             release {
                 minifyEnabled false
+                //proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
                 proguardFiles.add(file('proguard-android.txt'))
             }
         }
-
-
-        productFlavors {
-            create("arm7") {
-                ndk.abiFilters.add("armeabi-v7a")
-            }
-        }
-
     }
-
 }
-
-
 dependencies {
     compile fileTree(dir: 'libs', include: ['*.jar'])
     androidTestCompile('com.android.support.test.espresso:espresso-core:2.2.2', {
@@ -44,7 +39,9 @@ dependencies {
     })
     compile 'com.android.support:appcompat-v7:24.2.1'
     testCompile 'junit:junit:4.12'
-    compile project(':adclient')
+
+    compile 'org.projectlombok:lombok:1.16.12'
+    compile 'com.android.volley:volley:1.0.0'
 }
 
 task clean(type: Delete) {

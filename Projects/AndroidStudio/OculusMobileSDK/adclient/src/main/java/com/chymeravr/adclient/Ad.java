@@ -31,7 +31,6 @@ abstract class Ad {
     private final Context context;
 
     @Getter
-    @Setter
     private final AdListener adListener;
 
     @Getter(AccessLevel.PACKAGE)

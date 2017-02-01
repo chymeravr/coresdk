@@ -1,0 +1,51 @@
+apply plugin: 'com.android.model.native'
+
+def SOILRoot        =    "../../../../SOIL"
+
+model {
+
+    android {
+        compileSdkVersion = 23
+        buildToolsVersion = "23.0.3"
+
+        defaultConfig {
+            minSdkVersion.apiLevel = 19
+            targetSdkVersion.apiLevel = 23
+            versionCode = 1
+            versionName = "1.0"
+        }
+
+        buildTypes {
+            release {
+                minifyEnabled = false
+                proguardFiles.add(file('proguard-android.txt'))
+            }
+        }
+
+
+        ndk{
+            moduleName = "soil"
+            cppFlags.add("-std=c++11")
+            cppFlags.add("-frtti ")
+            cppFlags.add("-fexceptions")
+            // -I cppFlag -I is used for include files. In absence of this files will not recognize include statement with <> brackets
+            CFlags.add("-I" + file("${SOILRoot}/include").absolutePath)
+
+            stl = "gnustl_shared"
+            abiFilters.addAll(['armeabi-v7a']) //this is default
+        }
+        sources{
+            main{
+                jni{
+                    source{
+                        srcDir "${SOILRoot}/src"
+                    }
+                }
+            }
+        }
+    }
+}
+
+task clean(type: Delete) {
+    delete "${rootProject.rootDir}/soil/build"
+}
