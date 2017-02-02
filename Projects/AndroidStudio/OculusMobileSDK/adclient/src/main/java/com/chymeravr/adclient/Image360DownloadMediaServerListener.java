@@ -4,7 +4,6 @@ import android.util.Log;
 
 import com.android.volley.RequestQueue;
 import com.android.volley.VolleyError;
-import com.chymeravr.common.WebRequestQueue;
 
 import java.io.File;
 import java.io.FileOutputStream;
@@ -23,7 +22,7 @@ public class Image360DownloadMediaServerListener extends ServerListener<byte[]> 
         super(ad);
         this.ad = ad;
         // Explicitly set the singleton queue;
-        this.setRequestQueue(WebRequestQueue.getInstance().getRequestQueue());
+        this.setRequestQueue(requestQueue);
 
     }
 

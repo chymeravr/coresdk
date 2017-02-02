@@ -20,6 +20,9 @@ import org.json.JSONObject;
 
 import java.sql.Timestamp;
 
+import lombok.Getter;
+import lombok.Setter;
+
 /**
  * Created by robin_chimera on 11/28/2016.
  */
@@ -48,6 +51,10 @@ public final class Image360Ad extends Ad {
     private ServerListener<byte[]> mediaDownloadServerListener;
 
     private RequestGenerator requestGenerator;
+
+    @Getter
+    @Setter
+    private String clickUrl;
 
     public enum IntentActions {CLOSE, OPEN, CLICK, LEFTAPPLICATION};
 
@@ -112,7 +119,7 @@ public final class Image360Ad extends Ad {
     void onAdServerResponseSuccess(JSONObject response) {
         try {
             this.setMediaUrl(response.getString("mediaUrl"));
-
+            this.setClickUrl(response.getString("clickUrl"));
             // download media from url and save in internal memory
             InputStreamVolleyRequest mediaDownloadRequest = this.requestGenerator
                     .getMediaDownloadRequest(this.getMediaUrl(), this.mediaDownloadServerListener);
@@ -140,6 +147,7 @@ public final class Image360Ad extends Ad {
     /* Display ad by calling the native graphics library (or 3rd party API if that is the case)*/
     public void show() {
         Intent intent = new Intent(this.activity, Image360Activity.class);
+        intent.putExtra("clickUrl", this.getClickUrl());
         this.activity.startActivityForResult(intent, showRequestCode);
 
         this.getAdListener().onAdOpened();

@@ -5,7 +5,6 @@ import android.util.Log;
 
 import com.android.volley.RequestQueue;
 import com.android.volley.VolleyError;
-import com.chymeravr.common.WebRequestQueue;
 
 /**
  * Created by robin_chimera on 12/6/2016.
@@ -17,7 +16,7 @@ final class Image360MediaServerListener extends ServerListener<Bitmap> {
     public Image360MediaServerListener(Ad ad, RequestQueue requestQueue) {
         super(ad);
         // Explicitly set the singleton queue;
-        this.setRequestQueue(WebRequestQueue.getInstance().getRequestQueue());
+        this.setRequestQueue(requestQueue);
 
     }
 

@@ -1,12 +1,18 @@
 package com.chymeravr.adclient;
 
 import android.app.Activity;
+import android.app.Notification;
+import android.app.NotificationManager;
+import android.app.PendingIntent;
+import android.app.Service;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.media.AudioManager;
+import android.net.Uri;
 import android.os.Bundle;
+import android.support.v4.app.NotificationCompat;
 import android.support.v4.content.LocalBroadcastManager;
 import android.util.Log;
 import android.view.KeyEvent;
@@ -32,6 +38,8 @@ public final class Image360Activity extends Activity implements SurfaceHolder.Ca
     private SurfaceView mView;
     private SurfaceHolder mSurfaceHolder;
     private long mNativeHandle;
+
+    private String clickUrl;
 
     private AnalyticsManager analyticsManager;
     private AdListener adListener;
@@ -85,6 +93,9 @@ public final class Image360Activity extends Activity implements SurfaceHolder.Ca
     protected void onCreate(Bundle icicle) {
         Log.d(TAG, "onCreate()");
         super.onCreate(icicle);
+
+        Intent intent = getIntent();
+        this.clickUrl = intent.getStringExtra("clickUrl");
 
         LocalBroadcastManager.getInstance(this).registerReceiver(new MessageHandler(),
                 new IntentFilter("kill"));
@@ -149,7 +160,7 @@ public final class Image360Activity extends Activity implements SurfaceHolder.Ca
         this.onDestroyNative(this.mNativeHandle);
     }
 
-    @Overridegit add
+    @Override
     public void surfaceCreated(SurfaceHolder holder) {
         Log.v(TAG, "ActivityGearVR::onSurfaceCreated()");
         this.analyticsManager.push(new Event((new Timestamp(System.currentTimeMillis())).getTime(),
@@ -195,22 +206,21 @@ public final class Image360Activity extends Activity implements SurfaceHolder.Ca
             analyticsManager.push(new Event((new Timestamp(System.currentTimeMillis())).getTime(),
                     Event.EventType.ADCLICK,
                     Event.Priority.HIGH));
-
             if (keyCode == KeyEvent.KEYCODE_VOLUME_UP) {
                 adjustVolume(1);
-//                return true;
+                this.notifyUser();
             }
             if (keyCode == KeyEvent.KEYCODE_VOLUME_DOWN) {
                 adjustVolume(-1);
-//                return true;
+                Intent intent = new Intent("kill");
+                LocalBroadcastManager.getInstance(this).sendBroadcast(intent);
             }
             if (action == KeyEvent.ACTION_UP) {
                 Log.v(TAG, "dispatchKeyEvent( " + keyCode + ", " + action + " )");
             }
             this.onKeyEventNative(this.mNativeHandle, keyCode, action);
         }
-        Intent intent = new Intent("kill");
-        LocalBroadcastManager.getInstance(this).sendBroadcast(intent);
+
         return false;
     }
 
@@ -226,5 +236,23 @@ public final class Image360Activity extends Activity implements SurfaceHolder.Ca
             this.onTouchEventNative(this.mNativeHandle, action, x, y);
         }
         return true;
+    }
+
+    private void notifyUser(){
+        Intent notificationIntent = new Intent(Intent.ACTION_VIEW);
+        notificationIntent.setData(Uri.parse(this.clickUrl));
+        PendingIntent pi = PendingIntent.getActivity(this, 0, notificationIntent, 0);
+        // Resources r = getResources();
+        Notification notification = new NotificationCompat.Builder(this)
+                .setTicker("<Yourtext>")
+                .setSmallIcon(android.R.drawable.ic_menu_report_image)
+                .setContentTitle("<Yourtext>")
+                .setContentText("<ContextText>")
+                .setContentIntent(pi)
+                .setAutoCancel(true)
+                .build();
+
+        NotificationManager notificationManager2 =  (NotificationManager) this.getSystemService(Service.NOTIFICATION_SERVICE);
+        notificationManager2.notify(0, notification);
     }
 }
