@@ -14,8 +14,8 @@
 #include <windowsImplementation/LoggerFactoryWindows.h>
 #include <glImplementation/factory/SceneGLFactory.h>
 #include <glImplementation/factory/ModelGLFactory.h>
-#include <glImplementation/factory/DiffuseTextureGLFactory.h>
-#include <glImplementation/factory/DiffuseTextureCubeMapGLFactory.h>
+#include <glImplementation/factory/opengl/DiffuseTextureGLFactory.h>
+#include <glImplementation/factory/opengl/DiffuseTextureCubeMapGLFactory.h>
 #include <glImplementation/factory/CameraGLFactory.h>
 #include <coreEngine/components/transform/TransformCameraFactory.h>
 #include <coreEngine/components/transform/TransformModelFactory.h>
