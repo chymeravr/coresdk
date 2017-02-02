@@ -9,6 +9,7 @@ import android.view.MotionEvent;
 
 import com.chymeravr.adclient.AdListener;
 import com.chymeravr.adclient.AdRequest;
+import com.chymeravr.adclient.ChymeraVrSdk;
 import com.chymeravr.adclient.Image360Ad;
 
 import java.text.SimpleDateFormat;
@@ -27,6 +28,8 @@ public class ActivityGearVR extends Activity {
     protected void onCreate(Bundle icicle) {
         Log.d(TAG, "onCreate()");
         super.onCreate(icicle);
+
+        ChymeraVrSdk.initialize(this, "TestGearVRApplication");
 
         this.image360TestAd = new Image360Ad("testImage360Ad", this, new AdListener() {
             @Override
@@ -110,6 +113,7 @@ public class ActivityGearVR extends Activity {
     @Override
     protected void onDestroy() {
         Log.d(TAG, "onDestroy()");
+        ChymeraVrSdk.shutdown();
         super.onDestroy();
     }
 

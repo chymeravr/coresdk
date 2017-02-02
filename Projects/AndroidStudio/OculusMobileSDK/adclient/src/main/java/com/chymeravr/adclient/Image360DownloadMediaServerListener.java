@@ -2,6 +2,7 @@ package com.chymeravr.adclient;
 
 import android.util.Log;
 
+import com.android.volley.RequestQueue;
 import com.android.volley.VolleyError;
 import com.chymeravr.common.WebRequestQueue;
 
@@ -18,11 +19,11 @@ public class Image360DownloadMediaServerListener extends ServerListener<byte[]> 
     private final String TAG = "Image360MediaListener";
     private Ad ad;
 
-    public Image360DownloadMediaServerListener(Ad ad) {
+    public Image360DownloadMediaServerListener(Ad ad, RequestQueue requestQueue) {
         super(ad);
         this.ad = ad;
         // Explicitly set the singleton queue;
-        this.setRequestQueue(WebRequestQueue.getInstance(ad.getContext()).getRequestQueue());
+        this.setRequestQueue(WebRequestQueue.getInstance().getRequestQueue());
 
     }
 

@@ -129,6 +129,7 @@ dependencies {
     compile 'com.android.volley:volley:1.0.0'
 
     compile project(':common')
+    compile project(':analytics')
 }
 
 task clean(type: Delete) {

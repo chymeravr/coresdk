@@ -4,8 +4,10 @@ import android.content.Context;
 import android.os.Build.VERSION;
 import android.util.Log;
 
+import com.chymeravr.analytics.AnalyticsManager;
 import com.chymeravr.common.Config;
 import com.chymeravr.common.Util;
+import com.chymeravr.common.WebRequestQueue;
 
 import java.util.Map;
 
@@ -20,6 +22,9 @@ import lombok.Setter;
 
 /**
  * Sets up the SDK for sending and receiving Ad Requests & Response.
+ * Client Activity must initialize this class by calling the initialize
+ * method before creating ads; Failure to do so will result in inability to
+ * monetize their application
  * Mandatory permissions - INTERNET, ACCESS_NETWORK_STATE
  * Recommended permissions - ACCESS_COARSE_LOCATION, ACCESS_FINE_LOCATION,
  * ACCESS_WIFI_STATE, CHANGE_WIFI_STATE, VIBRATE,
@@ -31,9 +36,9 @@ import lombok.Setter;
  * Implemented as a singleton class
  */
 
-public final class ChymeraVRAndroidSDK {
+public final class ChymeraVrSdk {
 
-    private static final String TAG = "com.chymeravr.adclient";
+    private static final String TAG = "com.chymeravr.sdk";
 
     @Getter
     @Setter(AccessLevel.PRIVATE)
@@ -49,9 +54,15 @@ public final class ChymeraVRAndroidSDK {
     private static String advertisingId;
 
     @Getter
-    private static final ChymeraVRAndroidSDK ourInstance = new ChymeraVRAndroidSDK();
+    private static AnalyticsManager analyticsManager;
 
-    private ChymeraVRAndroidSDK() {
+    @Getter
+    private static WebRequestQueue webRequestQueue;
+
+    @Getter
+    private static final ChymeraVrSdk ourInstance = new ChymeraVrSdk();
+
+    private ChymeraVrSdk() {
     }
 
     /* Correctly set up Context, verify appCode, check for required permissions*/
@@ -90,8 +101,17 @@ public final class ChymeraVRAndroidSDK {
             Log.i(TAG, "Version Check Succeeded! " + VERSION.SDK_INT);
         }
 
+        webRequestQueue = WebRequestQueue.setInstance(context);
+
+        analyticsManager = AnalyticsManager.getInstance(context, webRequestQueue);
+        analyticsManager.initialize();
+
         Log.i(TAG, "SDK successfully initialized");
 
+    }
+
+    public static void shutdown(){
+        analyticsManager.shutdown();
     }
 
     /* mute the ad */

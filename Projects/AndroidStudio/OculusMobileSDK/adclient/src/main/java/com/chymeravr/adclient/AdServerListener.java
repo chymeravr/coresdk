@@ -2,8 +2,8 @@ package com.chymeravr.adclient;
 
 import android.util.Log;
 
+import com.android.volley.RequestQueue;
 import com.android.volley.VolleyError;
-import com.chymeravr.common.WebRequestQueue;
 
 import org.json.JSONObject;
 
@@ -16,9 +16,9 @@ import lombok.NonNull;
 class AdServerListener extends ServerListener<JSONObject> {
     private final String TAG = "AdServListener";
 
-    public AdServerListener(@NonNull Ad ad) {
+    public AdServerListener(@NonNull Ad ad, RequestQueue requestQueue) {
         super(ad);
-        this.setRequestQueue(WebRequestQueue.getInstance(ad.getContext()).getRequestQueue());
+        this.setRequestQueue(requestQueue);
     }
 
     @Override

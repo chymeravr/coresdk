@@ -2,15 +2,23 @@ package com.chymeravr.adclient;
 
 
 import android.app.Activity;
+import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
+import android.content.IntentFilter;
 import android.graphics.Bitmap;
+import android.support.v4.content.LocalBroadcastManager;
 import android.util.Log;
 
 import com.android.volley.toolbox.JsonObjectRequest;
+import com.chymeravr.analytics.AnalyticsManager;
+import com.chymeravr.analytics.Event;
+import com.chymeravr.common.WebRequestQueue;
 
 import org.json.JSONException;
 import org.json.JSONObject;
+
+import java.sql.Timestamp;
 
 /**
  * Created by robin_chimera on 11/28/2016.
@@ -33,25 +41,53 @@ public final class Image360Ad extends Ad {
     /* below are some private variables used for internal representation of ad data and
     *  server requests */
 
+    private int showRequestCode = 0;
+
     private ServerListener<JSONObject> adServerListener;
     private ServerListener<Bitmap> mediaServerListener;
     private ServerListener<byte[]> mediaDownloadServerListener;
 
     private RequestGenerator requestGenerator;
 
-    private final Activity activity;
+    public enum IntentActions {CLOSE, OPEN, CLICK, LEFTAPPLICATION};
+
+    private Activity activity;
     private final String placementId;
 
+    private AnalyticsManager analyticsMgr;
 
+    private WebRequestQueue webRequestQueue;
 
-    public Image360Ad(String adUnitID, Context context, AdListener adListener) {
-        super(adUnitID, context, adListener);
+    private void adListenerCallbacks(){
+        Log.v(TAG, "Ad Closed");
+//        ((Activity)this.getContext()).finishActivity(showRequestCode);
+//        this.activity.finishActivity(showRequestCode);
+        this.getAdListener().onAdClosed();
+    }
 
-        this.activity = (Activity) context;
+    class MessageHandler extends BroadcastReceiver {
+        @Override
+        public void onReceive(Context context, Intent intent) {
+            adListenerCallbacks();
+        }
+    }
+
+    public Image360Ad(String adUnitID, Activity activity, AdListener adListener) {
+        super(adUnitID, activity, adListener);
+
+        this.activity = activity;
+
+        LocalBroadcastManager.getInstance(activity).registerReceiver(new Image360Ad.MessageHandler(),
+                new IntentFilter("adClosed"));
+
+        this.analyticsMgr = ChymeraVrSdk.getAnalyticsManager();
+        this.webRequestQueue = ChymeraVrSdk.getWebRequestQueue();
+
         this.placementId = adUnitID;
-        this.adServerListener = new AdServerListener(this);
-        this.mediaServerListener = new Image360MediaServerListener(this);
-        this.mediaDownloadServerListener = new Image360DownloadMediaServerListener(this);
+
+        this.adServerListener = new AdServerListener(this, this.webRequestQueue.getRequestQueue());
+        this.mediaServerListener = new Image360MediaServerListener(this, this.webRequestQueue.getRequestQueue());
+        this.mediaDownloadServerListener = new Image360DownloadMediaServerListener(this, this.webRequestQueue.getRequestQueue());
         this.requestGenerator = new RequestGenerator(Type.IMAGE360);
     }
 
@@ -59,6 +95,11 @@ public final class Image360Ad extends Ad {
     * It passes targeting parameters from AdRequest for better Ads*/
     public void loadAd(AdRequest adRequest) {
         this.setLoading(true);
+
+        analyticsMgr.push(new Event((new Timestamp(System.currentTimeMillis())).getTime(),
+                Event.EventType.ADREQUEST,
+                Event.Priority.MEDIUM));
+
         Log.i(TAG, "Requesting Server for a New 360 Image Ad");
 
         JsonObjectRequest jsonObjRequest =
@@ -89,16 +130,19 @@ public final class Image360Ad extends Ad {
     void onMediaServerResponseSuccess(Object media) {
         this.getAdListener().onAdLoaded();
         this.setLoaded(true);
+        analyticsMgr.push(new Event((new Timestamp(System.currentTimeMillis())).getTime(),
+                Event.EventType.ADLOAD,
+                Event.Priority.MEDIUM));
         this.setLoading(false);
         Log.i(TAG, "Media Server Response Successful");
     }
 
     /* Display ad by calling the native graphics library (or 3rd party API if that is the case)*/
     public void show() {
-        Intent intent = new Intent(this.getContext(), Image360Activity.class);
+        Intent intent = new Intent(this.activity, Image360Activity.class);
+        this.activity.startActivityForResult(intent, showRequestCode);
 
-        this.getContext().startActivity(intent);
-
+        this.getAdListener().onAdOpened();
     }
 
 }

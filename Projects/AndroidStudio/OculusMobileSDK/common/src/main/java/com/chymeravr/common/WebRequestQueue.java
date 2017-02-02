@@ -15,7 +15,7 @@ import lombok.NonNull;
     A singleton class to hold the request queue for Android's Volley Request Queue
     This results in reuse of the request queue for requests - efficiency gains
  */
-public final class WebRequestQueue {
+public class WebRequestQueue {
     private static WebRequestQueue mInstance;
     private RequestQueue mRequestQueue;
 
@@ -27,9 +27,16 @@ public final class WebRequestQueue {
         mRequestQueue = getRequestQueue();
     }
 
-    public static synchronized WebRequestQueue getInstance(Context context) {
+    public static synchronized WebRequestQueue setInstance(Context context) {
         if (mInstance == null) {
             mInstance = new WebRequestQueue(context);
+        }
+        return mInstance;
+    }
+
+    public static synchronized WebRequestQueue getInstance() {
+        if (mInstance == null) {
+            throw new NullPointerException();
         }
         return mInstance;
     }

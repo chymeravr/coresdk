@@ -3,6 +3,7 @@ package com.chymeravr.adclient;
 import android.graphics.Bitmap;
 import android.util.Log;
 
+import com.android.volley.RequestQueue;
 import com.android.volley.VolleyError;
 import com.chymeravr.common.WebRequestQueue;
 
@@ -13,10 +14,10 @@ import com.chymeravr.common.WebRequestQueue;
 final class Image360MediaServerListener extends ServerListener<Bitmap> {
     private final String TAG = "Image360MediaListener";
 
-    public Image360MediaServerListener(Ad ad) {
+    public Image360MediaServerListener(Ad ad, RequestQueue requestQueue) {
         super(ad);
         // Explicitly set the singleton queue;
-        this.setRequestQueue(WebRequestQueue.getInstance(ad.getContext()).getRequestQueue());
+        this.setRequestQueue(WebRequestQueue.getInstance().getRequestQueue());
 
     }
 

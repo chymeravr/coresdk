@@ -12,9 +12,6 @@ model {
             versionCode = 1
             versionName = "1.0"
 
-            defaultPublishConfig 'release'
-            publishNonDefault true
-
             testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
 
         }
@@ -27,9 +24,15 @@ model {
             release {
                 minifyEnabled false
                 //proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
-                proguardFiles.add(file('proguard-android.txt'))
+//                proguardFiles.add(file('proguard-android.txt'))
             }
         }
+
+//        productFlavors {
+//            create("arm7") {
+//                ndk.abiFilters.add("armeabi-v7a")
+//            }
+//        }
     }
 }
 dependencies {
@@ -45,5 +48,5 @@ dependencies {
 }
 
 task clean(type: Delete) {
-    delete "${rootProject.rootDir}/appGearVR/build"
+    delete "${rootProject.rootDir}/common/build"
 }

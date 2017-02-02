@@ -17,7 +17,7 @@ import org.junit.runner.RunWith;
 import java.sql.Timestamp;
 import java.util.HashMap;
 
-import static org.junit.Assert.assertEquals;
+import static junit.framework.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.Matchers.any;
 import static org.mockito.Mockito.doNothing;
@@ -28,33 +28,33 @@ import static org.mockito.Mockito.mock;
  */
 
 @RunWith(AndroidJUnit4.class)
-public class ArrayMessageQueueTest {
-
-
+public class ArrayEventQueueTest {
 
     @Test
     public void useAppContext() throws Exception {
         // Context of the app under test.
         Context appContext = InstrumentationRegistry.getTargetContext();
 
-        MessageQueue messageQueue = new ArrayMessageQueue(4);
-
         assertEquals("com.chymeravr.analytics.test", appContext.getPackageName());
     }
 
     @Test
     public void initialize() throws Exception {
-        MessageQueue messageQueue = new ArrayMessageQueue(4);
+        WebRequestQueue requestQueue = mock(WebRequestQueue.class);
+        doNothing().when(requestQueue).addToRequestQueue(any(Request.class));
 
-        Message m1 = messageGenerator(1);
-        messageQueue.enqueue(m1);
-        Message m2 = messageGenerator(2);
-        messageQueue.enqueue(m2);
-        Message m3 = messageGenerator(3);
-        messageQueue.enqueue(m3);
-        Message m4 = messageGenerator(4);
-        messageQueue.enqueue(m4);
-        assertTrue(true);
+        ArrayEventQueue eventQueue = new ArrayEventQueue(4, requestQueue);
+
+        assertEquals(eventQueue.getCurrentSize(), 0);
+        Event m1 = eventGenerator(1);
+        eventQueue.enqueue(m1);
+        Event m2 = eventGenerator(2);
+        eventQueue.enqueue(m2);
+        Event m3 = eventGenerator(3);
+        eventQueue.enqueue(m3);
+        Event m4 = eventGenerator(4);
+        eventQueue.enqueue(m4);
+        assertEquals(eventQueue.getCurrentSize(), 4);
     }
 
     @Test
@@ -63,28 +63,28 @@ public class ArrayMessageQueueTest {
         doNothing().when(requestQueue).addToRequestQueue(any(Request.class));
 
 
-        ArrayMessageQueue messageQueue = new ArrayMessageQueue(4);
-        messageQueue.setRequestQueue(requestQueue);
+        ArrayEventQueue messageQueue = new ArrayEventQueue(4, requestQueue);
 
-        Message m1 = messageGenerator(1);
+        Event m1 = eventGenerator(1);
         messageQueue.enqueue(m1);
-        Message m2 = messageGenerator(2);
+        Event m2 = eventGenerator(2);
         messageQueue.enqueue(m1);
-        Message m3 = messageGenerator(3);
+        Event m3 = eventGenerator(3);
         messageQueue.enqueue(m3);
-        Message m4 = messageGenerator(4);
+        Event m4 = eventGenerator(4);
         messageQueue.enqueue(m4);
 
         messageQueue.flush();
         assertTrue(!messageQueue.isFull());
+        assertEquals(messageQueue.getCurrentSize(), 0);
     }
 
-    private Message messageGenerator(int var){
+    private Event eventGenerator(int var){
         Timestamp timestamp = new Timestamp(System.currentTimeMillis());
         HashMap<String, String> params = new HashMap<>();
         params.put("dummy", "dummy");
-        Message dummyMessage = new Message(timestamp.getTime(), Message.EventType.ADREQUEST, params);
+        Event dummyEvent = new Event(timestamp.getTime(), Event.EventType.ADREQUEST, Event.Priority.HIGH);
 
-        return dummyMessage;
+        return dummyEvent;
     }
 }

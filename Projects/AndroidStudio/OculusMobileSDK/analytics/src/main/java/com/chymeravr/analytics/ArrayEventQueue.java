@@ -6,6 +6,7 @@ import com.android.volley.Request;
 import com.android.volley.Response;
 import com.android.volley.VolleyError;
 import com.android.volley.toolbox.JsonArrayRequest;
+import com.chymeravr.common.Config;
 import com.chymeravr.common.WebRequestQueue;
 
 import org.json.JSONArray;
@@ -15,62 +16,62 @@ import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 
 import lombok.Getter;
-import lombok.Setter;
+import lombok.NonNull;
 
 /**
  * Created by robin_chimera on 1/31/2017.
  */
 
-public class ArrayMessageQueue implements MessageQueue{
+public class ArrayEventQueue implements EventQueue {
 
     private static final String TAG = "ChymeraVR::AnalyticsSDK";
 
-    private int size;
+    @NonNull
+    private final int size;
+
+    @Getter
     private int currentSize;
 
-    private Message messageArray[];
+    private Event eventArray[];
 
     private Lock queueLock = new ReentrantLock();
 
-    @Getter
-    @Setter
     private WebRequestQueue requestQueue;
 
-    public ArrayMessageQueue(int size) {
+    public ArrayEventQueue(int size, WebRequestQueue requestQueue) {
         assert (size > 0);
         this.size = size;
         this.currentSize = 0;
 
-        this.messageArray = new Message[this.size];
+        this.requestQueue = requestQueue;
+
+        this.eventArray = new Event[this.size];
     }
 
     // enqueu message to the queue
-    public void enqueue(Message msg) {
+    public void enqueue(Event msg) {
         this.queueLock.lock();
         if (this.isFull()) {
             this.flush();
         }
-        messageArray[currentSize] = msg;
+        eventArray[currentSize] = msg;
         this.currentSize++;
         this.queueLock.unlock();
     }
 
     // boolean to check if queue is full or not
     public boolean isFull() {
-        return this.size == this.currentSize;
+        this.queueLock.lock();
+        boolean result = (this.size == this.currentSize);
+        this.queueLock.unlock();
+        return result;
     }
 
     // flushes the entire queue - send all messages to the analytics server
     public void flush() {
-        JSONArray myArray = null;
+        Log.v(TAG, "Attempting to flush the Event Queue");
         try {
-            myArray = new JSONArray(this.messageArray);
-        } catch (JSONException e) {
-            Log.e(TAG, "Analytics Server Unable to flush Message queue : " + e.toString());
-        }
-
-        try {
-            JSONArray jsonArray = new JSONArray(this.messageArray);
+            JSONArray jsonArray = new JSONArray(this.eventArray);
             JsonArrayRequest jsonArrayRequest = new JsonArrayRequest(Request.Method.POST,
                     Config.analyticsServer, jsonArray, new Response.Listener<JSONArray>() {
                 @Override
@@ -79,7 +80,7 @@ public class ArrayMessageQueue implements MessageQueue{
             }, new Response.ErrorListener() {
                 @Override
                 public void onErrorResponse(VolleyError error) {
-                    Log.e(TAG, "Analytics Server responeded with error : " + error.toString());
+                    Log.e(TAG, "Analytics Server encountered a VolleyError: " + error.toString());
                 }
             }) {
                 // we need to overwrite the default content type.
@@ -88,12 +89,13 @@ public class ArrayMessageQueue implements MessageQueue{
                     return "application/json";
                 }
             };
+
             requestQueue.addToRequestQueue(jsonArrayRequest);
 
             // reset the current Size
             this.currentSize = 0;
         } catch (JSONException e) {
-            e.printStackTrace();
+            Log.e(TAG, "Analytics Server encountered a JSONException: " + e.toString());
         }
     }
 }
