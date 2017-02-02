@@ -5,12 +5,20 @@
 #include <coreEngine/modelBuilder/CubeBuilder.h>
 #include <coreEngine/util/SimpleOBJLoader.h>
 #include <coreEngine/modifier/ImageModifier.h>
+#include <coreEngine/components/transformTree/TransformTreeFactory.h>
 
 namespace cl{
-	Image360::Image360(std::unique_ptr<IRenderer> renderer, std::unique_ptr<ISceneFactory> sceneFactory, std::unique_ptr<IModelFactory> modelFactory, std::unique_ptr<IDiffuseTextureFactory> diffuseTextureFactory,
-		std::unique_ptr<IDiffuseTextureCubeMapFactory> diffuseTextureCubeMapFactory,
-		std::unique_ptr<ITransformCameraFactory> transformCameraFactory, std::unique_ptr<ITransformModelFactory> transformModelFactory, std::unique_ptr<ICameraFactory> cameraFactory,
-		IEventQueue *eventQueue, ILoggerFactory *loggerFactory){
+	Image360::Image360(std::unique_ptr<IRenderer> renderer,
+					   std::unique_ptr<ISceneFactory> sceneFactory,
+					   std::unique_ptr<IModelFactory> modelFactory,
+					   std::unique_ptr<IDiffuseTextureFactory> diffuseTextureFactory,
+					   std::unique_ptr<IDiffuseTextureCubeMapFactory> diffuseTextureCubeMapFactory,
+					   std::unique_ptr<ITransformCameraFactory> transformCameraFactory,
+					   std::unique_ptr<ITransformModelFactory> transformModelFactory, 
+					   std::unique_ptr<ICameraFactory> cameraFactory,
+					   IEventQueue *eventQueue, 
+					   ILoggerFactory *loggerFactory,
+					   std::unique_ptr<UIFactory> uiFactory){
 		assert(renderer != nullptr);
 		assert(sceneFactory != nullptr);
 		assert(modelFactory != nullptr);
@@ -20,6 +28,7 @@ namespace cl{
 		assert(transformModelFactory != nullptr);
 		assert(eventQueue != nullptr);
 		assert(cameraFactory != nullptr);
+		assert(uiFactory != nullptr);
 		this->renderer = std::move(renderer);
 		this->sceneFactory = std::move(sceneFactory);
 		this->modelFactory = std::move(modelFactory);
@@ -30,6 +39,7 @@ namespace cl{
 		this->cameraFactory = std::move(cameraFactory);
 		this->eventQueue = eventQueue;
 		this->logger = loggerFactory->createLogger("image360::Image360: ");
+		this->uiFactory = std::move(uiFactory);
 	}
 
 	//IApplication implementation
@@ -43,6 +53,7 @@ namespace cl{
 		assert(scene != nullptr);
 		scene->setBackgroundColor(CL_Vec4(0.0f, 0.0f, 0.4f, 0.0f));
 		scene->setDepthTest(true);
+		scene->setBlending(true);
 		camera = cameraFactory->create("camera", scene.get());
 		assert(camera != nullptr);
 		camera->setAspect(1.5f);
@@ -202,6 +213,8 @@ namespace cl{
 			cubeBuilder.buildInwardCube(this->imageContainer);
 		}
 
+		//Create UI Background
+		planarBackground = uiFactory->createPlanarBackground("test", scene.get(), CL_Vec4(0.0, 0.0, 0.5, 0.5), CL_Vec3(0.0, 0.0, -0.5), CL_Vec3(0.0, 0.0, 0.0), 0.5, 0.5);
 		renderer->initialize(scene.get());
 	}
 

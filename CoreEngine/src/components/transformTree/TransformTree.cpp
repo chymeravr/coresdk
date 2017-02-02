@@ -5,28 +5,21 @@ namespace cl{
 
 	void TransformTree::addChild(TransformTree *child){
 		assert(child != nullptr);
-		child->setParent(this);
+		int childId;
+		if (children.size() == 0)
+			childId = 0;
+		else
+			childId = children.back()->id + 1;
+		child->setParent(this, childId);
 		children.push_back(child);
-	}
-
-	bool TransformTree::getIsDirty(){
-		return isDirty;
-	}
-
-	void TransformTree::setIsDirty(bool isDirty){
-		this->isDirty = isDirty;
-	}
-
-	void TransformTree::setParent(TransformTree *parent){
-		this->parent = parent;
-	}
-
-	TransformTree* TransformTree::getParent(){
-		return parent;
 	}
 
 	std::vector<TransformTree*> &TransformTree::getChildren(){
 		return children;
+	}
+
+	TransformTree* TransformTree::getParent(){
+		return parent;
 	}
 
 	void TransformTree::setLocalPosition(CL_Vec3 localPosition){
@@ -56,13 +49,6 @@ namespace cl{
 		return this->localScale;
 	}
 
-	void TransformTree::markAllDescendantsDirty(){
-		setIsDirty(true);
-		for (auto it = children.cbegin(); it != children.cend(); it++){
-			(*it)->markAllDescendantsDirty();
-		}
-	}
-
 	CL_Mat44 &TransformTree::getGlobalTransform(){
 		if (!isDirty)
 			return globalTransform;
@@ -83,5 +69,39 @@ namespace cl{
 
 		isDirty = false;
 		return globalTransform;
+	}
+
+	void TransformTree::deleteChild(TransformTree *child){
+		assert(child != nullptr);
+		for (auto it = children.begin(); it != children.end(); it++){
+			if ((*it)->id == child->id){
+				children.erase(it);
+				return;
+			}
+		}
+	}
+
+	bool TransformTree::getIsDirty(){
+		return isDirty;
+	}
+
+	void TransformTree::setIsDirty(bool isDirty){
+		this->isDirty = isDirty;
+	}
+
+	void TransformTree::setParent(TransformTree *parent, int id){
+		this->parent = parent;
+		this->id = id;
+	}
+	
+	void TransformTree::markAllDescendantsDirty(){
+		setIsDirty(true);
+		for (auto it = children.cbegin(); it != children.cend(); it++){
+			(*it)->markAllDescendantsDirty();
+		}
+	}
+
+	void TransformTree::updateId(int newId){
+		this->id = newId;
 	}
 }

@@ -6,6 +6,8 @@ include_directories (${REPO_PATH}/thirdParty/glm/glm-${GLM_VERSION}/glm
 					 ${Conf_INCLUDE_DIRS} 
 					 ${PROJECT_SOURCE_DIR}/include)
 
+FILE(GLOB_RECURSE INCLUDE_HEADERS "include/*.h")
+					 
 set(SOURCES ${PROJECT_SOURCE_DIR}/src/components/transform/TransformCamera.cpp
 			${PROJECT_SOURCE_DIR}/src/components/transform/TransformModel.cpp
 			${PROJECT_SOURCE_DIR}/src/components/transformTree/TransformTree.cpp
@@ -22,9 +24,11 @@ set(SOURCES ${PROJECT_SOURCE_DIR}/src/components/transform/TransformCamera.cpp
 			${PROJECT_SOURCE_DIR}/src/renderObjects/ComponentList.cpp
 			${PROJECT_SOURCE_DIR}/src/renderObjects/Relation.cpp
 			${PROJECT_SOURCE_DIR}/src/renderObjects/Scene.cpp
+			${PROJECT_SOURCE_DIR}/src/ui/PlanarBackground.cpp
+			${PROJECT_SOURCE_DIR}/src/ui/UIElement.cpp
 			${PROJECT_SOURCE_DIR}/src/util/SimpleOBJLoader.cpp
 )
-add_library(${PROJECT_NAME} STATIC  ${SOURCES})
+add_library(${PROJECT_NAME} STATIC ${INCLUDE_HEADERS}  ${SOURCES})
 
 #######################################################################################
 # CoreEngineTests
@@ -67,6 +71,7 @@ endif()
 #####################################################
 set(TEST_SRC_DIR ${PROJECT_SOURCE_DIR}/test/src)
 include_directories ("${PROJECT_SOURCE_DIR}/test/include")
+FILE(GLOB_RECURSE INCLUDE_TEST_HEADERS "test/include/*.h")
 include (CTest)
 set(TEST_SOURCES	${PROJECT_SOURCE_DIR}/test/src/AllTests.cpp
 					${PROJECT_SOURCE_DIR}/test/src/CameraTest.cpp
@@ -83,6 +88,7 @@ set(TEST_SOURCES	${PROJECT_SOURCE_DIR}/test/src/AllTests.cpp
 					${PROJECT_SOURCE_DIR}/test/src/TextureTest.cpp
 					${PROJECT_SOURCE_DIR}/test/src/TransformCameraTest.cpp
 					${PROJECT_SOURCE_DIR}/test/src/TransformModelTest.cpp
+					${PROJECT_SOURCE_DIR}/test/src/TransformTreeTest.cpp
 					${PROJECT_SOURCE_DIR}/test/src/TransformTreeCameraTest.cpp
 					${PROJECT_SOURCE_DIR}/test/src/TransformTreeModelTest.cpp
 					${PROJECT_SOURCE_DIR}/test/src/UVSphereBuilderTest.cpp
@@ -90,7 +96,7 @@ set(TEST_SOURCES	${PROJECT_SOURCE_DIR}/test/src/AllTests.cpp
 )
 
 # Building test executable
-add_executable(CoreEngineTest ${TEST_SOURCES})
+add_executable(CoreEngineTest ${INCLUDE_TEST_HEADERS} ${TEST_SOURCES})
 target_link_libraries(CoreEngineTest gtest gmock_main CoreEngine)
 enable_testing()
 add_test(NAME CoreEngineTest_ COMMAND CoreEngineTest)

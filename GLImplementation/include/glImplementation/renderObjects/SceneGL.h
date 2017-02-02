@@ -11,6 +11,7 @@ namespace cl{
 		IRenderable *getRenderable();
 		void setBackgroundColor(CL_Vec4 color);
 		void setDepthTest(bool enable);
+		void setBlending(bool enable);
 		bool initialize();
 		void draw();
 		void deinitialize();
@@ -19,6 +20,7 @@ namespace cl{
 		GLuint vertexArrayId;
 		CL_Vec4 color;
 		bool depthTest = false;
+		bool blending = false;
 	};
 }
 

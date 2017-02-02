@@ -13,6 +13,8 @@
 #include <coreEngine/components/transform/ITransformCameraFactory.h>
 #include <coreEngine/components/transform/ITransformModelFactory.h>
 #include <coreEngine/modifier/Image.h>
+#include <coreEngine/ui/UIFactory.h>
+#include <coreEngine/components/transformTree/ITransformTreeFactory.h>
 
 namespace cl{
 	enum TEXTURE_MAP_MODE{
@@ -31,7 +33,8 @@ namespace cl{
 				 std::unique_ptr<ITransformModelFactory> transformModelFactory, 
 				 std::unique_ptr<ICameraFactory> cameraFactory,
 				 IEventQueue *eventQueue, 
-				 ILoggerFactory *loggerFactory);
+				 ILoggerFactory *loggerFactory,
+				 std::unique_ptr<UIFactory> uiFactory);
 
 		//IApplication implementation
 		void start();
@@ -56,6 +59,7 @@ namespace cl{
 		std::unique_ptr<ITransformCameraFactory> transformCameraFactory;
 		std::unique_ptr<ITransformModelFactory> transformModelFactory;
 		std::unique_ptr<ICameraFactory> cameraFactory;
+		std::unique_ptr<UIFactory> uiFactory;
 		std::unique_ptr<ILogger> logger;
 		std::unique_ptr<Scene> scene;
 		Camera *camera;
@@ -64,6 +68,7 @@ namespace cl{
 		Texture *imageTexture;
 		Model *imageContainer;
 		IEventQueue *eventQueue;
+		std::unique_ptr<PlanarBackground> planarBackground;
 		int lastPassiveMousePositionX = -1;
 		int lastPassiveMousePositionY = -1;
 		float passiveMouseMotionSensitivity = 0.2f;

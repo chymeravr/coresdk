@@ -13,6 +13,9 @@ namespace cl{
 	void SceneGL::setDepthTest(bool enable){
 		this->depthTest = enable;
 	}
+	void SceneGL::setBlending(bool enable){
+		blending = enable;
+	}
 	bool SceneGL::initialize(){
 		glClearColor(color[0], color[1], color[2], color[3]);
 		if (depthTest){
@@ -21,6 +24,13 @@ namespace cl{
 		}
 		else{
 			glDisable(GL_DEPTH_TEST);
+		}
+		if (blending){
+			glEnable(GL_BLEND);
+			glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+		}
+		else{
+			glDisable(GL_BLEND);
 		}
 		glGenVertexArrays(1, &vertexArrayId);
 		glBindVertexArray(vertexArrayId);

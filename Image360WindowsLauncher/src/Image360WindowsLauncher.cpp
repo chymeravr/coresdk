@@ -25,6 +25,9 @@
 #include <windowsImplementation/MutexLockWindows.h>
 #include <renderer/RendererNoHMD.h>
 #include <coreEngine/modifier/ImageBMPLoader.h>
+#include <coreEngine/components/transformTree/TransformTreeFactory.h>
+#include <glImplementation/factory/UniformColorFactoryGL.h>
+#include <coreEngine/ui/UIFactory.h>
 
 using namespace std;
 using namespace cl;
@@ -759,6 +762,11 @@ int _tmain(int argc, _TCHAR** argv)
     std::unique_ptr<ICameraFactory> cameraFactory(new CameraGLFactory(loggerFactory.get()));
     std::unique_ptr<IMutexLock> mutexLock(new MutexLockWindows);
     eventQueue = std::unique_ptr<IEventQueue>(new EventQueue(std::move(mutexLock)));
+	std::unique_ptr<ITransformTreeFactory> transformTreeFactory(new TransformTreeFactory(loggerFactory.get()));
+	std::unique_ptr<IModelFactory> uiModelFactory(new ModelGLFactory(loggerFactory.get()));
+	std::unique_ptr<IUniformColorFactory> uiUniformColorFactory(new UniformColorFactoryGL());
+	std::unique_ptr<ITransformTreeFactory> uiTransformTreeFactory(new TransformTreeFactory(loggerFactory.get()));
+	std::unique_ptr<UIFactory> uiFactory(new UIFactory(loggerFactory.get(), std::move(uiModelFactory), std::move(uiUniformColorFactory), std::move(uiTransformTreeFactory)));
     application = std::unique_ptr<Image360>(new Image360(std::move(renderer),
         std::move(sceneFactory),
         std::move(modelFactory),
@@ -768,7 +776,8 @@ int _tmain(int argc, _TCHAR** argv)
         std::move(transformModelFactory),
         std::move(cameraFactory),
         eventQueue.get(),
-        loggerFactory.get()));
+        loggerFactory.get(),
+		std::move(uiFactory)));
 
     // register callbacks
     application->start();
