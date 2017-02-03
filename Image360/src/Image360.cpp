@@ -214,7 +214,7 @@ namespace cl{
 		}
 
 		//Create UI Background
-		planarBackground = uiFactory->createPlanarBackground("test", scene.get(), CL_Vec4(0.0, 0.0, 0.5, 0.5), CL_Vec3(0.0, 0.0, -0.5), CL_Vec3(0.0, 0.0, 0.0), 0.5, 0.5);
+		planarBackground = uiFactory->createPlanarBackground("test", scene.get(), CL_Vec4(0.0, 0.0, 0.5, 0.5), CL_Vec3(0.0, 0.0, -0.5), CL_Vec3(0.0, 0.0, 0.0), 0.4, 0.3);
 		renderer->initialize(scene.get());
 	}
 

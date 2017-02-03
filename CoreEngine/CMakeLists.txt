@@ -24,12 +24,36 @@ set(SOURCES ${PROJECT_SOURCE_DIR}/src/components/transform/TransformCamera.cpp
 			${PROJECT_SOURCE_DIR}/src/renderObjects/ComponentList.cpp
 			${PROJECT_SOURCE_DIR}/src/renderObjects/Relation.cpp
 			${PROJECT_SOURCE_DIR}/src/renderObjects/Scene.cpp
+			${PROJECT_SOURCE_DIR}/src/ui/FontStore.cpp
 			${PROJECT_SOURCE_DIR}/src/ui/PlanarBackground.cpp
+			${PROJECT_SOURCE_DIR}/src/ui/TextElement.cpp
 			${PROJECT_SOURCE_DIR}/src/ui/UIElement.cpp
 			${PROJECT_SOURCE_DIR}/src/util/SimpleOBJLoader.cpp
 )
-add_library(${PROJECT_NAME} STATIC ${INCLUDE_HEADERS}  ${SOURCES})
 
+
+#######################################################
+# Creating FreeType integration
+#######################################################
+if (CMAKE_VERSION VERSION_LESS 3.2)
+    set(UPDATE_DISCONNECTED_IF_AVAILABLE "")
+else()
+    set(UPDATE_DISCONNECTED_IF_AVAILABLE "UPDATE_DISCONNECTED 1")
+endif()
+
+include(${CMAKE_SOURCE_DIR}/DownloadProject.cmake)
+download_project(PROJ                freetype
+                 URL      http://download.savannah.gnu.org/releases/freetype/freetype-2.7.tar.bz2
+                 ${UPDATE_DISCONNECTED_IF_AVAILABLE}
+)
+
+add_subdirectory(${freetype_SOURCE_DIR} ${freetype_BINARY_DIR})
+include_directories("${freetype_SOURCE_DIR}/include")
+########################################################
+
+
+add_library(${PROJECT_NAME} STATIC ${INCLUDE_HEADERS}  ${SOURCES})
+target_link_libraries(${PROJECT_NAME} freetype)
 #######################################################################################
 # CoreEngineTests
 #######################################################################################

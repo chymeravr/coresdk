@@ -61,6 +61,26 @@ glImplementation/src/renderObjects/MaterialUniformColorGL.cpp
 glImplementation/src/renderObjects/ShaderUniformColorGL.cpp
 
 *************************************************
-Make UI a separate project--------
+TextIntegration
+CoreEngineIncludes{
+	ui/TextStyle.h
+	ui/FontLoader.h
+	ui/TextElement.h
+	ui/ShaderText.h
+	ui/MaterialText.h
+	ui/IShaderTextFactory.h
+	ui/IMaterialTextFactory.h
+}
 
-Continue from TransformTreeTest
+GLImplementationIncludes{
+	ui/ShaderTextGL.h
+	ui/MaterialTextGL.h
+	ui/ShaderTextGL.h
+	ui/IShaderTextFactoryGL.h
+	ui/IMaterialTextFactoryGL.h
+}
+
+GLImplementationSRC{
+	ui/MaterialTextGL.cpp
+	ui/ShaderTextGL.cpp
+}
