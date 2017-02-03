@@ -5,12 +5,14 @@ import android.util.Log;
 import com.android.volley.Request;
 import com.android.volley.Response;
 import com.android.volley.VolleyError;
-import com.android.volley.toolbox.JsonArrayRequest;
+import com.android.volley.toolbox.JsonObjectRequest;
 import com.chymeravr.common.Config;
 import com.chymeravr.common.WebRequestQueue;
+import com.google.gson.Gson;
 
 import org.json.JSONArray;
 import org.json.JSONException;
+import org.json.JSONObject;
 
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
@@ -70,32 +72,45 @@ public class ArrayEventQueue implements EventQueue {
     // flushes the entire queue - send all messages to the analytics server
     public void flush() {
         Log.v(TAG, "Attempting to flush the Event Queue");
+
+        JSONArray jsonArray = new JSONArray();
+        for (Event event : this.eventArray) {
+            Gson gson = new Gson();
+            String eventJson = gson.toJson(event);
+            jsonArray.put(eventJson);
+        }
+
+        JSONObject jsonEventObjects = new JSONObject();
         try {
-            JSONArray jsonArray = new JSONArray(this.eventArray);
-            JsonArrayRequest jsonArrayRequest = new JsonArrayRequest(Request.Method.POST,
-                    Config.analyticsServer, jsonArray, new Response.Listener<JSONArray>() {
-                @Override
-                public void onResponse(JSONArray response) {
-                }
-            }, new Response.ErrorListener() {
-                @Override
-                public void onErrorResponse(VolleyError error) {
-                    Log.e(TAG, "Analytics Server encountered a VolleyError: " + error.toString());
-                }
-            }) {
+            jsonEventObjects.put("eventList", jsonArray.toString());
+        } catch (JSONException e) {
+            Log.e(TAG, "Error converting event list to Json Object", e);
+        }finally {
+            JsonObjectRequest jsonRequest = new JsonObjectRequest(Request.Method.POST,
+                    Config.analyticsServer, jsonEventObjects,
+                    new Response.Listener<JSONObject>() {
+
+                        @Override
+                        public void onResponse(JSONObject response) {
+                                Log.v(TAG, "Event List Sent. Server Response " + response.toString());
+                        }
+                    },
+                    new Response.ErrorListener() {
+                        @Override
+                        public void onErrorResponse(VolleyError error) {
+                            Log.e(TAG, "Error posting event list to server : ", error);
+                        }
+                    }) {
                 // we need to overwrite the default content type.
                 @Override
                 public String getBodyContentType() {
                     return "application/json";
                 }
             };
-
-            requestQueue.addToRequestQueue(jsonArrayRequest);
+            requestQueue.addToRequestQueue(jsonRequest);
 
             // reset the current Size
             this.currentSize = 0;
-        } catch (JSONException e) {
-            Log.e(TAG, "Analytics Server encountered a JSONException: " + e.toString());
         }
     }
 }

@@ -82,9 +82,9 @@ public class ArrayEventQueueTest {
     private Event eventGenerator(int var){
         Timestamp timestamp = new Timestamp(System.currentTimeMillis());
         HashMap<String, String> params = new HashMap<>();
-        params.put("dummy", "dummy");
+        params.put("dummy", "dummy" + var);
         Event dummyEvent = new Event(timestamp.getTime(), Event.EventType.ADREQUEST, Event.Priority.HIGH);
-
+        dummyEvent.setParams(params);
         return dummyEvent;
     }
 }

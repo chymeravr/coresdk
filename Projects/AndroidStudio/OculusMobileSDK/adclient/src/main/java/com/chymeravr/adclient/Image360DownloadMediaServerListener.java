@@ -49,16 +49,11 @@ public class Image360DownloadMediaServerListener extends ServerListener<byte[]> 
                 FileOutputStream outputStream;
                 String name="image360Ad.png";
                 Log.d(TAG, "writing file to: " + dest_dir + name);
-                outputStream = new FileOutputStream(new File(dest_dir, name));//this.ad.getContext().openFileOutput(name, Context.MODE_PRIVATE);
+                outputStream = new FileOutputStream(new File(dest_dir, name));
                 outputStream.write(response);
                 outputStream.close();
                 Log.i(TAG, "File download complete");
                 File lister = this.ad.getContext().getFilesDir();
-//                Log.i(TAG, lister.getAbsolutePath());
-//                for (String list : lister.list())
-//                {
-//                    Log.i(TAG, list);
-//                }
 
                 this.getAd().onMediaServerResponseSuccess(response);
 
@@ -66,7 +61,7 @@ public class Image360DownloadMediaServerListener extends ServerListener<byte[]> 
         } catch (Exception e) {
             // TODO Auto-generated catch block
             Log.d("KEY_ERROR", "UNABLE TO DOWNLOAD FILE");
-            Log.e(TAG, "Error ", e);
+            Log.e(TAG, "Error processing download file for media ad : " + e.toString());
         }
     }
 
