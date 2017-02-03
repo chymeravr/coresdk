@@ -31,11 +31,12 @@ public final class Event {
 
     @Getter
     @Setter
-    private HashMap<String, String> params;
+    private HashMap<String, Object> params;
 
-//    public Event(Long timestamp, EventType eventType, HashMap<String, String> params){
-//        this.timestamp = timestamp;
-//        this.eventType = eventType;
-//        this.params = params;
-//    }
+    public Event(Long timestamp, EventType eventType, Priority priority, HashMap<String, Object> params){
+        this.timestamp = timestamp;
+        this.eventType = eventType;
+        this.priority = priority;
+        this.params = params;
+    }
 }

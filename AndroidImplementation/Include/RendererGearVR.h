@@ -269,7 +269,7 @@ static void GLCheckErrors( int line )
         void enterIntoVrMode();
         void leaveVrMode();
         void handleVrModeChanges(bool resumed);
-
+        std::vector<float> getHMDParams();
     };
 }
 

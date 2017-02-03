@@ -10,6 +10,7 @@
 #include <coreEngine/renderObjects/Model.h>
 #include <CameraGLOVR.h>
 #include <RendererGearVR.h>
+#include <stdlib.h>
 
 namespace cl {
 
@@ -340,7 +341,7 @@ namespace cl {
                     GL(glFramebufferTexture2D(GL_DRAW_FRAMEBUFFER, GL_COLOR_ATTACHMENT0,
                                               GL_TEXTURE_2D, colorTexture, 0));
                     GL(GLenum renderFramebufferStatus = glCheckFramebufferStatus(
-                            GL_DRAW_FRAMEBUFFER));
+                               GL_DRAW_FRAMEBUFFER));
                     GL(glBindFramebuffer(GL_DRAW_FRAMEBUFFER, 0));
                     if (renderFramebufferStatus != GL_FRAMEBUFFER_COMPLETE) {
                         ALOGE("Incomplete frame buffer object: %s",
@@ -578,8 +579,6 @@ namespace cl {
         ovrTracking updatedTracking = *tracking;
 #endif
 
-
-
         // Calculate the view matrix.
         const ovrMatrix4f centerEyeViewMatrix = vrapi_GetCenterEyeViewMatrix(&headModelParms,
                                                                              &updatedTracking,
@@ -612,8 +611,9 @@ namespace cl {
 
         /* update camera projection matrix - it remains the same for each of the eye */
         CL_Mat44 sceneProjectionMat = CL_Make_Mat44(
-                &projectionMatrixTransposed.M[0][0]);//&renderer->ProjectionMatrix.M[0][0]);
+                &projectionMatrixTransposed.M[0][0]);
         camera->setProjectionMatrix(sceneProjectionMat);
+
 
         // Render the eye images.
         for (int eye = 0; eye < renderer->NumBuffers; eye++) {
@@ -905,16 +905,54 @@ namespace cl {
         }
         else {
             if (this->ovrM != NULL) {
-                ALOGV("        eglGetCurrentSurface( EGL_DRAW ) = %p", eglGetCurrentSurface(EGL_DRAW));
+                ALOGV("        eglGetCurrentSurface( EGL_DRAW ) = %p",
+                      eglGetCurrentSurface(EGL_DRAW));
 
                 ALOGV("        vrapi_LeaveVrMode()");
 
                 this->leaveVrMode();
 
-                ALOGV("        eglGetCurrentSurface( EGL_DRAW ) = %p", eglGetCurrentSurface(EGL_DRAW));
+                ALOGV("        eglGetCurrentSurface( EGL_DRAW ) = %p",
+                      eglGetCurrentSurface(EGL_DRAW));
             }
         }
     }
 
+    std::vector<float> RendererGearVR::getHMDParams() {
+        const double predictedDisplayTime = vrapi_GetPredictedDisplayTime(this->ovrM,
+                                                                          this->frameIndex);
+        const ovrTracking baseTracking = vrapi_GetPredictedTracking(this->ovrM,
+                                                                    predictedDisplayTime);
+
+        // Apply the head-on-a-stick model if there is no positional tracking.
+        const ovrHeadModelParms headModelParms = vrapi_DefaultHeadModelParms();
+        const ovrTracking tracking = vrapi_ApplyHeadModel(&headModelParms, &baseTracking);
+
+
+
+
+        // Calculate the view matrix.
+        const ovrMatrix4f centerEyeViewMatrix = vrapi_GetCenterEyeViewMatrix(&headModelParms,
+                                                                             &tracking,
+                                                                             NULL);
+
+        ovrMatrix4f eyeViewMatrix[2];
+        eyeViewMatrix[0] = vrapi_GetEyeViewMatrix(&headModelParms, &centerEyeViewMatrix, 0);
+        eyeViewMatrix[1] = vrapi_GetEyeViewMatrix(&headModelParms, &centerEyeViewMatrix, 1);
+
+
+        std::vector<float> result;
+
+        // row major assignment
+        for (int j = 0; j < 2; j++) {
+            for (int i = 0; i < 16; i++) {
+                auto div = std::div(i, 4);
+                result.push_back(eyeViewMatrix[j].M[div.quot][div.rem]);
+            }
+
+        }
+
+        return result;
+    }
 
 }

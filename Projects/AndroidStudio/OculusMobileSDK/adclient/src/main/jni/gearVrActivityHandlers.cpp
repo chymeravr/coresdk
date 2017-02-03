@@ -637,6 +637,31 @@ Java_com_chymeravr_adclient_Image360Activity_onTouchEventNative(JNIEnv *env, job
     ovrMessageQueue_PostMessage(&appThread->MessageQueue, &message);
 }
 
+JNIEXPORT jfloatArray JNICALL
+Java_com_chymeravr_adclient_Image360Activity_getHMDParamsNative(JNIEnv *env, jobject obj,
+                                                                jlong handle) {
+    logger->log(LOG_DEBUG, "Fetching HMD parameters");
+    jfloatArray result;
+    result = env->NewFloatArray(32);
+
+    ovrAppThread *appThread = (ovrAppThread *) ((size_t) handle);
+    auto renderer = (RendererGearVR *) appThread->Application->getRenderer();
+
+    auto hmdParams = renderer->getHMDParams();
+
+    float params[32];
+    for(int i = 0; i < 2; i++)
+    {
+        for(int j = 0; j < 16; j++)
+        {
+            params[16*i + j] = hmdParams[16*i + j];
+        }
+    }
+
+    env->SetFloatArrayRegion(result, 0, 32, params);
+    return result;
+}
+
 #ifdef __cplusplus
 }
 #endif

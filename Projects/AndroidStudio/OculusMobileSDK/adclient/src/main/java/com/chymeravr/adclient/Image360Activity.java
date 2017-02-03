@@ -24,14 +24,19 @@ import android.view.WindowManager;
 
 import com.chymeravr.analytics.AnalyticsManager;
 import com.chymeravr.analytics.Event;
+import com.chymeravr.common.Config;
 
 import java.sql.Timestamp;
+import java.util.HashMap;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.TimeUnit;
 
 /**
  * Created by robin_chimera on 1/24/2017.
  */
 
-public final class Image360Activity extends Activity implements SurfaceHolder.Callback{
+public final class Image360Activity extends Activity implements SurfaceHolder.Callback {
 
     public static final String TAG = "Image360AdActivity";
 
@@ -41,13 +46,22 @@ public final class Image360Activity extends Activity implements SurfaceHolder.Ca
 
     private String clickUrl;
 
-    private AnalyticsManager analyticsManager;
+    private static AnalyticsManager analyticsManager;
     private AdListener adListener;
 
     // load the native library for image 360 ads
     static {
         System.loadLibrary("image360ad");
     }
+
+    private ScheduledExecutorService scheduler;
+
+    private final Runnable hmdPollRunner = new Runnable() {
+        public void run() {
+            Log.v(TAG, "Fetching HMD Parameters");
+            Image360Activity.this.getHMDParams();
+        }
+    };
 
     // Native methods for Activity lifecyle
     private native long onCreateNative(Activity activity, String appDir);
@@ -62,17 +76,19 @@ public final class Image360Activity extends Activity implements SurfaceHolder.Ca
 
     private native void onDestroyNative(long handle);
 
-    // Native methods for Surface Lifecycle
-    public static native void onSurfaceCreatedNative(long handle, Surface s);
+    // Native methods for Surface Lifecycle             WHY ARE THESE METHODS STATIC?
+    public native void onSurfaceCreatedNative(long handle, Surface s);
 
-    public static native void onSurfaceChangedNative(long handle, Surface s);
+    public native void onSurfaceChangedNative(long handle, Surface s);
 
-    public static native void onSurfaceDestroyedNative(long handle);
+    public native void onSurfaceDestroyedNative(long handle);
 
     // Native methods for handling touch and key events
-    public static native void onKeyEventNative(long handle, int keyCode, int action);
+    public native void onKeyEventNative(long handle, int keyCode, int action);
 
-    public static native void onTouchEventNative(long handle, int action, float x, float y);
+    public native void onTouchEventNative(long handle, int action, float x, float y);
+
+    public native float[] getHMDParamsNative(long handle);
 
     private void killActivity() {
         // TODO: 2/2/2017 the surface is closed in correctly here - fix it
@@ -89,22 +105,32 @@ public final class Image360Activity extends Activity implements SurfaceHolder.Ca
     }
 
 
-        @Override
+    @Override
     protected void onCreate(Bundle icicle) {
         Log.d(TAG, "onCreate()");
         super.onCreate(icicle);
 
+        // Fetch url to show when user clicks
         Intent intent = getIntent();
         this.clickUrl = intent.getStringExtra("clickUrl");
 
+        // Register an kill activity intent to destroy the activity when user is done and return to parent
         LocalBroadcastManager.getInstance(this).registerReceiver(new MessageHandler(),
                 new IntentFilter("kill"));
 
-        this.analyticsManager = ChymeraVrSdk.getAnalyticsManager();
+        // get analytics manager from sdk manager
+        analyticsManager = ChymeraVrSdk.getAnalyticsManager();
 
+        // schedule polling for hmd parameters
+        this.scheduler = Executors.newScheduledThreadPool(1);
+        scheduler.scheduleAtFixedRate(hmdPollRunner, Config.hmdSamplingDelay,
+                Config.hmdSamplingPeriod, TimeUnit.SECONDS);
+
+        // call native creation method for all the HMD magic with OVR
         String basePath = this.getFilesDir().getAbsolutePath();
         this.mNativeHandle = this.onCreateNative(this, basePath);
 
+        // We draw everything in a surface embedded within the activity layout
         this.mView = new SurfaceView(this);
         this.setContentView(mView);
         this.mView.getHolder().addCallback(this);
@@ -117,7 +143,6 @@ public final class Image360Activity extends Activity implements SurfaceHolder.Ca
         WindowManager.LayoutParams params = this.getWindow().getAttributes();
         params.screenBrightness = 1.0f;
         this.getWindow().setAttributes(params);
-
 
     }
 
@@ -191,7 +216,6 @@ public final class Image360Activity extends Activity implements SurfaceHolder.Ca
     }
 
 
-
     private void adjustVolume(int direction) {
         AudioManager audio = (AudioManager) this.getSystemService(Context.AUDIO_SERVICE);
         audio.adjustStreamVolume(AudioManager.STREAM_MUSIC, direction, 0);
@@ -238,11 +262,11 @@ public final class Image360Activity extends Activity implements SurfaceHolder.Ca
         return true;
     }
 
-    private void notifyUser(){
+    private void notifyUser() {
         Intent notificationIntent = new Intent(Intent.ACTION_VIEW);
         notificationIntent.setData(Uri.parse(this.clickUrl));
         PendingIntent pi = PendingIntent.getActivity(this, 0, notificationIntent, 0);
-        // Resources r = getResources();
+
         Notification notification = new NotificationCompat.Builder(this)
                 .setTicker("<Yourtext>")
                 .setSmallIcon(android.R.drawable.ic_menu_report_image)
@@ -252,7 +276,40 @@ public final class Image360Activity extends Activity implements SurfaceHolder.Ca
                 .setAutoCancel(true)
                 .build();
 
-        NotificationManager notificationManager2 =  (NotificationManager) this.getSystemService(Service.NOTIFICATION_SERVICE);
+        NotificationManager notificationManager2 = (NotificationManager) this.getSystemService(Service.NOTIFICATION_SERVICE);
         notificationManager2.notify(0, notification);
+    }
+
+    public static void sendHMDParams(int param) {
+        Log.v(TAG, "JNI Sent Param " + param);
+        analyticsManager.push(new Event((new Timestamp(System.currentTimeMillis())).getTime(),
+                Event.EventType.ADCLICK,
+                Event.Priority.HIGH));
+    }
+
+    public void getHMDParams() {
+        float[] hmdParams = this.getHMDParamsNative(this.mNativeHandle);
+        HashMap<String, Object> hmdEyeMap = new HashMap<>();
+
+        String[] parameterKeys =
+                {"L00", "L01", "L02", "L03",
+                 "L10", "L11", "L12", "L13",
+                 "L20", "L21", "L22", "L23",
+                 "L30", "L31", "L32", "L33",
+
+                 "R00", "R01", "R02", "R03",
+                 "R10", "R11", "R12", "R13",
+                 "R20", "R21", "R22", "R23",
+                 "R30", "R31", "R32", "R33"};
+
+        int i = 0;
+        for( String key : parameterKeys){
+            hmdEyeMap.put(key, hmdParams[i++]);
+        }
+
+        Event event = new Event((new Timestamp(System.currentTimeMillis())).getTime(),
+                Event.EventType.ADVIEWMETRICS,
+                Event.Priority.LOW, hmdEyeMap);
+        analyticsManager.push(event);
     }
 }
