@@ -27,9 +27,9 @@ public final class AnalyticsManager {
     private static EventQueue lowPriorityQueue;
 
     private AnalyticsManager(Context context, WebRequestQueue webRequestQueue) {
-        highPriorityQueue = new ArrayEventQueue(Config.HIGHPRIORITYQUEUESIZE, webRequestQueue);
-        medPriorityQueue = new ArrayEventQueue(Config.MEDPRIORITYQUEUESIZE, webRequestQueue);
-        lowPriorityQueue = new ArrayEventQueue(Config.LOWPRIORITYQUEUESIZE, webRequestQueue);
+        highPriorityQueue = new ArrayEventQueue(Config.highPriorityQueueSize, webRequestQueue);
+        medPriorityQueue = new ArrayEventQueue(Config.medPriorityQueueSize, webRequestQueue);
+        lowPriorityQueue = new ArrayEventQueue(Config.lowPriorityQueueSize, webRequestQueue);
     }
 
     public static AnalyticsManager getInstance(Context context, WebRequestQueue webRequestQueue){

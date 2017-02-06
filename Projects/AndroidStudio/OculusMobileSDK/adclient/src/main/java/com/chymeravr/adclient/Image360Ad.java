@@ -11,14 +11,14 @@ import android.support.v4.content.LocalBroadcastManager;
 import android.util.Log;
 
 import com.android.volley.toolbox.JsonObjectRequest;
-import com.chymeravr.analytics.AnalyticsManager;
 import com.chymeravr.analytics.Event;
-import com.chymeravr.common.WebRequestQueue;
+import com.chymeravr.common.Config;
 
 import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.sql.Timestamp;
+import java.util.HashMap;
 
 import lombok.Getter;
 import lombok.Setter;
@@ -59,16 +59,9 @@ public final class Image360Ad extends Ad {
     public enum IntentActions {CLOSE, OPEN, CLICK, LEFTAPPLICATION};
 
     private Activity activity;
-    private final String placementId;
-
-    private AnalyticsManager analyticsMgr;
-
-    private WebRequestQueue webRequestQueue;
 
     private void adListenerCallbacks(){
         Log.v(TAG, "Ad Closed");
-//        ((Activity)this.getContext()).finishActivity(showRequestCode);
-//        this.activity.finishActivity(showRequestCode);
         this.getAdListener().onAdClosed();
     }
 
@@ -79,22 +72,17 @@ public final class Image360Ad extends Ad {
         }
     }
 
-    public Image360Ad(String adUnitID, Activity activity, AdListener adListener) {
-        super(adUnitID, activity, adListener);
+    public Image360Ad(String placementId, Activity activity, AdListener adListener) {
+        super(placementId, activity, adListener, ChymeraVrSdk.getAnalyticsManager(), ChymeraVrSdk.getWebRequestQueue());
 
         this.activity = activity;
 
         LocalBroadcastManager.getInstance(activity).registerReceiver(new Image360Ad.MessageHandler(),
                 new IntentFilter("adClosed"));
 
-        this.analyticsMgr = ChymeraVrSdk.getAnalyticsManager();
-        this.webRequestQueue = ChymeraVrSdk.getWebRequestQueue();
-
-        this.placementId = adUnitID;
-
-        this.adServerListener = new AdServerListener(this, this.webRequestQueue.getRequestQueue());
-        this.mediaServerListener = new Image360MediaServerListener(this, this.webRequestQueue.getRequestQueue());
-        this.mediaDownloadServerListener = new Image360DownloadMediaServerListener(this, this.webRequestQueue.getRequestQueue());
+        this.adServerListener = new AdServerListener(this, this.getWebRequestQueue().getRequestQueue());
+        this.mediaServerListener = new Image360MediaServerListener(this, this.getWebRequestQueue().getRequestQueue());
+        this.mediaDownloadServerListener = new Image360DownloadMediaServerListener(this, this.getWebRequestQueue().getRequestQueue());
         this.requestGenerator = new RequestGenerator(Type.IMAGE360);
     }
 
@@ -103,7 +91,7 @@ public final class Image360Ad extends Ad {
     public void loadAd(AdRequest adRequest) {
         this.setLoading(true);
 
-        analyticsMgr.push(new Event((new Timestamp(System.currentTimeMillis())).getTime(),
+        this.getAnalyticsManager().push(new Event((new Timestamp(System.currentTimeMillis())).getTime(),
                 Event.EventType.ADREQUEST,
                 Event.Priority.MEDIUM));
 
@@ -129,6 +117,12 @@ public final class Image360Ad extends Ad {
         } catch (JSONException e) {
             this.setLoading(false);
             this.getAdListener().onAdFailedToLoad();
+
+            HashMap<String, Object> errorMap = new HashMap<String, Object>();
+            errorMap.put("Error", e.toString());
+            this.getAnalyticsManager().push(new Event((new Timestamp(System.currentTimeMillis())).getTime(),
+                    Event.EventType.ERROR, Event.Priority.LOW, errorMap));
+
             Log.e(TAG, "Exception", e);
         }
     }
@@ -137,7 +131,7 @@ public final class Image360Ad extends Ad {
     void onMediaServerResponseSuccess(Object media) {
         this.getAdListener().onAdLoaded();
         this.setLoaded(true);
-        analyticsMgr.push(new Event((new Timestamp(System.currentTimeMillis())).getTime(),
+        this.getAnalyticsManager().push(new Event((new Timestamp(System.currentTimeMillis())).getTime(),
                 Event.EventType.ADLOAD,
                 Event.Priority.MEDIUM));
         this.setLoading(false);
@@ -148,6 +142,7 @@ public final class Image360Ad extends Ad {
     public void show() {
         Intent intent = new Intent(this.activity, Image360Activity.class);
         intent.putExtra("clickUrl", this.getClickUrl());
+        intent.putExtra("imageAdFilePath", Config.Image360AdAssetDirectory + this.getPlacementId() + ".jpg");
         this.activity.startActivityForResult(intent, showRequestCode);
 
         this.getAdListener().onAdOpened();

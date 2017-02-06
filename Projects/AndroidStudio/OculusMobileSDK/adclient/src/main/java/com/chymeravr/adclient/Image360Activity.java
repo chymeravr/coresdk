@@ -45,6 +45,7 @@ public final class Image360Activity extends Activity implements SurfaceHolder.Ca
     private long mNativeHandle;
 
     private String clickUrl;
+    private String imageAdFilePath;
 
     private static AnalyticsManager analyticsManager;
     private AdListener adListener;
@@ -64,7 +65,7 @@ public final class Image360Activity extends Activity implements SurfaceHolder.Ca
     };
 
     // Native methods for Activity lifecyle
-    private native long onCreateNative(Activity activity, String appDir);
+    private native long onCreateNative(Activity activity, String appDir, String appFileName);
 
     private native void onStartNative(long handle);
 
@@ -76,7 +77,7 @@ public final class Image360Activity extends Activity implements SurfaceHolder.Ca
 
     private native void onDestroyNative(long handle);
 
-    // Native methods for Surface Lifecycle             WHY ARE THESE METHODS STATIC?
+    // Native methods for Surface Lifecycle
     public native void onSurfaceCreatedNative(long handle, Surface s);
 
     public native void onSurfaceChangedNative(long handle, Surface s);
@@ -113,6 +114,7 @@ public final class Image360Activity extends Activity implements SurfaceHolder.Ca
         // Fetch url to show when user clicks
         Intent intent = getIntent();
         this.clickUrl = intent.getStringExtra("clickUrl");
+        this.imageAdFilePath = intent.getStringExtra("imageAdFilePath");
 
         // Register an kill activity intent to destroy the activity when user is done and return to parent
         LocalBroadcastManager.getInstance(this).registerReceiver(new MessageHandler(),
@@ -128,7 +130,7 @@ public final class Image360Activity extends Activity implements SurfaceHolder.Ca
 
         // call native creation method for all the HMD magic with OVR
         String basePath = this.getFilesDir().getAbsolutePath();
-        this.mNativeHandle = this.onCreateNative(this, basePath);
+        this.mNativeHandle = this.onCreateNative(this, basePath, imageAdFilePath);
 
         // We draw everything in a surface embedded within the activity layout
         this.mView = new SurfaceView(this);
@@ -280,36 +282,31 @@ public final class Image360Activity extends Activity implements SurfaceHolder.Ca
         notificationManager2.notify(0, notification);
     }
 
-    public static void sendHMDParams(int param) {
-        Log.v(TAG, "JNI Sent Param " + param);
-        analyticsManager.push(new Event((new Timestamp(System.currentTimeMillis())).getTime(),
-                Event.EventType.ADCLICK,
-                Event.Priority.HIGH));
-    }
-
     public void getHMDParams() {
-        float[] hmdParams = this.getHMDParamsNative(this.mNativeHandle);
-        HashMap<String, Object> hmdEyeMap = new HashMap<>();
+        if(this.mNativeHandle != 0) {
+            float[] hmdParams = this.getHMDParamsNative(this.mNativeHandle);
+            HashMap<String, Object> hmdEyeMap = new HashMap<>();
 
-        String[] parameterKeys =
-                {"L00", "L01", "L02", "L03",
-                 "L10", "L11", "L12", "L13",
-                 "L20", "L21", "L22", "L23",
-                 "L30", "L31", "L32", "L33",
+            String[] parameterKeys =
+                            {"L00", "L01", "L02", "L03",
+                            "L10", "L11", "L12", "L13",
+                            "L20", "L21", "L22", "L23",
+                            "L30", "L31", "L32", "L33",
 
-                 "R00", "R01", "R02", "R03",
-                 "R10", "R11", "R12", "R13",
-                 "R20", "R21", "R22", "R23",
-                 "R30", "R31", "R32", "R33"};
+                            "R00", "R01", "R02", "R03",
+                            "R10", "R11", "R12", "R13",
+                            "R20", "R21", "R22", "R23",
+                            "R30", "R31", "R32", "R33"};
 
-        int i = 0;
-        for( String key : parameterKeys){
-            hmdEyeMap.put(key, hmdParams[i++]);
+            int i = 0;
+            for (String key : parameterKeys) {
+                hmdEyeMap.put(key, hmdParams[i++]);
+            }
+
+            Event event = new Event((new Timestamp(System.currentTimeMillis())).getTime(),
+                    Event.EventType.ADVIEWMETRICS,
+                    Event.Priority.LOW, hmdEyeMap);
+            analyticsManager.push(event);
         }
-
-        Event event = new Event((new Timestamp(System.currentTimeMillis())).getTime(),
-                Event.EventType.ADVIEWMETRICS,
-                Event.Priority.LOW, hmdEyeMap);
-        analyticsManager.push(event);
     }
 }

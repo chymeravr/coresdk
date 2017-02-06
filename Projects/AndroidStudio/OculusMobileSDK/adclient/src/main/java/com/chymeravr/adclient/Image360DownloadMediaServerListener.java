@@ -4,10 +4,15 @@ import android.util.Log;
 
 import com.android.volley.RequestQueue;
 import com.android.volley.VolleyError;
+import com.chymeravr.analytics.Event;
+import com.chymeravr.common.Config;
 
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.sql.Timestamp;
+import java.util.HashMap;
+
 
 /**
  * Created by robin_chimera on 1/23/2017.
@@ -16,14 +21,11 @@ import java.io.IOException;
 public class Image360DownloadMediaServerListener extends ServerListener<byte[]> {
 
     private final String TAG = "Image360MediaListener";
-    private Ad ad;
 
     public Image360DownloadMediaServerListener(Ad ad, RequestQueue requestQueue) {
         super(ad);
-        this.ad = ad;
-        // Explicitly set the singleton queue;
-        this.setRequestQueue(requestQueue);
 
+        this.setRequestQueue(requestQueue);
     }
 
     @Override
@@ -31,6 +33,10 @@ public class Image360DownloadMediaServerListener extends ServerListener<byte[]> 
 
         this.getAd().setLoading(false);
         this.getAd().getAdListener().onAdFailedToLoad();
+        HashMap<String, Object> errorMap = new HashMap<String, Object>();
+        errorMap.put("Error", error.toString());
+        this.getAd().getAnalyticsManager().push(new Event((new Timestamp(System.currentTimeMillis())).getTime(),
+                Event.EventType.ERROR, Event.Priority.LOW, errorMap));
         Log.e(TAG, "Error ", error);
     }
 
@@ -39,28 +45,26 @@ public class Image360DownloadMediaServerListener extends ServerListener<byte[]> 
         try {
             if (response!=null) {
 
-                File sd_path = this.ad.getContext().getFilesDir(); //Environment.getExternalStorageDirectory();
-                String dest_dir_path = sd_path + addLeadingSlash("chymeraSDKAssets/image360/");
+                File sd_path = this.getAd().getContext().getFilesDir();
+                String dest_dir_path = sd_path + addLeadingSlash(Config.Image360AdAssetDirectory);
                 File dest_dir = new File(dest_dir_path);
                 createDir(dest_dir);
 
-                Log.d(TAG, "image destination created");
-
                 FileOutputStream outputStream;
-                String name="image360Ad.png";
+                String name= getAd().getPlacementId() + ".jpg";
                 Log.d(TAG, "writing file to: " + dest_dir + name);
                 outputStream = new FileOutputStream(new File(dest_dir, name));
                 outputStream.write(response);
                 outputStream.close();
-                Log.i(TAG, "File download complete");
-                File lister = this.ad.getContext().getFilesDir();
 
                 this.getAd().onMediaServerResponseSuccess(response);
-
             }
-        } catch (Exception e) {
-            // TODO Auto-generated catch block
-            Log.d("KEY_ERROR", "UNABLE TO DOWNLOAD FILE");
+        } catch (IOException e) {
+            // send error logs to server
+            HashMap<String, Object> errorMap = new HashMap<String, Object>();
+            errorMap.put("Error", e.toString());
+            this.getAd().getAnalyticsManager().push(new Event((new Timestamp(System.currentTimeMillis())).getTime(),
+                    Event.EventType.ERROR, Event.Priority.LOW, errorMap));
             Log.e(TAG, "Error processing download file for media ad : " + e.toString());
         }
     }

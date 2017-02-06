@@ -20,6 +20,7 @@ import lombok.NonNull;
  * Created by robin_chimera on 12/2/2016.
  */
 
+// TODO: 2/3/2017 Update permissions with only relevant permissions 
 public class Util {
     public static Set<String> mandatoryPermissions =
             new HashSet<>(Arrays.asList(Manifest.permission.INTERNET,

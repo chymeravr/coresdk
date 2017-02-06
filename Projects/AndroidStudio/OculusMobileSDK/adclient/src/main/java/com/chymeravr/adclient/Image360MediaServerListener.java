@@ -5,6 +5,10 @@ import android.util.Log;
 
 import com.android.volley.RequestQueue;
 import com.android.volley.VolleyError;
+import com.chymeravr.analytics.Event;
+
+import java.sql.Timestamp;
+import java.util.HashMap;
 
 /**
  * Created by robin_chimera on 12/6/2016.
@@ -24,6 +28,10 @@ final class Image360MediaServerListener extends ServerListener<Bitmap> {
     public void onErrorResponse(VolleyError error) {
         this.getAd().setLoading(false);
         this.getAd().getAdListener().onAdFailedToLoad();
+        HashMap<String, Object> errorMap = new HashMap<String, Object>();
+        errorMap.put("Error", error.toString());
+        this.getAd().getAnalyticsManager().push(new Event((new Timestamp(System.currentTimeMillis())).getTime(),
+                Event.EventType.ERROR, Event.Priority.LOW, errorMap));
         Log.e(TAG, "Error ", error);
     }
 

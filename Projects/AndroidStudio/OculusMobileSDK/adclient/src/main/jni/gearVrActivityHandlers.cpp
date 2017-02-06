@@ -240,6 +240,7 @@ typedef struct {
     Image360 *Application;
     jobject Activity;
     const char *appDir;
+    const char *appFileName;
     bool Resumed;
     bool Started;
     pthread_t Thread;
@@ -320,8 +321,8 @@ void *AppThreadFunction(void *parm) {
             switch (mode) {
                 case CUBE_MAP_MODE_SINGLE_IMAGE:
                     textureImages.push_back(
-                            imagePNGLoader.loadImage(std::string(appThread->appDir)
-                                                     + std::string("/chymeraSDKAssets/image360/image360Ad.png")));
+                            imagePNGLoader.loadImage(std::string(appThread->appDir) + std::string("/")
+                                                     + std::string(appThread->appFileName)));
                     break;
                 case CUBE_MAP_MODE_SIX_IMAGES:
 
@@ -363,12 +364,13 @@ void *AppThreadFunction(void *parm) {
 }
 
 static void ovrAppThread_Create(ovrAppThread *appThread, JNIEnv *env, jobject activity,
-                                jstring appDir) {
+                                jstring appDir, jstring appFileName) {
     appThread->Thread = 0;
     appThread->Resumed = false;
     appThread->Started = false;
     appThread->NativeWindow = NULL;
     appThread->appDir = env->GetStringUTFChars(appDir, JNI_FALSE);
+    appThread->appFileName = env->GetStringUTFChars(appFileName, JNI_FALSE);
     ovrMessageQueue_Create(&appThread->MessageQueue);
 
     /* GL Model Factories for the application */
@@ -420,7 +422,6 @@ static void ovrAppThread_Create(ovrAppThread *appThread, JNIEnv *env, jobject ac
 static void ovrAppThread_Destroy(ovrAppThread *appThread, JNIEnv *env) {
     pthread_join(appThread->Thread, NULL);
     appThread->Application->deinitialize();
-//    appThread->mgr = NULL;
     ovrMessageQueue_Destroy(&appThread->MessageQueue);
 }
 
@@ -435,14 +436,14 @@ static void ovrAppThread_Destroy(ovrAppThread *appThread, JNIEnv *env) {
 
 JNIEXPORT jlong JNICALL
 Java_com_chymeravr_adclient_Image360Activity_onCreateNative(JNIEnv *env, jobject obj,
-                                                        jobject activity, jstring appDir) {
+                                                        jobject activity, jstring appDir, jstring appFilename) {
     ovrAppThread *appThread = (ovrAppThread *) malloc(sizeof(ovrAppThread));
 
     loggerFactory = std::unique_ptr<LoggerFactoryAndroid>(new LoggerFactoryAndroid());
     logger = loggerFactory->createLogger("Image360::Native Android");
     logger->log(LOG_DEBUG, "Native Logger Created Successfully");
 
-    ovrAppThread_Create(appThread, env, activity, appDir);
+    ovrAppThread_Create(appThread, env, activity, appDir, appFilename);
 
     ovrMessageQueue_Enable(&appThread->MessageQueue, true);
     ovrMessage message;

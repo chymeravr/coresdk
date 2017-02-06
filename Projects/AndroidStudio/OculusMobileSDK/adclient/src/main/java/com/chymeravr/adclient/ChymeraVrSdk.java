@@ -81,7 +81,7 @@ public final class ChymeraVrSdk {
         */
         if (!Util.checkMandatoryPermissions(context)) {
             Log.e(TAG,
-                    "Internet or Network State Access Permision has not been granted." +
+                    "One or more of the Mandatory Permisions required for SDK has not been granted." +
                             " The SDK failed to initialize.");
             return;
         }
@@ -101,7 +101,11 @@ public final class ChymeraVrSdk {
             Log.i(TAG, "Version Check Succeeded! " + VERSION.SDK_INT);
         }
 
+        // initialize volley asynchronous request queue
         webRequestQueue = WebRequestQueue.setInstance(context);
+
+        // Get configuration options from server
+        Config.fetchSdkConfig(webRequestQueue);
 
         analyticsManager = AnalyticsManager.getInstance(context, webRequestQueue);
         analyticsManager.initialize();
@@ -111,6 +115,7 @@ public final class ChymeraVrSdk {
     }
 
     public static void shutdown(){
+        // Shutdown must be called after intialize to release any allocated resources
         analyticsManager.shutdown();
     }
 
