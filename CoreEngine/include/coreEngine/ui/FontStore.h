@@ -24,7 +24,7 @@ namespace cl{
 		Scene *scene = nullptr;
 		std::string fontName = "";
 		ITextMaterialFactory *textMaterialFactory;
-		std::unordered_map< std::string, std::unordered_map<int, std::unique_ptr<Character> > > characters;
+		std::unordered_map< int, std::unordered_map<char, std::unique_ptr<Character> > > characters;
 	};
 }
 

@@ -78,7 +78,7 @@ namespace cl{
 					glm::ivec2(face->glyph->bitmap_left, face->glyph->bitmap_top),
 					face->glyph->advance.x));
 			
-			characters[fontName][fontSize] = std::move(character);
+			characters[fontSize][c] = std::move(character);
 		}
 		// Destroy FreeType once we're finished
 		FT_Done_Face(face);
@@ -90,7 +90,7 @@ namespace cl{
 
 	}
 
-	Character *getCharacter(char character, int fontSize){
-
+	Character *FontStore::getCharacter(char character, int fontSize){
+		return characters[fontSize][character].get();
 	}
 }
