@@ -1,0 +1,8 @@
+include ':appGVR', ':soil', ':analytics', ':adclient', ':common'//':Image360Ad'
+include ':coreEngine'
+include ':glImplementation'
+include ':image360'
+include ':renderer'
+include ':ovr_sdk_mobile'
+include ':image360AndroidNative'
+include ':appNoHMD'
