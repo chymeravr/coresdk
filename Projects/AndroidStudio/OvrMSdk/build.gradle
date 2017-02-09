@@ -21,7 +21,7 @@ allprojects {
     repositories {
         jcenter()
         flatDir {
-            dirs 'aar', 'C:\\Users\\robin_chimera\\Documents\\serving\\schemas\\target'
+            dirs 'aar'//, 'C:\\Users\\robin_chimera\\Documents\\serving\\schemas\\target'
         }
     }
 }
