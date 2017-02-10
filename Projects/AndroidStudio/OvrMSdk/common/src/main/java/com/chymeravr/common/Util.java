@@ -66,4 +66,10 @@ public class Util {
         }
         return map;
     }
+
+    public static Map<String, Object> getErrorMap(@NonNull Exception e){
+        Map<String, Object> errorMap = new HashMap<>();
+        errorMap.put("Error", e.toString());
+        return errorMap;
+    }
 }

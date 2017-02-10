@@ -2,7 +2,6 @@ package com.chymeravr.adclient;
 
 import android.app.ActivityManager;
 import android.content.Context;
-import android.graphics.Bitmap;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.net.wifi.WifiInfo;
@@ -11,10 +10,10 @@ import android.os.Build;
 import android.util.Log;
 
 import com.android.volley.Request;
-import com.android.volley.toolbox.ImageRequest;
 import com.android.volley.toolbox.JsonObjectRequest;
+import com.chymeravr.analytics.Event;
 import com.chymeravr.common.Config;
-import com.chymeravr.schemas.serving.AdFormat;
+import com.chymeravr.common.Util;
 import com.chymeravr.schemas.serving.Demographics;
 import com.chymeravr.schemas.serving.Device;
 import com.chymeravr.schemas.serving.Location;
@@ -29,32 +28,32 @@ import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.List;
 
-import lombok.Getter;
 import lombok.NonNull;
-import lombok.RequiredArgsConstructor;
 
 import static android.content.Context.ACTIVITY_SERVICE;
-import static android.graphics.Bitmap.Config.ARGB_8888;
 
 
 /**
  * Created by robin_chimera on 12/9/2016.
  */
 
-@RequiredArgsConstructor(suppressConstructorProperties = true)
 final class RequestGenerator {
+    private static final String TAG = "RequestGenerator";
 
-    @Getter
-    @NonNull
-    private final String placementId;
+    private Ad ad;
 
-    @Getter
-    @NonNull
-    private final AdFormat adType;
+    private AdServerListener adServerListener;
 
+    private Image360MediaServerListener mediaServerListener;
 
-    public JsonObjectRequest getAdServerJsonRequest(@NonNull AdRequest adRequest,
-                                                    @NonNull ServerListener<JSONObject> jsonServerListener) {
+    public RequestGenerator(Ad ad){
+        this.ad = ad;
+
+        this.adServerListener = new AdServerListener(this.ad);
+        this.mediaServerListener = new Image360MediaServerListener(this.ad);
+    }
+
+    public JsonObjectRequest getAdServerJsonRequest(@NonNull AdRequest adRequest) {
 
         long timestamp = new Timestamp(System.currentTimeMillis()).getTime();
 
@@ -63,12 +62,14 @@ final class RequestGenerator {
         String appId = ChymeraVrSdk.getApplicationId();
 
         List<Placement> placements = new ArrayList<Placement>();
-        placements.add(new Placement(this.getPlacementId(), this.getAdType()));
+        placements.add(new Placement(this.ad.getPlacementId(), this.ad.getAdFormat()));
 
-        Location loc = new Location(adRequest.getLocation().getLatitude(), adRequest.getLocation().getLongitude(),
+        Location loc = new Location(adRequest.getLocation().getLatitude(),
+                adRequest.getLocation().getLongitude(),
                 adRequest.getLocation().getAccuracy());
 
-        Demographics demo = new Demographics(adRequest.getBirthday().toString(), adRequest.getGender().getValue(),
+        Demographics demo = new Demographics(adRequest.getBirthday().toString(),
+                adRequest.getGender().getValue(),
                 adRequest.getEmail());
 
         ActivityManager actManager = (ActivityManager) ChymeraVrSdk.getContext().getSystemService(ACTIVITY_SERVICE);
@@ -83,14 +84,11 @@ final class RequestGenerator {
         NetworkInfo activeNetwork = cm.getActiveNetworkInfo();
         if (activeNetwork != null) { // connected to the internet
             if (activeNetwork.getType() == ConnectivityManager.TYPE_WIFI) {
-                // connected to wifi
                 connectivity = "Wifi";
             } else if (activeNetwork.getType() == ConnectivityManager.TYPE_MOBILE) {
-                // connected to the mobile provider's data plan
                 connectivity = "Mobile";
             }
         } else {
-            // not connected to the internet
             Log.e("RequestGenerator", "User currently not connected to the internet");
         }
 
@@ -109,10 +107,11 @@ final class RequestGenerator {
         try {
             jsonAdRequest = new JSONObject(servingRequestJson);
         } catch (JSONException e) {
-            e.printStackTrace();
+            Log.e(TAG, "Encountered a JSONException in creating ad request", e);
+            this.ad.emitEvent(Event.EventType.ERROR, Event.Priority.HIGH, Util.getErrorMap(e));
         }
         JsonObjectRequest requestResult = new JsonObjectRequest(Request.Method.POST, Config.adServer,
-                jsonAdRequest, jsonServerListener, jsonServerListener) {
+                jsonAdRequest, this.adServerListener, this.adServerListener) {
             // we need to overwrite the default content type.
             @Override
             public String getBodyContentType() {
@@ -123,14 +122,10 @@ final class RequestGenerator {
         return requestResult;
     }
 
-    public ImageRequest getMediaServerRequest(@NonNull String mediaUrl,
-                                              @NonNull ServerListener<Bitmap> mediaServerListener) {
-        return new ImageRequest(mediaUrl, mediaServerListener, 0, 0,
-                null, ARGB_8888, mediaServerListener);
-    }
 
-    public InputStreamVolleyRequest getMediaDownloadRequest(@NonNull String mediaUrl,
-                                                            @NonNull ServerListener<byte[]> mediaDownloadServerListener) {
-        return new InputStreamVolleyRequest(Request.Method.GET, mediaUrl, mediaDownloadServerListener, mediaDownloadServerListener, null);
+    public InputStreamVolleyRequest getMediaDownloadRequest(@NonNull String mediaUrl) {
+        return new InputStreamVolleyRequest(Request.Method.GET, mediaUrl,
+                this.mediaServerListener,
+                this.mediaServerListener, null);
     }
 }

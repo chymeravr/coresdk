@@ -2,43 +2,40 @@ package com.chymeravr.adclient;
 
 import android.util.Log;
 
-import com.android.volley.RequestQueue;
+import com.android.volley.Response;
 import com.android.volley.VolleyError;
 import com.chymeravr.analytics.Event;
+import com.chymeravr.common.Util;
 
 import org.json.JSONObject;
 
-import java.util.HashMap;
-
 import lombok.NonNull;
+import lombok.RequiredArgsConstructor;
 
 /**
  * Created by robin_chimera on 12/6/2016.
  */
 
-class AdServerListener extends ServerListener<JSONObject> {
+@RequiredArgsConstructor(suppressConstructorProperties = true)
+class AdServerListener implements Response.ErrorListener, Response.Listener<JSONObject> {//extends ServerListener<JSONObject> {
     private final String TAG = "AdServListener";
 
-    public AdServerListener(@NonNull Ad ad, @NonNull RequestQueue requestQueue) {
-        super(ad);
-        this.setRequestQueue(requestQueue);
-    }
+    @NonNull
+    private Ad ad;
 
     @Override
     public void onErrorResponse(VolleyError error) {
-        this.getAd().setLoading(false);
-        this.getAd().getAdListener().onAdFailedToLoad();
-
-        // send error logs to server
-        HashMap<String, Object> errorMap = new HashMap<String, Object>();
-        errorMap.put("Error", error.toString());
-        this.getAd().emitEvent(Event.EventType.ERROR, Event.Priority.LOW, errorMap);
         Log.e(TAG, "Error", error);
+
+        this.ad.setLoading(false);
+        this.ad.getAdListener().onAdFailedToLoad();
+        // send error logs to server
+        this.ad.emitEvent(Event.EventType.ERROR, Event.Priority.LOW, Util.getErrorMap(error));
     }
 
     @Override
     public void onResponse(JSONObject response) {
-        this.getAd().onAdServerResponseSuccess(response);
         Log.i(TAG, "Ad Server Response Success!");
+        this.ad.onAdServerResponseSuccess(response);
     }
 }

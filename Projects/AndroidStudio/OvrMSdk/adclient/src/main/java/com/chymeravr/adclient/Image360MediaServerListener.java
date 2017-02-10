@@ -1,41 +1,97 @@
 package com.chymeravr.adclient;
 
-import android.graphics.Bitmap;
 import android.util.Log;
 
-import com.android.volley.RequestQueue;
+import com.android.volley.Response;
 import com.android.volley.VolleyError;
 import com.chymeravr.analytics.Event;
+import com.chymeravr.common.Config;
 
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
 import java.util.HashMap;
 
+import lombok.NonNull;
+import lombok.RequiredArgsConstructor;
+
+
 /**
- * Created by robin_chimera on 12/6/2016.
+ * Created by robin_chimera on 1/23/2017.
  */
 
-final class Image360MediaServerListener extends ServerListener<Bitmap> {
+@RequiredArgsConstructor(suppressConstructorProperties = true)
+public class Image360MediaServerListener implements Response.ErrorListener,
+        Response.Listener<byte[]> {
+
     private final String TAG = "Image360MediaListener";
 
-    public Image360MediaServerListener(Ad ad, RequestQueue requestQueue) {
-        super(ad);
-        // Explicitly set the singleton queue;
-        this.setRequestQueue(requestQueue);
-
-    }
+    @NonNull
+    private Ad ad;
 
     @Override
     public void onErrorResponse(VolleyError error) {
-        this.getAd().setLoading(false);
-        this.getAd().getAdListener().onAdFailedToLoad();
+
+        this.ad.setLoading(false);
+        this.ad.getAdListener().onAdFailedToLoad();
         HashMap<String, Object> errorMap = new HashMap<String, Object>();
         errorMap.put("Error", error.toString());
-        this.getAd().emitEvent(Event.EventType.ERROR, Event.Priority.LOW, errorMap);
+        this.ad.emitEvent(Event.EventType.ERROR, Event.Priority.LOW, errorMap);
         Log.e(TAG, "Error ", error);
     }
 
     @Override
-    public void onResponse(Bitmap response) {
-        this.getAd().onMediaServerResponseSuccess(response);
-        Log.i(TAG, this.getClass() + " Media Server Response Success!");
+    public void onResponse(byte[] response) {
+        try {
+            if (response!=null) {
+
+                File sd_path = this.ad.getContext().getFilesDir();
+                String dest_dir_path = sd_path + addLeadingSlash(Config.Image360AdAssetDirectory);
+                File dest_dir = new File(dest_dir_path);
+                createDir(dest_dir);
+
+                FileOutputStream outputStream;
+                String name= this.ad.getPlacementId() + ".jpg";
+                Log.d(TAG, "writing file to: " + dest_dir + name);
+                outputStream = new FileOutputStream(new File(dest_dir, name));
+                outputStream.write(response);
+                outputStream.close();
+
+                this.ad.onMediaServerResponseSuccess();
+            }
+        } catch (IOException e) {
+            // send error logs to server
+            HashMap<String, Object> errorMap = new HashMap<String, Object>();
+            errorMap.put("Error", e.toString());
+            this.ad.emitEvent(Event.EventType.ERROR, Event.Priority.LOW, errorMap);
+            Log.e(TAG, "Error processing download file for media ad : " + e.toString());
+        }
+    }
+
+    public String addLeadingSlash(String path)
+    {
+        if (path.charAt(0) != '/')
+        {
+            path = "/" + path;
+        }
+        return path;
+    }
+
+    public void createDir(File dir) throws IOException
+    {
+        if (dir.exists())
+        {
+            if (!dir.isDirectory())
+            {
+                throw new IOException("Can't create directory, a file is in the way");
+            }
+        } else
+        {
+            dir.mkdirs();
+            if (!dir.isDirectory())
+            {
+                throw new IOException("Unable to create directory");
+            }
+        }
     }
 }

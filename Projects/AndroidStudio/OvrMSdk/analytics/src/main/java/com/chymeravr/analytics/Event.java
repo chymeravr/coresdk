@@ -1,6 +1,6 @@
 package com.chymeravr.analytics;
 
-import java.util.HashMap;
+import java.util.Map;
 
 import lombok.Getter;
 import lombok.NonNull;
@@ -31,7 +31,7 @@ public final class Event {
 
     @Getter
     @Setter
-    private HashMap<String, Object> params;
+    private Map<String, Object> params;
 
     @NonNull
     private String servingId;
@@ -40,7 +40,7 @@ public final class Event {
     private int instanceId = -1;
 
     public Event(Long timestamp, EventType eventType, Priority priority,
-                 HashMap<String, Object> params, String servingId,
+                 Map<String, Object> params, String servingId,
                  int instanceId){
 
         this.timestamp = timestamp;
