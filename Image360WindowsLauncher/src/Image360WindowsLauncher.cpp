@@ -28,6 +28,7 @@
 #include <coreEngine/components/transformTree/TransformTreeFactory.h>
 #include <glImplementation/factory/UniformColorFactoryGL.h>
 #include <coreEngine/ui/UIFactory.h>
+#include <glImplementation/ui/TextMaterialFactoryGL.h>
 
 using namespace std;
 using namespace cl;
@@ -766,7 +767,9 @@ int _tmain(int argc, _TCHAR** argv)
 	std::unique_ptr<IModelFactory> uiModelFactory(new ModelGLFactory(loggerFactory.get()));
 	std::unique_ptr<IUniformColorFactory> uiUniformColorFactory(new UniformColorFactoryGL());
 	std::unique_ptr<ITransformTreeFactory> uiTransformTreeFactory(new TransformTreeFactory(loggerFactory.get()));
-	std::unique_ptr<UIFactory> uiFactory(new UIFactory(loggerFactory.get(), std::move(uiModelFactory), std::move(uiUniformColorFactory), std::move(uiTransformTreeFactory)));
+
+	std::unique_ptr<ITextMaterialFactory> textMaterialFactory(new TextMaterialFactoryGL(loggerFactory.get()));
+	std::unique_ptr<UIFactory> uiFactory(new UIFactory(loggerFactory.get(), std::move(uiModelFactory), std::move(uiUniformColorFactory), std::move(uiTransformTreeFactory), std::move(textMaterialFactory)));
     application = std::unique_ptr<Image360>(new Image360(std::move(renderer),
         std::move(sceneFactory),
         std::move(modelFactory),

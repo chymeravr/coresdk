@@ -8,13 +8,11 @@
 namespace cl{
 	class Character{
 	public:
-		Character(Texture *texture, CL_Vec2 size, CL_Vec2 bearing, CL_GLuint advance){
-			this->texture = texture;
+		Character(CL_Vec2 size, CL_Vec2 bearing, CL_GLuint advance){
 			this->size = size;
 			this->bearing = bearing;
 			this->advance = advance;
 		}
-		Texture *texture;
 		CL_Vec2 size;
 		CL_Vec2 bearing;
 		CL_GLuint advance;

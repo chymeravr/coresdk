@@ -4,14 +4,16 @@
 #include FT_FREETYPE_H
 
 namespace cl{
-	FontStore::FontStore(Scene *scene, std::string fontName, ITextMaterialFactory *textMaterialFactory, ILoggerFactory *loggerFactory){
+	FontStore::FontStore(Scene *scene, std::string fontName, ITextMaterialFactory *textMaterialFactory, ShaderText *shaderText, ILoggerFactory *loggerFactory){
 		assert(scene != nullptr);
 		assert(textMaterialFactory != nullptr);
+		assert(shaderText != nullptr);
 		assert(loggerFactory != nullptr);
 		this->scene = scene;
 		this->fontName = fontName;
+		this->shaderText = shaderText;
 		this->textMaterialFactory = textMaterialFactory;
-		loggerFactory->createLogger("coreEngine::FontStore: ");
+		logger = loggerFactory->createLogger("coreEngine::FontStore: ");
 	}
 
 	void FontStore::loadFont(int fontSize){
@@ -22,7 +24,7 @@ namespace cl{
 
 		// Load font as face
 		FT_Face face;
-		if (FT_New_Face(ft, "fonts/arial.ttf", 0, &face))
+		if (FT_New_Face(ft, fontName.c_str(), 0, &face))
 			logger->log(LOG_ERROR, "ERROR::FREETYPE: Failed to load font");
 
 		// Set size to load glyphs as
@@ -37,44 +39,26 @@ namespace cl{
 				logger->log(LOG_ERROR, "ERROR::FREETYTPE: Failed to load Glyph");
 				continue;
 			}
-			/*
-			// Generate texture
-			GLuint texture;
-			glGenTextures(1, &texture);
-			glBindTexture(GL_TEXTURE_2D, texture);
-			glTexImage2D(
-				GL_TEXTURE_2D,
-				0,
-				GL_RED,
-				face->glyph->bitmap.width,
-				face->glyph->bitmap.rows,
-				0,
-				GL_RED,
-				GL_UNSIGNED_BYTE,
-				face->glyph->bitmap.buffer
-				);
-			// Set texture options
-			glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-			glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-			glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-			glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-			*/
+			std::string textureId = getTextureId(fontSize, c);
 
-			std::unique_ptr<Texture> textureUptr = textMaterialFactory->createTexture(fontName+"_"+std::to_string(fontSize)+"_"+std::string(1, c));
-			Texture *texture = textureUptr.get();
+			//std::unique_ptr<unsigned char> data(face->glyph->bitmap.buffer);
+			unsigned int arraySize = face->glyph->bitmap.width * face->glyph->bitmap.rows;
+			std::unique_ptr<unsigned char> data(new unsigned char[arraySize]);
+			for (unsigned int i = 0; i < arraySize; i++){
+				data.get()[i] = face->glyph->bitmap.buffer[i];
+			}
+			
+			std::unique_ptr<TextureText> textureUptr = textMaterialFactory->createTexture(textureId, 
+																						  face->glyph->bitmap.width,
+																						  face->glyph->bitmap.rows,
+																						  std::move(data));
+			textureUptr->setUnpackAlignment(1);
+			TextureText *texture = textureUptr.get();
 			scene->addToScene(std::move(textureUptr));
 			
-			texture->setHeight(face->glyph->bitmap.rows);
-			texture->setWidth(face->glyph->bitmap.width);
-			std::unique_ptr<unsigned char> data(face->glyph->bitmap.buffer);
-			texture->setTextureData(std::move(data));
-			//TODO create new texture for text with one channel usage only GL_RED
-			texture->setTextureDataSize(texture->getHeight() * texture->getWidth() * 4 * 4); //(height * width * channels * bytes/type)
-
 			// Now store character for later use
 			std::unique_ptr<Character> character(
-				new Character(texture,
-					glm::ivec2(face->glyph->bitmap.width, face->glyph->bitmap.rows),
+				new Character(glm::ivec2(face->glyph->bitmap.width, face->glyph->bitmap.rows),
 					glm::ivec2(face->glyph->bitmap_left, face->glyph->bitmap_top),
 					face->glyph->advance.x));
 			
@@ -83,7 +67,6 @@ namespace cl{
 		// Destroy FreeType once we're finished
 		FT_Done_Face(face);
 		FT_Done_FreeType(ft);
-
 	}
 
 	void FontStore::unloadFont(int fontSize){
@@ -91,6 +74,40 @@ namespace cl{
 	}
 
 	Character *FontStore::getCharacter(char character, int fontSize){
+		if (characters.find(fontSize) == characters.cend()){
+			loadFont(fontSize);
+		}
 		return characters[fontSize][character].get();
+	}
+
+	MaterialText *FontStore::getMaterial(TextStyle *textStyle, char c){
+		MaterialText *material = nullptr;
+		std::string materialId = getMaterialId(textStyle->color, textStyle->fontSize, c);
+		if (!scene->exists(materialId)){
+			TextureText *textureText = (TextureText*)scene->getFromScene(getTextureId(textStyle->fontSize, c));
+			std::unique_ptr<MaterialText> materialText = textMaterialFactory->createMaterial(materialId, shaderText, textureText);
+			materialText->setTextColor(textStyle->color);
+			assert(materialText != nullptr);
+			material = materialText.get();
+			scene->addToScene(std::move(materialText));
+		}
+		else{
+			material = (MaterialText*)scene->getFromScene(materialId);
+		}
+		return material;
+	}
+
+	std::string FontStore::getFontName(){
+		return this->fontName;
+	}
+
+	std::string FontStore::getTextureId(int fontSize, char c){
+		return fontName + "_" + std::to_string(fontSize) + "_" + std::string(1, c);
+	}
+
+	std::string FontStore::getMaterialId(CL_Vec4 color, int fontSize, char c){
+		std::string colorString = std::to_string(color[0]) + "_" + std::to_string(color[1]) + "_" + std::to_string(color[2]) + "_" + std::to_string(color[3]);
+		std::string materialId = this->getFontName() + "_" + std::to_string(fontSize) + "_" + colorString + "_" + std::string(1, c);
+		return materialId;
 	}
 }

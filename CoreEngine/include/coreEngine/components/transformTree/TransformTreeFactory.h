@@ -16,6 +16,9 @@ namespace cl{
 		std::unique_ptr<TransformTreeModel> createTransformTreeModel(Model *model){
 			return std::unique_ptr<TransformTreeModel>(new TransformTreeModel(model, loggerFactory));
 		}
+		std::unique_ptr<TransformTree> createTransformTree(){
+			return std::unique_ptr<TransformTree>(new TransformTree);
+		}
 	private:
 		ILoggerFactory *loggerFactory;
 	};

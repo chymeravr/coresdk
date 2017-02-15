@@ -20,6 +20,9 @@ set(SOURCES ${PROJECT_SOURCE_DIR}/src/renderObjects/CameraGL.cpp
 			${PROJECT_SOURCE_DIR}/src/renderObjects/TextureCubeMapGL.cpp
 			${PROJECT_SOURCE_DIR}/src/renderObjects/TextureGL.cpp
 			${PROJECT_SOURCE_DIR}/src/util/ShaderProgramUtil.cpp
+			${PROJECT_SOURCE_DIR}/src/ui/MaterialTextGL.cpp
+			${PROJECT_SOURCE_DIR}/src/ui/ShaderTextGL.cpp
+			${PROJECT_SOURCE_DIR}/src/ui/TextureTextGL.cpp
 )
 
 add_library(${PROJECT_NAME} STATIC ${INCLUDE_HEADERS} ${SOURCES})

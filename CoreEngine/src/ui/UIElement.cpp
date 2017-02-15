@@ -1,7 +1,10 @@
 #include <coreEngine/ui/UIElement.h>
+#include <assert.h>
 
 namespace cl{
 	void UIElement::addChild(std::string id, std::unique_ptr<UIElement> child){
+		assert(child->getTransformTree() != nullptr);
+		assert(this->transformTree != nullptr);
 		transformTree->addChild(child->getTransformTree());
 		children[id] = std::move(child);
 	}

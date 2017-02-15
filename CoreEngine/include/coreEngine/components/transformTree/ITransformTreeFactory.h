@@ -9,6 +9,7 @@ namespace cl{
 	public:
 		virtual std::unique_ptr<TransformTreeCamera> createTransformTreeCamera(Camera *camera) = 0;
 		virtual std::unique_ptr<TransformTreeModel> createTransformTreeModel(Model *model) = 0;
+		virtual std::unique_ptr<TransformTree> createTransformTree() = 0;
 	};
 }
 

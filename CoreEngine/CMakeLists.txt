@@ -24,6 +24,7 @@ set(SOURCES ${PROJECT_SOURCE_DIR}/src/components/transform/TransformCamera.cpp
 			${PROJECT_SOURCE_DIR}/src/renderObjects/ComponentList.cpp
 			${PROJECT_SOURCE_DIR}/src/renderObjects/Relation.cpp
 			${PROJECT_SOURCE_DIR}/src/renderObjects/Scene.cpp
+			${PROJECT_SOURCE_DIR}/src/ui/CharacterElement.cpp
 			${PROJECT_SOURCE_DIR}/src/ui/FontStore.cpp
 			${PROJECT_SOURCE_DIR}/src/ui/PlanarBackground.cpp
 			${PROJECT_SOURCE_DIR}/src/ui/TextElement.cpp

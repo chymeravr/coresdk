@@ -20,7 +20,6 @@ namespace cl{
 			IRenderable *renderable = (*it)->getRenderable();
 			renderable->initialize();
 		}
-
 		if (vertices.size() > 0) {
 			createVertexBuffer();
 		}

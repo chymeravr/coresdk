@@ -60,6 +60,7 @@ namespace cl{
 		std::unique_ptr<TransformTreeModel> transformTreeModel = transformTreeFactory->createTransformTreeModel(model);
 		transformTreeModel->setLocalPosition(localPosition);
 		transformTreeModel->setLocalRotation(localRotation);
+		this->setTransformTree(transformTreeModel.get());
 		ComponentList &componentList = model->getComponentList();
 		componentList.addComponent(std::move(transformTreeModel));
 	}

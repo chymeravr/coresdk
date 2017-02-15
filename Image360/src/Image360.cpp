@@ -214,7 +214,22 @@ namespace cl{
 		}
 
 		//Create UI Background
-		planarBackground = uiFactory->createPlanarBackground("test", scene.get(), CL_Vec4(0.0, 0.0, 0.5, 0.5), CL_Vec3(0.0, 0.0, -0.5), CL_Vec3(0.0, 0.0, 0.0), 0.4, 0.3);
+		planarBackground = uiFactory->createPlanarBackground("planar", scene.get(), CL_Vec4(0.0, 0.0, 0.5, 0.5), CL_Vec3(0.0, 0.0, -0.5), CL_Vec3(0.0, 0.0, 0.0), 0.4, 0.3);
+		std::unique_ptr<ShaderText> shaderTextUptr = uiFactory->getTextMaterialFactory()->createShader("textShader", scene.get());
+		assert(shaderTextUptr != nullptr);
+		ShaderText *shaderText = shaderTextUptr.get();
+		scene->addToScene(std::move(shaderTextUptr));
+		std::unique_ptr<FontStore> fontStore = uiFactory->createFontStore(scene.get(), "fonts/arial.ttf", shaderText);
+		
+		TextStyle textStyle;
+		textStyle.fontSize = 48;
+		textStyle.scale = 0.0009f;
+		textStyle.color = CL_Vec4(0.0, 1.0, 0.0, 1.0);
+
+		std::unique_ptr<TextElement> textElement = uiFactory->createTextElement("textElement", fontStore.get(), &textStyle, "Hello World!", CL_Vec3(-0.1, 0.0, 0.001), CL_Vec3(0.0, 0.0, 0.0), scene.get());
+
+		planarBackground->addChild("firstChild", std::move(textElement));
+
 		renderer->initialize(scene.get());
 	}
 

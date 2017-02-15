@@ -6,7 +6,9 @@ namespace cl{
 	public:
 		float lineHeight;
 		float characterWidth;
-		int fontSize;
+		float scale = 1.0f;
+		int fontSize = 16;
+		CL_Vec4 color = CL_Vec4(1.0, 1.0, 1.0, 1.0);
 	};
 }
 

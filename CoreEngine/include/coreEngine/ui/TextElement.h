@@ -6,27 +6,25 @@
 #include <coreEngine/ui/TextStyle.h>
 #include <coreEngine/factory/IModelFactory.h>
 #include <coreEngine/renderObjects/Scene.h>
+#include <coreEngine/ui/ITextMaterialFactory.h>
+#include <coreEngine/ui/ShaderText.h>
+#include <coreEngine/components/transformTree/ITransformTreeFactory.h>
 
 namespace cl{
-	class TextElement : UIElement{
+	class UIFactory;
+	class TextElement : public UIElement{
 	public:
-		TextElement(std::string id, FontStore *fontStore, TextStyle *textStyle, std::string text, Scene *scene, IModelFactory *modelFactory){
-			this->id = id;
-			this->modelId = id + "Model";
-			this->materialId = id + "Material";
-			this->shaderId = id + "Shader";
-			
-			for (int i = 0; i < text.size(); i++){
-				char c = text[i];
-				Character *character = fontStore->getCharacter(c, textStyle->fontSize);
-
-			}
-		}
+		TextElement(std::string id,
+			FontStore *fontStore,
+			TextStyle *textStyle,
+			std::string text,
+			ITransformTreeFactory *transformTreeFactory,
+			CL_Vec3 &localPosition,
+			CL_Vec3 &localRotation,
+			UIFactory *uiFactory,
+			Scene *scene);
 	private:
-		std::string id;
-		std::string modelId;
-		std::string materialId;
-		std::string shaderId;
+		std::unique_ptr<TransformTree> transformTreeUptr = nullptr;
 	};
 }
 
