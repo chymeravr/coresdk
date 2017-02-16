@@ -1,3 +1,4 @@
+cmake_minimum_required(VERSION 3.4.1)
 project(SOIL)
 
 #include the header files
@@ -16,5 +17,9 @@ set(SOURCES ${PROJECT_SOURCE_DIR}/src/image_DXT.c
 set(${PROJECT_NAME}_INCLUDE_DIRS ${INCLUDE_DIRS}
     CACHE INTERNAL "${PROJECT_NAME}: Include Directories" FORCE)
 
-add_library(${PROJECT_NAME} STATIC  ${INCLUDE_DIRS} ${SOURCES})
-target_link_libraries(${PROJECT_NAME} Image360WindowsLauncher)
+# android only builds shared libraries - for now. no idea how ovr did it
+add_library(${PROJECT_NAME} SHARED ${INCLUDE_DIRS} ${SOURCES})
+
+if(WINDOWS)
+	target_link_libraries(${PROJECT_NAME} Image360WindowsLauncher)
+endif()

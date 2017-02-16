@@ -33,7 +33,7 @@ extern "C" {
 #endif
 
 
-using namespace cl;
+//using namespace cl;               // causes error
 
 /*
  * TODO: Get rid of these ugly global variables
@@ -42,9 +42,9 @@ using namespace cl;
  */
 
 // Logger, Event Queue and Application
-std::unique_ptr<LoggerFactoryAndroid> loggerFactory = nullptr;
-std::unique_ptr<ILogger> logger = nullptr;
-std::unique_ptr<IEventQueue> eventQueue = nullptr;
+std::unique_ptr<cl::LoggerFactoryAndroid> loggerFactory = nullptr;
+std::unique_ptr<cl::ILogger> logger = nullptr;
+std::unique_ptr<cl::IEventQueue> eventQueue = nullptr;
 
 
 /*
@@ -237,7 +237,7 @@ enum {
 };
 
 typedef struct {
-    Image360 *Application;
+    cl::Image360 *Application;
     jobject Activity;
     const char *appDir;
     const char *appFileName;
@@ -252,7 +252,7 @@ typedef struct {
 void *AppThreadFunction(void *parm) {
     ovrAppThread *appThread = (ovrAppThread *) parm;
 
-    auto renderer = (RendererGearVR *) appThread->Application->getRenderer();
+    auto renderer = (cl::RendererGearVR *) appThread->Application->getRenderer();
 
     appThread->Application->start();
 
@@ -313,18 +313,18 @@ void *AppThreadFunction(void *parm) {
         }
 
         if (!appThread->Started) {
-            ImageBMPLoaderAndroid imageBMPLoader(logger.get());
-            ImagePNGLoader imagePNGLoader(logger.get());
-            std::vector<std::unique_ptr<Image> > textureImages;
-            TEXTURE_MAP_MODE mode = CUBE_MAP_MODE_SINGLE_IMAGE;
+            cl::ImageBMPLoaderAndroid imageBMPLoader(logger.get());
+            cl::ImagePNGLoader imagePNGLoader(logger.get());
+            std::vector<std::unique_ptr<cl::Image> > textureImages;
+            cl::TEXTURE_MAP_MODE mode = cl::CUBE_MAP_MODE_SINGLE_IMAGE;
 
             switch (mode) {
-                case CUBE_MAP_MODE_SINGLE_IMAGE:
+                case cl::CUBE_MAP_MODE_SINGLE_IMAGE:
                     textureImages.push_back(
                             imagePNGLoader.loadImage(std::string(appThread->appDir) + std::string("/")
                                                      + std::string(appThread->appFileName)));
                     break;
-                case CUBE_MAP_MODE_SIX_IMAGES:
+                case cl::CUBE_MAP_MODE_SIX_IMAGES:
 
                     textureImages.push_back(imageBMPLoader.loadImage(std::string(appThread->appDir)
                                                                      + std::string("/chymeraSDKAssets/image360/cubemap_geo_front.bmp")));
@@ -339,7 +339,7 @@ void *AppThreadFunction(void *parm) {
                     textureImages.push_back(imageBMPLoader.loadImage(std::string(appThread->appDir)
                                                                      + std::string("/chymeraSDKAssets/image360/cubemap_geo_bottom.bmp")));
                     break;
-                case EQUIRECTANGULAR_MAP_MODE:
+                case cl::EQUIRECTANGULAR_MAP_MODE:
                     textureImages.push_back(
                             imageBMPLoader.loadImage(std::string(appThread->appDir)
                                                      + std::string("/chymeraSDKAssets/image360/cubemap_geo_front.bmp")));
@@ -374,35 +374,35 @@ static void ovrAppThread_Create(ovrAppThread *appThread, JNIEnv *env, jobject ac
     ovrMessageQueue_Create(&appThread->MessageQueue);
 
     /* GL Model Factories for the application */
-    std::unique_ptr<SceneGLFactory> sceneFactory(new SceneGLFactory(loggerFactory.get()));
-    std::unique_ptr<ModelGLFactory> modelFactory(new ModelGLFactory(loggerFactory.get()));
+    std::unique_ptr<cl::SceneGLFactory> sceneFactory(new cl::SceneGLFactory(loggerFactory.get()));
+    std::unique_ptr<cl::ModelGLFactory> modelFactory(new cl::ModelGLFactory(loggerFactory.get()));
 
     /* need a separate Camera for OVR due to the way it gives us access to view and projection
      * matrices for each of the eye
      */
-    std::unique_ptr<CameraGLOVRFactory> cameraFactory(new CameraGLOVRFactory(loggerFactory.get()));
+    std::unique_ptr<cl::CameraGLOVRFactory> cameraFactory(new cl::CameraGLOVRFactory(loggerFactory.get()));
 
     /*
      * Separate Texture Factories for OpenGLES - shader language is separate
      */
-    std::unique_ptr<DiffuseTextureGLES3Factory> diffuseTextureFactory(
-            new DiffuseTextureGLES3Factory(loggerFactory.get()));
-    std::unique_ptr<DiffuseTextureCubeMapGLES3Factory> diffuseTextureCubeMapFactory(
-            new DiffuseTextureCubeMapGLES3Factory(loggerFactory.get()));
+    std::unique_ptr<cl::DiffuseTextureGLES3Factory> diffuseTextureFactory(
+            new cl::DiffuseTextureGLES3Factory(loggerFactory.get()));
+    std::unique_ptr<cl::DiffuseTextureCubeMapGLES3Factory> diffuseTextureCubeMapFactory(
+            new cl::DiffuseTextureCubeMapGLES3Factory(loggerFactory.get()));
 
-    std::unique_ptr<RendererGearVR> renderer(
-            new RendererGearVR(env, activity, loggerFactory.get()));
+    std::unique_ptr<cl::RendererGearVR> renderer(
+            new cl::RendererGearVR(env, activity, loggerFactory.get()));
 
-    std::unique_ptr<TransformCameraFactory> transformCameraFactory(
-            new TransformCameraFactory(loggerFactory.get()));
-    std::unique_ptr<TransformModelFactory> transformModelFactory(
-            new TransformModelFactory(loggerFactory.get()));
+    std::unique_ptr<cl::TransformCameraFactory> transformCameraFactory(
+            new cl::TransformCameraFactory(loggerFactory.get()));
+    std::unique_ptr<cl::TransformModelFactory> transformModelFactory(
+            new cl::TransformModelFactory(loggerFactory.get()));
 
 
-    std::unique_ptr<MutexLockAndroid> mutexLock(new MutexLockAndroid);
-    eventQueue = std::unique_ptr<IEventQueue>(new EventQueue(std::move(mutexLock)));
+    std::unique_ptr<cl::MutexLockAndroid> mutexLock(new cl::MutexLockAndroid);
+    eventQueue = std::unique_ptr<cl::IEventQueue>(new cl::EventQueue(std::move(mutexLock)));
 
-    appThread->Application = new Image360(std::move(renderer),
+    appThread->Application = new cl::Image360(std::move(renderer),
                                     std::move(sceneFactory),
                                     std::move(modelFactory),
                                     std::move(diffuseTextureFactory),
@@ -439,9 +439,9 @@ Java_com_chymeravr_adclient_Image360Activity_onCreateNative(JNIEnv *env, jobject
                                                         jobject activity, jstring appDir, jstring appFilename) {
     ovrAppThread *appThread = (ovrAppThread *) malloc(sizeof(ovrAppThread));
 
-    loggerFactory = std::unique_ptr<LoggerFactoryAndroid>(new LoggerFactoryAndroid());
+    loggerFactory = std::unique_ptr<cl::LoggerFactoryAndroid>(new cl::LoggerFactoryAndroid());
     logger = loggerFactory->createLogger("Image360::Native Android");
-    logger->log(LOG_DEBUG, "Native Logger Created Successfully");
+    logger->log(cl::LOG_DEBUG, "Native Logger Created Successfully");
 
     ovrAppThread_Create(appThread, env, activity, appDir, appFilename);
 
@@ -456,7 +456,7 @@ Java_com_chymeravr_adclient_Image360Activity_onCreateNative(JNIEnv *env, jobject
 
 JNIEXPORT void JNICALL
 Java_com_chymeravr_adclient_Image360Activity_onStartNative(JNIEnv *env, jobject obj, jlong handle) {
-    logger->log(LOG_DEBUG, "onStartNative()");
+    logger->log(cl::LOG_DEBUG, "onStartNative()");
     ovrAppThread *appThread = (ovrAppThread *) ((size_t) handle);
 
     ovrMessage message;
@@ -467,7 +467,7 @@ Java_com_chymeravr_adclient_Image360Activity_onStartNative(JNIEnv *env, jobject 
 JNIEXPORT void JNICALL
 Java_com_chymeravr_adclient_Image360Activity_onResumeNative(JNIEnv *env, jobject obj, jlong handle) {
     ovrAppThread *appThread = (ovrAppThread *) ((size_t) handle);
-    logger->log(LOG_DEBUG, "onResumeNative()");
+    logger->log(cl::LOG_DEBUG, "onResumeNative()");
 
     ovrMessage message;
     ovrMessage_Init(&message, MESSAGE_ON_RESUME, MQ_WAIT_PROCESSED);
@@ -477,7 +477,7 @@ Java_com_chymeravr_adclient_Image360Activity_onResumeNative(JNIEnv *env, jobject
 JNIEXPORT void JNICALL
 Java_com_chymeravr_adclient_Image360Activity_onPauseNative(JNIEnv *env, jobject obj, jlong handle) {
     ovrAppThread *appThread = (ovrAppThread *) ((size_t) handle);
-    logger->log(LOG_DEBUG, "onPauseNative()");
+    logger->log(cl::LOG_DEBUG, "onPauseNative()");
 
     ovrMessage message;
     ovrMessage_Init(&message, MESSAGE_ON_PAUSE, MQ_WAIT_PROCESSED);
@@ -487,7 +487,7 @@ Java_com_chymeravr_adclient_Image360Activity_onPauseNative(JNIEnv *env, jobject 
 JNIEXPORT void JNICALL
 Java_com_chymeravr_adclient_Image360Activity_onStopNative(JNIEnv *env, jobject obj, jlong handle) {
     ovrAppThread *appThread = (ovrAppThread *) ((size_t) handle);
-    logger->log(LOG_DEBUG, "onStopNative()");
+    logger->log(cl::LOG_DEBUG, "onStopNative()");
 
     ovrMessage message;
     ovrMessage_Init(&message, MESSAGE_ON_STOP, MQ_WAIT_PROCESSED);
@@ -499,7 +499,7 @@ JNIEXPORT void JNICALL
 Java_com_chymeravr_adclient_Image360Activity_onDestroyNative(JNIEnv *env, jobject obj,
                                                             jlong handle) {
     ovrAppThread *appThread = (ovrAppThread *) ((size_t) handle);
-    logger->log(LOG_DEBUG, "onDestroyNative()");
+    logger->log(cl::LOG_DEBUG, "onDestroyNative()");
 
     ovrMessage message;
     ovrMessage_Init(&message, MESSAGE_ON_DESTROY, MQ_WAIT_PROCESSED);
@@ -521,7 +521,7 @@ Java_com_chymeravr_adclient_Image360Activity_onDestroyNative(JNIEnv *env, jobjec
 JNIEXPORT void JNICALL
 Java_com_chymeravr_adclient_Image360Activity_onSurfaceCreatedNative(JNIEnv *env, jobject obj,
                                                                    jlong handle, jobject surface) {
-    logger->log(LOG_DEBUG, "onSurfaceCreatedNative() Begin");
+    logger->log(cl::LOG_DEBUG, "onSurfaceCreatedNative() Begin");
     ovrAppThread *appThread = (ovrAppThread *) ((size_t) handle);
     ANativeWindow *newNativeWindow = ANativeWindow_fromSurface(env, surface);
 
@@ -530,9 +530,9 @@ Java_com_chymeravr_adclient_Image360Activity_onSurfaceCreatedNative(JNIEnv *env,
         // the orientation even though android:screenOrientation = "landscape" is set in the
         // manifest. The choreographer callback will also never be called for this surface because
         // The surface is immediately replaced with a new surface with the correct orientation.
-        logger->log(LOG_ERROR, " Surface not in landscape model! ");
+        logger->log(cl::LOG_ERROR, " Surface not in landscape model! ");
     }
-    logger->log(LOG_DEBUG, "       NativeWindow = ANativeWIndow_fromSurface( env, surface )");
+    logger->log(cl::LOG_DEBUG, "       NativeWindow = ANativeWIndow_fromSurface( env, surface )");
 
 
     appThread->NativeWindow = newNativeWindow;
@@ -546,7 +546,7 @@ JNIEXPORT void JNICALL
 Java_com_chymeravr_adclient_Image360Activity_onSurfaceChangedNative(JNIEnv *env, jobject obj,
                                                                    jlong handle, jobject surface) {
     ovrAppThread *appThread = (ovrAppThread *) ((size_t) handle);
-    logger->log(LOG_DEBUG, "onSurfaceChangedNative()");
+    logger->log(cl::LOG_DEBUG, "onSurfaceChangedNative()");
 
     ANativeWindow *newNativeWindow = ANativeWindow_fromSurface(env, surface);
     if (ANativeWindow_getWidth(newNativeWindow) < ANativeWindow_getHeight(newNativeWindow)) {
@@ -588,7 +588,7 @@ JNIEXPORT void JNICALL
 Java_com_chymeravr_adclient_Image360Activity_onSurfaceDestroyedNative(JNIEnv *env, jobject obj,
                                                                      jlong handle) {
     ovrAppThread *appThread = (ovrAppThread *) ((size_t) handle);
-    logger->log(LOG_DEBUG, "onSurfaceDestroyedNative()");
+    logger->log(cl::LOG_DEBUG, "onSurfaceDestroyedNative()");
 
     ovrMessage message;
     ovrMessage_Init(&message, MESSAGE_ON_SURFACE_DESTROYED, MQ_WAIT_PROCESSED);
@@ -641,12 +641,12 @@ Java_com_chymeravr_adclient_Image360Activity_onTouchEventNative(JNIEnv *env, job
 JNIEXPORT jfloatArray JNICALL
 Java_com_chymeravr_adclient_Image360Activity_getHMDParamsNative(JNIEnv *env, jobject obj,
                                                                 jlong handle) {
-    logger->log(LOG_DEBUG, "Fetching HMD parameters");
+    logger->log(cl::LOG_DEBUG, "Fetching HMD parameters");
     jfloatArray result;
     result = env->NewFloatArray(32);
 
     ovrAppThread *appThread = (ovrAppThread *) ((size_t) handle);
-    auto renderer = (RendererGearVR *) appThread->Application->getRenderer();
+    auto renderer = (cl::RendererGearVR *) appThread->Application->getRenderer();
 
     auto hmdParams = renderer->getHMDParams();
 

@@ -1,65 +1,106 @@
-apply plugin: 'com.android.model.native'
+apply plugin: 'com.android.library'
 
-def coreEngineRoot = "../../../../CoreEngine"
-def confRoot = "../../../../Conf"
-def glmRoot = "../../../../Repository/thirdParty/glm/glm-0.9.7.6/"
-def rendererRoot = "../../../../Renderer"
+def coreEngineModule = "${rootProject.rootDir}/coreEngine"
+def rendererModule = "${rootProject.rootDir}/renderer"
+def distributionDir = "${rootProject.rootDir}/distribution"
 
-model {
+android {
+    compileSdkVersion 23
+    buildToolsVersion "23.0.3"
 
-    android {
-        compileSdkVersion = 23
-        buildToolsVersion = "23.0.3"
+    defaultConfig {
+        minSdkVersion 19
+        targetSdkVersion 23
+        versionCode 1
+        versionName "1.0"
 
-        defaultConfig {
-            minSdkVersion.apiLevel = 19
-            targetSdkVersion.apiLevel = 23
-            versionCode = 1
-            versionName = "1.0"
-        }
+//        testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
 
-        buildTypes {
-            release {
-                minifyEnabled = false
-                proguardFiles.add(file('proguard-android.txt'))
+        externalNativeBuild {
+            cmake {
+                // when using arguments, the latest (cmake version 3.6+, android studio
+                // beta2+) must be used to compile
+
+                // I have to use gcc to compile, clang compiled code generate error
+                // at run time for any std::queue etc.
+                targets 'Renderer'
+                arguments = ['-DANDROID_STL=gnustl_shared', '-DANDROID_NATIVE_API_LEVEL=android-23']
+
+                cppFlags = ["-DGLES2_0", "-std=c++11", "-frtti", "-fexceptions"]
+
+                abiFilters 'armeabi-v7a'
             }
         }
-
-        ndk{
-            moduleName = "renderer"
-            cppFlags.add("-std=c++11")
-            cppFlags.add("-frtti ")
-            cppFlags.add("-fexceptions")
-            // -I cppFlag -I is used for include files. In absence of this files will not recognize include statement with <> brackets
-            cppFlags.add("-I" + file("${glmRoot}/glm").absolutePath)
-            cppFlags.add("-I" + file("${confRoot}/include").absolutePath)
-            cppFlags.add("-I" + file("${coreEngineRoot}/include").absolutePath)
-            cppFlags.add("-I" + file("${rendererRoot}/include").absolutePath)
-            cppFlags.addAll(project.properties.commonCPPFlags)
-            stl = "gnustl_shared"
-
-            ldLibs.addAll(["log", "android"])
-
-            abiFilters.addAll(['armeabi-v7a'])
-
+    }
+    buildTypes {
+        debug{
+            minifyEnabled false
+            jniDebuggable true
+//            preBuild.dependsOn('copyDependCoreEngineDebugLib')
         }
-        sources{
-            main{
-                jni{
-                    source{
-                        srcDir "${rendererRoot}/src"
-                    }
-                    dependencies{
-                        project ':coreEngine' linkage 'shared'
-                    }
-                }
-
-            }
+        release {
+            minifyEnabled false
+//            preBuild.dependsOn('copyDependCoreEngineReleaseLib')
+            proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
         }
+    }
+    externalNativeBuild {
+        cmake {
+            path '../../../../Renderer/CMakeLists.txt'
+        }
+    }
 
+    sourceSets {
+        main {
+            jniLibs.srcDirs = ["${distributionDir}/coreEngine"]
+        }
     }
 }
 
+//dependencies {
+//    compile fileTree(dir: 'libs', include: ['*.jar'])
+//    androidTestCompile('com.android.support.test.espresso:espresso-core:2.2.2', {
+//        exclude group: 'com.android.support', module: 'support-annotations'
+//    })
+//    compile 'com.android.support:appcompat-v7:24.2.1'
+//    testCompile 'junit:junit:4.12'
+//}
+
+//task copyDependCoreEngineReleaseLib(type: Copy){
+//    from "${coreEngineModule}/build/intermediates/cmake/release/obj/armeabi-v7a/libCoreEngine.so"
+//    into "${rendererModule}//libs"
+//}
+//
+//task copyDependCoreEngineDebugLib(type: Copy) {
+//    from "${coreEngineModule}/build/intermediates/cmake/debug/obj/armeabi-v7a/libCoreEngine.so"
+//    into "${rendererModule}/libs"
+//}
+
 task clean(type: Delete) {
     delete "${rootProject.rootDir}/renderer/build"
+    delete fileTree(dir: 'libs', include: '*.so')
+}
+
+task distributeDebugLib (type : Copy) {
+    // trigger build library
+    dependsOn "assembleDebug"
+    from "${rendererModule}/build/intermediates/cmake/debug/obj/armeabi-v7a/libRenderer.so"
+    into "${distributionDir}/renderer/armeabi-v7a/"
+
+}
+
+task(distributeReleaseLib, type : Copy) {
+    // trigger build library
+    dependsOn "assembleRelease"
+    from "${rendererModule}/build/intermediates/cmake/release/obj/armeabi-v7a/libRenderer.so"
+    into "${distributionDir}/renderer/armeabi-v7a/"
+}
+
+tasks.whenTaskAdded { task ->
+    if (task.name.contains('compileDebug')) {
+        task.dependsOn ':coreEngine:distributeDebugLib'
+    }
+    else if(task.name.contains('compileRelease')) {
+        task.dependsOn ':coreEngine:distributeReleaseLib'
+    }
 }

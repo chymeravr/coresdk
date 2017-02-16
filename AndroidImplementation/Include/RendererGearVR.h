@@ -15,7 +15,6 @@
 #include <android/native_window.h>                                                                  // requires ndk r5 or newer
 #include <android/native_window_jni.h>                                                              // requires ndk r5 or newer
 #include <coreEngine/util/ILogger.h>
-#include <CameraGLOVR.h>
 
 #include <android/log.h>
 

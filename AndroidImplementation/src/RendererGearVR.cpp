@@ -722,6 +722,7 @@ namespace cl {
             logger->log(LOG_ERROR,
                         "Thread priority security exception. Make sure the APK is signed."
                                 "VrApi initialization error.");
+            return false;
         }
         logger->log(LOG_DEBUG, "eglParams.createEGLContext()");
 
@@ -744,6 +745,7 @@ namespace cl {
          */
 
         ovrRenderer_Create(&this->OVRRenderer, &java, this->useMultiView);
+        return true;
     }
 
     bool RendererGearVR::initialize(Scene *scene) {

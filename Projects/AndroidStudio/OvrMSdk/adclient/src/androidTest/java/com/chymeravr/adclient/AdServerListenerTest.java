@@ -31,7 +31,7 @@ to make network requests
 public class AdServerListenerTest {
     private static final String TAG = "AdServerListenerTest";
     private Context appContext = InstrumentationRegistry.getTargetContext();
-    private ServerListener adServerListener;
+    private AdServerListener adServerListener;
 
     private VolleyError mockVolleyError;
     private Ad mockAd;
@@ -62,14 +62,14 @@ public class AdServerListenerTest {
             public void onAdLeftApplication() {
             }
         };
-        this.mockAd = new FakeAd(appContext, mockAdListener);
+        this.mockAd = new FakeAd(appContext, mockAdListener, null, null);
         this.mockAd.loadAd(null);
         this.jsonResponseObject = new JSONObject();
         this.jsonResponseObject.put("url", "");
 
         this.adServerListener = new AdServerListener(mockAd);
 
-        this.adServerListener.setRequestQueue(null);
+//        this.adServerListener.setRequestQueue(null);
 
     }
 
@@ -80,8 +80,8 @@ public class AdServerListenerTest {
 
     @Test()
     public void onErrorResponseTest() throws Exception {
-        Assert.assertTrue(this.adServerListener.getAd().isLoading());
+        Assert.assertTrue(this.mockAd.isLoading());
         this.adServerListener.onErrorResponse(mockVolleyError);
-        Assert.assertFalse(this.adServerListener.getAd().isLoading());
+        Assert.assertFalse(this.mockAd.isLoading());
     }
 }

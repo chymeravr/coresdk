@@ -30,9 +30,9 @@ public class ActivityGearVR extends Activity {
         Log.d(TAG, "onCreate()");
         super.onCreate(icicle);
 
-        ChymeraVrSdk.initialize(this, "myapp");
+        ChymeraVrSdk.initialize(this, "89ec2db1-284e-44af-968e-0618103f89c8");
 
-        this.image360TestAd = new Image360Ad("1uuid", this, new AdListener() {
+        this.image360TestAd = new Image360Ad("3efc7f15-33a6-4480-bb71-3bd74aca4f1f", this, new AdListener() {
             @Override
             public void onAdLoaded() {
             }

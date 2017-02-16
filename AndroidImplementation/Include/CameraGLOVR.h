@@ -16,8 +16,8 @@ namespace cl{
         bool initialize();
         void draw();
         void deinitialize();
-        CL_Mat44 setViewMatrix(CL_Mat44 viewMatrix);
-        CL_Mat44 setProjectionMatrix(CL_Mat44 viewMatrix);
+        void setViewMatrix(CL_Mat44 viewMatrix);
+        void setProjectionMatrix(CL_Mat44 viewMatrix);
         void calculateViewMatrix();
         void calculateProjectionMatrix();
     private:
