@@ -96,7 +96,7 @@ namespace cl{
 	
 	void TransformTree::markAllDescendantsDirty(){
 		setIsDirty(true);
-		for (auto it = children.cbegin(); it != children.cend(); it++){
+		for (auto it = children.begin(); it != children.end(); it++){
 			(*it)->markAllDescendantsDirty();
 		}
 	}

@@ -14,7 +14,8 @@ namespace cl{
 					   std::unique_ptr<IDiffuseTextureFactory> diffuseTextureFactory,
 					   std::unique_ptr<IDiffuseTextureCubeMapFactory> diffuseTextureCubeMapFactory,
 					   std::unique_ptr<ITransformCameraFactory> transformCameraFactory,
-					   std::unique_ptr<ITransformModelFactory> transformModelFactory, 
+					   std::unique_ptr<ITransformModelFactory> transformModelFactory,
+					   std::unique_ptr<ITransformTreeFactory> transformTreeFactory,
 					   std::unique_ptr<ICameraFactory> cameraFactory,
 					   IEventQueue *eventQueue, 
 					   ILoggerFactory *loggerFactory,
@@ -26,6 +27,7 @@ namespace cl{
 		assert(diffuseTextureCubeMapFactory != nullptr);
 		assert(transformCameraFactory != nullptr);
 		assert(transformModelFactory != nullptr);
+		assert(transformTreeFactory != nullptr);
 		assert(eventQueue != nullptr);
 		assert(cameraFactory != nullptr);
 		assert(uiFactory != nullptr);
@@ -36,6 +38,7 @@ namespace cl{
 		this->diffuseTextureCubeMapFactory = std::move(diffuseTextureCubeMapFactory);
 		this->transformCameraFactory = std::move(transformCameraFactory);
 		this->transformModelFactory = std::move(transformModelFactory);
+		this->transformTreeFactory = std::move(transformTreeFactory);
 		this->cameraFactory = std::move(cameraFactory);
 		this->eventQueue = eventQueue;
 		this->logger = loggerFactory->createLogger("image360::Image360: ");
@@ -59,7 +62,7 @@ namespace cl{
 		camera->setAspect(1.5f);
 		camera->setFarPlane(100.0f);
 		camera->setFov(1.5f);
-		camera->setNearPlane(0.1f);
+		camera->setNearPlane(0.001f);
 		this->camera = camera.get();
 		scene->addToScene(std::move(camera));
 
@@ -67,7 +70,7 @@ namespace cl{
 		assert(imageContainer != nullptr);
 		this->imageContainer = imageContainer.get();
 		scene->addToScene(std::move(imageContainer));
-
+		TransformTreeCamera *transformTreeCamera = nullptr;
 		if (mapMode == EQUIRECTANGULAR_MAP_MODE){
 			std::unique_ptr<ShaderDiffuseTexture> shaderDiffuseTexture;
 			std::unique_ptr<MaterialDiffuseTexture> materialDiffuseTexture;
@@ -94,16 +97,15 @@ namespace cl{
 			this->imageTexture = imageTexture.get();
 			scene->addToScene(std::move(imageTexture));
 			((MaterialDiffuseTexture*)this->material)->setDiffuseTexture(this->imageTexture);
-
-			std::unique_ptr<TransformCamera> transformCameraUptr = transformCameraFactory->create(this->camera);
-			this->camera->getComponentList().addComponent(std::move(transformCameraUptr));
+			std::unique_ptr<TransformTreeCamera> transformTreeCameraUptr = transformTreeFactory->createTransformTreeCamera(this->camera);
+			this->camera->getComponentList().addComponent(std::move(transformTreeCameraUptr));
 
 			std::unique_ptr<TransformModel> transformSphereUptr = transformModelFactory->create(this->imageContainer);
 			this->imageContainer->getComponentList().addComponent(std::move(transformSphereUptr));
 
-			TransformCamera *transformCamera = (TransformCamera*)this->camera->getComponentList().getComponent("transform");
-			transformCamera->setPosition(CL_Vec3(0.0f, 0.0f, 0.0f));
-			transformCamera->setRotation(CL_Vec3(0.0f, 0.0f, 0.0f));
+			transformTreeCamera = (TransformTreeCamera*)this->camera->getComponentList().getComponent("transformTree");
+			transformTreeCamera->setLocalPosition(CL_Vec3(0.0f, 0.0f, 0.0f));
+			transformTreeCamera->setLocalRotation(CL_Vec3(0.0f, 0.0f, 0.0f));
 
 			TransformModel *transformSphere = (TransformModel*)this->imageContainer->getComponentList().getComponent("transform");
 			transformSphere->setPosition(CL_Vec3(0.0f, 0.0f, 0.0f));
@@ -193,15 +195,15 @@ namespace cl{
 			scene->addToScene(std::move(textureUPtr));
 			((MaterialDiffuseTextureCubeMap*)this->material)->setDiffuseTexture(this->imageTexture);
 
-			std::unique_ptr<TransformCamera> transformCameraUptr = transformCameraFactory->create(this->camera);
-			this->camera->getComponentList().addComponent(std::move(transformCameraUptr));
+			std::unique_ptr<TransformTreeCamera> transformTreeCameraUptr = transformTreeFactory->createTransformTreeCamera(this->camera);
+			this->camera->getComponentList().addComponent(std::move(transformTreeCameraUptr));
 
 			std::unique_ptr<TransformModel> transformSphereUptr = transformModelFactory->create(this->imageContainer);
 			this->imageContainer->getComponentList().addComponent(std::move(transformSphereUptr));
 
-			TransformCamera *transformCamera = (TransformCamera*)this->camera->getComponentList().getComponent("transform");
-			transformCamera->setPosition(CL_Vec3(0.0f, 0.0f, 0.0f));
-			transformCamera->setRotation(CL_Vec3(0.0f, 0.0f, 0.0f));
+			transformTreeCamera = (TransformTreeCamera*)this->camera->getComponentList().getComponent("transformTree");
+			transformTreeCamera->setLocalPosition(CL_Vec3(0.0f, 0.0f, 0.0f));
+			transformTreeCamera->setLocalRotation(CL_Vec3(0.0f, 0.0f, 0.0f));
 
 			TransformModel *transformSphere = (TransformModel*)this->imageContainer->getComponentList().getComponent("transform");
 			transformSphere->setPosition(CL_Vec3(0.0f, 0.0f, 0.0f));
@@ -230,6 +232,8 @@ namespace cl{
 		std::unique_ptr<TextElement> closeElement = uiFactory->createTextElement("closeElement", fontStore.get(), &textStyle, "Close", CL_Vec3(-0.02, -0.005, 0.001), CL_Vec3(0.0, 0.0, 0.0), scene.get());
 		closeBackground->addChild("child2", std::move(closeElement));
 		
+		reticle = uiFactory->createReticle("reticle", scene.get(), transformTreeCamera, CL_Vec4(0.0, 1.0, 0.0, 1.0));
+
 		renderer->initialize(scene.get());
 	}
 
@@ -259,9 +263,10 @@ namespace cl{
 		if (lastPassiveMousePositionX != -1){
 			float xoff = (x - lastPassiveMousePositionX)*passiveMouseMotionSensitivity;
 			float yoff = (lastPassiveMousePositionY - y)*passiveMouseMotionSensitivity;
-			Transform *transform = (Transform*)camera->getComponentList().getComponent("transform");
-			CL_Vec3 rotation = transform->getRotation();
-			transform->setRotation(CL_Vec3(rotation.x + yoff, rotation.y + xoff, rotation.z));
+
+			TransformTreeCamera *transform = (TransformTreeCamera*)camera->getComponentList().getComponent("transformTree");
+			CL_Vec3 rotation = transform->getLocalRotation();
+			transform->setLocalRotation(CL_Vec3(rotation.x + yoff, rotation.y + xoff, rotation.z));
 		}
 		lastPassiveMousePositionX = x;
 		lastPassiveMousePositionY = y;

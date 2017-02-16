@@ -31,6 +31,7 @@ namespace cl{
 				 std::unique_ptr<IDiffuseTextureCubeMapFactory> diffuseTextureCubeMapFactory, 
 				 std::unique_ptr<ITransformCameraFactory> transformCameraFactory, 
 				 std::unique_ptr<ITransformModelFactory> transformModelFactory, 
+				 std::unique_ptr<ITransformTreeFactory> transformTreeFactory,
 				 std::unique_ptr<ICameraFactory> cameraFactory,
 				 IEventQueue *eventQueue, 
 				 ILoggerFactory *loggerFactory,
@@ -58,6 +59,7 @@ namespace cl{
 		std::unique_ptr<IDiffuseTextureCubeMapFactory> diffuseTextureCubeMapFactory;
 		std::unique_ptr<ITransformCameraFactory> transformCameraFactory;
 		std::unique_ptr<ITransformModelFactory> transformModelFactory;
+		std::unique_ptr<ITransformTreeFactory> transformTreeFactory;
 		std::unique_ptr<ICameraFactory> cameraFactory;
 		std::unique_ptr<UIFactory> uiFactory;
 		std::unique_ptr<ILogger> logger;
@@ -70,6 +72,7 @@ namespace cl{
 		IEventQueue *eventQueue;
 		std::unique_ptr<PlanarBackground> notifyMeBackground;
 		std::unique_ptr<PlanarBackground> closeBackground;
+		std::unique_ptr<Reticle> reticle;
 		int lastPassiveMousePositionX = -1;
 		int lastPassiveMousePositionY = -1;
 		float passiveMouseMotionSensitivity = 0.2f;

@@ -15,6 +15,7 @@ set(SOURCES ${PROJECT_SOURCE_DIR}/src/components/transform/TransformCamera.cpp
 			${PROJECT_SOURCE_DIR}/src/components/transformTree/TransformTreeCamera.cpp
 			${PROJECT_SOURCE_DIR}/src/conf/MathType.cpp
 			${PROJECT_SOURCE_DIR}/src/events/EventQueue.cpp
+			${PROJECT_SOURCE_DIR}/src/modelBuilder/ConcentricCircleBuilder.cpp
 			${PROJECT_SOURCE_DIR}/src/modelBuilder/CubeBuilder.cpp
 			${PROJECT_SOURCE_DIR}/src/modelBuilder/UVSphereBuilder.cpp
 			${PROJECT_SOURCE_DIR}/src/modifier/ImageBMPLoader.cpp
@@ -27,6 +28,7 @@ set(SOURCES ${PROJECT_SOURCE_DIR}/src/components/transform/TransformCamera.cpp
 			${PROJECT_SOURCE_DIR}/src/ui/CharacterElement.cpp
 			${PROJECT_SOURCE_DIR}/src/ui/FontStore.cpp
 			${PROJECT_SOURCE_DIR}/src/ui/PlanarBackground.cpp
+			${PROJECT_SOURCE_DIR}/src/ui/Reticle.cpp
 			${PROJECT_SOURCE_DIR}/src/ui/TextElement.cpp
 			${PROJECT_SOURCE_DIR}/src/ui/UIElement.cpp
 			${PROJECT_SOURCE_DIR}/src/util/SimpleOBJLoader.cpp

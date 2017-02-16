@@ -7,7 +7,7 @@ include_directories(${Conf_INCLUDE_DIRS}
 					${CMAKE_SOURCE_DIR}/CoreEngine/include
 					${PROJECT_SOURCE_DIR}/include)
 FILE(GLOB_RECURSE INCLUDE_HEADERS "include/*.h")
-set(SOURCES ${PROJECT_SOURCE_DIR}/src/factory/UniformColorMaterialGL.cpp
+set(SOURCES ${PROJECT_SOURCE_DIR}/src/factory/UniformColorFactoryGL.cpp
 			${PROJECT_SOURCE_DIR}/src/renderObjects/CameraGL.cpp
 			${PROJECT_SOURCE_DIR}/src/renderObjects/CameraGLContainer.cpp
 			${PROJECT_SOURCE_DIR}/src/renderObjects/opengl/MaterialDiffuseTextureCubeMapGL.cpp

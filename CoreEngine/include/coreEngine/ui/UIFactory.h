@@ -6,6 +6,7 @@
 #include <coreEngine/ui/TextElement.h>
 #include <coreEngine/ui/FontStore.h>
 #include <coreEngine/ui/ITextMaterialFactory.h>
+#include <coreEngine/ui/Reticle.h>
 
 namespace cl{
 	class UIFactory{
@@ -51,12 +52,16 @@ namespace cl{
 		std::unique_ptr<FontStore> createFontStore(Scene *scene, std::string fontName){
 			return std::unique_ptr<FontStore>(new FontStore(scene, fontName, textMaterialFactory.get(), loggerFactory));
 		}
+		std::unique_ptr<Reticle> createReticle(std::string id, Scene *scene, TransformTree *parentTransform, CL_Vec4 &color){
+			return std::unique_ptr<Reticle>(new Reticle(uniformColorFactory.get(), transformTreeFactory.get(), parentTransform, modelFactory.get(), id, scene, color));
+		}
 		ITextMaterialFactory *getTextMaterialFactory(){
 			return textMaterialFactory.get();
 		}
 		IUniformColorFactory *getUniformColorFactory(){
 			return uniformColorFactory.get();
 		}
+
 	private:
 		ILoggerFactory *loggerFactory = nullptr;
 		std::unique_ptr<IModelFactory> modelFactory = nullptr;

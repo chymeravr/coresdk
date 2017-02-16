@@ -777,6 +777,7 @@ int _tmain(int argc, _TCHAR** argv)
         std::move(diffuseTextureCubeMapFactory),
         std::move(transformCameraFactory),
         std::move(transformModelFactory),
+		std::move(transformTreeFactory),
         std::move(cameraFactory),
         eventQueue.get(),
         loggerFactory.get(),
