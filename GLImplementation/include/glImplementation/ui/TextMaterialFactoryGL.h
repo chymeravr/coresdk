@@ -19,8 +19,16 @@ namespace cl{
 
 			return std::unique_ptr<TextureText>(new TextureTextGL(sceneId, loggerFactory, width, height, std::move(data)));
 		}
-		std::unique_ptr<ShaderText> createShader(const std::string &sceneId, Scene* scene){
-			return std::unique_ptr<ShaderText>(new ShaderTextGL(sceneId, loggerFactory, scene));
+		ShaderText* getShader(Scene* scene){
+			std::string shaderId = "ShaderTextGL";
+			ShaderText *shaderText = nullptr;
+			if (!(shaderText = (ShaderText*)scene->getFromScene(shaderId))){
+				std::unique_ptr<ShaderText> shaderTextUptr(new ShaderTextGL(shaderId, loggerFactory, scene));
+				assert(shaderTextUptr != nullptr);
+				shaderText = shaderTextUptr.get();
+				scene->addToScene(std::move(shaderTextUptr));
+			}
+			return shaderText;
 		}
 		std::unique_ptr<MaterialText> createMaterial(const std::string &sceneId, ShaderText *shaderText, TextureText *textureText){
 			return std::unique_ptr<MaterialText>(new MaterialTextGL(sceneId, (ShaderTextGL*)shaderText, (TextureTextGL*)textureText, loggerFactory));

@@ -13,7 +13,7 @@ namespace cl{
 														const unsigned int &width,
 														const unsigned int &height,
 														std::unique_ptr<unsigned char> data) = 0;
-		virtual std::unique_ptr<ShaderText> createShader(const std::string &sceneId, Scene* scene) = 0;
+		virtual ShaderText* getShader(Scene* scene) = 0;
 		virtual std::unique_ptr<MaterialText> createMaterial(const std::string &sceneId, ShaderText *shaderText, TextureText *textureText) = 0;
 	};
 }

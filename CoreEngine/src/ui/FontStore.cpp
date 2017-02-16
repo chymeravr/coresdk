@@ -4,14 +4,12 @@
 #include FT_FREETYPE_H
 
 namespace cl{
-	FontStore::FontStore(Scene *scene, std::string fontName, ITextMaterialFactory *textMaterialFactory, ShaderText *shaderText, ILoggerFactory *loggerFactory){
+	FontStore::FontStore(Scene *scene, std::string fontName, ITextMaterialFactory *textMaterialFactory,ILoggerFactory *loggerFactory){
 		assert(scene != nullptr);
 		assert(textMaterialFactory != nullptr);
-		assert(shaderText != nullptr);
 		assert(loggerFactory != nullptr);
 		this->scene = scene;
 		this->fontName = fontName;
-		this->shaderText = shaderText;
 		this->textMaterialFactory = textMaterialFactory;
 		logger = loggerFactory->createLogger("coreEngine::FontStore: ");
 	}
@@ -83,11 +81,12 @@ namespace cl{
 	MaterialText *FontStore::getMaterial(TextStyle *textStyle, char c){
 		MaterialText *material = nullptr;
 		std::string materialId = getMaterialId(textStyle->color, textStyle->fontSize, c);
+		ShaderText *shaderText = textMaterialFactory->getShader(scene);
 		if (!scene->exists(materialId)){
 			TextureText *textureText = (TextureText*)scene->getFromScene(getTextureId(textStyle->fontSize, c));
 			std::unique_ptr<MaterialText> materialText = textMaterialFactory->createMaterial(materialId, shaderText, textureText);
-			materialText->setTextColor(textStyle->color);
 			assert(materialText != nullptr);
+			materialText->setTextColor(textStyle->color);
 			material = materialText.get();
 			scene->addToScene(std::move(materialText));
 		}

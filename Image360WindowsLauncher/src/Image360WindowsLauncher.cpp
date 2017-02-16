@@ -765,7 +765,7 @@ int _tmain(int argc, _TCHAR** argv)
     eventQueue = std::unique_ptr<IEventQueue>(new EventQueue(std::move(mutexLock)));
 	std::unique_ptr<ITransformTreeFactory> transformTreeFactory(new TransformTreeFactory(loggerFactory.get()));
 	std::unique_ptr<IModelFactory> uiModelFactory(new ModelGLFactory(loggerFactory.get()));
-	std::unique_ptr<IUniformColorFactory> uiUniformColorFactory(new UniformColorFactoryGL());
+	std::unique_ptr<IUniformColorFactory> uiUniformColorFactory(new UniformColorFactoryGL(loggerFactory.get()));
 	std::unique_ptr<ITransformTreeFactory> uiTransformTreeFactory(new TransformTreeFactory(loggerFactory.get()));
 
 	std::unique_ptr<ITextMaterialFactory> textMaterialFactory(new TextMaterialFactoryGL(loggerFactory.get()));

@@ -68,7 +68,8 @@ namespace cl{
 		Texture *imageTexture;
 		Model *imageContainer;
 		IEventQueue *eventQueue;
-		std::unique_ptr<PlanarBackground> planarBackground;
+		std::unique_ptr<PlanarBackground> notifyMeBackground;
+		std::unique_ptr<PlanarBackground> closeBackground;
 		int lastPassiveMousePositionX = -1;
 		int lastPassiveMousePositionY = -1;
 		float passiveMouseMotionSensitivity = 0.2f;

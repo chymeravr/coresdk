@@ -11,14 +11,15 @@ namespace cl{
 										float width, 
 										float height, 
 										ILoggerFactory *loggerFactory){
-		this->id = id;
-		this->modelId = id + "Model";
-		this->materialId = id + "Material";
-		this->shaderId = id + "Shader";
 
-		this->width = width;
-		this->height = height;
+		std::string modelId;
+		Model *model = nullptr;
 
+		ShaderUniformColor *shader = uniformColorFactory->getShader(scene);
+		MaterialUniformColor *material = uniformColorFactory->getMaterial(shader, color);
+		
+		modelId = id;
+		
 		//Creating and adding model to scene
 		std::unique_ptr<Model> modelUptr = modelFactory->create(modelId);
 		assert(modelUptr != nullptr);
@@ -39,20 +40,6 @@ namespace cl{
 		indices.push_back(1);
 		indices.push_back(2);
 		indices.push_back(3);
-
-		//creating shader
-		std::unique_ptr<ShaderUniformColor> shaderUptr = uniformColorFactory->createShader(this->shaderId, loggerFactory, scene);
-		assert(shaderUptr != nullptr);
-		assert(!scene->exists(this->shaderId));
-		shader = shaderUptr.get();
-		scene->addToScene(std::move(shaderUptr));
-
-		//creating material
-		std::unique_ptr<MaterialUniformColor> materialUptr = uniformColorFactory->createMaterial(this->materialId, shader, loggerFactory, color);
-		assert(materialUptr != nullptr);
-		assert(!scene->exists(materialId));
-		material = materialUptr.get();
-		scene->addToScene(std::move(materialUptr));
 
 		//assigning material
 		material->createBiRelation(model);

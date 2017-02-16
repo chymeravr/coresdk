@@ -12,7 +12,7 @@
 namespace cl{
 	class FontStore{
 	public:
-		FontStore(Scene *scene, std::string fontName, ITextMaterialFactory *textMaterialFactory, ShaderText *shaderText, ILoggerFactory *loggerFactory);
+		FontStore(Scene *scene, std::string fontName, ITextMaterialFactory *textMaterialFactory, ILoggerFactory *loggerFactory);
 		/*	
 			Call this function each time to load a new fontSize
 			font.ttf would be stored at font/fontName.ttf
@@ -30,7 +30,6 @@ namespace cl{
 		Scene *scene = nullptr;
 		std::string fontName = "";
 		ITextMaterialFactory *textMaterialFactory;
-		ShaderText *shaderText = nullptr;
 		std::unordered_map< int, std::unordered_map<char, std::unique_ptr<Character> > > characters;
 	};
 }

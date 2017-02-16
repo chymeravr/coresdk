@@ -48,8 +48,8 @@ namespace cl{
 			Scene *scene){
 			return std::unique_ptr<TextElement>(new TextElement(id, fontStore, textStyle, text, transformTreeFactory.get(), localPosition, localRotation, this, scene));
 		}
-		std::unique_ptr<FontStore> createFontStore(Scene *scene, std::string fontName, ShaderText *shaderText){
-			return std::unique_ptr<FontStore>(new FontStore(scene, fontName, textMaterialFactory.get(), shaderText, loggerFactory));
+		std::unique_ptr<FontStore> createFontStore(Scene *scene, std::string fontName){
+			return std::unique_ptr<FontStore>(new FontStore(scene, fontName, textMaterialFactory.get(), loggerFactory));
 		}
 		ITextMaterialFactory *getTextMaterialFactory(){
 			return textMaterialFactory.get();

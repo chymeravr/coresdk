@@ -22,16 +22,6 @@ namespace cl{
 						 float width,
 						 float height,
 						 ILoggerFactory *loggerFactory);
-	protected:
-		float width = 1.0f;
-		float height = 1.0f;
-		std::string id;
-		std::string modelId;
-		std::string materialId;
-		std::string shaderId;
-		Model *model = nullptr;
-		ShaderUniformColor *shader = nullptr;
-		MaterialUniformColor *material = nullptr;
 	};
 }
 

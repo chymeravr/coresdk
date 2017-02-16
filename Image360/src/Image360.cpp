@@ -213,23 +213,23 @@ namespace cl{
 			cubeBuilder.buildInwardCube(this->imageContainer);
 		}
 
-		//Create UI Background
-		planarBackground = uiFactory->createPlanarBackground("planar", scene.get(), CL_Vec4(0.0, 0.0, 0.5, 0.5), CL_Vec3(0.0, 0.0, -0.5), CL_Vec3(0.0, 0.0, 0.0), 0.4, 0.3);
-		std::unique_ptr<ShaderText> shaderTextUptr = uiFactory->getTextMaterialFactory()->createShader("textShader", scene.get());
-		assert(shaderTextUptr != nullptr);
-		ShaderText *shaderText = shaderTextUptr.get();
-		scene->addToScene(std::move(shaderTextUptr));
-		std::unique_ptr<FontStore> fontStore = uiFactory->createFontStore(scene.get(), "fonts/arial.ttf", shaderText);
+		//Notify Me
+		notifyMeBackground = uiFactory->createPlanarBackground("notifyMe", scene.get(), CL_Vec4(0.0, 0.0, 0.0, 0.7), CL_Vec3(-0.1, 0.0, -0.5), CL_Vec3(0.0, 0.0, 0.0), 0.1, 0.03);
+		
+		std::unique_ptr<FontStore> fontStore = uiFactory->createFontStore(scene.get(), "fonts/arial.ttf");
 		
 		TextStyle textStyle;
-		textStyle.fontSize = 48;
-		textStyle.scale = 0.0009f;
-		textStyle.color = CL_Vec4(0.0, 1.0, 0.0, 1.0);
+		textStyle.fontSize = 20;
+		textStyle.scale = 0.0007f;
+		textStyle.color = CL_Vec4(1.0, 1.0, 1.0, 1.0);
+		
+		std::unique_ptr<TextElement> notifyMeElement = uiFactory->createTextElement("notifyMeElement", fontStore.get(), &textStyle, "Notify Me", CL_Vec3(-0.03, -0.005, 0.001), CL_Vec3(0.0, 0.0, 0.0), scene.get());
+		notifyMeBackground->addChild("child1", std::move(notifyMeElement));
 
-		std::unique_ptr<TextElement> textElement = uiFactory->createTextElement("textElement", fontStore.get(), &textStyle, "Hello World!", CL_Vec3(-0.1, 0.0, 0.001), CL_Vec3(0.0, 0.0, 0.0), scene.get());
-
-		planarBackground->addChild("firstChild", std::move(textElement));
-
+		closeBackground = uiFactory->createPlanarBackground("closeMe", scene.get(), CL_Vec4(0.0, 0.0, 0.0, 0.7), CL_Vec3(0.1, 0.0, -0.5), CL_Vec3(0.0, 0.0, 0.0), 0.1, 0.03);
+		std::unique_ptr<TextElement> closeElement = uiFactory->createTextElement("closeElement", fontStore.get(), &textStyle, "Close", CL_Vec3(-0.02, -0.005, 0.001), CL_Vec3(0.0, 0.0, 0.0), scene.get());
+		closeBackground->addChild("child2", std::move(closeElement));
+		
 		renderer->initialize(scene.get());
 	}
 

@@ -34,6 +34,7 @@ namespace cl{
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 
 		this->clearTextureData();
+		glPixelStorei(GL_UNPACK_ALIGNMENT, 4); //setting back to default value
 		logger->log(LOG_INFO, "texture:" + sceneId + " initialized");
 		return true;
 	}
