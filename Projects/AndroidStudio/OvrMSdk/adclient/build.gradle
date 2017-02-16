@@ -1,105 +1,87 @@
 apply plugin: 'com.android.library'
 
-//def coreEngineRoot = "../../../../CoreEngine"
-//def confRoot = "../../../../Conf"
-//def glmRoot = "../../../../Repository/thirdParty/glm/glm-0.9.7.6/"
-//def GLImplementationRoot = "../../../../GLImplementation"
-//def image360Root = "../../../../Image360"
-//def rendererRoot = "../../../../Renderer"
-//def image360AndroidRoot = "../../../../AndroidImplementation"
-//def ovr_mobile_root = "${project.rootDir}/ovr_sdk_mobile"
+apply from: "${rootProject.rootDir}/fat-aar.gradle"
 
-def coreEngineModule = "${rootProject.rootDir}/coreEngine"
-def glImplementationModule = "${rootProject.rootDir}/glImplementation"
-def rendererModule = "${rootProject.rootDir}/renderer"
-def image360Module = "${rootProject.rootDir}/image360"
 def ovrMobileModule = "${rootProject.rootDir}/ovr_sdk_mobile"
-
-def image360AndroidModule = "${rootProject.rootDir}/image360AndroidNative"
-
-def adclientModule = "${rootProject.rootDir}/adclient"
-
 def distributionDir = "${rootProject.rootDir}/distribution"
 
-    android {
-        compileSdkVersion 23
-        buildToolsVersion "23.0.3"
+android {
+    compileSdkVersion 23
+    buildToolsVersion "23.0.3"
 
-        defaultConfig.with {
-            minSdkVersion = 19
-            targetSdkVersion = 23
-            versionCode = 1
-            versionName = "1.0"
+    defaultConfig.with {
+        minSdkVersion = 19
+        targetSdkVersion = 23
+        versionCode = 1
+        versionName = "1.0"
 
-            defaultPublishConfig 'debug'
-            publishNonDefault true
+//            defaultPublishConfig 'debug'
+        publishNonDefault true
 
-            testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
-
-            externalNativeBuild {
-                cmake {
-                    // when using arguments, the latest (cmake version 3.6+, android studio
-                    // beta2+) must be used to compile
-
-                    // I have to use gcc to compile, clang compiled code generate error
-                    // at run time for any std::queue etc.
-                    targets 'image360ad'
-                    arguments = ['-DANDROID_STL=gnustl_shared', '-DANDROID_NATIVE_API_LEVEL=android-23']
-
-                    cppFlags = ["-DGLES2_0", "-std=c++11", "-frtti", "-fexceptions", '-Wall',
-                                '-fno-exceptions']
-
-                    abiFilters 'armeabi-v7a'
-                }
-            }
-        }
-
-        buildTypes {
-            debug {
-                minifyEnabled false
-                debuggable true
-//                preBuild.dependsOn(['copyDependCoreEngineDebugLib', 'copyDependGLImplementationDebugLib',
-//                                    'copyDependRendererDebugLib', 'copyDependimage360DebugLib',
-//                                    'copyLibOvrKernel', 'copyVrApiLib'])
-            }
-            release {
-                minifyEnabled false
-//                preBuild.dependsOn(['copyDependCoreEngineReleaseLib', 'copyDependGLImplementationReleaseLib',
-//                                    'copyDependRendererReleaseLib', 'copyDependimage360ReleaseLib',
-//                                    'copyLibOvrKernel', 'copyVrApiLib'])
-                proguardFiles.add(file('proguard-android.txt'))
-
-
-            }
-        }
-
-        sourceSets{
-            main{
-                jniLibs.srcDirs = ["${distributionDir}/soil", "${distributionDir}/coreEngine",
-                                   "${distributionDir}/glImplementation", "${distributionDir}/renderer",
-                                   "${distributionDir}/image360", "${distributionDir}/image360AndroidNative",
-                                   "${distributionDir}/ovrApi", "${distributionDir}/ovrKernel"]
-            }
-        }
-
+        testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
 
         externalNativeBuild {
             cmake {
-                path 'CMakeLists.txt'
+                // when using arguments, the latest (cmake version 3.6+, android studio
+                // beta2+) must be used to compile
+
+                // I have to use gcc to compile, clang compiled code generate error
+                // at run time for any std::queue etc.
+                targets 'image360ad'
+                arguments = ['-DANDROID_STL=gnustl_shared', '-DANDROID_NATIVE_API_LEVEL=android-23']
+
+                cppFlags = ["-DGLES2_0", "-std=c++11", "-frtti", "-fexceptions", '-Wall',
+                            '-fno-exceptions']
+
+                abiFilters 'armeabi-v7a'
             }
         }
     }
 
-    // to suppress lombok invalid package warning in adclient linter
-    android.lintOptions {
-        abortOnError false
-        disable 'InvalidPackage'
+    buildTypes {
+        debug {
+            minifyEnabled false
+            debuggable true
+        }
+        release {
+            minifyEnabled false
+            proguardFiles.add(file('proguard-android.txt'))
+
+
+        }
     }
+
+    sourceSets {
+        main {
+            resources {
+                'libs'
+            }
+            jniLibs.srcDirs = ["${distributionDir}/soil", "${distributionDir}/coreEngine",
+                               "${distributionDir}/glImplementation", "${distributionDir}/renderer",
+                               "${distributionDir}/image360", "${distributionDir}/image360AndroidNative",
+                               "${distributionDir}/ovrApi", "${distributionDir}/ovrKernel"]
+        }
+    }
+
+
+    externalNativeBuild {
+        cmake {
+            path 'CMakeLists.txt'
+        }
+    }
+}
+
+// to suppress lombok invalid package warning in adclient linter
+android.lintOptions {
+    abortOnError false
+    disable 'InvalidPackage'
+}
 
 
 
 dependencies {
     compile fileTree(include: ['*.jar'], dir: 'libs')
+//    compile files('libs/schemas-0.1.jar')
     androidTestCompile('com.android.support.test.espresso:espresso-core:2.2.2', {
         exclude group: 'com.android.support', module: 'support-annotations'
     })
@@ -112,59 +94,18 @@ dependencies {
     compile 'com.android.volley:volley:1.0.0'
     compile 'com.google.code.gson:gson:2.8.0'
     compile 'com.google.android.gms:play-services-ads:10.0.1'
-//    compile 'com.chymeravr.schemas:schemas:0.1'
     compile 'org.apache.thrift:libthrift:0.9.3'
 
-    compile project(':common')
-    compile project(':analytics')
+    embedded project(':common')
+    embedded project(':analytics')
 }
 
-//task copyDependCoreEngineReleaseLib(type: Copy){
-//    from "${coreEngineModule}/build/intermediates/cmake/arm7/release/obj/armeabi-v7a/libCoreEngine.so"
-//    into "${image360AndroidModule}/libs"
-//}
-//
-//task copyDependCoreEngineDebugLib(type: Copy){
-//    from "${coreEngineModule}/build/intermediates/cmake/debug/obj/armeabi-v7a/libCoreEngine.so"
-//    into "${adclientModule}/libs"
-//}
-//
-//task copyDependGLImplementationReleaseLib(type: Copy){
-//    from "${glImplementationModule}/build/intermediates/cmake/release/obj/armeabi-v7a/libGLImplementation.so"
-//    into "${adclientModule}/libs"
-//}
-//
-//task copyDependGLImplementationDebugLib(type: Copy){
-//    from "${glImplementationModule}/build/intermediates/cmake/debug/obj/armeabi-v7a/libGLImplementation.so"
-//    into "${adclientModule}/libs"
-//}
-//
-//task copyDependRendererReleaseLib(type: Copy){
-//    from "${rendererModule}/build/intermediates/cmake/release/obj/armeabi-v7a/libRenderer.so"
-//    into "${adclientModule}/libs"
-//}
-//
-//task copyDependRendererDebugLib(type: Copy){
-//    from "${rendererModule}/build/intermediates/cmake/debug/obj/armeabi-v7a/libRenderer.so"
-//    into "${adclientModule}/libs"
-//}
-//
-//task copyDependimage360ReleaseLib(type: Copy){
-//    from "${image360Module}/build/intermediates/cmake/release/obj/armeabi-v7a/libImage360.so"
-//    into "${adclientModule}/libs"
-//}
-//
-//task copyDependimage360DebugLib(type: Copy){
-//    from "${image360Module}/build/intermediates/cmake/debug/obj/armeabi-v7a/libImage360.so"
-//    into "${adclientModule}/libs"
-//}
-//
-task copyLibOvrKernel(type: Copy){
+task copyLibOvrKernel(type: Copy) {
     from "${ovrMobileModule}/LibOVRKernel/Libs/Android/armeabi-v7a/Release/libovrkernel.a"
     into "${distributionDir}/ovrKernel/armeabi-v7a"
 }
 
-task copyVrApiLib(type: Copy){
+task copyVrApiLib(type: Copy) {
     from "${ovrMobileModule}/VrApi/Libs/Android/armeabi-v7a/Release/libvrapi.so"
     into "${distributionDir}/ovrApi/armeabi-v7a"
 }
@@ -180,8 +121,7 @@ tasks.whenTaskAdded { task ->
                         ':renderer:distributeDebugLib', ':image360:distributeDebugLib',
                         ':image360AndroidNative:distributeDebugLib', 'copyLibOvrKernel',
                         'copyVrApiLib'])
-    }
-    else if(task.name.contains('compileRelease')) {
+    } else if (task.name.contains('compileRelease')) {
         task.dependsOn([':coreEngine:distributeReleaseLib', ':glImplementation:distributeReleaseLib',
                         ':renderer:distributeReleaseLib', ':image360:distributeReleaseLib',
                         ':image360AndroidNative:distributeReleaseLib', 'copyLibOvrKernel',

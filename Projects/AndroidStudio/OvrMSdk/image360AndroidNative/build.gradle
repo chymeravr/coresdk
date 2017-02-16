@@ -1,12 +1,6 @@
 apply plugin: 'com.android.library'
 
-//def coreEngineModule = "${rootProject.rootDir}/coreEngine"
-//def glImplementationModule = "${rootProject.rootDir}/glImplementation"
-//def rendererModule = "${rootProject.rootDir}/renderer"
-//def image360Module = "${rootProject.rootDir}/image360"
-
 def ovrMobileModule = "${rootProject.rootDir}/ovr_sdk_mobile"
-
 def image360AndroidModule = "${rootProject.rootDir}/image360AndroidNative"
 def distributionDir = "${rootProject.rootDir}/distribution"
 
@@ -19,8 +13,6 @@ android {
         targetSdkVersion 23
         versionCode 1
         versionName "1.0"
-
-//        testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
 
         externalNativeBuild {
             cmake {
@@ -43,15 +35,9 @@ android {
         debug{
             minifyEnabled false
             jniDebuggable true
-//            preBuild.dependsOn(['copyDependCoreEngineDebugLib', 'copyDependGLImplementationDebugLib',
-//                                'copyDependRendererDebugLib', 'copyDependimage360DebugLib',
-//                                'copyLibOvrKernel', 'copyVrApiLib'])
         }
         release {
             minifyEnabled false
-//            preBuild.dependsOn(['copyDependCoreEngineReleaseLib', 'copyDependGLImplementationReleaseLib',
-//                                'copyDependRendererReleaseLib', 'copyDependimage360ReleaseLib',
-//                                'copyLibOvrKernel', 'copyVrApiLib'])
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
         }
     }
@@ -69,55 +55,6 @@ android {
         }
     }
 }
-
-//dependencies {
-//    compile fileTree(dir: 'libs', include: ['*.jar'])
-//    androidTestCompile('com.android.support.test.espresso:espresso-core:2.2.2', {
-//        exclude group: 'com.android.support', module: 'support-annotations'
-//    })
-//    compile 'com.android.support:appcompat-v7:24.2.1'
-//    testCompile 'junit:junit:4.12'
-//}
-
-//task copyDependCoreEngineReleaseLib(type: Copy){
-//    from "${coreEngineModule}/build/intermediates/cmake/release/obj/armeabi-v7a/libCoreEngine.so"
-//    into "${image360AndroidModule}/libs"
-//}
-//
-//task copyDependCoreEngineDebugLib(type: Copy){
-//    from "${coreEngineModule}/build/intermediates/cmake/debug/obj/armeabi-v7a/libCoreEngine.so"
-//    into "${image360AndroidModule}/libs"
-//}
-//
-//task copyDependGLImplementationReleaseLib(type: Copy){
-//    from "${glImplementationModule}/build/intermediates/cmake/release/obj/armeabi-v7a/libGLImplementation.so"
-//    into "${image360AndroidModule}/libs"
-//}
-//
-//task copyDependGLImplementationDebugLib(type: Copy){
-//    from "${glImplementationModule}/build/intermediates/cmake/debug/obj/armeabi-v7a/libGLImplementation.so"
-//    into "${image360AndroidModule}/libs"
-//}
-//
-//task copyDependRendererReleaseLib(type: Copy){
-//    from "${rendererModule}/build/intermediates/cmake/release/obj/armeabi-v7a/libRenderer.so"
-//    into "${image360AndroidModule}/libs"
-//}
-//
-//task copyDependRendererDebugLib(type: Copy){
-//    from "${rendererModule}/build/intermediates/cmake/debug/obj/armeabi-v7a/libRenderer.so"
-//    into "${image360AndroidModule}/libs"
-//}
-//
-//task copyDependimage360ReleaseLib(type: Copy){
-//    from "${image360Module}/build/intermediates/cmake/release/obj/armeabi-v7a/libImage360.so"
-//    into "${image360AndroidModule}/libs"
-//}
-//
-//task copyDependimage360DebugLib(type: Copy){
-//    from "${image360Module}/build/intermediates/cmake/debug/obj/armeabi-v7a/libImage360.so"
-//    into "${image360AndroidModule}/libs"
-//}
 
 task copyLibOvrKernel(type: Copy){
     from "${ovrMobileModule}/LibOVRKernel/Libs/Android/armeabi-v7a/Release/libovrkernel.a"

@@ -1,6 +1,5 @@
 apply plugin: 'com.android.library'
 
-def coreEngineModule = "${rootProject.rootDir}/coreEngine"
 def image360Module = "${rootProject.rootDir}/image360"
 def distributionDir = "${rootProject.rootDir}/distribution"
 
@@ -13,9 +12,6 @@ android {
         targetSdkVersion 23
         versionCode 1
         versionName "1.0"
-
-//        testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
-
         externalNativeBuild {
             cmake {
                 // when using arguments, the latest (cmake version 3.6+, android studio
@@ -37,11 +33,9 @@ android {
 
         debug{
             minifyEnabled false
-//            preBuild.dependsOn('copyDependCoreEngineDebugLib')
         }
         release {
             minifyEnabled false
-//            preBuild.dependsOn('copyDependCoreEngineReleaseLib')
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
         }
     }
@@ -59,27 +53,6 @@ android {
         }
     }
 }
-
-//dependencies {
-//    compile fileTree(dir: 'libs', include: ['*.jar'])
-//    androidTestCompile('com.android.support.test.espresso:espresso-core:2.2.2', {
-//        exclude group: 'com.android.support', module: 'support-annotations'
-//    })
-//    compile 'com.android.support:appcompat-v7:24.2.1'
-//    testCompile 'junit:junit:4.12'
-//
-//}
-
-//task copyDependCoreEngineReleaseLib(type: Copy){
-//    from "${coreEngineModule}/build/intermediates/cmake/release/obj/armeabi-v7a/libCoreEngine.so"
-//    into "${image360Module}/libs"
-//}
-//
-//task copyDependCoreEngineDebugLib(type: Copy){
-//    from "${coreEngineModule}/build/intermediates/cmake/debug/obj/armeabi-v7a/libCoreEngine.so"
-//    into "${image360Module}/libs"
-//}
-
 
 task clean(type: Delete) {
     delete "${rootProject.rootDir}/image360/build"

@@ -1,6 +1,4 @@
-//include ':appGVR', ':soil', ':analytics', ':adclient', ':common'//':Image360Ad'
-
-include ':soil'
+include ':soil', ':schemas'
 include ':coreEngine'
 include ':glImplementation'
 include ':image360'
@@ -12,5 +10,3 @@ include ':analytics'
 include ':adclient'
 
 include ':appGVR'
-
-//include ':appNoHMD'
