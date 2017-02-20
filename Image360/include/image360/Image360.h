@@ -13,6 +13,11 @@
 #include <coreEngine/components/transform/ITransformCameraFactory.h>
 #include <coreEngine/components/transform/ITransformModelFactory.h>
 #include <coreEngine/modifier/Image.h>
+#include <coreEngine/ui/UIFactory.h>
+#include <coreEngine/components/transformTree/ITransformTreeFactory.h>
+#include <coreEngine/components/gazeDetector/GazeDetectorFactory.h>
+#include <image360/NotifyMeListener.h>
+#include <image360/CloseMeListener.h>
 
 namespace cl{
 	enum TEXTURE_MAP_MODE{
@@ -29,9 +34,12 @@ namespace cl{
 				 std::unique_ptr<IDiffuseTextureCubeMapFactory> diffuseTextureCubeMapFactory, 
 				 std::unique_ptr<ITransformCameraFactory> transformCameraFactory, 
 				 std::unique_ptr<ITransformModelFactory> transformModelFactory, 
+				 std::unique_ptr<ITransformTreeFactory> transformTreeFactory,
 				 std::unique_ptr<ICameraFactory> cameraFactory,
 				 IEventQueue *eventQueue, 
-				 ILoggerFactory *loggerFactory);
+				 ILoggerFactory *loggerFactory,
+				 std::unique_ptr<UIFactory> uiFactory,
+				 std::unique_ptr<GazeDetectorFactory> gazeDetectorFactory);
 
 		//IApplication implementation
 		void start();
@@ -47,6 +55,9 @@ namespace cl{
 		void onKeyPress(char key, int x, int y);
 		void onPassiveMouseMotion(int x, int y);
 		IRenderer* getRenderer();
+		void onGazeStarted();
+		void onGazeEnded();
+		void onGaze();
 	private:
 		std::unique_ptr<IRenderer> renderer;
 		std::unique_ptr<ISceneFactory> sceneFactory;
@@ -55,7 +66,9 @@ namespace cl{
 		std::unique_ptr<IDiffuseTextureCubeMapFactory> diffuseTextureCubeMapFactory;
 		std::unique_ptr<ITransformCameraFactory> transformCameraFactory;
 		std::unique_ptr<ITransformModelFactory> transformModelFactory;
+		std::unique_ptr<ITransformTreeFactory> transformTreeFactory;
 		std::unique_ptr<ICameraFactory> cameraFactory;
+		std::unique_ptr<UIFactory> uiFactory;
 		std::unique_ptr<ILogger> logger;
 		std::unique_ptr<Scene> scene;
 		Camera *camera;
@@ -64,9 +77,16 @@ namespace cl{
 		Texture *imageTexture;
 		Model *imageContainer;
 		IEventQueue *eventQueue;
+		std::unique_ptr<PlanarBackground> notifyMeBackground;
+		std::unique_ptr<PlanarBackground> closeBackground;
+		std::unique_ptr<Reticle> reticle;
 		int lastPassiveMousePositionX = -1;
 		int lastPassiveMousePositionY = -1;
 		float passiveMouseMotionSensitivity = 0.2f;
+		std::unique_ptr<GazeDetectorFactory> gazeDetectorFactory;
+		std::unique_ptr<GazeDetectorContainer> gazeDetectorContainer;
+		std::unique_ptr<NotifyMeListener> notifyMeListener;
+		std::unique_ptr<CloseMeListener> closeMeListener;
 	};
 }
 

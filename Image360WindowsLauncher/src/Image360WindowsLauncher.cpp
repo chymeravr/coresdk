@@ -14,8 +14,8 @@
 #include <windowsImplementation/LoggerFactoryWindows.h>
 #include <glImplementation/factory/SceneGLFactory.h>
 #include <glImplementation/factory/ModelGLFactory.h>
-#include <glImplementation/factory/DiffuseTextureGLFactory.h>
-#include <glImplementation/factory/DiffuseTextureCubeMapGLFactory.h>
+#include <glImplementation/factory/opengl/DiffuseTextureGLFactory.h>
+#include <glImplementation/factory/opengl/DiffuseTextureCubeMapGLFactory.h>
 #include <glImplementation/factory/CameraGLFactory.h>
 #include <coreEngine/components/transform/TransformCameraFactory.h>
 #include <coreEngine/components/transform/TransformModelFactory.h>
@@ -25,6 +25,11 @@
 #include <windowsImplementation/MutexLockWindows.h>
 #include <renderer/RendererNoHMD.h>
 #include <coreEngine/modifier/ImageBMPLoader.h>
+#include <coreEngine/components/transformTree/TransformTreeFactory.h>
+#include <glImplementation/factory/UniformColorFactoryGL.h>
+#include <coreEngine/ui/UIFactory.h>
+#include <glImplementation/ui/TextMaterialFactoryGL.h>
+#include <coreEngine/components/gazeDetector/GazeDetectorFactory.h>
 
 using namespace std;
 using namespace cl;
@@ -759,6 +764,14 @@ int _tmain(int argc, _TCHAR** argv)
     std::unique_ptr<ICameraFactory> cameraFactory(new CameraGLFactory(loggerFactory.get()));
     std::unique_ptr<IMutexLock> mutexLock(new MutexLockWindows);
     eventQueue = std::unique_ptr<IEventQueue>(new EventQueue(std::move(mutexLock)));
+	std::unique_ptr<ITransformTreeFactory> transformTreeFactory(new TransformTreeFactory(loggerFactory.get()));
+	std::unique_ptr<IModelFactory> uiModelFactory(new ModelGLFactory(loggerFactory.get()));
+	std::unique_ptr<IUniformColorFactory> uiUniformColorFactory(new UniformColorFactoryGL(loggerFactory.get()));
+	std::unique_ptr<ITransformTreeFactory> uiTransformTreeFactory(new TransformTreeFactory(loggerFactory.get()));
+	std::unique_ptr<GazeDetectorFactory> gazeDetectorFactory(new GazeDetectorFactory);
+
+	std::unique_ptr<ITextMaterialFactory> textMaterialFactory(new TextMaterialFactoryGL(loggerFactory.get()));
+	std::unique_ptr<UIFactory> uiFactory(new UIFactory(loggerFactory.get(), std::move(uiModelFactory), std::move(uiUniformColorFactory), std::move(uiTransformTreeFactory), std::move(textMaterialFactory)));
     application = std::unique_ptr<Image360>(new Image360(std::move(renderer),
         std::move(sceneFactory),
         std::move(modelFactory),
@@ -766,9 +779,12 @@ int _tmain(int argc, _TCHAR** argv)
         std::move(diffuseTextureCubeMapFactory),
         std::move(transformCameraFactory),
         std::move(transformModelFactory),
+		std::move(transformTreeFactory),
         std::move(cameraFactory),
         eventQueue.get(),
-        loggerFactory.get()));
+        loggerFactory.get(),
+		std::move(uiFactory),
+		std::move(gazeDetectorFactory)));
 
     // register callbacks
     application->start();

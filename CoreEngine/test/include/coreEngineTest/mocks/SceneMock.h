@@ -11,6 +11,7 @@ namespace cl{
 		MOCK_METHOD0(getRenderable, IRenderable* (void));
 		MOCK_METHOD1(setBackgroundColor, void(CL_Vec4));
 		MOCK_METHOD1(setDepthTest, void(bool));
+		MOCK_METHOD1(setBlending, void(bool));
 	};
 }
 

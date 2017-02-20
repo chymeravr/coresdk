@@ -18,6 +18,7 @@ namespace cl{
 		virtual IRenderable *getRenderable() = 0;
 		virtual void setBackgroundColor(CL_Vec4 color) = 0;
 		virtual void setDepthTest(bool enable) = 0;
+		virtual void setBlending(bool enable) = 0;
 		/**
 		* Add To Scene will add a Scenable object to the Scene. It should be provided with unique sceneId else it will abort.
 		*/
