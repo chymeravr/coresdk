@@ -29,6 +29,7 @@
 #include <glImplementation/factory/UniformColorFactoryGL.h>
 #include <coreEngine/ui/UIFactory.h>
 #include <glImplementation/ui/TextMaterialFactoryGL.h>
+#include <coreEngine/components/gazeDetector/GazeDetectorFactory.h>
 
 using namespace std;
 using namespace cl;
@@ -767,6 +768,7 @@ int _tmain(int argc, _TCHAR** argv)
 	std::unique_ptr<IModelFactory> uiModelFactory(new ModelGLFactory(loggerFactory.get()));
 	std::unique_ptr<IUniformColorFactory> uiUniformColorFactory(new UniformColorFactoryGL(loggerFactory.get()));
 	std::unique_ptr<ITransformTreeFactory> uiTransformTreeFactory(new TransformTreeFactory(loggerFactory.get()));
+	std::unique_ptr<GazeDetectorFactory> gazeDetectorFactory(new GazeDetectorFactory);
 
 	std::unique_ptr<ITextMaterialFactory> textMaterialFactory(new TextMaterialFactoryGL(loggerFactory.get()));
 	std::unique_ptr<UIFactory> uiFactory(new UIFactory(loggerFactory.get(), std::move(uiModelFactory), std::move(uiUniformColorFactory), std::move(uiTransformTreeFactory), std::move(textMaterialFactory)));
@@ -781,7 +783,8 @@ int _tmain(int argc, _TCHAR** argv)
         std::move(cameraFactory),
         eventQueue.get(),
         loggerFactory.get(),
-		std::move(uiFactory)));
+		std::move(uiFactory),
+		std::move(gazeDetectorFactory)));
 
     // register callbacks
     application->start();

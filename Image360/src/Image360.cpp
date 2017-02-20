@@ -19,7 +19,8 @@ namespace cl{
 					   std::unique_ptr<ICameraFactory> cameraFactory,
 					   IEventQueue *eventQueue, 
 					   ILoggerFactory *loggerFactory,
-					   std::unique_ptr<UIFactory> uiFactory){
+					   std::unique_ptr<UIFactory> uiFactory,
+					   std::unique_ptr<GazeDetectorFactory> gazeDetectorFactory){
 		assert(renderer != nullptr);
 		assert(sceneFactory != nullptr);
 		assert(modelFactory != nullptr);
@@ -31,6 +32,7 @@ namespace cl{
 		assert(eventQueue != nullptr);
 		assert(cameraFactory != nullptr);
 		assert(uiFactory != nullptr);
+		assert(gazeDetectorFactory != nullptr);
 		this->renderer = std::move(renderer);
 		this->sceneFactory = std::move(sceneFactory);
 		this->modelFactory = std::move(modelFactory);
@@ -43,6 +45,7 @@ namespace cl{
 		this->eventQueue = eventQueue;
 		this->logger = loggerFactory->createLogger("image360::Image360: ");
 		this->uiFactory = std::move(uiFactory);
+		this->gazeDetectorFactory = std::move(gazeDetectorFactory);
 	}
 
 	//IApplication implementation
@@ -213,6 +216,7 @@ namespace cl{
 			std::unique_ptr<ModelModifier> modelModifier(new ModelModifier);
 			CubeBuilder cubeBuilder(modelModifier.get());
 			cubeBuilder.buildInwardCube(this->imageContainer);
+
 		}
 
 		//Notify Me
@@ -234,9 +238,27 @@ namespace cl{
 		
 		reticle = uiFactory->createReticle("reticle", scene.get(), transformTreeCamera, CL_Vec4(0.0, 1.0, 0.0, 1.0));
 
+
+		gazeDetectorContainer = gazeDetectorFactory->createGazeDetectorContainer();
+		Model *model = (Model*) scene->getFromScene("notifyMe");
+		assert(model != nullptr);
+		TransformTreeModel *transformNotifyMe = (TransformTreeModel*)model->getComponentList().getComponent("transformTree");
+		assert(transformNotifyMe != nullptr);
+		std::unique_ptr<IComponent> gazeDetectorNotifyMe = gazeDetectorFactory->createGazeDetectorBox(std::string("notifyMe"), transformTreeCamera, transformNotifyMe, (EventGazeListener*)this, gazeDetectorContainer.get(), CL_Vec3(0.0f, 0.0f, 0.0f), CL_Vec3(0.0f, 0.0f, -1.0f), 0.1f, 0.03f, 0.00001f);
+		assert(gazeDetectorNotifyMe != nullptr);
+		model->getComponentList().addComponent(std::move(gazeDetectorNotifyMe));
+		
 		renderer->initialize(scene.get());
 	}
-
+	void Image360::onGazeStarted(){
+		logger->log(LOG_DEBUG, "gaze started");
+	}
+	void Image360::onGazeEnded(){
+		logger->log(LOG_DEBUG, "gaze ended");
+	}
+	void Image360::onGaze(){
+		logger->log(LOG_DEBUG, "gaze");
+	}
 	void Image360::update(){
 		renderer->update();
 	}

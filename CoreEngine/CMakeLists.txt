@@ -8,7 +8,9 @@ include_directories (${REPO_PATH}/thirdParty/glm/glm-${GLM_VERSION}/glm
 
 FILE(GLOB_RECURSE INCLUDE_HEADERS "include/*.h")
 					 
-set(SOURCES ${PROJECT_SOURCE_DIR}/src/components/transform/TransformCamera.cpp
+set(SOURCES ${PROJECT_SOURCE_DIR}/src/components/gazeDetector/GazeDetector.cpp
+			${PROJECT_SOURCE_DIR}/src/components/gazeDetector/GazeDetectorBox.cpp
+			${PROJECT_SOURCE_DIR}/src/components/transform/TransformCamera.cpp
 			${PROJECT_SOURCE_DIR}/src/components/transform/TransformModel.cpp
 			${PROJECT_SOURCE_DIR}/src/components/transformTree/TransformTree.cpp
 			${PROJECT_SOURCE_DIR}/src/components/transformTree/TransformTreeModel.cpp
@@ -105,6 +107,8 @@ set(TEST_SOURCES	${PROJECT_SOURCE_DIR}/test/src/AllTests.cpp
 					${PROJECT_SOURCE_DIR}/test/src/ComponentListTest.cpp
 					${PROJECT_SOURCE_DIR}/test/src/CubeBuilderTest.cpp
 					${PROJECT_SOURCE_DIR}/test/src/EventQueueTest.cpp
+					${PROJECT_SOURCE_DIR}/test/src/GazeDetectorTest.cpp
+					${PROJECT_SOURCE_DIR}/test/src/GazeDetectorBoxTest.cpp
 					${PROJECT_SOURCE_DIR}/test/src/ImageModifierTest.cpp
 					${PROJECT_SOURCE_DIR}/test/src/MaterialTest.cpp
 					${PROJECT_SOURCE_DIR}/test/src/ModelModifierTest.cpp
