@@ -16,6 +16,8 @@
 #include <coreEngine/ui/UIFactory.h>
 #include <coreEngine/components/transformTree/ITransformTreeFactory.h>
 #include <coreEngine/components/gazeDetector/GazeDetectorFactory.h>
+#include <image360/NotifyMeListener.h>
+#include <image360/CloseMeListener.h>
 
 namespace cl{
 	enum TEXTURE_MAP_MODE{
@@ -23,7 +25,7 @@ namespace cl{
 		CUBE_MAP_MODE_SINGLE_IMAGE,
 		EQUIRECTANGULAR_MAP_MODE
 	};
-	class Image360 : public EventKeyPressListener, public EventPassiveMouseMotionListener, public EventGazeListener{
+	class Image360 : public EventKeyPressListener, public EventPassiveMouseMotionListener{
 	public:
 		Image360(std::unique_ptr<IRenderer> renderer, 
 				 std::unique_ptr<ISceneFactory> sceneFactory, 
@@ -83,6 +85,8 @@ namespace cl{
 		float passiveMouseMotionSensitivity = 0.2f;
 		std::unique_ptr<GazeDetectorFactory> gazeDetectorFactory;
 		std::unique_ptr<GazeDetectorContainer> gazeDetectorContainer;
+		std::unique_ptr<NotifyMeListener> notifyMeListener;
+		std::unique_ptr<CloseMeListener> closeMeListener;
 	};
 }
 
