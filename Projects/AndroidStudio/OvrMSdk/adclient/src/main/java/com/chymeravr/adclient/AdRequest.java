@@ -1,10 +1,8 @@
 package com.chymeravr.adclient;
 
-import android.content.Context;
 import android.location.Location;
 
 import java.util.Date;
-import java.util.Set;
 
 import lombok.Builder;
 import lombok.Getter;
@@ -57,15 +55,5 @@ public final class AdRequest {
 
     @Getter
     private final String email;
-
-    public static final String DEVICE_ID_EMULATOR = "";
-
-    public boolean isTestDevice(Context context) {
-        return false;
-    }
-
-    public Set<String> getKeywords() {
-        return null;
-    }
 
 }

@@ -1,10 +1,10 @@
 package com.chymeravr.analytics;
 
-import android.content.Context;
 import android.util.Log;
 
 import com.chymeravr.common.Config;
 import com.chymeravr.common.WebRequestQueue;
+import com.chymeravr.schemas.eventreceiver.SDKEvent;
 
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -15,10 +15,14 @@ import lombok.Getter;
 
 /**
  * Created by robin_chimera on 2/1/2017.
+ * Manages calls to Event Server for sending analytics info
+ * Buffers requests based on priority for better network performance
  */
 
 public final class AnalyticsManager {
     public static final String TAG = "ChymeraVR:AnalyticsMgr";
+
+    public enum Priority {HIGH, LOW, MEDIUM}
 
     private static boolean initialized = false;
 
@@ -35,7 +39,7 @@ public final class AnalyticsManager {
     private static EventQueue medPriorityQueue;
     private static EventQueue lowPriorityQueue;
 
-    private AnalyticsManager(Context context, WebRequestQueue webRequestQueue, String appId) {
+    private AnalyticsManager(WebRequestQueue webRequestQueue, String appId) {
         highPriorityQueue = new ArrayEventQueue(Config.highPriorityQueueSize, webRequestQueue);
         medPriorityQueue = new ArrayEventQueue(Config.medPriorityQueueSize, webRequestQueue);
         lowPriorityQueue = new ArrayEventQueue(Config.lowPriorityQueueSize, webRequestQueue);
@@ -43,10 +47,9 @@ public final class AnalyticsManager {
         applicationId = appId;
     }
 
-    public static AnalyticsManager getInstance(Context context, WebRequestQueue webRequestQueue,
-                                               String appId){
+    public static AnalyticsManager getInstance(WebRequestQueue webRequestQueue, String appId){
         if (manager == null) {
-            manager = new AnalyticsManager(context, webRequestQueue, appId);
+            manager = new AnalyticsManager(webRequestQueue, appId);
         }
         return manager;
     }
@@ -59,13 +62,13 @@ public final class AnalyticsManager {
         return true;
     }
 
-    public static void push(final Event event){
+    public static void push(final SDKEvent event, final Priority priority){
         Log.v(TAG, "pushing message into analytics manager");
         executorService.execute(new Runnable(){
             @Override
             public void run() {
                 resourceLock.lock();
-                switch(event.getPriority()){
+                switch(priority){
                     case HIGH:
                         highPriorityQueue.enqueue(event);
                         break;

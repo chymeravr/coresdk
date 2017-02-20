@@ -8,6 +8,8 @@ import com.android.volley.VolleyError;
 import com.android.volley.toolbox.JsonObjectRequest;
 import com.chymeravr.common.Config;
 import com.chymeravr.common.WebRequestQueue;
+import com.chymeravr.schemas.eventreceiver.EventPing;
+import com.chymeravr.schemas.eventreceiver.SDKEvent;
 import com.google.gson.Gson;
 
 import org.json.JSONArray;
@@ -15,6 +17,8 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.sql.Timestamp;
+import java.util.Arrays;
+import java.util.List;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 
@@ -34,7 +38,7 @@ public class ArrayEventQueue implements EventQueue {
     @Getter
     private int currentSize;
 
-    private Event eventArray[];
+    private SDKEvent eventArray[];
 
     private Lock queueLock = new ReentrantLock();
 
@@ -47,21 +51,21 @@ public class ArrayEventQueue implements EventQueue {
 
         this.requestQueue = requestQueue;
 
-        this.eventArray = new Event[this.size];
+        this.eventArray = new SDKEvent[this.size];
     }
 
     public void reSize(int size){
         this.queueLock.lock();
         if(size != this.getSize()) {
             this.flush();
-            this.eventArray = new Event[size];
+            this.eventArray = new SDKEvent[size];
             this.size = size;
         }
         this.queueLock.unlock();
     }
 
     // enqueu message to the queue
-    public void enqueue(Event msg) {
+    public void enqueue(SDKEvent msg) {
         this.queueLock.lock();
         if (this.isFull()) {
             this.flush();
@@ -84,18 +88,20 @@ public class ArrayEventQueue implements EventQueue {
         Log.v(TAG, "Attempting to flush the Event Queue");
 
         JSONArray jsonArray = new JSONArray();
-        for (Event event : this.eventArray) {
+        for (SDKEvent event : this.eventArray) {
             Gson gson = new Gson();
             String eventJson = gson.toJson(event);
             jsonArray.put(eventJson);
         }
+        List<SDKEvent> test = Arrays.asList(eventArray);
+        EventPing ping = new EventPing( new Timestamp(System.currentTimeMillis()).getTime(),
+                (short)Config.SdkVersion, AnalyticsManager.getApplicationId(), test);
 
-        JSONObject jsonEventObjects = new JSONObject();
+        String eventRequestJson = new Gson().toJson(ping);
+
+        JSONObject jsonEventObjects = null;
         try {
-            jsonEventObjects.put("sdkVersion", Config.SdkVersion);
-            jsonEventObjects.put("timestamp", new Timestamp(System.currentTimeMillis()).getTime());
-            jsonEventObjects.put("appId", AnalyticsManager.getApplicationId());
-            jsonEventObjects.put("eventList", jsonArray.toString());
+            jsonEventObjects = new JSONObject(eventRequestJson);
         } catch (JSONException e) {
             Log.e(TAG, "Error converting event list to Json Object", e);
         }finally {
@@ -121,9 +127,9 @@ public class ArrayEventQueue implements EventQueue {
                 }
             };
             requestQueue.addToRequestQueue(jsonRequest);
-
-            // reset the current Size
-            this.currentSize = 0;
         }
+
+        // reset the current Size
+        this.currentSize = 0;
     }
 }

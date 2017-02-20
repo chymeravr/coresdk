@@ -4,8 +4,9 @@ import android.util.Log;
 
 import com.android.volley.Response;
 import com.android.volley.VolleyError;
-import com.chymeravr.analytics.Event;
+import com.chymeravr.analytics.AnalyticsManager;
 import com.chymeravr.common.Config;
+import com.chymeravr.schemas.eventreceiver.EventType;
 
 import java.io.File;
 import java.io.FileOutputStream;
@@ -18,10 +19,11 @@ import lombok.RequiredArgsConstructor;
 
 /**
  * Created by robin_chimera on 1/23/2017.
+ * Defines callbacks for downloading media from server
  */
 
 @RequiredArgsConstructor(suppressConstructorProperties = true)
-public class Image360MediaServerListener implements Response.ErrorListener,
+final class Image360MediaServerListener implements Response.ErrorListener,
         Response.Listener<byte[]> {
 
     private final String TAG = "Image360MediaListener";
@@ -34,9 +36,9 @@ public class Image360MediaServerListener implements Response.ErrorListener,
 
         this.ad.setLoading(false);
         this.ad.getAdListener().onAdFailedToLoad();
-        HashMap<String, Object> errorMap = new HashMap<String, Object>();
+        HashMap<String, String> errorMap = new HashMap<>();
         errorMap.put("Error", error.toString());
-        this.ad.emitEvent(Event.EventType.ERROR, Event.Priority.LOW, errorMap);
+        this.ad.emitEvent(EventType.ERROR, AnalyticsManager.Priority.LOW, errorMap);
         Log.e(TAG, "Error ", error);
     }
 
@@ -60,15 +62,18 @@ public class Image360MediaServerListener implements Response.ErrorListener,
                 this.ad.onMediaServerResponseSuccess();
             }
         } catch (IOException e) {
+            this.ad.getAdListener().onAdFailedToLoad();
+
             // send error logs to server
-            HashMap<String, Object> errorMap = new HashMap<String, Object>();
+
+            HashMap<String, String> errorMap = new HashMap<>();
             errorMap.put("Error", e.toString());
-            this.ad.emitEvent(Event.EventType.ERROR, Event.Priority.LOW, errorMap);
+            this.ad.emitEvent(EventType.ERROR, AnalyticsManager.Priority.LOW, errorMap);
             Log.e(TAG, "Error processing download file for media ad : " + e.toString());
         }
     }
 
-    public String addLeadingSlash(String path)
+    private String addLeadingSlash(String path)
     {
         if (path.charAt(0) != '/')
         {
@@ -77,7 +82,7 @@ public class Image360MediaServerListener implements Response.ErrorListener,
         return path;
     }
 
-    public void createDir(File dir) throws IOException
+    private void createDir(File dir) throws IOException
     {
         if (dir.exists())
         {

@@ -4,8 +4,9 @@ import android.util.Log;
 
 import com.android.volley.Response;
 import com.android.volley.VolleyError;
-import com.chymeravr.analytics.Event;
+import com.chymeravr.analytics.AnalyticsManager;
 import com.chymeravr.common.Util;
+import com.chymeravr.schemas.eventreceiver.EventType;
 
 import org.json.JSONObject;
 
@@ -14,6 +15,7 @@ import lombok.RequiredArgsConstructor;
 
 /**
  * Created by robin_chimera on 12/6/2016.
+ * Handles call backs from the Ad Server
  */
 
 @RequiredArgsConstructor(suppressConstructorProperties = true)
@@ -30,7 +32,7 @@ class AdServerListener implements Response.ErrorListener, Response.Listener<JSON
         this.ad.setLoading(false);
         this.ad.getAdListener().onAdFailedToLoad();
         // send error logs to server
-        this.ad.emitEvent(Event.EventType.ERROR, Event.Priority.LOW, Util.getErrorMap(error));
+        this.ad.emitEvent(EventType.ERROR, AnalyticsManager.Priority.LOW, Util.getErrorMap(error));
     }
 
     @Override

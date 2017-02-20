@@ -26,9 +26,7 @@ import lombok.Setter;
 
 /**
  * Created by robin_chimera on 11/28/2016.
- */
 
-/**
  * Sets up the SDK for sending and receiving Ad Requests & Response.
  * Client Activity must initialize this class by calling the initialize
  * method before creating ads; Failure to do so will result in inability to
@@ -48,10 +46,10 @@ public final class ChymeraVrSdk {
 
     private static final String TAG = "ChymeraVrSdk";
 
-    @Getter
-    @Setter(AccessLevel.PRIVATE)
-    @NonNull
-    private static Context context;
+//    @Getter
+//    @Setter(AccessLevel.PRIVATE)
+//    @NonNull
+//    private Context context;
 
     @Getter
     @Setter(AccessLevel.PRIVATE)
@@ -63,30 +61,21 @@ public final class ChymeraVrSdk {
     private static String advertisingId;
 
     @Getter
-    private static AnalyticsManager analyticsManager;
+    private AnalyticsManager analyticsManager;
 
     @Getter
-    private static WebRequestQueue webRequestQueue;
+    private WebRequestQueue webRequestQueue;
 
     @Getter
-    private static final ChymeraVrSdk ourInstance = new ChymeraVrSdk();
+    private static final ChymeraVrSdk sdkInstance = new ChymeraVrSdk();
 
-    private static int retryNo = 10;
     private ChymeraVrSdk() {
     }
 
     /* Correctly set up Context, verify appCode, check for required permissions*/
     public static void initialize(final Context context, final String applicationId) {
-        /** TODO: figure out what to do with the app context
-         *        Initialize only once
-         **/
 
-        final boolean[] isCompleted = {false};
-
-        setContext(context);
         setApplicationId(applicationId);
-
-        /* TODO: Verify application code format & validity*/
 
         /* Check whether client has granted the mandatory permissions for this SDK to function
             We need internet and network state
@@ -114,13 +103,13 @@ public final class ChymeraVrSdk {
         }
 
         // initialize volley asynchronous request queue
-        webRequestQueue = WebRequestQueue.setInstance(context);
+        sdkInstance.webRequestQueue = WebRequestQueue.setInstance(context);
 
         // Get configuration options from server
-        fetchSdkConfig(webRequestQueue);
+        fetchSdkConfig(sdkInstance.webRequestQueue);
 
-        analyticsManager = AnalyticsManager.getInstance(context, webRequestQueue, applicationId);
-        analyticsManager.initialize();
+        sdkInstance.analyticsManager = AnalyticsManager.getInstance(sdkInstance.webRequestQueue, applicationId);
+        AnalyticsManager.initialize();
 
         Log.i(TAG, "SDK successfully initialized");
 
@@ -128,24 +117,10 @@ public final class ChymeraVrSdk {
 
     public static void shutdown(){
         // Shutdown must be called after intialize to release any allocated resources
-        analyticsManager.shutdown();
+        AnalyticsManager.shutdown();
     }
 
-    /* mute the ad */
-    public static void setAppMuted(boolean muted) {
-
-    }
-
-    /* set the app volume */
-    public static void setAppVolume(float volume) {
-
-    }
-
-    public static boolean isApplicationCodeValid(String applicationCode) {
-        return true;
-    }
-
-    public static void fetchSdkConfig(WebRequestQueue requestQueue){
+    private static void fetchSdkConfig(WebRequestQueue requestQueue){
         JsonObjectRequest jsonRequest = new JsonObjectRequest(Request.Method.GET,
                 Config.configServer, null,
                 new Response.Listener<JSONObject>() {
@@ -165,7 +140,7 @@ public final class ChymeraVrSdk {
                             Log.e(TAG, "Error parsing Server Config response : ", e);
                         }
 
-                        analyticsManager.reConfigure();
+                        AnalyticsManager.reConfigure();
                     }
                 },
                 new Response.ErrorListener() {

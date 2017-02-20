@@ -11,10 +11,12 @@ import android.support.v4.content.LocalBroadcastManager;
 import android.util.Log;
 
 import com.android.volley.toolbox.JsonObjectRequest;
-import com.chymeravr.analytics.Event;
+import com.chymeravr.analytics.AnalyticsManager;
 import com.chymeravr.common.Config;
 import com.chymeravr.common.Util;
+import com.chymeravr.schemas.eventreceiver.EventType;
 import com.chymeravr.schemas.serving.AdFormat;
+import com.chymeravr.schemas.serving.ResponseCode;
 import com.google.android.gms.ads.identifier.AdvertisingIdClient;
 import com.google.android.gms.common.GooglePlayServicesNotAvailableException;
 import com.google.android.gms.common.GooglePlayServicesRepairableException;
@@ -26,18 +28,15 @@ import java.util.HashMap;
 
 /**
  * Created by robin_chimera on 11/28/2016.
- */
-
-/*
-    This class manages the Image360 ad display for the SDK
-    It is responsible for managing the ad depending on lifecycle
-    events. It listens for lifecycle events and renders ads at an
-    appropriate time.
-    Its core responsibilities are
-        - maintaining load states
-        - store an ad
-        - call display methods for ad
-        - request a new ad
+ * This class manages the Image360 ad display for the SDK
+ * It is responsible for managing the ad depending on lifecycle
+ * events. It listens for lifecycle events and renders ads at an
+ * appropriate time.
+ * Its core responsibilities are
+ *      - maintaining load states
+ *      - store an ad
+ *      - call display methods for ad
+ *      - request a new ad
  */
 
 public final class Image360Ad extends Ad {
@@ -61,9 +60,9 @@ public final class Image360Ad extends Ad {
         }
     }
 
-    public Image360Ad(String placementId, Context context, AdListener adListener) {
-        super(AdFormat.IMG_360, placementId, context, adListener,
-                ChymeraVrSdk.getAnalyticsManager(), ChymeraVrSdk.getWebRequestQueue());
+    public Image360Ad(Context context, AdListener adListener) {
+        super(AdFormat.IMG_360, context, adListener, ChymeraVrSdk.getSdkInstance().getAnalyticsManager(),
+                ChymeraVrSdk.getSdkInstance().getWebRequestQueue());
 
         // only one instance of image360 ad will be present always
         this.setInstanceId(-1);
@@ -78,7 +77,7 @@ public final class Image360Ad extends Ad {
     * It passes targeting parameters from AdRequest for better Ads*/
     public void loadAd(final AdRequest adRequest) {
         this.setLoading(true);
-        this.emitEvent(Event.EventType.AD_REQUEST, Event.Priority.MEDIUM, null);
+//        this.emitEvent(EventType.AD_REQUEST, Event.Priority.MEDIUM, null);
 
         Log.i(TAG, "Requesting Server for a New 360 Image Ad");
 
@@ -94,24 +93,23 @@ public final class Image360Ad extends Ad {
 
                 AdvertisingIdClient.Info idInfo = null;
                 try {
-                    idInfo = AdvertisingIdClient.getAdvertisingIdInfo(ChymeraVrSdk.getContext());
-                } catch (GooglePlayServicesNotAvailableException e) {
-                    Log.e(TAG, "Load Ad Failed due to an Exception : ", e);
-                    Image360Ad.this.emitEvent(Event.EventType.ERROR, Event.Priority.LOW, Util.getErrorMap(e));
-
-                } catch (GooglePlayServicesRepairableException e) {
-                    Log.e(TAG, "Load Ad Failed due to an Exception : ", e);
-                    Image360Ad.this.emitEvent(Event.EventType.ERROR, Event.Priority.LOW, Util.getErrorMap(e));
+                    idInfo = AdvertisingIdClient.getAdvertisingIdInfo(Image360Ad.this.getContext());
+                } catch (GooglePlayServicesNotAvailableException|GooglePlayServicesRepairableException e) {
+                    Log.e(TAG, "Load Ad Failed due to Exception in Google Play Services : ", e);
+                    Image360Ad.this.emitEvent(EventType.ERROR, AnalyticsManager.Priority.LOW, Util.getErrorMap(e));
                 } catch (Exception e) {
                     Log.e(TAG, "Load Ad Failed due to an Exception : ", e);
-                    Image360Ad.this.emitEvent(Event.EventType.ERROR, Event.Priority.LOW, Util.getErrorMap(e));
+                    Image360Ad.this.emitEvent(EventType.ERROR, AnalyticsManager.Priority.LOW, Util.getErrorMap(e));
                 }
+
                 String advertId = null;
                 try {
+                    assert idInfo != null;
                     advertId = idInfo.getId();
-                } catch (Exception e) {
+                }
+                catch (Exception e) {
                     Log.e(TAG, "Load Ad Failed due to an Exception : ", e);
-                    Image360Ad.this.emitEvent(Event.EventType.ERROR, Event.Priority.LOW, Util.getErrorMap(e));
+                    Image360Ad.this.emitEvent(EventType.ERROR, AnalyticsManager.Priority.LOW, Util.getErrorMap(e));
                 }
                 ChymeraVrSdk.setAdvertisingId(advertId);
                 Log.v(TAG, "AdvertisingId : " + advertId);
@@ -131,27 +129,61 @@ public final class Image360Ad extends Ad {
     }
 
     @Override
-    void onAdServerResponseSuccess(JSONObject response) {
+    void onAdServerResponseSuccess(JSONObject response){
         try {
-            JSONObject responseAdJson = response.getJSONObject("ads").getJSONObject(this.getPlacementId());
-            this.setServingId(responseAdJson.getString("servingId"));
-            this.setMediaUrl(responseAdJson.getString("mediaUrl"));
-            // TODO: 2/10/2017 change this when server changes
-//            this.setClickUrl(responseAdJson.getString("clickUrl"));
+            String responseCodeString = response.getString("responseCode");
+            ResponseCode responseCode = ResponseCode.BAD_REQUEST;
 
-            // download media from url and save in internal memory
-            InputStreamVolleyRequest mediaDownloadRequest = this.requestGenerator
-                    .getMediaDownloadRequest(this.getMediaUrl());
-            this.getWebRequestQueue().addToRequestQueue(mediaDownloadRequest);
+            if( responseCodeString.equals("NO_AD")){
+                responseCode = ResponseCode.NO_AD;
+            }else if(responseCodeString.equals("SERVED")){
+                responseCode = ResponseCode.SERVED;
+            }
 
-            Log.i(TAG, "Ad Server response successfully processed. Proceeding to query Media Server");
+            switch(responseCode){
+                case BAD_REQUEST:
+                    Log.v(TAG, "Ad Server responded with BAD_REQUEST");
+                    this.getAdListener().onAdFailedToLoad();
+                    break;
+                case NO_AD:
+                    Log.v(TAG, "Ad Server responded with NO_AD");
+                    this.getAdListener().onAdFailedToLoad();
+                    break;
+                case SERVED:
+                    JSONObject responseAdJson = response.getJSONObject("ads").getJSONObject(this.getPlacementId());
+                    this.setServingId(responseAdJson.getString("servingId"));
+                    this.setMediaUrl(responseAdJson.getString("mediaUrl"));
+                    // TODO: 2/10/2017 change this when server changes
+                    // this.setClickUrl(responseAdJson.getString("clickUrl"));
+
+                    // download media from url and save in internal memory
+                    InputStreamVolleyRequest mediaDownloadRequest = this.requestGenerator
+                            .getMediaDownloadRequest(this.getMediaUrl());
+                    this.getWebRequestQueue().addToRequestQueue(mediaDownloadRequest);
+
+                    Log.i(TAG, "Ad Server response successfully processed. Proceeding to query Media Server");
+                    break;
+            }
+//        try {
+//            JSONObject responseAdJson = response.getJSONObject("ads").getJSONObject(this.getPlacementId());
+//            this.setServingId(responseAdJson.getString("servingId"));
+//            this.setMediaUrl(responseAdJson.getString("mediaUrl"));
+//            // TODO: 2/10/2017 change this when server changes
+////            this.setClickUrl(responseAdJson.getString("clickUrl"));
+//
+//            // download media from url and save in internal memory
+//            InputStreamVolleyRequest mediaDownloadRequest = this.requestGenerator
+//                    .getMediaDownloadRequest(this.getMediaUrl());
+//            this.getWebRequestQueue().addToRequestQueue(mediaDownloadRequest);
+//
+//            Log.i(TAG, "Ad Server response successfully processed. Proceeding to query Media Server");
         } catch (JSONException e) {
             this.setLoading(false);
             this.getAdListener().onAdFailedToLoad();
 
-            HashMap<String, Object> errorMap = new HashMap<>();
+            HashMap<String, String> errorMap = new HashMap<>();
             errorMap.put("Error", e.toString());
-            this.emitEvent(Event.EventType.ERROR, Event.Priority.LOW, errorMap);
+            this.emitEvent(EventType.ERROR, AnalyticsManager.Priority.LOW, errorMap);
 
             Log.e(TAG, "Adserver Success Response Handler encountered Exception : ", e);
         }
@@ -162,7 +194,7 @@ public final class Image360Ad extends Ad {
         this.getAdListener().onAdLoaded();
         this.setLoaded(true);
         this.setLoading(false);
-        this.emitEvent(Event.EventType.AD_LOAD, Event.Priority.MEDIUM, null);
+//        this.emitEvent(EventType.AD_LOAD, Event.Priority.MEDIUM, null);
         Log.i(TAG, "Media Server Response Successful");
     }
 

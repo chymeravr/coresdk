@@ -1,4 +1,4 @@
-include ':soil', ':schemas'
+include ':soil'
 include ':coreEngine'
 include ':glImplementation'
 include ':image360'

@@ -24,7 +24,7 @@ public class Config {
     @Setter
     public static String adServer = "http://serving.chymeravr.com:8080/api/v1/ads/";
     @Setter
-    public static String analyticsServer = "http://www.amock.io/api/v1/robin/analyticsServer/";
+    public static String analyticsServer = "http://www.serving.chymeravr.com:8081/api/v1/events/"; //"http://www.amock.io/api/v1/robin/analyticsServer/";
     @Setter
     public static int androidVersionNo = 23;
 

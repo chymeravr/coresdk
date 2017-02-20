@@ -3,8 +3,10 @@ package com.chymeravr.adclient;
 import android.content.Context;
 
 import com.chymeravr.analytics.AnalyticsManager;
-import com.chymeravr.analytics.Event;
 import com.chymeravr.common.WebRequestQueue;
+import com.chymeravr.schemas.eventreceiver.EventType;
+import com.chymeravr.schemas.eventreceiver.RuntimeAdMeta;
+import com.chymeravr.schemas.eventreceiver.SDKEvent;
 import com.chymeravr.schemas.serving.AdFormat;
 
 import org.json.JSONObject;
@@ -30,8 +32,8 @@ abstract class Ad {
     private final AdFormat adFormat;
 
     @Getter
-    @NonNull
-    private final String placementId;
+    @Setter
+    private String placementId;
 
     @Getter(AccessLevel.PACKAGE)
     @Setter(AccessLevel.PACKAGE)
@@ -46,7 +48,8 @@ abstract class Ad {
     private final Context context;
 
     @Getter
-    private final AdListener adListener;
+    @NonNull
+    private AdListener adListener;
 
     @Getter(AccessLevel.PACKAGE)
     @Setter(AccessLevel.PACKAGE)
@@ -71,11 +74,12 @@ abstract class Ad {
     private final WebRequestQueue webRequestQueue;
 
 
-    protected void emitEvent(Event.EventType eventType, Event.Priority priority, Map<String, Object> map){
+    protected void emitEvent(EventType eventType, AnalyticsManager.Priority priority, Map<String, String> map){
         long currTime = new Timestamp(System.currentTimeMillis()).getTime();
-        Event event = new Event(currTime, eventType, priority, map, this.getServingId(), this.getInstanceId());
-
-        this.getAnalyticsManager().push(event);
+        RuntimeAdMeta adMeta = new RuntimeAdMeta(this.getServingId(), this.getInstanceId());
+        SDKEvent event = new SDKEvent(currTime, eventType, adMeta);
+        event.setParamsMap(map);
+        this.getAnalyticsManager().push(event, priority);
     }
 
     public abstract void loadAd(AdRequest adRequest);

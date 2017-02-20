@@ -19,12 +19,11 @@ public class WebRequestQueue {
     private static WebRequestQueue mInstance;
     private RequestQueue mRequestQueue;
 
-
-    private static Context mCtx;
+//    private Context mCtx;
 
     private WebRequestQueue(@NonNull Context context) {
-        mCtx = context;
-        mRequestQueue = getRequestQueue();
+//        mCtx = context;
+        mRequestQueue = getRequestQueue(context);
     }
 
     public static synchronized WebRequestQueue setInstance(Context context) {
@@ -36,23 +35,26 @@ public class WebRequestQueue {
 
     public static synchronized WebRequestQueue getInstance() {
         if (mInstance == null) {
-            throw new NullPointerException();
+            throw new NullPointerException("WebRequestQueue has not been initialized");
         }
         return mInstance;
     }
 
-    public RequestQueue getRequestQueue() {
+    private RequestQueue getRequestQueue(Context context) {
         if (mRequestQueue == null) {
             // getApplicationContext() is key, it keeps you from leaking the
             // Activity or BroadcastReceiver if someone passes one in.
-            mRequestQueue = Volley.newRequestQueue(mCtx.getApplicationContext());
+            mRequestQueue = Volley.newRequestQueue(context.getApplicationContext());
         }
         return mRequestQueue;
     }
 
-    public <T> void addToRequestQueue(Request<T> req) {
-        getRequestQueue().add(req);
-    }
 
+    public <T> void addToRequestQueue(Request<T> req) {
+        if (mRequestQueue == null){
+            throw new NullPointerException("WebRequestQueue has not been initialized");
+        }
+        mRequestQueue.add(req);
+    }
 
 }

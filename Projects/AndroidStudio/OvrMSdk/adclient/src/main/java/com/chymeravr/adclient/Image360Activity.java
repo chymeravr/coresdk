@@ -23,8 +23,10 @@ import android.view.SurfaceView;
 import android.view.WindowManager;
 
 import com.chymeravr.analytics.AnalyticsManager;
-import com.chymeravr.analytics.Event;
 import com.chymeravr.common.Config;
+import com.chymeravr.schemas.eventreceiver.EventType;
+import com.chymeravr.schemas.eventreceiver.RuntimeAdMeta;
+import com.chymeravr.schemas.eventreceiver.SDKEvent;
 
 import java.sql.Timestamp;
 import java.util.HashMap;
@@ -36,6 +38,7 @@ import lombok.Getter;
 
 /**
  * Created by robin_chimera on 1/24/2017.
+ * Custom Activity to show ads in
  */
 
 public final class Image360Activity extends Activity implements SurfaceHolder.Callback {
@@ -47,7 +50,6 @@ public final class Image360Activity extends Activity implements SurfaceHolder.Ca
     private long mNativeHandle;
 
     private String clickUrl;
-    private String imageAdFilePath;
 
     @Getter
     private String servingId;
@@ -55,10 +57,7 @@ public final class Image360Activity extends Activity implements SurfaceHolder.Ca
     @Getter
     private int instanceId;
 
-    @Getter
-    private static AnalyticsManager analyticsManager;
-
-    private AdListener adListener;
+//    private AdListener adListener;
 
     // load the native library for image 360 ads
     static {
@@ -115,11 +114,12 @@ public final class Image360Activity extends Activity implements SurfaceHolder.Ca
         }
     }
 
-    public void emitEvent(Event.EventType eventType, Event.Priority priority, HashMap<String, Object> map){
+    public void emitEvent(EventType eventType, AnalyticsManager.Priority priority, HashMap<String, String> map){
         long currTime = new Timestamp(System.currentTimeMillis()).getTime();
-        Event event = new Event(currTime, eventType, priority, map, this.getServingId(), this.getInstanceId());
-
-        this.getAnalyticsManager().push(event);
+        RuntimeAdMeta adMeta = new RuntimeAdMeta(this.getServingId(), this.getInstanceId());
+        SDKEvent event = new SDKEvent(currTime, eventType, adMeta);
+        event.setParamsMap(map);
+        AnalyticsManager.push(event, priority);
     }
 
     @Override
@@ -130,14 +130,15 @@ public final class Image360Activity extends Activity implements SurfaceHolder.Ca
         // Fetch url to show when user clicks
         Intent intent = getIntent();
         this.clickUrl = intent.getStringExtra("clickUrl");
-        this.imageAdFilePath = intent.getStringExtra("imageAdFilePath");
+
+        String imageAdFilePath = intent.getStringExtra("imageAdFilePath");
+
+        this.instanceId = intent.getIntExtra("instanceId", -1);
+        this.servingId = intent.getStringExtra("servingId");
 
         // Register an kill activity intent to destroy the activity when user is done and return to parent
         LocalBroadcastManager.getInstance(this).registerReceiver(new MessageHandler(),
                 new IntentFilter("kill"));
-
-        // get analytics manager from sdk manager
-        analyticsManager = ChymeraVrSdk.getAnalyticsManager();
 
         // schedule polling for hmd parameters
         this.scheduler = Executors.newScheduledThreadPool(1);
@@ -189,7 +190,7 @@ public final class Image360Activity extends Activity implements SurfaceHolder.Ca
     @Override
     protected void onStop() {
         Log.d(TAG, "onStop()");
-        this.emitEvent(Event.EventType.AD_CLICK, Event.Priority.HIGH, null);
+        this.emitEvent(EventType.AD_CLICK, AnalyticsManager.Priority.HIGH, null);
         super.onStop();
         this.onStopNative(this.mNativeHandle);
     }
@@ -205,7 +206,7 @@ public final class Image360Activity extends Activity implements SurfaceHolder.Ca
     public void surfaceCreated(SurfaceHolder holder) {
         Log.v(TAG, "ActivityGearVR::onSurfaceCreated()");
 
-        this.emitEvent(Event.EventType.AD_SHOW, Event.Priority.HIGH, null);
+        this.emitEvent(EventType.AD_SHOW, AnalyticsManager.Priority.HIGH, null);
         if (this.mNativeHandle != 0) {
             onSurfaceCreatedNative(this.mNativeHandle, holder.getSurface());
             this.mSurfaceHolder = holder;
@@ -242,7 +243,7 @@ public final class Image360Activity extends Activity implements SurfaceHolder.Ca
         if (mNativeHandle != 0) {
             int keyCode = event.getKeyCode();
             int action = event.getAction();
-            this.emitEvent(Event.EventType.AD_CLICK, Event.Priority.MEDIUM, null);
+            this.emitEvent(EventType.AD_CLICK, AnalyticsManager.Priority.MEDIUM, null);
 
             if (keyCode == KeyEvent.KEYCODE_VOLUME_UP) {
                 adjustVolume(1);
@@ -297,7 +298,7 @@ public final class Image360Activity extends Activity implements SurfaceHolder.Ca
     public void getHMDParams() {
         if(this.mNativeHandle != 0) {
             float[] hmdParams = this.getHMDParamsNative(this.mNativeHandle);
-            HashMap<String, Object> hmdEyeMap = new HashMap<>();
+            HashMap<String, String> hmdEyeMap = new HashMap<>();
 
             String[] parameterKeys =
                             {"L00", "L01", "L02", "L03",
@@ -312,10 +313,10 @@ public final class Image360Activity extends Activity implements SurfaceHolder.Ca
 
             int i = 0;
             for (String key : parameterKeys) {
-                hmdEyeMap.put(key, hmdParams[i++]);
+                hmdEyeMap.put(key, String.valueOf(hmdParams[i++]));
             }
 
-            this.emitEvent(Event.EventType.AD_VIEW_METRICS, Event.Priority.LOW, hmdEyeMap);
+            this.emitEvent(EventType.AD_VIEW_METRICS, AnalyticsManager.Priority.LOW, hmdEyeMap);
         }
     }
 }

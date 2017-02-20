@@ -11,9 +11,10 @@ import android.util.Log;
 
 import com.android.volley.Request;
 import com.android.volley.toolbox.JsonObjectRequest;
-import com.chymeravr.analytics.Event;
+import com.chymeravr.analytics.AnalyticsManager;
 import com.chymeravr.common.Config;
 import com.chymeravr.common.Util;
+import com.chymeravr.schemas.eventreceiver.EventType;
 import com.chymeravr.schemas.serving.Demographics;
 import com.chymeravr.schemas.serving.Device;
 import com.chymeravr.schemas.serving.Location;
@@ -61,18 +62,19 @@ final class RequestGenerator {
 
         String appId = ChymeraVrSdk.getApplicationId();
 
-        List<Placement> placements = new ArrayList<Placement>();
+        List<Placement> placements = new ArrayList<>();
         placements.add(new Placement(this.ad.getPlacementId(), this.ad.getAdFormat()));
 
         Location loc = new Location(adRequest.getLocation().getLatitude(),
                 adRequest.getLocation().getLongitude(),
                 adRequest.getLocation().getAccuracy());
 
+
         Demographics demo = new Demographics(adRequest.getBirthday().toString(),
                 adRequest.getGender().getValue(),
                 adRequest.getEmail());
 
-        ActivityManager actManager = (ActivityManager) ChymeraVrSdk.getContext().getSystemService(ACTIVITY_SERVICE);
+        ActivityManager actManager = (ActivityManager) this.ad.getContext().getSystemService(ACTIVITY_SERVICE);
         ActivityManager.MemoryInfo memInfo = new ActivityManager.MemoryInfo();
         actManager.getMemoryInfo(memInfo);
         long totalMemory = memInfo.totalMem;
@@ -80,7 +82,7 @@ final class RequestGenerator {
         Device device = new Device(Build.MANUFACTURER, Build.MODEL, Double.toString(totalMemory));
 
         String connectivity = null;
-        ConnectivityManager cm = (ConnectivityManager) ChymeraVrSdk.getContext().getSystemService(Context.CONNECTIVITY_SERVICE);
+        ConnectivityManager cm = (ConnectivityManager) this.ad.getContext().getSystemService(Context.CONNECTIVITY_SERVICE);
         NetworkInfo activeNetwork = cm.getActiveNetworkInfo();
         if (activeNetwork != null) { // connected to the internet
             if (activeNetwork.getType() == ConnectivityManager.TYPE_WIFI) {
@@ -92,15 +94,23 @@ final class RequestGenerator {
             Log.e("RequestGenerator", "User currently not connected to the internet");
         }
 
-        WifiManager wifiManager = (WifiManager) ChymeraVrSdk.getContext().getSystemService(Context.WIFI_SERVICE);
+        WifiManager wifiManager = (WifiManager) this.ad.getContext().getSystemService(Context.WIFI_SERVICE);
         WifiInfo info = wifiManager.getConnectionInfo();
         String ssid = info.getSSID();
 
-        ServingRequest servingRequest =
-                new ServingRequest(timestamp, (short) sdkVersion, appId, placements,
-                        Config.osId, String.valueOf(Build.VERSION.SDK_INT),
-                        ChymeraVrSdk.getAdvertisingId(), Config.hmdId,
-                        loc, demo, device, connectivity, ssid);
+//        ServingRequest servingRequest =
+//                new ServingRequest(timestamp, (short) sdkVersion, appId, placements,
+//                        Config.osId, String.valueOf(Build.VERSION.SDK_INT),
+//                        ChymeraVrSdk.getAdvertisingId(), Config.hmdId,
+//                        loc, demo, device, connectivity, ssid);
+
+        ServingRequest servingRequest
+                = new ServingRequest(timestamp, (short) sdkVersion, appId, placements,
+                Config.osId, String.valueOf(Build.VERSION.SDK_INT),
+                ChymeraVrSdk.getAdvertisingId(), Config.hmdId);
+
+        servingRequest.setLocation(loc);
+
 
         String servingRequestJson = new Gson().toJson(servingRequest);
         JSONObject jsonAdRequest = null;
@@ -108,7 +118,7 @@ final class RequestGenerator {
             jsonAdRequest = new JSONObject(servingRequestJson);
         } catch (JSONException e) {
             Log.e(TAG, "Encountered a JSONException in creating ad request", e);
-            this.ad.emitEvent(Event.EventType.ERROR, Event.Priority.HIGH, Util.getErrorMap(e));
+            this.ad.emitEvent(EventType.ERROR, AnalyticsManager.Priority.HIGH, Util.getErrorMap(e));
         }
         JsonObjectRequest requestResult = new JsonObjectRequest(Request.Method.POST, Config.adServer,
                 jsonAdRequest, this.adServerListener, this.adServerListener) {
