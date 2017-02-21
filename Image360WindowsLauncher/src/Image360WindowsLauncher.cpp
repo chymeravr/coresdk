@@ -27,11 +27,14 @@
 #include <windowsImplementation/MutexLockWindows.h>
 #include <renderer/RendererNoHMD.h>
 #include <coreEngine/modifier/ImageBMPLoader.h>
+#include <coreEngine/components/transformTree/TransformTreeFactory.h>
+#include <glImplementation/factory/UniformColorFactoryGL.h>
+#include <coreEngine/ui/UIFactory.h>
+#include <glImplementation/ui/TextMaterialFactoryGL.h>
+#include <coreEngine/components/gazeDetector/GazeDetectorFactory.h>
 #include <coreEngine/modifier/ImagePNGLoader.h>
 
-
 #include <GLFW/glfw3.h>
-
 
 using namespace std;
 using namespace cl;
@@ -107,8 +110,7 @@ void mousePassiveMotion(int x, int y){
 }
 
 // Window dimensions
-const int WIDTH = 800, HEIGHT = 600;
-
+const int WIDTH = 1600, HEIGHT = 1000;
 
 int _tmain(int argc, _TCHAR** argv)
 {
@@ -159,6 +161,15 @@ int _tmain(int argc, _TCHAR** argv)
 	std::unique_ptr<ICameraFactory> cameraFactory(new CameraGLFactory(loggerFactory.get()));
 	std::unique_ptr<IMutexLock> mutexLock(new MutexLockWindows);
 	eventQueue = std::unique_ptr<IEventQueue>(new EventQueue(std::move(mutexLock)));
+	std::unique_ptr<ITransformTreeFactory> transformTreeFactory(new TransformTreeFactory(loggerFactory.get()));
+	std::unique_ptr<IModelFactory> uiModelFactory(new ModelGLFactory(loggerFactory.get()));
+	std::unique_ptr<IUniformColorFactory> uiUniformColorFactory(new UniformColorFactoryGL(loggerFactory.get()));
+	std::unique_ptr<ITransformTreeFactory> uiTransformTreeFactory(new TransformTreeFactory(loggerFactory.get()));
+	std::unique_ptr<GazeDetectorFactory> gazeDetectorFactory(new GazeDetectorFactory);
+
+	std::unique_ptr<ITextMaterialFactory> textMaterialFactory(new TextMaterialFactoryGL(loggerFactory.get()));
+	std::unique_ptr<UIFactory> uiFactory(new UIFactory(loggerFactory.get(), std::move(uiModelFactory), std::move(uiUniformColorFactory), std::move(uiTransformTreeFactory), std::move(textMaterialFactory)));
+	
 	application = std::unique_ptr<Image360>(new Image360(std::move(renderer),
 		std::move(sceneFactory),
 		std::move(modelFactory),
@@ -166,9 +177,12 @@ int _tmain(int argc, _TCHAR** argv)
 		std::move(diffuseTextureCubeMapFactory),
 		std::move(transformCameraFactory),
 		std::move(transformModelFactory),
+		std::move(transformTreeFactory),
 		std::move(cameraFactory),
 		eventQueue.get(),
-		loggerFactory.get()));
+		loggerFactory.get(),
+		std::move(uiFactory),
+		std::move(gazeDetectorFactory)));
 
 	//// register callbacks
 	application->start();

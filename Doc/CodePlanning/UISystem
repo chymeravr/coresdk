@@ -1,0 +1,86 @@
+UniformColorMaterial
+TextMaterial
+
+UIElement --- Deals with positioning{
+	transformTree,
+	margin,
+	padding,
+	z-index,
+	left,
+	right
+	
+	UIElement(TransformTree)
+	addChild(tag, UIElement);
+	removeChild(tag);
+}
+
+EmptyElement --- To store just the transformation
+
+PlanarBackground : UIElement
+
+TextElement : UIElement
+
+ButtonElement : UIElement
+
+Application-
+PlanarBackground PlanarBackground = PlanarBackgroundFactory.createPlanarBackground(scene, transformTreeModel, color, width, height);
+
+IFontStore fontStore;
+fontStore.loadFontsIntoTexture("arial.ttf", fontSize, fontStyle);
+
+TextStyle para;
+para.setFont("arial");
+para.setFontSize(10);
+para.setFontStyle(FONT_BOLD);
+para.setLineHeight(10);
+para.setFontColor(rgba());
+
+TextElement textElement = textFactory.createTextElement(FontStore, TextStyle, text, width, height);
+textElement.setTransformTree(textTransform);
+textElement.setMargin(10);
+textElement.setPadding(20);
+PlanarBackground.addTextElement(textElement);
+
+
+1. Do PlanarBackground. Test it.
+2. FontStore
+3. Do Text. Test it.
+
+************************************************
+PlanarBackground
+include/coreEngine/renderObjects/MaterialUniformColor.h
+include/coreEngine/renderObjects/ShaderUniformColor.h
+include/coreEngine/ui/UIElement.h
+include/coreEngine/ui/PlanarBackground.h
+include/glImplementation/renderObjects/MaterialUniformColorGL.h
+include/glImplementation/renderObjects/ShaderUniformColorGL.h
+
+src/ui/UIElement.cpp
+src/ui/PlanarBackground.cpp
+glImplementation/src/renderObjects/MaterialUniformColorGL.cpp
+glImplementation/src/renderObjects/ShaderUniformColorGL.cpp
+
+*************************************************
+TextIntegration
+CoreEngineIncludes{
+	ui/TextStyle.h
+	ui/FontLoader.h
+	ui/TextElement.h
+	ui/ShaderText.h
+	ui/MaterialText.h
+	ui/IShaderTextFactory.h
+	ui/IMaterialTextFactory.h
+}
+
+GLImplementationIncludes{
+	ui/ShaderTextGL.h
+	ui/MaterialTextGL.h
+	ui/ShaderTextGL.h
+	ui/IShaderTextFactoryGL.h
+	ui/IMaterialTextFactoryGL.h
+}
+
+GLImplementationSRC{
+	ui/MaterialTextGL.cpp
+	ui/ShaderTextGL.cpp
+}

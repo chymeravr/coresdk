@@ -9,9 +9,8 @@ include_directories(${Conf_INCLUDE_DIRS}
 
 set (INCLUDE_DIRS ${PROJECT_SOURCE_DIR}/include)
 
-FILE(GLOB_RECURSE HEADERS "include/**/*.h")
+FILE(GLOB_RECURSE INCLUDE_HEADERS "include/*.h")
 FILE(GLOB_RECURSE SOURCES "src/**/*.cpp")
-
 
 FUNCTION (EXCLUDE_FILES_FROM_DIR_IN_LIST _InFileList _excludeDirName _verbose)
   foreach (ITR ${_InFileList})
@@ -45,5 +44,5 @@ elseif(GLES2_0)
 endif()
 
 
-add_library(${PROJECT_NAME} STATIC ${HEADERS} ${SOURCES})
+add_library(${PROJECT_NAME} STATIC ${INCLUDE_HEADERS} ${SOURCES})
 target_link_libraries(${PROJECT_NAME} CoreEngine)
