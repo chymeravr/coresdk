@@ -8,6 +8,7 @@ include_directories(${Conf_INCLUDE_DIRS}
 					${CMAKE_SOURCE_DIR}/GLImplementation/include
 					${CMAKE_SOURCE_DIR}/Renderer/include
 					${PROJECT_SOURCE_DIR}/include)
+
 FILE(GLOB_RECURSE INCLUDE_HEADERS "include/*.h")
 set(SOURCES ${PROJECT_SOURCE_DIR}/src/Image360.cpp
 )

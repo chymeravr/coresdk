@@ -12,6 +12,7 @@ option (x64 "Use x64 Libraries" OFF)
 
 ##GL options
 option (WINDOWS_GL "Use GL in Windows" ON)
+option (GLES2_0 "Use GLES in Mobile" OFF)
 option (NOGL "Don't use GL" OFF)
 
 set (REPO_PATH ${PROJECT_SOURCE_DIR}/Repository)
@@ -24,21 +25,21 @@ set (CMAKE_CXX_STANDARD 11)
 
 if(WINDOWS_GL)
 	add_definitions(-DWINDOWS_GL)
+elseif(GLES2_0)
+	add_definitions(-DGLES2_0)
 elseif(NOGL)
 	add_definitions(-DNOGL)
 endif()
 
 
-#configure_file (
-#  "${PROJECT_SOURCE_DIR}/GraphicsSDKConfig.h.in"
-#  "${PROJECT_BINARY_DIR}/GraphicsSDKConfig.h"
-#  )
 add_subdirectory(Conf)
 add_subdirectory(CoreEngine)
 add_subdirectory(GLImplementation)
 add_subdirectory(Renderer)
 add_subdirectory(Image360)
+add_subdirectory(SOIL)
 if(WINDOWS AND WINDOWS_GL)
+	add_subdirectory(GLFW C)
 	add_subdirectory(WindowsImplementation)
 	add_subdirectory(Image360WindowsLauncher)
 #	add_subdirectory(FreeTypeTest)

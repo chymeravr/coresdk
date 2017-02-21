@@ -61,6 +61,9 @@ namespace cl{
 		// Read the actual data from the file into the buffer
 		fread(data.get(), 1, imageSize, file);
 
+		// a bitmap is stored as BGR -> this is not supported by gles - lets correct for it
+		swapColorChannels(data.get(), width, height, imageSize);
+
 		// Everything is in memory now, the file wan be closed
 		fclose(file);
 		std::unique_ptr<Image> image(new Image);
@@ -69,5 +72,19 @@ namespace cl{
 		image->height = height;
 		image->dataSize = imageSize;
 		return std::move(image);
+	}
+
+	void ImageBMPLoader::swapColorChannels(unsigned char* data, unsigned int width, unsigned int height, unsigned int dataSize)
+	{
+		unsigned int pixels = width*height;
+		unsigned int channels = dataSize / pixels;
+		for (int i = 0; i < pixels - 2; i++)
+		{
+			unsigned int firstIndex = i*channels + 0;
+			unsigned int lastIndex = i*channels + 2;
+			unsigned char temp = data[firstIndex];
+			data[firstIndex] = data[lastIndex];
+			data[lastIndex] = temp;
+		}
 	}
 }
