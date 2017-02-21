@@ -1,0 +1,138 @@
+apply plugin: 'com.android.model.library'
+
+def coreEngineRoot = "../../../../CoreEngine"
+def confRoot = "../../../../Conf"
+def glmRoot = "../../../../Repository/thirdParty/glm/glm-0.9.7.6/"
+def GLImplementationRoot = "../../../../GLImplementation"
+def image360Root = "../../../../Image360"
+def rendererRoot = "../../../../Renderer"
+def image360AndroidRoot = "../../../../AndroidImplementation"
+def ovr_mobile_root = "${project.rootDir}/ovr_sdk_mobile"
+
+def adclient = "${project.rootDir}/adclient"
+
+model {
+    repositories{
+        libs(PrebuiltLibraries) {
+            vrapi{
+                headers.srcDir "${ovr_mobile_root}/VrApi/Include"
+                binaries.withType(SharedLibraryBinary){
+                    sharedLibraryFile = file("${ovr_mobile_root}/VrApi/Libs/Android/${targetPlatform.getName()}/Release/libvrapi.so")
+                }
+            }
+            libovrkernel{
+                headers.srcDir "${ovr_mobile_root}/LibOVRKernel/Src"
+                binaries.withType(StaticLibraryBinary){
+                    staticLibraryFile = file("${ovr_mobile_root}/LibOVRKernel/Libs/Android/${targetPlatform.getName()}/Release/libovrkernel.a")
+                }
+            }
+        }
+
+    }
+
+    android {
+        compileSdkVersion 24
+        buildToolsVersion "25.0.0"
+
+        defaultConfig.with {
+            minSdkVersion.apiLevel = 23
+            targetSdkVersion.apiLevel = 24
+            versionCode = 1
+            versionName = "1.0"
+
+            defaultPublishConfig 'release'
+            publishNonDefault true
+
+            testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
+
+        }
+
+        buildTypes {
+            debug{
+                minifyEnabled false
+                debuggable true
+            }
+            release {
+                minifyEnabled false
+                //proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
+                proguardFiles.add(file('proguard-android.txt'))
+            }
+        }
+
+        ndk{
+            moduleName = "image360ad"
+            cppFlags.add("-std=c++11")
+            cppFlags.add("-frtti ")
+            cppFlags.add("-fexceptions")
+
+            // -I cppFlag -I is used for include files. In absence of this files will not recognize include statement with <> brackets
+            cppFlags.add("-I" + file("${glmRoot}/glm").absolutePath)
+            cppFlags.add("-I" + file("${confRoot}/include").absolutePath)
+            cppFlags.add("-I" + file("${coreEngineRoot}/include").absolutePath)
+            cppFlags.add("-I" + file("${ovr_mobile_root}/VrApi/Include").absolutePath)
+            cppFlags.add("-I" + file("${image360Root}/include").absolutePath)
+            cppFlags.add("-I" + file("${GLImplementationRoot}/include").absolutePath)
+            cppFlags.add("-I" + file("${rendererRoot}/include").absolutePath)
+            cppFlags.add("-I" + file("${image360AndroidRoot}/Include").absolutePath)
+            cppFlags.addAll(project.properties.commonCPPFlags)
+            stl = "gnustl_shared"
+
+            cppFlags.addAll(['-Wall', '-fno-exceptions'])
+
+            ldLibs.addAll(["log", "android", "GLESv3", "EGL"])
+
+            abiFilters.addAll(['armeabi-v7a'])
+        }
+
+        sources{
+            main{
+                jni{
+                    source{
+                        srcDir "${adclient}/src/main/jni"
+                    }
+                    dependencies{
+                        library 'libovrkernel' linkage 'static'
+                        library 'vrapi' linkage 'shared'
+
+                        project ':coreEngine' linkage 'shared'
+                        project ':glImplementation' linkage 'shared'
+                        project ':image360' linkage 'shared'
+                        project ':renderer' linkage 'shared'
+                        project ':image360AndroidNative' linkage 'shared'
+                    }
+                }
+            }
+        }
+
+    }
+
+    // to suppress lombok invalid package warning in adclient linter
+    android.lintOptions {
+        disable 'InvalidPackage'
+    }
+
+}
+
+
+dependencies {
+    compile fileTree(dir: 'libs', include: ['*.jar'])
+    androidTestCompile('com.android.support.test.espresso:espresso-core:2.2.2', {
+        exclude group: 'com.android.support',
+                module: 'support-annotations'
+
+
+    })
+    compile 'com.android.support:appcompat-v7:24.2.1'
+    testCompile 'junit:junit:4.12'
+    testCompile 'org.mockito:mockito-core:1.10.19'
+    androidTestCompile 'org.mockito:mockito-core:1.10.19'
+    compile 'com.android.volley:volley:1.0.0'
+    compile 'org.jetbrains:annotations-java5:15.0'
+    androidTestCompile 'com.google.dexmaker:dexmaker:1.1'
+    androidTestCompile 'com.google.dexmaker:dexmaker-mockito:1.1'
+    compile "org.projectlombok:lombok:1.16.12"
+    compile 'javax.annotation:javax.annotation-api:1.2'
+
+//    compile 'com.google.android.gms:play-services-gcm:10.0.1'
+
+}

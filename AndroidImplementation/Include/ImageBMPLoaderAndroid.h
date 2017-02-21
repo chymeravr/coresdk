@@ -16,6 +16,7 @@ namespace cl{
     public:
         ImageBMPLoaderAndroid(ILogger* logger);
         std::unique_ptr<Image> loadImage(AAssetManager* mgr, std::string imagePath);
+        std::unique_ptr<Image> loadImage(std::string imagePath);
     private:
         ILogger* logger;
     };

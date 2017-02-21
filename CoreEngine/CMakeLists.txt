@@ -4,38 +4,11 @@ project(CoreEngine)
 
 include_directories (${REPO_PATH}/thirdParty/glm/glm-${GLM_VERSION}/glm 
 					 ${Conf_INCLUDE_DIRS} 
+					 ${SOIL_INCLUDE_DIRS}
 					 ${PROJECT_SOURCE_DIR}/include)
 
 FILE(GLOB_RECURSE INCLUDE_HEADERS "include/*.h")
-					 
-set(SOURCES ${PROJECT_SOURCE_DIR}/src/components/gazeDetector/GazeDetector.cpp
-			${PROJECT_SOURCE_DIR}/src/components/gazeDetector/GazeDetectorBox.cpp
-			${PROJECT_SOURCE_DIR}/src/components/transform/TransformCamera.cpp
-			${PROJECT_SOURCE_DIR}/src/components/transform/TransformModel.cpp
-			${PROJECT_SOURCE_DIR}/src/components/transformTree/TransformTree.cpp
-			${PROJECT_SOURCE_DIR}/src/components/transformTree/TransformTreeModel.cpp
-			${PROJECT_SOURCE_DIR}/src/components/transformTree/TransformTreeCamera.cpp
-			${PROJECT_SOURCE_DIR}/src/conf/MathType.cpp
-			${PROJECT_SOURCE_DIR}/src/events/EventQueue.cpp
-			${PROJECT_SOURCE_DIR}/src/modelBuilder/ConcentricCircleBuilder.cpp
-			${PROJECT_SOURCE_DIR}/src/modelBuilder/CubeBuilder.cpp
-			${PROJECT_SOURCE_DIR}/src/modelBuilder/UVSphereBuilder.cpp
-			${PROJECT_SOURCE_DIR}/src/modifier/ImageBMPLoader.cpp
-			${PROJECT_SOURCE_DIR}/src/modifier/ImageModifier.cpp
-			${PROJECT_SOURCE_DIR}/src/modifier/ModelModifier.cpp
-			${PROJECT_SOURCE_DIR}/src/renderObjects/Camera.cpp
-			${PROJECT_SOURCE_DIR}/src/renderObjects/ComponentList.cpp
-			${PROJECT_SOURCE_DIR}/src/renderObjects/Relation.cpp
-			${PROJECT_SOURCE_DIR}/src/renderObjects/Scene.cpp
-			${PROJECT_SOURCE_DIR}/src/ui/CharacterElement.cpp
-			${PROJECT_SOURCE_DIR}/src/ui/FontStore.cpp
-			${PROJECT_SOURCE_DIR}/src/ui/PlanarBackground.cpp
-			${PROJECT_SOURCE_DIR}/src/ui/Reticle.cpp
-			${PROJECT_SOURCE_DIR}/src/ui/TextElement.cpp
-			${PROJECT_SOURCE_DIR}/src/ui/UIElement.cpp
-			${PROJECT_SOURCE_DIR}/src/util/SimpleOBJLoader.cpp
-)
-
+FILE(GLOB_RECURSE SOURCES "src/**/*.cpp")
 
 #######################################################
 # Creating FreeType integration
@@ -58,7 +31,8 @@ include_directories("${freetype_SOURCE_DIR}/include")
 
 
 add_library(${PROJECT_NAME} STATIC ${INCLUDE_HEADERS}  ${SOURCES})
-target_link_libraries(${PROJECT_NAME} freetype)
+target_link_libraries(${PROJECT_NAME} freetype SOIL)
+
 #######################################################################################
 # CoreEngineTests
 #######################################################################################

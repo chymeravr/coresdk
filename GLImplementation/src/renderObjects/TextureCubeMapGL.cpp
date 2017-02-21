@@ -16,20 +16,6 @@ namespace cl{
 		assert(data[TEXTURE_CUBE_MAP_FACE_BACK] != nullptr);
 		assert(data[TEXTURE_CUBE_MAP_FACE_FRONT] != nullptr);
 
-		// a bitmap is stored as BGR -> this is not supported by gles - lets correct for it
-		swapColorChannels(data[TEXTURE_CUBE_MAP_FACE_FRONT].get(), width[TEXTURE_CUBE_MAP_FACE_FRONT],
-			height[TEXTURE_CUBE_MAP_FACE_FRONT], dataSize[TEXTURE_CUBE_MAP_FACE_FRONT]);
-		swapColorChannels(data[TEXTURE_CUBE_MAP_FACE_BACK].get(), width[TEXTURE_CUBE_MAP_FACE_BACK],
-			height[TEXTURE_CUBE_MAP_FACE_BACK], dataSize[TEXTURE_CUBE_MAP_FACE_BACK]);
-		swapColorChannels(data[TEXTURE_CUBE_MAP_FACE_LEFT].get(), width[TEXTURE_CUBE_MAP_FACE_LEFT],
-			height[TEXTURE_CUBE_MAP_FACE_LEFT], dataSize[TEXTURE_CUBE_MAP_FACE_LEFT]);
-		swapColorChannels(data[TEXTURE_CUBE_MAP_FACE_RIGHT].get(), width[TEXTURE_CUBE_MAP_FACE_RIGHT],
-			height[TEXTURE_CUBE_MAP_FACE_RIGHT], dataSize[TEXTURE_CUBE_MAP_FACE_RIGHT]);
-		swapColorChannels(data[TEXTURE_CUBE_MAP_FACE_TOP].get(), width[TEXTURE_CUBE_MAP_FACE_TOP],
-			height[TEXTURE_CUBE_MAP_FACE_TOP], dataSize[TEXTURE_CUBE_MAP_FACE_TOP]);
-		swapColorChannels(data[TEXTURE_CUBE_MAP_FACE_BOTTOM].get(), width[TEXTURE_CUBE_MAP_FACE_BOTTOM],
-			height[TEXTURE_CUBE_MAP_FACE_BOTTOM], dataSize[TEXTURE_CUBE_MAP_FACE_BOTTOM]);
-
 		//rotating front, back, right and left faces by 180 degree to correct cubemap unwrapping unsusual convention
 		rotateImageBy180(data[TEXTURE_CUBE_MAP_FACE_FRONT].get(), width[TEXTURE_CUBE_MAP_FACE_FRONT], height[TEXTURE_CUBE_MAP_FACE_FRONT], dataSize[TEXTURE_CUBE_MAP_FACE_FRONT]);
 		rotateImageBy180(data[TEXTURE_CUBE_MAP_FACE_BACK].get(), width[TEXTURE_CUBE_MAP_FACE_BACK], height[TEXTURE_CUBE_MAP_FACE_BACK], dataSize[TEXTURE_CUBE_MAP_FACE_BACK]);
@@ -89,7 +75,7 @@ namespace cl{
 		}
 	}
 
-	void TextureCubeMapGL::swapColorChannels(unsigned char* data, unsigned int width, unsigned int height, unsigned int dataSize)
+	/*void TextureCubeMapGL::swapColorChannels(unsigned char* data, unsigned int width, unsigned int height, unsigned int dataSize)
 	{
 		unsigned int pixels = width*height;
 		unsigned int channels = dataSize / pixels;
@@ -101,5 +87,5 @@ namespace cl{
 			data[firstIndex] = data[lastIndex];
 			data[lastIndex] = temp;
 		}
-	}
+	}*/
 }
