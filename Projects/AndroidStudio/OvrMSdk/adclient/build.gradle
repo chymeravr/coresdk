@@ -100,11 +100,6 @@ dependencies {
     embedded project(':analytics')
 }
 
-task copyLibOvrKernel(type: Copy) {
-    from "${ovrMobileModule}/LibOVRKernel/Libs/Android/armeabi-v7a/Release/libovrkernel.a"
-    into "${distributionDir}/ovrKernel/armeabi-v7a"
-}
-
 task copyVrApiLib(type: Copy) {
     from "${ovrMobileModule}/VrApi/Libs/Android/armeabi-v7a/Release/libvrapi.so"
     into "${distributionDir}/ovrApi/armeabi-v7a"
@@ -119,12 +114,12 @@ tasks.whenTaskAdded { task ->
     if (task.name.contains('compileDebug')) {
         task.dependsOn([':coreEngine:distributeDebugLib', ':glImplementation:distributeDebugLib',
                         ':renderer:distributeDebugLib', ':image360:distributeDebugLib',
-                        ':image360AndroidNative:distributeDebugLib', 'copyLibOvrKernel',
+                        ':image360AndroidNative:distributeDebugLib',
                         'copyVrApiLib'])
     } else if (task.name.contains('compileRelease')) {
         task.dependsOn([':coreEngine:distributeReleaseLib', ':glImplementation:distributeReleaseLib',
                         ':renderer:distributeReleaseLib', ':image360:distributeReleaseLib',
-                        ':image360AndroidNative:distributeReleaseLib', 'copyLibOvrKernel',
+                        ':image360AndroidNative:distributeReleaseLib',
                         'copyVrApiLib'])
     }
 }

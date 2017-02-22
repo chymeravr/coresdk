@@ -286,7 +286,7 @@ void *AppThreadFunction(void *parm) {
                 }
                 case MESSAGE_ON_DESTROY: {
                     renderer->setWindow(NULL);
-                    destroyed = true;
+                    //destroyed = true;
                     break;
                 }
                 case MESSAGE_ON_SURFACE_CREATED: {
@@ -313,7 +313,8 @@ void *AppThreadFunction(void *parm) {
             continue;
         }
 
-        if (!appThread->Started) {
+        if (!appThread->Started && appThread->Resumed) {
+
             cl::ImageBMPLoaderAndroid imageBMPLoader(logger.get());
             cl::ImagePNGLoader imagePNGLoader(logger.get());
             std::vector<std::unique_ptr<cl::Image> > textureImages;

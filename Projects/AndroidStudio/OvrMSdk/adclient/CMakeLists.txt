@@ -68,13 +68,6 @@ set_target_properties(
     ${ANDROID_LIBRARIES}/image360AndroidNative/${ANDROID_ABI}/libImage360AndroidNative.so
 )
 
-add_library(ovrkernel STATIC IMPORTED)
-set_target_properties(
-    ovrkernel
-    PROPERTIES IMPORTED_LOCATION
-    ${ANDROID_LIBRARIES}/ovrKernel/${ANDROID_ABI}/libovrkernel.a
-)
-
 add_library(vrapi SHARED IMPORTED)
 set_target_properties(
     vrapi
@@ -83,4 +76,4 @@ set_target_properties(
 )
 
 target_link_libraries(${PROJECT_NAME} core_engine gl_implementation renderer image360
- image360_android ${log-lib} ${android-lib} ${egl} ${gles-v3} vrapi ovrkernel)
+ image360_android ${log-lib} ${android-lib} ${egl} ${gles-v3} vrapi)

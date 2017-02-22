@@ -149,8 +149,7 @@ public final class Image360Ad extends Ad {
                     JSONObject responseAdJson = response.getJSONObject("ads").getJSONObject(this.getPlacementId());
                     this.setServingId(responseAdJson.getString("servingId"));
                     this.setMediaUrl(responseAdJson.getString("mediaUrl"));
-                    // TODO: 2/10/2017 change this when server changes
-                    // this.setClickUrl(responseAdJson.getString("clickUrl"));
+                    this.setClickUrl(responseAdJson.getString("clickUrl"));
 
                     // download media from url and save in internal memory
                     InputStreamVolleyRequest mediaDownloadRequest = this.requestGenerator

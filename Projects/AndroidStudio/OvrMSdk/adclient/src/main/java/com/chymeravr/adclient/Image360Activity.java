@@ -277,11 +277,11 @@ public final class Image360Activity extends Activity implements SurfaceHolder.Ca
         notificationIntent.setData(Uri.parse(this.clickUrl));
         PendingIntent pi = PendingIntent.getActivity(this, 0, notificationIntent, 0);
 
+        // TODO: 2/22/2017 Get these from the server as well. Issue raised in bitbucket serving repo
         Notification notification = new NotificationCompat.Builder(this)
-                .setTicker("<Yourtext>")
-                .setSmallIcon(android.R.drawable.ic_menu_report_image)
-                .setContentTitle("<Yourtext>")
-                .setContentText("<ContextText>")
+                .setSmallIcon(R.drawable.download_icon)
+                .setContentTitle("<YourContentTitle>")
+                .setContentText("<YourContentText>")
                 .setContentIntent(pi)
                 .setAutoCancel(true)
                 .build();
