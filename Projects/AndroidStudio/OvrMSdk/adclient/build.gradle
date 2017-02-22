@@ -51,18 +51,21 @@ android {
         }
     }
 
-    sourceSets {
-        main {
-            resources {
-                'libs'
-            }
-            jniLibs.srcDirs = ["${distributionDir}/soil", "${distributionDir}/coreEngine",
-                               "${distributionDir}/glImplementation", "${distributionDir}/renderer",
-                               "${distributionDir}/image360", "${distributionDir}/image360AndroidNative",
-                               "${distributionDir}/ovrApi", "${distributionDir}/ovrKernel"]
+    sourceSets{
+        debug {
+                jniLibs.srcDirs = ["${distributionDir}/soil", "${distributionDir}/coreEngine",
+                                   "${distributionDir}/glImplementation", "${distributionDir}/renderer",
+                                   "${distributionDir}/image360", "${distributionDir}/image360AndroidNative",
+                                   "${distributionDir}/ovrApi"]
+
+        }
+        release {
+                jniLibs.srcDirs = ["${distributionDir}/soil", "${distributionDir}/coreEngine",
+                                   "${distributionDir}/glImplementation", "${distributionDir}/renderer",
+                                   "${distributionDir}/image360", "${distributionDir}/image360AndroidNative"]
+
         }
     }
-
 
     externalNativeBuild {
         cmake {
@@ -119,7 +122,7 @@ tasks.whenTaskAdded { task ->
     } else if (task.name.contains('compileRelease')) {
         task.dependsOn([':coreEngine:distributeReleaseLib', ':glImplementation:distributeReleaseLib',
                         ':renderer:distributeReleaseLib', ':image360:distributeReleaseLib',
-                        ':image360AndroidNative:distributeReleaseLib',
-                        'copyVrApiLib'])
+                        ':image360AndroidNative:distributeReleaseLib'
+        ])
     }
 }

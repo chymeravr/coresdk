@@ -56,15 +56,15 @@ android {
     }
 }
 
-task copyLibOvrKernel(type: Copy){
-    from "${ovrMobileModule}/LibOVRKernel/Libs/Android/armeabi-v7a/Release/libovrkernel.a"
-    into "${image360AndroidModule}/libs"
-}
-
-task copyVrApiLib(type: Copy){
-    from "${ovrMobileModule}/VrApi/Libs/Android/armeabi-v7a/Release/libvrapi.so"
-    into "${image360AndroidModule}/libs"
-}
+//task copyLibOvrKernel(type: Copy){
+//    from "${ovrMobileModule}/LibOVRKernel/Libs/Android/armeabi-v7a/Release/libovrkernel.a"
+//    into "${image360AndroidModule}/libs"
+//}
+//
+//task copyVrApiLib(type: Copy){
+//    from "${ovrMobileModule}/VrApi/Libs/Android/armeabi-v7a/Release/libvrapi.so"
+//    into "${image360AndroidModule}/libs"
+//}
 
 task clean(type: Delete) {
     delete "${rootProject.rootDir}/image360AndroidNative/build"

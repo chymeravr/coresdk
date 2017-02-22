@@ -68,12 +68,16 @@ set_target_properties(
     ${ANDROID_LIBRARIES}/image360AndroidNative/${ANDROID_ABI}/libImage360AndroidNative.so
 )
 
-add_library(vrapi SHARED IMPORTED)
-set_target_properties(
-    vrapi
-    PROPERTIES IMPORTED_LOCATION
-    ${ANDROID_LIBRARIES}/ovrApi/${ANDROID_ABI}/libvrapi.so
-)
-
-target_link_libraries(${PROJECT_NAME} core_engine gl_implementation renderer image360
- image360_android ${log-lib} ${android-lib} ${egl} ${gles-v3} vrapi)
+if(CMAKE_BUILD_TYPE MATCHES "Debug")
+    add_library(vrapi SHARED IMPORTED)
+    set_target_properties(
+        vrapi
+        PROPERTIES IMPORTED_LOCATION
+        ${ANDROID_LIBRARIES}/ovrApi/${ANDROID_ABI}/libvrapi.so
+    )
+    target_link_libraries(${PROJECT_NAME} core_engine gl_implementation renderer image360
+    image360_android ${log-lib} ${android-lib} ${egl} ${gles-v3} vrapi)
+else()
+    target_link_libraries(${PROJECT_NAME} core_engine gl_implementation renderer image360
+    image360_android ${log-lib} ${android-lib} ${egl} ${gles-v3})
+endif()
