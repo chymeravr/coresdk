@@ -63,7 +63,6 @@ public final class AnalyticsManager {
     }
 
     public static void push(final SDKEvent event, final Priority priority){
-        Log.v(TAG, "pushing message into analytics manager");
         executorService.execute(new Runnable(){
             @Override
             public void run() {
@@ -85,7 +84,7 @@ public final class AnalyticsManager {
     }
 
     public static void reConfigure(){
-        Log.v(TAG, "Re Configuring Analytics Manager based on new parameters from server");
+        Log.d(TAG, "Re Configuring Analytics Manager based on new parameters from server");
         executorService.execute(new Runnable(){
             @Override
             public void run(){
@@ -102,7 +101,7 @@ public final class AnalyticsManager {
         if(!initialized){
             return false;
         }
-        Log.v(TAG, "Initiation Analytics Manager Shutdown");
+        Log.d(TAG, "Initiation Analytics Manager Shutdown");
         executorService.execute(new Runnable(){
             @Override
             public void run() {

@@ -1,7 +1,18 @@
 package com.chymeravr.adclient;
 
+/**
+ * Created by robin_chimera on 11/28/2016.
+ * This class manages the Image360 ad display for the SDK
+ * It is responsible for managing the ad depending on lifecycle
+ * events. It listens for lifecycle events and renders ads at an
+ * appropriate time.
+ * Its core responsibilities are
+ *      - maintaining load states
+ *      - store an ad
+ *      - call display methods for ad
+ *      - request a new ad
+ */
 
-import android.app.Activity;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
@@ -24,32 +35,18 @@ import com.google.android.gms.common.GooglePlayServicesRepairableException;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.io.File;
 import java.util.HashMap;
 
-/**
- * Created by robin_chimera on 11/28/2016.
- * This class manages the Image360 ad display for the SDK
- * It is responsible for managing the ad depending on lifecycle
- * events. It listens for lifecycle events and renders ads at an
- * appropriate time.
- * Its core responsibilities are
- *      - maintaining load states
- *      - store an ad
- *      - call display methods for ad
- *      - request a new ad
- */
 
 public final class Image360Ad extends Ad {
     private static final String TAG = "Image360Ad";
     /* below are some private variables used for internal representation of ad data and
     *  server requests */
 
-    private int showRequestCode = 0;
-
     private RequestGenerator requestGenerator;
 
     private void adListenerCallbacks(){
-        Log.v(TAG, "Ad Closed");
         this.getAdListener().onAdClosed();
     }
 
@@ -77,7 +74,6 @@ public final class Image360Ad extends Ad {
     * It passes targeting parameters from AdRequest for better Ads*/
     public void loadAd(final AdRequest adRequest) {
         this.setLoading(true);
-//        this.emitEvent(EventType.AD_REQUEST, Event.Priority.MEDIUM, null);
 
         Log.i(TAG, "Requesting Server for a New 360 Image Ad");
 
@@ -112,7 +108,7 @@ public final class Image360Ad extends Ad {
                     Image360Ad.this.emitEvent(EventType.ERROR, AnalyticsManager.Priority.LOW, Util.getErrorMap(e));
                 }
                 ChymeraVrSdk.setAdvertisingId(advertId);
-                Log.v(TAG, "AdvertisingId : " + advertId);
+                Log.d(TAG, "AdvertisingId : " + advertId);
                 return null;
             }
 
@@ -122,7 +118,7 @@ public final class Image360Ad extends Ad {
                         Image360Ad.this.requestGenerator.getAdServerJsonRequest(adRequest);
 
                 Image360Ad.this.getWebRequestQueue().addToRequestQueue(jsonObjRequest);
-                Log.v(TAG, "fetching ad . . . ");
+                Log.d(TAG, "Fetching ad from media server ");
             }
         };
         task.execute();
@@ -143,11 +139,11 @@ public final class Image360Ad extends Ad {
             switch(responseCode){
                 case BAD_REQUEST:
                     Log.v(TAG, "Ad Server responded with BAD_REQUEST");
-                    this.getAdListener().onAdFailedToLoad();
+                    this.getAdListener().onAdLoadFailed(AdRequest.Error.ADSERVER_FAILURE, "Ad Server responded with BAD_REQUEST");
                     break;
                 case NO_AD:
                     Log.v(TAG, "Ad Server responded with NO_AD");
-                    this.getAdListener().onAdFailedToLoad();
+                    this.getAdListener().onAdLoadFailed(AdRequest.Error.NO_AD_TO_SHOW, "Ad Server Responded with NO_AD");
                     break;
                 case SERVED:
                     JSONObject responseAdJson = response.getJSONObject("ads").getJSONObject(this.getPlacementId());
@@ -164,22 +160,10 @@ public final class Image360Ad extends Ad {
                     Log.i(TAG, "Ad Server response successfully processed. Proceeding to query Media Server");
                     break;
             }
-//        try {
-//            JSONObject responseAdJson = response.getJSONObject("ads").getJSONObject(this.getPlacementId());
-//            this.setServingId(responseAdJson.getString("servingId"));
-//            this.setMediaUrl(responseAdJson.getString("mediaUrl"));
-//            // TODO: 2/10/2017 change this when server changes
-////            this.setClickUrl(responseAdJson.getString("clickUrl"));
-//
-//            // download media from url and save in internal memory
-//            InputStreamVolleyRequest mediaDownloadRequest = this.requestGenerator
-//                    .getMediaDownloadRequest(this.getMediaUrl());
-//            this.getWebRequestQueue().addToRequestQueue(mediaDownloadRequest);
-//
-//            Log.i(TAG, "Ad Server response successfully processed. Proceeding to query Media Server");
+
         } catch (JSONException e) {
             this.setLoading(false);
-            this.getAdListener().onAdFailedToLoad();
+            this.getAdListener().onAdLoadFailed(AdRequest.Error.UNKNOWN_FAILURE, e.toString());
 
             HashMap<String, String> errorMap = new HashMap<>();
             errorMap.put("Error", e.toString());
@@ -194,20 +178,31 @@ public final class Image360Ad extends Ad {
         this.getAdListener().onAdLoaded();
         this.setLoaded(true);
         this.setLoading(false);
-//        this.emitEvent(EventType.AD_LOAD, Event.Priority.MEDIUM, null);
         Log.i(TAG, "Media Server Response Successful");
     }
 
     /* Display ad by calling the native graphics library (or 3rd party API if that is the case)*/
     public void show() {
-        Intent intent = new Intent(this.getContext(), Image360Activity.class);
-        intent.putExtra("clickUrl", this.getClickUrl());
-        intent.putExtra("imageAdFilePath", Config.Image360AdAssetDirectory + this.getPlacementId() + ".jpg");
-        intent.putExtra("servingId", this.getServingId());
-        intent.putExtra("instanceId", this.getInstanceId());
-        ((Activity)this.getContext()).startActivityForResult(intent, showRequestCode);
 
-        this.getAdListener().onAdOpened();
+        File appPath = this.getContext().getFilesDir();
+
+        String filePath = Util.addLeadingSlash(Config.Image360AdAssetDirectory) + this.getPlacementId() + ".jpg";
+
+        File file = new File(appPath, filePath);
+        if(file.exists()) {
+            Intent intent = new Intent(this.getContext(), Image360Activity.class);
+            intent.putExtra("clickUrl", this.getClickUrl());
+            intent.putExtra("imageAdFilePath", filePath);
+            intent.putExtra("servingId", this.getServingId());
+            intent.putExtra("instanceId", this.getInstanceId());
+            this.getContext().startActivity(intent);
+            this.getAdListener().onAdOpened();
+        }
+        else {
+            Log.i(TAG, "No Ad to Show");
+            this.getAdListener().onAdLoadFailed(AdRequest.Error.NO_AD_TO_SHOW, "There is no ad Loaded.");
+        }
+
     }
 
 }

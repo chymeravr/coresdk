@@ -17,7 +17,6 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.util.Iterator;
-import java.util.Map;
 
 import lombok.AccessLevel;
 import lombok.Getter;
@@ -45,11 +44,6 @@ import lombok.Setter;
 public final class ChymeraVrSdk {
 
     private static final String TAG = "ChymeraVrSdk";
-
-//    @Getter
-//    @Setter(AccessLevel.PRIVATE)
-//    @NonNull
-//    private Context context;
 
     @Getter
     @Setter(AccessLevel.PRIVATE)
@@ -87,12 +81,6 @@ public final class ChymeraVrSdk {
             return;
         }
 
-        Map<String, Boolean> recommendedPermissionsMap = Util.checkRecommendedPermissions(context);
-        for (Map.Entry<String, Boolean> entry : recommendedPermissionsMap.entrySet()) {
-            if (!entry.getValue()) {
-                Log.w(TAG, entry.getKey() + " unavailable. Enable this for better Ad Targeting");
-            }
-        }
 
         if (VERSION.SDK_INT < Config.androidVersionNo) {
             Log.e(TAG, "ChymeraVR Ad Client SDK is only available with Android Version "
@@ -117,6 +105,7 @@ public final class ChymeraVrSdk {
 
     public static void shutdown(){
         // Shutdown must be called after intialize to release any allocated resources
+        Log.i(TAG, "Shutting down ChymerVrSdk. Goodbye!");
         AnalyticsManager.shutdown();
     }
 
@@ -127,7 +116,7 @@ public final class ChymeraVrSdk {
                     @Override
                     public void onResponse(final JSONObject response) {
 
-                        Log.v(TAG, "Config Server responeded with : " + response.toString());
+                        Log.d(TAG, "Config Server responded with : " + response.toString());
 
                         Iterator<?> keys = response.keys();
                         try {

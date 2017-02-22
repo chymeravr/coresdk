@@ -1,6 +1,9 @@
 package com.chymeravr.common;
+
 /*
  * Created by robin_chimera on 12/1/2016.
+ * A singleton class to hold the request queue for Android's Volley Request Queue
+ * This results in reuse of the request queue for requests - efficiency gains
  */
 
 import android.content.Context;
@@ -11,18 +14,11 @@ import com.android.volley.toolbox.Volley;
 
 import lombok.NonNull;
 
-/*
-    A singleton class to hold the request queue for Android's Volley Request Queue
-    This results in reuse of the request queue for requests - efficiency gains
- */
 public class WebRequestQueue {
     private static WebRequestQueue mInstance;
     private RequestQueue mRequestQueue;
 
-//    private Context mCtx;
-
     private WebRequestQueue(@NonNull Context context) {
-//        mCtx = context;
         mRequestQueue = getRequestQueue(context);
     }
 

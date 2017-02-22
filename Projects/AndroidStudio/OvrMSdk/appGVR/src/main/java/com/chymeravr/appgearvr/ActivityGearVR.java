@@ -38,7 +38,7 @@ public class ActivityGearVR extends Activity {
             }
 
             @Override
-            public void onAdFailedToLoad() {
+            public void onAdLoadFailed(AdRequest.Error error, String errorReason) {
             }
 
             @Override
@@ -119,6 +119,15 @@ public class ActivityGearVR extends Activity {
     @Override
     public boolean dispatchKeyEvent(KeyEvent event) {
         Log.d(TAG, "dispatchKeyEvent");
+        if(event.getAction()==KeyEvent.ACTION_UP){
+            return false;
+        }
+        if (this.image360TestAd.isLoaded() && !this.isShowing) {
+            this.isShowing = true;
+            this.image360TestAd.show();
+        } else {
+            Log.d(TAG, "No Ad Loaded!! Try again after some time.");
+        }
         return true;
     }
 
@@ -126,12 +135,13 @@ public class ActivityGearVR extends Activity {
     public boolean dispatchTouchEvent(MotionEvent event) {
         // display an ad. a bool flag is created to ensure multiple calls to render an ad are not made
         // Its expensive to show an ad - it creates an activity - intializes native code etc.
-        if (this.image360TestAd.isLoaded() && !this.isShowing) {
-            this.isShowing = true;
-            this.image360TestAd.show();
-        } else {
-            Log.d(TAG, "No Ad Loaded!! Try again after some time.");
-        }
+//        if (this.image360TestAd.isLoaded() && !this.isShowing) {
+//            this.isShowing = true;
+//            this.image360TestAd.show();
+//        } else {
+//            Log.d(TAG, "No Ad Loaded!! Try again after some time.");
+//        }
+        Log.d(TAG, "dispatchTouchEvent");
 
         return true;
     }

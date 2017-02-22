@@ -2,10 +2,15 @@ package com.chymeravr.adclient;
 
 import android.util.Log;
 
+import com.android.volley.NetworkError;
+import com.android.volley.NoConnectionError;
 import com.android.volley.Response;
+import com.android.volley.ServerError;
+import com.android.volley.TimeoutError;
 import com.android.volley.VolleyError;
 import com.chymeravr.analytics.AnalyticsManager;
 import com.chymeravr.common.Config;
+import com.chymeravr.common.Util;
 import com.chymeravr.schemas.eventreceiver.EventType;
 
 import java.io.File;
@@ -15,6 +20,8 @@ import java.util.HashMap;
 
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
+
+import static com.chymeravr.common.Util.createDir;
 
 
 /**
@@ -35,7 +42,17 @@ final class Image360MediaServerListener implements Response.ErrorListener,
     public void onErrorResponse(VolleyError error) {
 
         this.ad.setLoading(false);
-        this.ad.getAdListener().onAdFailedToLoad();
+
+        AdRequest.Error errorCode = null;
+        if (error instanceof TimeoutError || error instanceof NoConnectionError || error instanceof ServerError) {
+            errorCode = AdRequest.Error.ADSERVER_FAILURE;
+        } else if (error instanceof NetworkError) {
+            errorCode = AdRequest.Error.NETWORK_FAILURE;
+        } else {
+            errorCode = AdRequest.Error.UNKNOWN_FAILURE;            // screwed
+        }
+
+        this.ad.getAdListener().onAdLoadFailed(errorCode, error.toString());
         HashMap<String, String> errorMap = new HashMap<>();
         errorMap.put("Error", error.toString());
         this.ad.emitEvent(EventType.ERROR, AnalyticsManager.Priority.LOW, errorMap);
@@ -47,9 +64,9 @@ final class Image360MediaServerListener implements Response.ErrorListener,
         try {
             if (response!=null) {
 
-                File sd_path = this.ad.getContext().getFilesDir();
-                String dest_dir_path = sd_path + addLeadingSlash(Config.Image360AdAssetDirectory);
-                File dest_dir = new File(dest_dir_path);
+                File appPath = this.ad.getContext().getFilesDir();
+                String appSdkPath = appPath + Util.addLeadingSlash(Config.Image360AdAssetDirectory);
+                File dest_dir = new File(appSdkPath);
                 createDir(dest_dir);
 
                 FileOutputStream outputStream;
@@ -62,7 +79,8 @@ final class Image360MediaServerListener implements Response.ErrorListener,
                 this.ad.onMediaServerResponseSuccess();
             }
         } catch (IOException e) {
-            this.ad.getAdListener().onAdFailedToLoad();
+            // this should not really happen
+            this.ad.getAdListener().onAdLoadFailed(AdRequest.Error.UNKNOWN_FAILURE, e.toString());
 
             // send error logs to server
 
@@ -73,30 +91,30 @@ final class Image360MediaServerListener implements Response.ErrorListener,
         }
     }
 
-    private String addLeadingSlash(String path)
-    {
-        if (path.charAt(0) != '/')
-        {
-            path = "/" + path;
-        }
-        return path;
-    }
-
-    private void createDir(File dir) throws IOException
-    {
-        if (dir.exists())
-        {
-            if (!dir.isDirectory())
-            {
-                throw new IOException("Can't create directory, a file is in the way");
-            }
-        } else
-        {
-            dir.mkdirs();
-            if (!dir.isDirectory())
-            {
-                throw new IOException("Unable to create directory");
-            }
-        }
-    }
+//    private String addLeadingSlash(String path)
+//    {
+//        if (path.charAt(0) != '/')
+//        {
+//            path = "/" + path;
+//        }
+//        return path;
+//    }
+//
+//    private void createDir(File dir) throws IOException
+//    {
+//        if (dir.exists())
+//        {
+//            if (!dir.isDirectory())
+//            {
+//                throw new IOException("Can't create directory, a file is in the way");
+//            }
+//        } else
+//        {
+//            dir.mkdirs();
+//            if (!dir.isDirectory())
+//            {
+//                throw new IOException("Unable to create directory");
+//            }
+//        }
+//    }
 }

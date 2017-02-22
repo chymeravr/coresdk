@@ -1,8 +1,17 @@
 package com.chymeravr.adclient;
 
+/**
+ * Created by robin_chimera on 12/6/2016.
+ * Handles call backs from the Ad Server
+ */
+
 import android.util.Log;
 
+import com.android.volley.NetworkError;
+import com.android.volley.NoConnectionError;
 import com.android.volley.Response;
+import com.android.volley.ServerError;
+import com.android.volley.TimeoutError;
 import com.android.volley.VolleyError;
 import com.chymeravr.analytics.AnalyticsManager;
 import com.chymeravr.common.Util;
@@ -13,10 +22,6 @@ import org.json.JSONObject;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 
-/**
- * Created by robin_chimera on 12/6/2016.
- * Handles call backs from the Ad Server
- */
 
 @RequiredArgsConstructor(suppressConstructorProperties = true)
 class AdServerListener implements Response.ErrorListener, Response.Listener<JSONObject> {//extends ServerListener<JSONObject> {
@@ -28,10 +33,19 @@ class AdServerListener implements Response.ErrorListener, Response.Listener<JSON
     @Override
     public void onErrorResponse(VolleyError error) {
         Log.e(TAG, "Error", error);
-
         this.ad.setLoading(false);
-        this.ad.getAdListener().onAdFailedToLoad();
-        // send error logs to server
+
+        AdRequest.Error errorCode = null;
+        if (error instanceof TimeoutError || error instanceof NoConnectionError || error instanceof ServerError) {
+            errorCode = AdRequest.Error.ADSERVER_FAILURE;
+        } else if (error instanceof NetworkError) {
+            errorCode = AdRequest.Error.NETWORK_FAILURE;
+        } else {
+            errorCode = AdRequest.Error.UNKNOWN_FAILURE;            // screwed
+        }
+
+        this.ad.getAdListener().onAdLoadFailed(errorCode, error.toString());
+
         this.ad.emitEvent(EventType.ERROR, AnalyticsManager.Priority.LOW, Util.getErrorMap(error));
     }
 

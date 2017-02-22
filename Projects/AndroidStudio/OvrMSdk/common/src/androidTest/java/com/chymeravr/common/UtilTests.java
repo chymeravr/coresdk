@@ -2,8 +2,6 @@ package com.chymeravr.common;
 
 import android.Manifest;
 import android.content.Context;
-import android.graphics.Bitmap;
-import android.graphics.Color;
 import android.os.Build;
 import android.support.test.filters.LargeTest;
 import android.support.test.runner.AndroidJUnit4;
@@ -13,9 +11,6 @@ import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-
-import java.nio.ByteBuffer;
-import java.util.Map;
 
 import static android.support.test.InstrumentationRegistry.getInstrumentation;
 import static android.support.test.InstrumentationRegistry.getTargetContext;
@@ -55,32 +50,6 @@ public class UtilTests {
                     "pm grant " + getTargetContext().getPackageName()
                             + " android.permission.WRITE_EXTERNAL_STORAGE");
         }
-    }
-
-    @Test()
-    public void getByteArrayTest() throws Exception {
-
-        Bitmap testBitmap = Bitmap.createBitmap(8, 1, Bitmap.Config.ARGB_8888);
-        testBitmap.setPixel(0, 0, Color.BLACK);
-        testBitmap.setPixel(1, 0, Color.BLUE);
-        testBitmap.setPixel(2, 0, Color.RED);
-        testBitmap.setPixel(3, 0, Color.BLACK);
-        testBitmap.setPixel(4, 0, Color.BLUE);
-        testBitmap.setPixel(5, 0, Color.GREEN);
-        testBitmap.setPixel(6, 0, Color.BLACK);
-        testBitmap.setPixel(7, 0, Color.BLUE);
-
-        byte[] result = Util.convertToByteArray(testBitmap);
-        String resultString = "";
-        for (int i = 0; i < result.length; i++) {
-            resultString += " " + result[i];
-        }
-        Bitmap bitmap = Bitmap.createBitmap(8, 1, Bitmap.Config.ARGB_8888);
-        bitmap.copyPixelsFromBuffer(ByteBuffer.wrap(result));
-
-        Log.v(TAG, "Bitmap Test Successful!");
-        Assert.assertTrue(bitmap.sameAs(testBitmap));
-
     }
 
     @Test()
@@ -124,14 +93,5 @@ public class UtilTests {
     @Test()
     public void checkMandatoryPermissionsTest() throws Exception {
         Assert.assertTrue(Util.checkMandatoryPermissions(context));
-    }
-
-    @Test()
-    public void checkRecommendedPermissionsTest() throws Exception {
-        boolean result = true;
-        Map<String, Boolean> map = Util.checkRecommendedPermissions(context);
-        for (Map.Entry<String, Boolean> entry : map.entrySet()) {
-            Assert.assertTrue(entry.getValue());
-        }
     }
 }

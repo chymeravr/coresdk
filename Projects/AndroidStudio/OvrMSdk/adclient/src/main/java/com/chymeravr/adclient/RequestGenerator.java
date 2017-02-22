@@ -36,6 +36,7 @@ import static android.content.Context.ACTIVITY_SERVICE;
 
 /**
  * Created by robin_chimera on 12/9/2016.
+ * Handles generation of requests for ads
  */
 
 final class RequestGenerator {
@@ -65,21 +66,30 @@ final class RequestGenerator {
         List<Placement> placements = new ArrayList<>();
         placements.add(new Placement(this.ad.getPlacementId(), this.ad.getAdFormat()));
 
-        Location loc = new Location(adRequest.getLocation().getLatitude(),
-                adRequest.getLocation().getLongitude(),
-                adRequest.getLocation().getAccuracy());
+        ServingRequest servingRequest
+                = new ServingRequest(timestamp, (short) sdkVersion, appId, placements,
+                Config.osId, String.valueOf(Build.VERSION.SDK_INT),
+                ChymeraVrSdk.getAdvertisingId(), Config.hmdId);
+
+        if(adRequest.getLocation() != null) {
+            Location loc = new Location(adRequest.getLocation().getLatitude(),
+                    adRequest.getLocation().getLongitude(),
+                    adRequest.getLocation().getAccuracy());
+            servingRequest.setLocation(loc);
+        }
 
 
         Demographics demo = new Demographics(adRequest.getBirthday().toString(),
                 adRequest.getGender().getValue(),
                 adRequest.getEmail());
+        servingRequest.setDemographics(demo);
 
         ActivityManager actManager = (ActivityManager) this.ad.getContext().getSystemService(ACTIVITY_SERVICE);
         ActivityManager.MemoryInfo memInfo = new ActivityManager.MemoryInfo();
         actManager.getMemoryInfo(memInfo);
         long totalMemory = memInfo.totalMem;
-
         Device device = new Device(Build.MANUFACTURER, Build.MODEL, Double.toString(totalMemory));
+        servingRequest.setDevice(device);
 
         String connectivity = null;
         ConnectivityManager cm = (ConnectivityManager) this.ad.getContext().getSystemService(Context.CONNECTIVITY_SERVICE);
@@ -93,24 +103,12 @@ final class RequestGenerator {
         } else {
             Log.e("RequestGenerator", "User currently not connected to the internet");
         }
+        servingRequest.setConnectivity(connectivity);
 
         WifiManager wifiManager = (WifiManager) this.ad.getContext().getSystemService(Context.WIFI_SERVICE);
         WifiInfo info = wifiManager.getConnectionInfo();
         String ssid = info.getSSID();
-
-//        ServingRequest servingRequest =
-//                new ServingRequest(timestamp, (short) sdkVersion, appId, placements,
-//                        Config.osId, String.valueOf(Build.VERSION.SDK_INT),
-//                        ChymeraVrSdk.getAdvertisingId(), Config.hmdId,
-//                        loc, demo, device, connectivity, ssid);
-
-        ServingRequest servingRequest
-                = new ServingRequest(timestamp, (short) sdkVersion, appId, placements,
-                Config.osId, String.valueOf(Build.VERSION.SDK_INT),
-                ChymeraVrSdk.getAdvertisingId(), Config.hmdId);
-
-        servingRequest.setLocation(loc);
-
+        servingRequest.setWifiName(ssid);
 
         String servingRequestJson = new Gson().toJson(servingRequest);
         JSONObject jsonAdRequest = null;

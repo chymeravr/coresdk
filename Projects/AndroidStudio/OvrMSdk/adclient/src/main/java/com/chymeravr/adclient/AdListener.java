@@ -4,23 +4,13 @@ package com.chymeravr.adclient;
  * Created by robin_chimera on 11/28/2016.
  */
 
-//public interface AdListener extends Serializable {
-//
-//    void onAdLoaded();
-//
-//    void onAdFailedToLoad();
-//
-//    void onAdOpened();
-//
-//    void onAdClosed();
-//}
+public interface AdListener {
 
-public abstract class AdListener{
-    public void onAdLoaded(){};
+    void onAdLoaded();
 
-    public void onAdFailedToLoad(){};
+    void onAdLoadFailed(AdRequest.Error errorReason, String additionalErrorInfo);
 
-    public void onAdOpened(){};
+    void onAdOpened();
 
-    public void onAdClosed(){};
+    void onAdClosed();
 }

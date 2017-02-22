@@ -9,7 +9,6 @@ import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
-import android.media.AudioManager;
 import android.net.Uri;
 import android.os.Bundle;
 import android.support.v4.app.NotificationCompat;
@@ -57,8 +56,6 @@ public final class Image360Activity extends Activity implements SurfaceHolder.Ca
     @Getter
     private int instanceId;
 
-//    private AdListener adListener;
-
     // load the native library for image 360 ads
     static {
         System.loadLibrary("image360ad");
@@ -68,7 +65,6 @@ public final class Image360Activity extends Activity implements SurfaceHolder.Ca
 
     private final Runnable hmdPollRunner = new Runnable() {
         public void run() {
-            Log.v(TAG, "Fetching HMD Parameters");
             Image360Activity.this.getHMDParams();
         }
     };
@@ -140,11 +136,6 @@ public final class Image360Activity extends Activity implements SurfaceHolder.Ca
         LocalBroadcastManager.getInstance(this).registerReceiver(new MessageHandler(),
                 new IntentFilter("kill"));
 
-        // schedule polling for hmd parameters
-        this.scheduler = Executors.newScheduledThreadPool(1);
-        scheduler.scheduleAtFixedRate(hmdPollRunner, Config.hmdSamplingDelay,
-                Config.hmdSamplingPeriod, TimeUnit.SECONDS);
-
         // call native creation method for all the HMD magic with OVR
         String basePath = this.getFilesDir().getAbsolutePath();
         this.mNativeHandle = this.onCreateNative(this, basePath, imageAdFilePath);
@@ -204,18 +195,23 @@ public final class Image360Activity extends Activity implements SurfaceHolder.Ca
 
     @Override
     public void surfaceCreated(SurfaceHolder holder) {
-        Log.v(TAG, "ActivityGearVR::onSurfaceCreated()");
+        Log.d(TAG, "ActivityGearVR::onSurfaceCreated()");
 
         this.emitEvent(EventType.AD_SHOW, AnalyticsManager.Priority.HIGH, null);
         if (this.mNativeHandle != 0) {
             onSurfaceCreatedNative(this.mNativeHandle, holder.getSurface());
             this.mSurfaceHolder = holder;
+
+            // schedule polling for hmd parameters
+            this.scheduler = Executors.newScheduledThreadPool(1);
+            scheduler.scheduleAtFixedRate(hmdPollRunner, Config.hmdSamplingDelay,
+                    Config.hmdSamplingPeriod, TimeUnit.SECONDS);
         }
     }
 
     @Override
     public void surfaceChanged(SurfaceHolder holder, int format, int width, int height) {
-        Log.v(TAG, "ActivityGearVR::onSurfaceChanged()");
+        Log.d(TAG, "ActivityGearVR::onSurfaceChanged()");
         if (this.mNativeHandle != 0) {
             onSurfaceChangedNative(this.mNativeHandle, holder.getSurface());
             this.mSurfaceHolder = holder;
@@ -224,38 +220,37 @@ public final class Image360Activity extends Activity implements SurfaceHolder.Ca
 
     @Override
     public void surfaceDestroyed(SurfaceHolder holder) {
-        Log.v(TAG, "ActivityGearVR::onSurfaceDestroyed()");
+        Log.d(TAG, "ActivityGearVR::onSurfaceDestroyed()");
         if (this.mNativeHandle != 0) {
             onSurfaceDestroyedNative(this.mNativeHandle);
             this.mSurfaceHolder = null;
+
+            this.scheduler.shutdown();
         }
     }
 
 
-    private void adjustVolume(int direction) {
-        AudioManager audio = (AudioManager) this.getSystemService(Context.AUDIO_SERVICE);
-        audio.adjustStreamVolume(AudioManager.STREAM_MUSIC, direction, 0);
-    }
-
     @Override
     public boolean dispatchKeyEvent(KeyEvent event) {
         Log.d(TAG, "dispatchKeyEvent");
+        if(event.getAction() == KeyEvent.ACTION_UP){
+            return false;
+        }
         if (mNativeHandle != 0) {
             int keyCode = event.getKeyCode();
             int action = event.getAction();
             this.emitEvent(EventType.AD_CLICK, AnalyticsManager.Priority.MEDIUM, null);
 
             if (keyCode == KeyEvent.KEYCODE_VOLUME_UP) {
-                adjustVolume(1);
                 this.notifyUser();
             }
             if (keyCode == KeyEvent.KEYCODE_VOLUME_DOWN) {
-                adjustVolume(-1);
-                Intent intent = new Intent("kill");
-                LocalBroadcastManager.getInstance(this).sendBroadcast(intent);
+                this.finish();
+//                Intent intent = new Intent("kill");
+//                LocalBroadcastManager.getInstance(this).sendBroadcast(intent);
             }
             if (action == KeyEvent.ACTION_UP) {
-                Log.v(TAG, "dispatchKeyEvent( " + keyCode + ", " + action + " )");
+                Log.d(TAG, "dispatchKeyEvent( " + keyCode + ", " + action + " )");
             }
             this.onKeyEventNative(this.mNativeHandle, keyCode, action);
         }
@@ -270,7 +265,7 @@ public final class Image360Activity extends Activity implements SurfaceHolder.Ca
             float x = event.getRawX();
             float y = event.getRawY();
             if (action == MotionEvent.ACTION_UP) {
-                Log.v(TAG, "GLES3JNIActivity::dispatchTouchEvent( " + action + ", " + x + ", " + y + " )");
+                Log.d(TAG, "GLES3JNIActivity::dispatchTouchEvent( " + action + ", " + x + ", " + y + " )");
             }
             this.onTouchEventNative(this.mNativeHandle, action, x, y);
         }

@@ -85,7 +85,7 @@ public class ArrayEventQueue implements EventQueue {
 
     // flushes the entire queue - send all messages to the analytics server
     public void flush() {
-        Log.v(TAG, "Attempting to flush the Event Queue");
+        Log.d(TAG, "Flushing the Event Queue");
 
         JSONArray jsonArray = new JSONArray();
         for (SDKEvent event : this.eventArray) {
@@ -111,7 +111,7 @@ public class ArrayEventQueue implements EventQueue {
 
                         @Override
                         public void onResponse(JSONObject response) {
-                                Log.v(TAG, "Event List Sent. Server Response " + response.toString());
+                                Log.d(TAG, "Event List Sent. Server Response " + response.toString());
                         }
                     },
                     new Response.ErrorListener() {
@@ -129,7 +129,7 @@ public class ArrayEventQueue implements EventQueue {
             requestQueue.addToRequestQueue(jsonRequest);
         }
 
-        // reset the current Size
+        // all events sent to server - reset the current Size
         this.currentSize = 0;
     }
 }

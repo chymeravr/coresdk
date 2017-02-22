@@ -11,6 +11,7 @@
 #include <coreEngine/components/transform/TransformModelFactory.h>
 #include <coreEngine/events/EventQueue.h>
 #include <coreEngine/modifier/ImagePNGLoader.h>
+#include <coreEngine/modifier/Image.h>
 
 // GLImplementation Modules
 #include <glImplementation/factory/SceneGLFactory.h>
@@ -319,31 +320,41 @@ void *AppThreadFunction(void *parm) {
             cl::TEXTURE_MAP_MODE mode = cl::CUBE_MAP_MODE_SINGLE_IMAGE;
 
             switch (mode) {
-                case cl::CUBE_MAP_MODE_SINGLE_IMAGE:
-                    textureImages.push_back(
-                            imagePNGLoader.loadImage(std::string(appThread->appDir) + std::string("/")
-                                                     + std::string(appThread->appFileName)));
+                case cl::CUBE_MAP_MODE_SINGLE_IMAGE: {
+                    std::string absoluteFilePath = std::string(appThread->appDir) + std::string("/")
+                                                   + std::string(appThread->appFileName);
+                    textureImages.push_back(imagePNGLoader.loadImage(absoluteFilePath));
                     break;
-                case cl::CUBE_MAP_MODE_SIX_IMAGES:
+                }
+                case cl::CUBE_MAP_MODE_SIX_IMAGES: {
 
                     textureImages.push_back(imageBMPLoader.loadImage(std::string(appThread->appDir)
-                                                                     + std::string("/chymeraSDKAssets/image360/cubemap_geo_front.bmp")));
+                                                                     + std::string(
+                            "/chymeraSDKAssets/image360/cubemap_geo_front.bmp")));
                     textureImages.push_back(imageBMPLoader.loadImage(std::string(appThread->appDir)
-                                                                     + std::string("/chymeraSDKAssets/image360/cubemap_geo_left.bmp")));
+                                                                     + std::string(
+                            "/chymeraSDKAssets/image360/cubemap_geo_left.bmp")));
                     textureImages.push_back(imageBMPLoader.loadImage(std::string(appThread->appDir)
-                                                                     + std::string("/chymeraSDKAssets/image360/cubemap_geo_back.bmp")));
+                                                                     + std::string(
+                            "/chymeraSDKAssets/image360/cubemap_geo_back.bmp")));
                     textureImages.push_back(imageBMPLoader.loadImage(std::string(appThread->appDir)
-                                                                     + std::string("/chymeraSDKAssets/image360/cubemap_geo_right.bmp")));
+                                                                     + std::string(
+                            "/chymeraSDKAssets/image360/cubemap_geo_right.bmp")));
                     textureImages.push_back(imageBMPLoader.loadImage(std::string(appThread->appDir)
-                                                                     + std::string("/chymeraSDKAssets/image360/cubemap_geo_top.bmp")));
+                                                                     + std::string(
+                            "/chymeraSDKAssets/image360/cubemap_geo_top.bmp")));
                     textureImages.push_back(imageBMPLoader.loadImage(std::string(appThread->appDir)
-                                                                     + std::string("/chymeraSDKAssets/image360/cubemap_geo_bottom.bmp")));
+                                                                     + std::string(
+                            "/chymeraSDKAssets/image360/cubemap_geo_bottom.bmp")));
                     break;
-                case cl::EQUIRECTANGULAR_MAP_MODE:
+                }
+                case cl::EQUIRECTANGULAR_MAP_MODE: {
                     textureImages.push_back(
                             imageBMPLoader.loadImage(std::string(appThread->appDir)
-                                                     + std::string("/chymeraSDKAssets/image360/cubemap_geo_front.bmp")));
+                                                     + std::string(
+                                    "/chymeraSDKAssets/image360/cubemap_geo_front.bmp")));
                     break;
+                }
             }
 
             appThread->Application->initialize(mode, textureImages);
@@ -596,7 +607,8 @@ Java_com_chymeravr_adclient_Image360Activity_onSurfaceDestroyedNative(JNIEnv *en
     ANativeWindow_release(appThread->NativeWindow);
     appThread->NativeWindow = NULL;
 
-
+//    appThread->Started = false;
+//    appThread->Application->deinitialize();
 }
 
 
@@ -641,7 +653,6 @@ Java_com_chymeravr_adclient_Image360Activity_onTouchEventNative(JNIEnv *env, job
 JNIEXPORT jfloatArray JNICALL
 Java_com_chymeravr_adclient_Image360Activity_getHMDParamsNative(JNIEnv *env, jobject obj,
                                                                 jlong handle) {
-    logger->log(cl::LOG_DEBUG, "Fetching HMD parameters");
     jfloatArray result;
     result = env->NewFloatArray(32);
 

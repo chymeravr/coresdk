@@ -9,22 +9,24 @@ import lombok.Getter;
 
 /**
  * Created by robin_chimera on 11/28/2016.
- */
-
-/*
-    AdRequest encapsulates targeting information for ads.
-    Use Builder to create these objects (lombok annotations)
+ * AdRequest encapsulates targeting information for ads.
  */
 
 // TODO: 2/6/2017 include email id as well 
 @Builder
 public final class AdRequest {
+    public enum Error{
+        ADSERVER_FAILURE("ADSERVER_FAILURE"),               // Serious Error At the Server End - Contact support team to resolve
+        INVALID_REQUEST("INVALID_REQUEST"),                 // Submitted an invalid AdRequest
+        NO_AD_TO_SHOW("NO_AD_TO_SHOW"),                     // Server responded with no ad to show
+        NETWORK_FAILURE("NETWORK_FAILURE"),                 // Internet connection is not working,
+        UNKNOWN_FAILURE("UNKNOWN_FAILURE");                 // Screwed. Contact Support tream;
 
-    public enum ERROR_CODE {
-        INTERNAL_ERROR,
-        INVALID_REQUEST,
-        NETWORK_ERROR,
-        NO_FILL                         // no fill - no ad available
+        private String value;
+
+        public String getValue(){ return value; }
+
+        Error(String value) { this.value = value;}
     }
 
     public enum Gender {
@@ -32,16 +34,13 @@ public final class AdRequest {
         FEMALE("FEMALE"),
         OTHER("OTHER"),
         UNKNOWN("UNKNOWN");
-
         private String value;
 
         public String getValue() {
             return value;
         }
 
-        private Gender(String value) {
-            this.value = value;
-        }
+        Gender(String value) {this.value = value;}
     }
 
     @Getter
