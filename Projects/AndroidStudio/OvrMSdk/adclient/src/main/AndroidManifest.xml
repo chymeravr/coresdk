@@ -14,9 +14,6 @@
             android:screenOrientation="landscape"
             android:excludeFromRecents="false"
             android:configChanges="orientation|screenSize|keyboard|keyboardHidden">
-            <intent-filter>
-                <action android:name="android.intent.action.MAIN" />
-            </intent-filter>
         </activity>
     </application>
 

@@ -96,17 +96,18 @@ public final class Image360Activity extends Activity implements SurfaceHolder.Ca
 
     public native float[] getHMDParamsNative(long handle);
 
-    private void killActivity() {
+    private void finishAdActivity() {
         // TODO: 2/2/2017 the surface is closed in correctly here - fix it
+        // signal parent activity (from the client) to end the ad
         Intent intent = new Intent("adClosed");
         LocalBroadcastManager.getInstance(this).sendBroadcast(intent);
-        finish();
+        //finish();
     }
 
     class MessageHandler extends BroadcastReceiver {
         @Override
         public void onReceive(Context context, Intent intent) {
-            killActivity();
+            finishAdActivity();
         }
     }
 
@@ -134,7 +135,7 @@ public final class Image360Activity extends Activity implements SurfaceHolder.Ca
 
         // Register an kill activity intent to destroy the activity when user is done and return to parent
         LocalBroadcastManager.getInstance(this).registerReceiver(new MessageHandler(),
-                new IntentFilter("kill"));
+                new IntentFilter("finishAd"));
 
         // call native creation method for all the HMD magic with OVR
         String basePath = this.getFilesDir().getAbsolutePath();
@@ -232,27 +233,40 @@ public final class Image360Activity extends Activity implements SurfaceHolder.Ca
 
     @Override
     public boolean dispatchKeyEvent(KeyEvent event) {
-        Log.d(TAG, "dispatchKeyEvent");
+        // TODO: 2/27/2017 implement UI click events for notification and ad close
+
         if(event.getAction() == KeyEvent.ACTION_UP){
             return false;
         }
+        Log.d(TAG, "dispatchKeyEvent");
         if (mNativeHandle != 0) {
             int keyCode = event.getKeyCode();
             int action = event.getAction();
-            this.emitEvent(EventType.AD_CLICK, AnalyticsManager.Priority.MEDIUM, null);
-
-            if (keyCode == KeyEvent.KEYCODE_VOLUME_UP) {
-                this.notifyUser();
-            }
-            if (keyCode == KeyEvent.KEYCODE_VOLUME_DOWN) {
-                this.finish();
-//                Intent intent = new Intent("kill");
-//                LocalBroadcastManager.getInstance(this).sendBroadcast(intent);
+            if ( action != KeyEvent.ACTION_DOWN && action != KeyEvent.ACTION_UP )
+            {
+                return super.dispatchKeyEvent( event );
             }
             if (action == KeyEvent.ACTION_UP) {
                 Log.d(TAG, "dispatchKeyEvent( " + keyCode + ", " + action + " )");
+                return false;
             }
-            this.onKeyEventNative(this.mNativeHandle, keyCode, action);
+
+            if ( keyCode == KeyEvent.KEYCODE_VOLUME_UP )
+            {
+                Intent intent = new Intent("finishAd");
+                LocalBroadcastManager.getInstance(this).sendBroadcast(intent);
+                return true;
+            }
+            if ( keyCode == KeyEvent.KEYCODE_VOLUME_DOWN )
+            {
+                notifyUser();
+                return true;
+            }
+            if (keyCode == KeyEvent.KEYCODE_BACK) {
+                Intent intent = new Intent("finishAd");
+                LocalBroadcastManager.getInstance(this).sendBroadcast(intent);
+                return true;
+            }
         }
 
         return false;
@@ -260,6 +274,8 @@ public final class Image360Activity extends Activity implements SurfaceHolder.Ca
 
     @Override
     public boolean dispatchTouchEvent(MotionEvent event) {
+        // will probably not need this - remove in future
+        super.dispatchTouchEvent(event);
         if (this.mNativeHandle != 0) {
             int action = event.getAction();
             float x = event.getRawX();
@@ -267,7 +283,6 @@ public final class Image360Activity extends Activity implements SurfaceHolder.Ca
             if (action == MotionEvent.ACTION_UP) {
                 Log.d(TAG, "GLES3JNIActivity::dispatchTouchEvent( " + action + ", " + x + ", " + y + " )");
             }
-            this.onTouchEventNative(this.mNativeHandle, action, x, y);
         }
         return true;
     }

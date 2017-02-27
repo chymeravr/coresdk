@@ -286,7 +286,7 @@ void *AppThreadFunction(void *parm) {
                 }
                 case MESSAGE_ON_DESTROY: {
                     renderer->setWindow(NULL);
-                    //destroyed = true;
+                    destroyed = true;
                     break;
                 }
                 case MESSAGE_ON_SURFACE_CREATED: {
@@ -625,7 +625,7 @@ JNIEXPORT void JNICALL
 Java_com_chymeravr_adclient_Image360Activity_onKeyEventNative(JNIEnv *env, jobject obj, jlong handle,
                                                              int keyCode, int action) {
     if (action == AKEY_EVENT_ACTION_UP) {
-        ALOGV("    GLES3JNILib::onKeyEvent( %d, %d )", keyCode, action);
+        ALOGV("    Image360ActivityNative::onKeyEvent( %d, %d )", keyCode, action);
     }
     ovrAppThread *appThread = (ovrAppThread *) ((size_t) handle);
     ovrMessage message;
@@ -640,7 +640,7 @@ Java_com_chymeravr_adclient_Image360Activity_onTouchEventNative(JNIEnv *env, job
                                                                jlong handle, int action, float x,
                                                                float y) {
     if (action == AMOTION_EVENT_ACTION_UP) {
-        ALOGV("    GLES3JNILib::onTouchEvent( %d, %1.0f, %1.0f )", action, x, y);
+        ALOGV("    Image360ActivityNative::onTouchEvent( %d, %1.0f, %1.0f )", action, x, y);
     }
     ovrAppThread *appThread = (ovrAppThread *) ((size_t) handle);
     ovrMessage message;

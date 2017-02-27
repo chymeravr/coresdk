@@ -118,10 +118,10 @@ public class ActivityGearVR extends Activity {
 
     @Override
     public boolean dispatchKeyEvent(KeyEvent event) {
-        Log.d(TAG, "dispatchKeyEvent");
         if(event.getAction()==KeyEvent.ACTION_UP){
             return false;
         }
+        Log.d(TAG, "dispatchKeyEvent");
         if (this.image360TestAd.isLoaded() && !this.isShowing) {
             this.isShowing = true;
             this.image360TestAd.show();
@@ -135,12 +135,6 @@ public class ActivityGearVR extends Activity {
     public boolean dispatchTouchEvent(MotionEvent event) {
         // display an ad. a bool flag is created to ensure multiple calls to render an ad are not made
         // Its expensive to show an ad - it creates an activity - intializes native code etc.
-//        if (this.image360TestAd.isLoaded() && !this.isShowing) {
-//            this.isShowing = true;
-//            this.image360TestAd.show();
-//        } else {
-//            Log.d(TAG, "No Ad Loaded!! Try again after some time.");
-//        }
         Log.d(TAG, "dispatchTouchEvent");
 
         return true;

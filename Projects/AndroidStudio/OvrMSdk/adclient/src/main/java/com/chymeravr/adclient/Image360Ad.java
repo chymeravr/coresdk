@@ -13,6 +13,7 @@ package com.chymeravr.adclient;
  *      - request a new ad
  */
 
+import android.app.Activity;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
@@ -46,6 +47,8 @@ public final class Image360Ad extends Ad {
 
     private RequestGenerator requestGenerator;
 
+    static final int IMAGE360_ACTIVIT_REQUEST = 1;
+
     private void adListenerCallbacks(){
         this.getAdListener().onAdClosed();
     }
@@ -54,6 +57,8 @@ public final class Image360Ad extends Ad {
         @Override
         public void onReceive(Context context, Intent intent) {
             adListenerCallbacks();
+            ((Activity)Image360Ad.this.getContext()).finishActivity(IMAGE360_ACTIVIT_REQUEST);
+            ((Activity)Image360Ad.this.getContext()).overridePendingTransition(R.anim.image360fadein, R.anim.image360fadeout);
         }
     }
 
@@ -189,12 +194,18 @@ public final class Image360Ad extends Ad {
 
         File file = new File(appPath, filePath);
         if(file.exists()) {
+            // send relevant ad data to activity with intent
             Intent intent = new Intent(this.getContext(), Image360Activity.class);
             intent.putExtra("clickUrl", this.getClickUrl());
             intent.putExtra("imageAdFilePath", filePath);
             intent.putExtra("servingId", this.getServingId());
             intent.putExtra("instanceId", this.getInstanceId());
-            this.getContext().startActivity(intent);
+
+            // start activity for showing ad
+            ((Activity)this.getContext()).startActivityForResult(intent, IMAGE360_ACTIVIT_REQUEST);
+            ((Activity)this.getContext()).overridePendingTransition(R.anim.image360fadein, R.anim.image360fadeout);
+
+            // client callback - could there be a possible race condition with using same file for all ads?
             this.getAdListener().onAdOpened();
         }
         else {

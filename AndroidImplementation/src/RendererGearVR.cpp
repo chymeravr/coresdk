@@ -364,7 +364,8 @@ namespace cl {
             GL(glDeleteRenderbuffers(frameBuffer->TextureSwapChainLength,
                                      frameBuffer->DepthBuffers));
         }
-        vrapi_DestroyTextureSwapChain(frameBuffer->ColorTextureSwapChain);
+        // this destroyed the clients texture swap chain as well
+//        vrapi_DestroyTextureSwapChain(frameBuffer->ColorTextureSwapChain);
 
         free(frameBuffer->DepthBuffers);
         free(frameBuffer->FrameBuffers);
@@ -713,17 +714,18 @@ namespace cl {
         this->logger->log(LOG_DEBUG, "vrapi_DefaultInitParms()");
         const ovrInitParms initParms = vrapi_DefaultInitParms(&java);
         this->logger->log(LOG_DEBUG, "vrapi_Initialize()");
-        int32_t initResult = vrapi_Initialize(&initParms);
+        // commenting to prevent multiple vr loads
+//        int32_t initResult = vrapi_Initialize(&initParms);
 
-        if (initResult != VRAPI_INITIALIZE_SUCCESS) {
-            char const *msg = initResult == VRAPI_INITIALIZE_PERMISSIONS_ERROR ?
-                              "Thread priority security exception. Make sure the APK is signed." :
-                              "VrApi initialization error.";
-            logger->log(LOG_ERROR,
-                        "Thread priority security exception. Make sure the APK is signed."
-                                "VrApi initialization error.");
-            return false;
-        }
+//        if (initResult != VRAPI_INITIALIZE_SUCCESS) {
+//            char const *msg = initResult == VRAPI_INITIALIZE_PERMISSIONS_ERROR ?
+//                              "Thread priority security exception. Make sure the APK is signed." :
+//                              "VrApi initialization error.";
+//            logger->log(LOG_ERROR,
+//                        "Thread priority security exception. Make sure the APK is signed."
+//                                "VrApi initialization error.");
+//            return false;
+//        }
         logger->log(LOG_DEBUG, "eglParams.createEGLContext()");
 
         ovrEgl_CreateContext(&this->eglParams, nullptr);
@@ -864,7 +866,8 @@ namespace cl {
         ovrRenderer_Destroy(&this->OVRRenderer);
 
         ovrEgl_DestroyContext(&this->eglParams);
-        vrapi_Shutdown();
+        // commenting to prevent multiple vr shutdowns
+//        vrapi_Shutdown();
 
         this->java.Vm->DetachCurrentThread();
 

@@ -5,7 +5,7 @@ apply plugin: 'com.android.library'
         buildToolsVersion "23.0.3"
 
         defaultConfig.with {
-            minSdkVersion = 19
+            minSdkVersion = 21
             targetSdkVersion = 23
             versionCode = 1
             versionName = "1.0"
