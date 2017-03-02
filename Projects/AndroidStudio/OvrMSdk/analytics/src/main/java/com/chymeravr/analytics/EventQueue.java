@@ -4,9 +4,10 @@ import com.chymeravr.schemas.eventreceiver.SDKEvent;
 
 /**
  * Created by robin_chimera on 1/31/2017.
+ * Contains a basic eventQueu interface
  */
 
-public interface EventQueue {
+interface EventQueue {
     public int getSize();
     public void enqueue(SDKEvent event);
     public void flush();

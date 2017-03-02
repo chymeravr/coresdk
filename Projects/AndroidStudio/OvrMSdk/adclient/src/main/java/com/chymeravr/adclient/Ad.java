@@ -22,6 +22,7 @@ import lombok.Setter;
 
 /**
  * Created by robin_chimera on 12/5/2016.
+ * an abstract ad class to hold common ad attributes and methods
  */
 
 @RequiredArgsConstructor(suppressConstructorProperties = true)

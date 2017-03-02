@@ -10,9 +10,11 @@ import java.util.Map;
 
 /**
  * Created by robin_chimera on 1/23/2017.
+ * Contains definition of a request acceting a bytearray and saving it as a
+ * jpeg file to app internal directory
  */
 
-public final class InputStreamVolleyRequest extends Request<byte[]>{
+final class InputStreamVolleyRequest extends Request<byte[]>{
 
     private final Response.Listener<byte[]> mListener;
     private Map<String, String> mParams;

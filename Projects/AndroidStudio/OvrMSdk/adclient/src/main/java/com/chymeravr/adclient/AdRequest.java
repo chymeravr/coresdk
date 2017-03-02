@@ -12,7 +12,7 @@ import lombok.Getter;
  * AdRequest encapsulates targeting information for ads.
  */
 
-// TODO: 2/6/2017 include email id as well 
+
 @Builder
 public final class AdRequest {
     public enum Error{
