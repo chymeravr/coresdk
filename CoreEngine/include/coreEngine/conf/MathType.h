@@ -11,6 +11,7 @@
 #include <glm/mat4x4.hpp>
 #include <glm/gtc/type_ptr.hpp>
 #include <glm/gtc/matrix_transform.hpp>
+#include <glm/gtc/quaternion.hpp>
 #include <glm/gtx/euler_angles.hpp>
 
 namespace cl {
@@ -20,7 +21,7 @@ namespace cl {
 	typedef glm::vec3 CL_Vec3;
 	typedef glm::vec4 CL_Vec4;
 	typedef glm::mat4x4 CL_Mat44;
-
+	typedef glm::quat CL_Quat;
 	/**
 	 * Wrapper function for getting perspective camera matrix
 	 *
@@ -33,6 +34,7 @@ namespace cl {
 	 */
 	CL_Mat44 CL_perspective(float &fov, float &aspect, float &nearPlane, float &farPlane);
 
+	CL_Mat44 CL_tweakedInfinitePerspective(float &fovy, float &aspect, float &nearPlane);
 	/**
 	 * Wrapper function for getting lookat camera view matrix
 	 *
@@ -44,6 +46,10 @@ namespace cl {
 	 */
 	CL_Mat44 CL_lookAt(CL_Vec3 &cameraPosition, CL_Vec3 &lookAtCenter, CL_Vec3 &up);
 
+	/**
+	 * Get Rotation Matrix from Quaternion
+	 */
+	CL_Mat44 CL_RotationMatrix(CL_Quat quaternion);
 	/**
 	 * Get Rotation Matrix around X axis
 	 *
@@ -93,6 +99,12 @@ namespace cl {
 	CL_Vec3 CL_Normalize(CL_Vec3 v);
 
 	CL_Mat44 CL_Make_Mat44(float mat[16]);
+
+	CL_Vec3 CL_Euler_Angles(CL_Quat quat);
+
+	CL_Mat44 CL_Invert_Mat44(CL_Mat44 mat);
+
+	CL_Quat CL_Angle_Axis(CL_Vec3 axis);
 }
 
 #endif //ANDROIDSDK_MATHTYPE_H

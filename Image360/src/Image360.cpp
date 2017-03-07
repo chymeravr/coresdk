@@ -20,7 +20,8 @@ namespace cl{
 					   IEventQueue *eventQueue, 
 					   ILoggerFactory *loggerFactory,
 					   std::unique_ptr<UIFactory> uiFactory,
-					   std::unique_ptr<GazeDetectorFactory> gazeDetectorFactory){
+					   std::unique_ptr<GazeDetectorFactory> gazeDetectorFactory,
+                       std::string fontFolderPath){
 		assert(renderer != nullptr);
 		assert(sceneFactory != nullptr);
 		assert(modelFactory != nullptr);
@@ -46,6 +47,7 @@ namespace cl{
 		this->logger = loggerFactory->createLogger("image360::Image360: ");
 		this->uiFactory = std::move(uiFactory);
 		this->gazeDetectorFactory = std::move(gazeDetectorFactory);
+        this->fontFolderPath = fontFolderPath;
 	}
 
 	//IApplication implementation
@@ -210,6 +212,7 @@ namespace cl{
 
 			TransformModel *transformSphere = (TransformModel*)this->imageContainer->getComponentList().getComponent("transform");
 			transformSphere->setPosition(CL_Vec3(0.0f, 0.0f, 0.0f));
+			transformSphere->setScale(CL_Vec3(100.0f, 100.0f, 100.0f));
 
 			this->imageContainer->createBiRelation(this->material);
 
@@ -220,36 +223,60 @@ namespace cl{
 		}
 
 		//Notify Me
-		notifyMeBackground = uiFactory->createPlanarBackground("notifyMe", scene.get(), CL_Vec4(0.0, 0.0, 0.0, 0.7), CL_Vec3(-0.1, 0.0, -0.5), CL_Vec3(0.0, 0.0, 0.0), 0.1, 0.03);
-		
-		std::unique_ptr<FontStore> fontStore = uiFactory->createFontStore(scene.get(), "fonts/arial.ttf");
+		auto vec3_one =  CL_Vec3(-5.1, 0.0, -15.5);
+		auto vec3_two =  CL_Vec3(0.0, 0.0, 0.0);
+		notifyMeBackground = uiFactory->createPlanarBackground("notifyMe", scene.get(), CL_Vec4(0.0, 0.0, 0.0, 0.7), vec3_one, vec3_two , 3.0, 1.0);
+
+		std::unique_ptr<FontStore> fontStore = uiFactory->createFontStore(scene.get(), this->fontFolderPath.c_str());//"fonts/arial.ttf");
 		
 		TextStyle textStyle;
 		textStyle.fontSize = 20;
-		textStyle.scale = 0.0007f;
+		textStyle.scale = 0.025f;
 		textStyle.color = CL_Vec4(1.0, 1.0, 1.0, 1.0);
-		
-		std::unique_ptr<TextElement> notifyMeElement = uiFactory->createTextElement("notifyMeElement", fontStore.get(), &textStyle, "Notify Me", CL_Vec3(-0.03, -0.005, 0.001), CL_Vec3(0.0, 0.0, 0.0), scene.get());
+
+		vec3_one = CL_Vec3(-1.0, -0.1, 0.001);
+		vec3_two = CL_Vec3(0.0, 0.0, 0.0);
+		std::unique_ptr<TextElement> notifyMeElement = uiFactory->createTextElement("notifyMeElement", fontStore.get(), &textStyle, "Notify Me",
+																					vec3_one, vec3_two, scene.get());
 		notifyMeBackground->addChild("child1", std::move(notifyMeElement));
 
-		closeBackground = uiFactory->createPlanarBackground("closeMe", scene.get(), CL_Vec4(0.0, 0.0, 0.0, 0.7), CL_Vec3(0.1, 0.0, -0.5), CL_Vec3(0.0, 0.0, 0.0), 0.1, 0.03);
-		std::unique_ptr<TextElement> closeElement = uiFactory->createTextElement("closeElement", fontStore.get(), &textStyle, "Close", CL_Vec3(-0.02, -0.005, 0.001), CL_Vec3(0.0, 0.0, 0.0), scene.get());
+		vec3_one = CL_Vec3(5.1, 0.0, -15.5);
+		vec3_two =  CL_Vec3(0.0, 0.0, 0.0);
+		closeBackground = uiFactory->createPlanarBackground("closeMe", scene.get(), CL_Vec4(0.0, 0.0, 0.0, 0.7), vec3_one, vec3_two, 3.0, 1.0);
+
+		vec3_one = CL_Vec3(-1.0, -0.1, 1.0);
+		vec3_two = CL_Vec3(0.0, 0.0, 0.0);
+		std::unique_ptr<TextElement> closeElement = uiFactory->createTextElement("closeElement", fontStore.get(), &textStyle, "Close", 
+																				 vec3_one, vec3_two, scene.get());
 		closeBackground->addChild("child2", std::move(closeElement));
-		
-		reticle = uiFactory->createReticle("reticle", scene.get(), transformTreeCamera, CL_Vec4(0.0, 1.0, 0.0, 1.0));
+
+		auto vec3_zero = CL_Vec4(0.0, 1.0, 0.0, 1.0);
+		reticle = uiFactory->createReticle("reticle", scene.get(), transformTreeCamera, vec3_zero);
 
 		gazeDetectorContainer = gazeDetectorFactory->createGazeDetectorContainer();
 
 		Model *notifyMeModel = (Model*) scene->getFromScene("notifyMe");
 		TransformTreeModel *transformNotifyMe = (TransformTreeModel*)notifyMeModel->getComponentList().getComponent("transformTree");
 		notifyMeListener = std::unique_ptr<NotifyMeListener>(new NotifyMeListener);
-		std::unique_ptr<IComponent> gazeDetectorNotifyMe = gazeDetectorFactory->createGazeDetectorBox(std::string("notifyMe"), transformTreeCamera, transformNotifyMe, notifyMeListener.get(), gazeDetectorContainer.get(), CL_Vec3(0.0f, 0.0f, 0.0f), CL_Vec3(0.0f, 0.0f, -1.0f), 0.1f, 0.03f, 0.00001f);
+
+		auto boxMessage = std::string("notifyMe");
+		vec3_one = CL_Vec3(0.0f, 0.0f, 0.0f);
+		vec3_two = CL_Vec3(0.0f, 0.0f, -1.0f);
+		std::unique_ptr<IComponent> gazeDetectorNotifyMe = gazeDetectorFactory->createGazeDetectorBox(boxMessage, transformTreeCamera,
+																									  transformNotifyMe, notifyMeListener.get(), gazeDetectorContainer.get(),
+																									  vec3_one, vec3_two, 0.1f, 0.03f, 0.00001f);
 		notifyMeModel->getComponentList().addComponent(std::move(gazeDetectorNotifyMe));
 		
 		Model *closeMeModel = (Model*)scene->getFromScene("closeMe");
 		TransformTreeModel *transformCloseMe = (TransformTreeModel*)closeMeModel->getComponentList().getComponent("transformTree");
 		closeMeListener = std::unique_ptr<CloseMeListener>(new CloseMeListener);
-		std::unique_ptr<IComponent> gazeDetectorCloseMe = gazeDetectorFactory->createGazeDetectorBox(std::string("closeMe"), transformTreeCamera, transformCloseMe, closeMeListener.get(), gazeDetectorContainer.get(), CL_Vec3(0.0f, 0.0f, 0.0f), CL_Vec3(0.0f, 0.0f, -1.0f), 0.1f, 0.03f, 0.00001f);
+
+		auto boxMessage2 = std::string("closeMe");
+		vec3_one = CL_Vec3(0.0f, 0.0f, 0.0f);
+		vec3_two = CL_Vec3(0.0f, 0.0f, -1.0f);
+		std::unique_ptr<IComponent> gazeDetectorCloseMe = gazeDetectorFactory->createGazeDetectorBox(boxMessage2, transformTreeCamera,
+																									 transformCloseMe, closeMeListener.get(), gazeDetectorContainer.get(),
+																									 vec3_one, vec3_two, 3.0f, 1.0f, 0.00001f);
 		closeMeModel->getComponentList().addComponent(std::move(gazeDetectorCloseMe));
 
 		renderer->initialize(scene.get());

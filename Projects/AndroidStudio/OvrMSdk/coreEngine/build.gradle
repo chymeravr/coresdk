@@ -1,0 +1,86 @@
+apply plugin: 'com.android.library'
+
+def coreEngineModule = "${rootProject.rootDir}/coreEngine"
+def distributionDir = "${rootProject.rootDir}/distribution"
+
+android {
+    compileSdkVersion 23
+    buildToolsVersion "23.0.3"
+
+    defaultConfig {
+        minSdkVersion 21
+        targetSdkVersion 23
+        versionCode 1
+        versionName "1.0"
+
+        externalNativeBuild {
+            cmake {
+                // when using arguments, the latest (cmake version 3.6+, android studio
+                // beta2+) must be used to compile
+
+                // I have to use gcc to compile, clang compiled code generate error
+                // at run time for any std::queue etc.
+                targets 'CoreEngine'
+                arguments = ['-DANDROID_STL=gnustl_shared', '-DANDROID_NATIVE_API_LEVEL=android-23']
+
+                cppFlags = ["-DGLES2_0", "-std=c++11", "-frtti", "-fexceptions"]
+
+                abiFilters 'armeabi-v7a'
+            }
+        }
+
+    }
+    buildTypes {
+        debug{
+            minifyEnabled false
+            jniDebuggable true
+        }
+        release {
+            minifyEnabled false
+            proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
+        }
+    }
+
+    externalNativeBuild {
+        cmake {
+            path '../../../../CoreEngine/CMakeLists.txt'
+        }
+    }
+
+    sourceSets {
+        main {
+            jniLibs.srcDirs = ["${distributionDir}/soil", "${distributionDir}/freetype"]
+        }
+    }
+
+}
+
+task clean(type: Delete) {
+    delete "${coreEngineModule}/build"
+    delete fileTree(dir: 'libs', include: '*.so')
+}
+
+
+task distributeDebugLib (type : Copy) {
+    // trigger build library
+    dependsOn "assembleDebug"
+    from "${coreEngineModule}/build/intermediates/cmake/debug/obj/armeabi-v7a/libCoreEngine.so"
+    into "${distributionDir}/coreEngine/armeabi-v7a/"
+
+}
+
+task(distributeReleaseLib, type : Copy) {
+    // trigger build library
+    dependsOn "assembleRelease"
+    from "${coreEngineModule}/build/intermediates/cmake/release/obj/armeabi-v7a/libCoreEngine.so"
+    into "${distributionDir}/coreEngine/armeabi-v7a/"
+}
+
+tasks.whenTaskAdded { task ->
+    if (task.name.contains('compileDebug')) {
+        task.dependsOn ':soil:distributeDebugLib', ':freetype:distributeDebugLib'
+    }
+    else if(task.name.contains('compileRelease')) {
+        task.dependsOn ':soil:distributeReleaseLib', ':freetype:distributeReleaseLib'
+    }
+}

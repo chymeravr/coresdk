@@ -111,15 +111,18 @@ namespace cl{
 		CL_Vec4 gazeObjectOrigin4f = gazeObjectTransform->getGlobalTransform() * CL_Vec4(0.0f, 0.0f, 0.0f, 1.0f);
 		CL_Vec3 shooterOrigin3f(shooterOrigin4f[0], shooterOrigin4f[1], shooterOrigin4f[2]);
 		CL_Vec3 gazeObjectOrigin3f(gazeObjectOrigin4f[0], gazeObjectOrigin4f[1], gazeObjectOrigin4f[2]);
-		return dotProduct(gazeObjectOrigin3f - shooterOrigin3f, gazeObjectOrigin3f - shooterOrigin3f);
+		auto r1 = gazeObjectOrigin3f - shooterOrigin3f;
+		return dotProduct(r1, r1);
 	}
 	bool GazeDetectorBox::intersectionWithPlane(CL_Vec3 &P0, CL_Vec3 &P1, CL_Vec3 &P3, CL_Vec3 &L0, CL_Vec3 &L1){
 		CL_Vec3 N = CL_CrossProduct((P3 - P0), (P1 - P0));
-		float denominator = dotProduct(N, L1 - L0);
+        auto R1 = L1 - L0;
+		float denominator = dotProduct(N, R1);
 		if (denominator == 0){
 			return false;
 		}
-		float t = dotProduct(N, P0 - L0) / denominator;
+        auto R2 = P0 - L0;
+		float t = dotProduct(N, R2) / denominator;
 		if (t < 0)
 			return false;
 		CL_Vec3 r = L0 + (L1 - L0)*t; //line plane intersection point
@@ -127,15 +130,18 @@ namespace cl{
 		//Calculating if a point r is inside rectangle formed by P0, P1, P2, P3
 		// satisfy following condition
 		// (0 < (r0-P0).(P1-P0) < (P1-P0).(P1-P0) ) and (0 < (r0-P0).(P3-P0) < (P3-P0).(P3-P0))
-		float rp01dot = dotProduct(r - P0, P1 - P0);
-		float p01dot = dotProduct(P1 - P0, P1 - P0);
+        auto R3 = r - P0;
+        auto R4 = P1 - P0;
+		float rp01dot = dotProduct(R2, R4);
+		float p01dot = dotProduct(R4, R4);
 		if (rp01dot <= 0)
 			return false;
 		if (p01dot <= rp01dot)
 			return false;
 
-		float rp03dot = dotProduct(r - P0, P3 - P0);
-		float p03dot = dotProduct(P3 - P0, P3 - P0);
+        auto R5 = P3 - P0;
+		float rp03dot = dotProduct(R3, R5);
+		float p03dot = dotProduct(R5, R5);
 		if (rp03dot <= 0)
 			return false;
 		if (p03dot <= rp03dot)

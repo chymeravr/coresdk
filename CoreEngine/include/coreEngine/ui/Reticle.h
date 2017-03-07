@@ -18,10 +18,10 @@ namespace cl{
 			Scene *scene,
 			CL_Vec4 &color);
 	private:
-		float distanceFromCamera = 0.01f;
+		float distanceFromCamera = 10.0f;
 		unsigned int nDivisions = 20;
-		float innerRadius = 0.0001f;
-		float outerRadius = 0.00013f;
+		float innerRadius = 0.05f;
+		float outerRadius = 0.13f;
 	};
 }
 

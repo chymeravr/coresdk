@@ -85,6 +85,7 @@
 #
 #========================================================================================
 
+cmake_minimum_required(VERSION 3.2)
 
 set(_DownloadProjectDir "${CMAKE_CURRENT_LIST_DIR}")
 

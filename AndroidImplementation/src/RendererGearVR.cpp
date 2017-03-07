@@ -10,8 +10,16 @@
 #include <coreEngine/renderObjects/Model.h>
 #include <CameraGLOVR.h>
 #include <RendererGearVR.h>
+#include <stdlib.h>
+#include <glImplementation/renderObjects/CameraGL.h>
+#include <coreEngine/components/transformTree/TransformTreeCamera.h>
 
 namespace cl {
+
+    static const float FAR_PLANE = 0.0f;
+    static const float NEAR_PLANE = 1.0f;
+
+    #define REDUCED_LATENCY 1
 
 #if defined EGL_SYNC
 // EGL_KHR_reusable_sync
@@ -340,7 +348,7 @@ namespace cl {
                     GL(glFramebufferTexture2D(GL_DRAW_FRAMEBUFFER, GL_COLOR_ATTACHMENT0,
                                               GL_TEXTURE_2D, colorTexture, 0));
                     GL(GLenum renderFramebufferStatus = glCheckFramebufferStatus(
-                            GL_DRAW_FRAMEBUFFER));
+                               GL_DRAW_FRAMEBUFFER));
                     GL(glBindFramebuffer(GL_DRAW_FRAMEBUFFER, 0));
                     if (renderFramebufferStatus != GL_FRAMEBUFFER_COMPLETE) {
                         ALOGE("Incomplete frame buffer object: %s",
@@ -363,7 +371,8 @@ namespace cl {
             GL(glDeleteRenderbuffers(frameBuffer->TextureSwapChainLength,
                                      frameBuffer->DepthBuffers));
         }
-        vrapi_DestroyTextureSwapChain(frameBuffer->ColorTextureSwapChain);
+        // this destroyed the clients texture swap chain as well
+//        vrapi_DestroyTextureSwapChain(frameBuffer->ColorTextureSwapChain);
 
         free(frameBuffer->DepthBuffers);
         free(frameBuffer->FrameBuffers);
@@ -469,7 +478,6 @@ namespace cl {
         simulation->CurrentRotation.z = (float) (predictedDisplayTime);
     }
 
-
     /**
      *
      * OvrRenderer methods
@@ -506,11 +514,11 @@ namespace cl {
             }
         }
 
-        // Setup the projection matrix.
+        // Setup the projection matrix. - controls the near plane, far plane and fov
         renderer->ProjectionMatrix = ovrMatrix4f_CreateProjectionFov(
                 vrapi_GetSystemPropertyFloat(java, VRAPI_SYS_PROP_SUGGESTED_EYE_FOV_DEGREES_X),
                 vrapi_GetSystemPropertyFloat(java, VRAPI_SYS_PROP_SUGGESTED_EYE_FOV_DEGREES_Y),
-                0.0f, 0.0f, 0.1f, 0.0f);
+                0.0f, 0.0f, NEAR_PLANE, FAR_PLANE);
         renderer->TexCoordsTanAnglesMatrix = ovrMatrix4f_TanAngleMatrixFromProjection(
                 &renderer->ProjectionMatrix);
     }
@@ -558,7 +566,7 @@ namespace cl {
     static ovrFrameParms ovrRenderer_RenderFrame(ovrRenderer *renderer, const ovrJava *java,
                                                  long long frameIndex, int minimumVsyncs,
                                                  const ovrPerformanceParms *perfParms,
-                                                 CameraGLOVR *camera,
+                                                 CameraGL *camera,
                                                  Scene *scene, const ovrSimulation *simulation,
                                                  const ovrTracking *tracking, ovrMobile *ovr) {
         ovrFrameParms parms = vrapi_DefaultFrameParms(java, VRAPI_FRAME_INIT_DEFAULT,
@@ -578,8 +586,6 @@ namespace cl {
         ovrTracking updatedTracking = *tracking;
 #endif
 
-
-
         // Calculate the view matrix.
         const ovrMatrix4f centerEyeViewMatrix = vrapi_GetCenterEyeViewMatrix(&headModelParms,
                                                                              &updatedTracking,
@@ -592,9 +598,6 @@ namespace cl {
         ovrMatrix4f eyeViewMatrixTransposed[2];
         eyeViewMatrixTransposed[0] = ovrMatrix4f_Transpose(&eyeViewMatrix[0]);
         eyeViewMatrixTransposed[1] = ovrMatrix4f_Transpose(&eyeViewMatrix[1]);
-
-        ovrMatrix4f projectionMatrixTransposed;
-        projectionMatrixTransposed = ovrMatrix4f_Transpose(&renderer->ProjectionMatrix);
 
 
         for (int eye = 0; eye < VRAPI_FRAME_LAYER_EYE_MAX; eye++) {
@@ -611,9 +614,24 @@ namespace cl {
         unsigned long long completionFence[VRAPI_FRAME_LAYER_EYE_MAX] = {0};
 
         /* update camera projection matrix - it remains the same for each of the eye */
-        CL_Mat44 sceneProjectionMat = CL_Make_Mat44(
-                &projectionMatrixTransposed.M[0][0]);//&renderer->ProjectionMatrix.M[0][0]);
-        camera->setProjectionMatrix(sceneProjectionMat);
+        //CL_Mat44 sceneProjectionMat = CL_Make_Mat44(
+        //        &projectionMatrixTransposed.M[0][0]);
+        //camera->setProjectionMatrix(sceneProjectionMat);
+
+
+        // update rotation of camera - remains same for each eye
+        TransformTreeCamera *transform = (TransformTreeCamera*)camera->getComponentList().getComponent("transformTree");
+        auto trackingQuat = tracking->HeadPose.Pose.Orientation;
+        transform->setLocalQuaternion(CL_Quat(trackingQuat.w, trackingQuat.x, trackingQuat.y, trackingQuat.z));
+
+        // update projection parameters - remains same for each eye
+//        auto fovx = vrapi_GetSystemPropertyFloat(java, VRAPI_SYS_PROP_SUGGESTED_EYE_FOV_DEGREES_X);
+//        auto fovy = vrapi_GetSystemPropertyFloat(java, VRAPI_SYS_PROP_SUGGESTED_EYE_FOV_DEGREES_Y);
+//
+//        camera->setAspect(fovx/fovy);
+//        camera->setFov(fovy * CL_PI/ 180.0f);                 // our camera works with radians
+//        camera->setNearPlane(NEAR_PLANE);
+//        camera->setFarPlane(FAR_PLANE);
 
         // Render the eye images.
         for (int eye = 0; eye < renderer->NumBuffers; eye++) {
@@ -621,9 +639,13 @@ namespace cl {
             // for each eye (updates orientation, not position)
 
             /* Update the view matrix for each eye */
-            CL_Mat44 sceneViewMat = CL_Make_Mat44(&eyeViewMatrixTransposed[eye].M[0][0]);
-            camera->setViewMatrix(sceneViewMat);
+            //CL_Mat44 sceneViewMat = CL_Make_Mat44(&eyeViewMatrixTransposed[eye].M[0][0]);
+            //camera->setViewMatrix(sceneViewMat);
 
+            // update the position of camera for each eye - left of center & right of center
+            const ovrVector3f centerEyeOffset = tracking->HeadPose.Pose.Position;
+            const float eyeOffset = ( eye ? -0.5f : 0.5f ) * headModelParms.InterpupillaryDistance;
+            transform->setLocalPosition(CL_Vec3(centerEyeOffset.x + eyeOffset, centerEyeOffset.y, centerEyeOffset.z));
 
             ovrFramebuffer *frameBuffer = &renderer->FrameBuffer[eye];
             ovrFramebuffer_SetCurrent(frameBuffer);
@@ -713,16 +735,18 @@ namespace cl {
         this->logger->log(LOG_DEBUG, "vrapi_DefaultInitParms()");
         const ovrInitParms initParms = vrapi_DefaultInitParms(&java);
         this->logger->log(LOG_DEBUG, "vrapi_Initialize()");
-        int32_t initResult = vrapi_Initialize(&initParms);
+        // commenting to prevent multiple vr loads
+//        int32_t initResult = vrapi_Initialize(&initParms);
 
-        if (initResult != VRAPI_INITIALIZE_SUCCESS) {
-            char const *msg = initResult == VRAPI_INITIALIZE_PERMISSIONS_ERROR ?
-                              "Thread priority security exception. Make sure the APK is signed." :
-                              "VrApi initialization error.";
-            logger->log(LOG_ERROR,
-                        "Thread priority security exception. Make sure the APK is signed."
-                                "VrApi initialization error.");
-        }
+//        if (initResult != VRAPI_INITIALIZE_SUCCESS) {
+//            char const *msg = initResult == VRAPI_INITIALIZE_PERMISSIONS_ERROR ?
+//                              "Thread priority security exception. Make sure the APK is signed." :
+//                              "VrApi initialization error.";
+//            logger->log(LOG_ERROR,
+//                        "Thread priority security exception. Make sure the APK is signed."
+//                                "VrApi initialization error.");
+//            return false;
+//        }
         logger->log(LOG_DEBUG, "eglParams.createEGLContext()");
 
         ovrEgl_CreateContext(&this->eglParams, nullptr);
@@ -744,6 +768,7 @@ namespace cl {
          */
 
         ovrRenderer_Create(&this->OVRRenderer, &java, this->useMultiView);
+        return true;
     }
 
     bool RendererGearVR::initialize(Scene *scene) {
@@ -771,7 +796,16 @@ namespace cl {
             }
         }
 
-        this->renderCamera = (CameraGLOVR *) cameraRelations[0];
+        //this->renderCamera = (CameraGLOVR *) cameraRelations[0];
+        this->renderCamera = (CameraGL *) cameraRelations[0];
+
+        auto fovx = vrapi_GetSystemPropertyFloat(&this->java, VRAPI_SYS_PROP_SUGGESTED_EYE_FOV_DEGREES_X);
+        auto fovy = vrapi_GetSystemPropertyFloat(&this->java, VRAPI_SYS_PROP_SUGGESTED_EYE_FOV_DEGREES_Y);
+
+        this->renderCamera->setAspect(fovx/fovy);
+        this->renderCamera->setFov(fovy * CL_PI/ 180.0f);                 // our camera works with radians
+        this->renderCamera->setNearPlane(NEAR_PLANE);
+        this->renderCamera->setFarPlane(FAR_PLANE);
 
         return true;
     }
@@ -862,7 +896,8 @@ namespace cl {
         ovrRenderer_Destroy(&this->OVRRenderer);
 
         ovrEgl_DestroyContext(&this->eglParams);
-        vrapi_Shutdown();
+        // commenting to prevent multiple vr shutdowns
+//        vrapi_Shutdown();
 
         this->java.Vm->DetachCurrentThread();
 
@@ -905,16 +940,54 @@ namespace cl {
         }
         else {
             if (this->ovrM != NULL) {
-                ALOGV("        eglGetCurrentSurface( EGL_DRAW ) = %p", eglGetCurrentSurface(EGL_DRAW));
+                ALOGV("        eglGetCurrentSurface( EGL_DRAW ) = %p",
+                      eglGetCurrentSurface(EGL_DRAW));
 
                 ALOGV("        vrapi_LeaveVrMode()");
 
                 this->leaveVrMode();
 
-                ALOGV("        eglGetCurrentSurface( EGL_DRAW ) = %p", eglGetCurrentSurface(EGL_DRAW));
+                ALOGV("        eglGetCurrentSurface( EGL_DRAW ) = %p",
+                      eglGetCurrentSurface(EGL_DRAW));
             }
         }
     }
 
+    std::vector<float> RendererGearVR::getHMDParams() {
+        const double predictedDisplayTime = vrapi_GetPredictedDisplayTime(this->ovrM,
+                                                                          this->frameIndex);
+        const ovrTracking baseTracking = vrapi_GetPredictedTracking(this->ovrM,
+                                                                    predictedDisplayTime);
+
+        // Apply the head-on-a-stick model if there is no positional tracking.
+        const ovrHeadModelParms headModelParms = vrapi_DefaultHeadModelParms();
+        const ovrTracking tracking = vrapi_ApplyHeadModel(&headModelParms, &baseTracking);
+
+
+
+
+        // Calculate the view matrix.
+        const ovrMatrix4f centerEyeViewMatrix = vrapi_GetCenterEyeViewMatrix(&headModelParms,
+                                                                             &tracking,
+                                                                             NULL);
+
+        ovrMatrix4f eyeViewMatrix[2];
+        eyeViewMatrix[0] = vrapi_GetEyeViewMatrix(&headModelParms, &centerEyeViewMatrix, 0);
+        eyeViewMatrix[1] = vrapi_GetEyeViewMatrix(&headModelParms, &centerEyeViewMatrix, 1);
+
+
+        std::vector<float> result;
+
+        // row major assignment
+        for (int j = 0; j < 2; j++) {
+            for (int i = 0; i < 16; i++) {
+                auto div = std::div(i, 4);
+                result.push_back(eyeViewMatrix[j].M[div.quot][div.rem]);
+            }
+
+        }
+
+        return result;
+    }
 
 }

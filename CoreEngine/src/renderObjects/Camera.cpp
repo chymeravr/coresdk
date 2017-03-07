@@ -23,7 +23,11 @@ namespace cl{
 	}
 
 	void Camera::calculateProjectionMatrix(){
-		projectionMatrix = CL_perspective(fov, aspect, nearPlane, farPlane);
+		if(farPlane > nearPlane){
+			projectionMatrix = CL_perspective(fov, aspect, nearPlane, farPlane);
+		}else{
+			projectionMatrix = CL_tweakedInfinitePerspective(fov, aspect, nearPlane);
+		}
 	}
 
 	CL_Mat44 Camera::getViewMatrix(){

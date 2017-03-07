@@ -39,7 +39,8 @@ namespace cl{
 				 IEventQueue *eventQueue, 
 				 ILoggerFactory *loggerFactory,
 				 std::unique_ptr<UIFactory> uiFactory,
-				 std::unique_ptr<GazeDetectorFactory> gazeDetectorFactory);
+				 std::unique_ptr<GazeDetectorFactory> gazeDetectorFactory,
+				 std::string fontFolderPath);
 
 		//IApplication implementation
 		void start();
@@ -82,11 +83,13 @@ namespace cl{
 		std::unique_ptr<Reticle> reticle;
 		int lastPassiveMousePositionX = -1;
 		int lastPassiveMousePositionY = -1;
-		float passiveMouseMotionSensitivity = 0.2f;
+		float passiveMouseMotionSensitivity = 0.02f;
 		std::unique_ptr<GazeDetectorFactory> gazeDetectorFactory;
 		std::unique_ptr<GazeDetectorContainer> gazeDetectorContainer;
 		std::unique_ptr<NotifyMeListener> notifyMeListener;
 		std::unique_ptr<CloseMeListener> closeMeListener;
+
+		std::string fontFolderPath = "";
 	};
 }
 

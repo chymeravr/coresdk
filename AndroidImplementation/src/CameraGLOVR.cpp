@@ -41,11 +41,12 @@ namespace cl{
         }
     }
 
-    CL_Mat44 CameraGLOVR::setViewMatrix(CL_Mat44 viewMatrix){
+
+    void CameraGLOVR::setViewMatrix(CL_Mat44 viewMatrix){
         this->viewMatrix = viewMatrix;
     }
 
-    CL_Mat44 CameraGLOVR::setProjectionMatrix(CL_Mat44 projectionMatrix){
+    void CameraGLOVR::setProjectionMatrix(CL_Mat44 projectionMatrix){
         this->projectionMatrix = projectionMatrix;
     }
 

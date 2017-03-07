@@ -1,9 +1,20 @@
 #include <coreEngine/ui/FontStore.h>
 #include <assert.h>
+
 #include <ft2build.h>
 #include FT_FREETYPE_H
 
+#include <sstream>
+
 namespace cl{
+    template <typename T>
+    std::string to_string(T value)
+    {
+        std::ostringstream os ;
+        os << value ;
+        return os.str() ;
+    }
+
 	FontStore::FontStore(Scene *scene, std::string fontName, ITextMaterialFactory *textMaterialFactory,ILoggerFactory *loggerFactory){
 		assert(scene != nullptr);
 		assert(textMaterialFactory != nullptr);
@@ -101,12 +112,13 @@ namespace cl{
 	}
 
 	std::string FontStore::getTextureId(int fontSize, char c){
-		return fontName + "_" + std::to_string(fontSize) + "_" + std::string(1, c);
+
+		return fontName + "_" + to_string(fontSize) + "_" + std::string(1, c);
 	}
 
 	std::string FontStore::getMaterialId(CL_Vec4 color, int fontSize, char c){
-		std::string colorString = std::to_string(color[0]) + "_" + std::to_string(color[1]) + "_" + std::to_string(color[2]) + "_" + std::to_string(color[3]);
-		std::string materialId = this->getFontName() + "_" + std::to_string(fontSize) + "_" + colorString + "_" + std::string(1, c);
+		std::string colorString = to_string(color[0]) + "_" + to_string(color[1]) + "_" + to_string(color[2]) + "_" + to_string(color[3]);
+		std::string materialId = this->getFontName() + "_" + to_string(fontSize) + "_" + colorString + "_" + std::string(1, c);
 		return materialId;
 	}
 }

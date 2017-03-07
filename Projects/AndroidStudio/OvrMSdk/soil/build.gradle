@@ -1,0 +1,65 @@
+apply plugin: 'com.android.library'
+
+def soilModule = "${rootProject.rootDir}/soil"
+def distributionDir = "${rootProject.rootDir}/distribution"
+
+android {
+    compileSdkVersion 23
+    buildToolsVersion "23.0.3"
+
+    defaultConfig {
+        minSdkVersion 21
+        targetSdkVersion 23
+        versionCode 1
+        versionName "1.0"
+
+        externalNativeBuild {
+            cmake {
+                // when using arguments, the latest (cmake version 3.6+, android studio
+                // beta2+) must be used to compile
+
+                // I have to use gcc to compile, clang compiled code generate error
+                // at run time for any std::queue etc.
+                targets 'SOIL'
+                arguments = ['-DANDROID_STL=gnustl_shared', '-DANDROID_NATIVE_API_LEVEL=android-23']
+
+                abiFilters 'armeabi-v7a'
+            }
+        }
+    }
+    buildTypes {
+        debug {
+            minifyEnabled false
+            jniDebuggable true
+        }
+        release {
+            minifyEnabled false
+            proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
+        }
+    }
+
+    externalNativeBuild {
+        cmake {
+            path '../../../../SOIL/CMakeLists.txt'
+        }
+    }
+}
+
+task clean(type: Delete) {
+    delete "${rootProject.rootDir}/soil/build"
+}
+
+task distributeDebugLib (type : Copy) {
+    // trigger build library
+    dependsOn "assembleDebug"
+    from "${soilModule}/build/intermediates/cmake/debug/obj/armeabi-v7a/libSOIL.so"
+    into "${distributionDir}/soil/armeabi-v7a/"
+
+}
+
+task(distributeReleaseLib, type : Copy) {
+    // trigger build library
+    dependsOn "assembleRelease"
+    from "${soilModule}/build/intermediates/cmake/release/obj/armeabi-v7a/libSOIL.so"
+    into "${distributionDir}/soil/armeabi-v7a/"
+}

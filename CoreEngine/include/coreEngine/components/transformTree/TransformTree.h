@@ -19,6 +19,10 @@ namespace cl{
 		CL_Vec3 getLocalPosition();
 		void setLocalRotation(CL_Vec3 localRotation);
 		CL_Vec3 getLocalRotation();
+
+		void setLocalQuaternion(CL_Quat localQuaternion);
+		CL_Quat getLocalQuaternion();
+
 		void setLocalScale(CL_Vec3 scale);
 		CL_Vec3 getLocalScale();
 		/*
@@ -40,6 +44,7 @@ namespace cl{
 		std::vector<TransformTree*> children;
 		CL_Vec3 localPosition = CL_Vec3(0.0, 0.0, 0.0);
 		CL_Vec3 localRotation = CL_Vec3(0.0, 0.0, 0.0);
+		CL_Quat localQuaternion = CL_Quat(0.0, 0.0, 0.0, 0.0);
 		CL_Vec3 localScale = CL_Vec3(1.0, 1.0, 1.0);
 		CL_Mat44 globalTransform;
 

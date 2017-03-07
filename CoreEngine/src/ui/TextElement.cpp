@@ -2,7 +2,19 @@
 #include <coreEngine/ui/UIFactory.h>
 #include <assert.h>
 
+#include <sstream>
+
+
 namespace cl{
+	template <typename T>
+	std::string to_string(T value)
+	{
+		std::ostringstream os ;
+		os << value ;
+		return os.str() ;
+	}
+
+
 	TextElement::TextElement(std::string id,
 		FontStore *fontStore,
 		TextStyle *textStyle,
@@ -30,7 +42,7 @@ namespace cl{
 			char c = text[i];
 			Character *character = fontStore->getCharacter(c, textStyle->fontSize);
 
-			std::string modelId = id + "Model" + std::to_string(i);
+			std::string modelId = id + "Model" + to_string(i);
 
 			GLfloat xpos = x + character->bearing.x * textStyle->scale;
 			GLfloat ypos = y - (character->size.y - character->bearing.y) * textStyle->scale;

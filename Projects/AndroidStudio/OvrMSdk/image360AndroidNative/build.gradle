@@ -1,0 +1,98 @@
+apply plugin: 'com.android.library'
+
+def ovrMobileModule = "${rootProject.rootDir}/ovr_sdk_mobile"
+def image360AndroidModule = "${rootProject.rootDir}/image360AndroidNative"
+def distributionDir = "${rootProject.rootDir}/distribution"
+
+android {
+    compileSdkVersion 23
+    buildToolsVersion "23.0.3"
+
+    defaultConfig {
+        minSdkVersion 21
+        targetSdkVersion 23
+        versionCode 1
+        versionName "1.0"
+
+        externalNativeBuild {
+            cmake {
+                // when using arguments, the latest (cmake version 3.6+, android studio
+                // beta2+) must be used to compile
+
+                // I have to use gcc to compile, clang compiled code generate error
+                // at run time for any std::queue etc.
+                targets 'Image360AndroidNative'
+                arguments = ['-DANDROID_STL=gnustl_shared', '-DANDROID_NATIVE_API_LEVEL=android-23']
+
+                cppFlags = ["-DGLES2_0", "-std=c++11", "-frtti", "-fexceptions", '-Wall', '-fno-exceptions',
+                            "-Wno-error=format-security"]
+
+                abiFilters 'armeabi-v7a'
+            }
+        }
+    }
+    buildTypes {
+        debug{
+            minifyEnabled false
+            jniDebuggable true
+        }
+        release {
+            minifyEnabled false
+            proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
+        }
+    }
+
+    externalNativeBuild {
+        cmake {
+            path '../../../../AndroidImplementation/CMakeLists.txt'
+        }
+    }
+
+    sourceSets {
+        main {
+            jniLibs.srcDirs = ["${distributionDir}/coreEngine", "${distributionDir}/glImplementation",
+                               "${distributionDir}/renderer", "${distributionDir}/image360"]
+        }
+    }
+}
+
+//task copyLibOvrKernel(type: Copy){
+//    from "${ovrMobileModule}/LibOVRKernel/Libs/Android/armeabi-v7a/Release/libovrkernel.a"
+//    into "${image360AndroidModule}/libs"
+//}
+//
+//task copyVrApiLib(type: Copy){
+//    from "${ovrMobileModule}/VrApi/Libs/Android/armeabi-v7a/Release/libvrapi.so"
+//    into "${image360AndroidModule}/libs"
+//}
+
+task clean(type: Delete) {
+    delete "${rootProject.rootDir}/image360AndroidNative/build"
+    delete fileTree(dir: 'libs', include: '*.so')
+}
+
+tasks.whenTaskAdded { task ->
+    if (task.name.contains('compileDebug')) {
+        task.dependsOn([':coreEngine:distributeDebugLib', ':glImplementation:distributeDebugLib',
+                        ':renderer:distributeDebugLib', ':image360:distributeDebugLib'])
+    }
+    else if(task.name.contains('compileRelease')) {
+        task.dependsOn([':coreEngine:distributeReleaseLib', ':glImplementation:distributeReleaseLib',
+                        ':renderer:distributeReleaseLib', ':image360:distributeReleaseLib'])
+    }
+}
+
+task distributeDebugLib (type : Copy) {
+    // trigger build library
+    dependsOn "assembleDebug"
+    from "${image360AndroidModule}/build/intermediates/cmake/debug/obj/armeabi-v7a/libImage360Androidnative.so"
+    into "${distributionDir}/image360AndroidNative/armeabi-v7a/"
+
+}
+
+task(distributeReleaseLib, type : Copy) {
+    // trigger build library
+    dependsOn "assembleRelease"
+    from "${image360AndroidModule}/build/intermediates/cmake/release/obj/armeabi-v7a/libImage360Androidnative.so"
+    into "${distributionDir}/image360AndroidNative/armeabi-v7a/"
+}

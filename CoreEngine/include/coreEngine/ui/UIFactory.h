@@ -34,7 +34,8 @@ namespace cl{
 																 CL_Vec3 &localRotation,
 																 float width,
 																 float height){
-			return std::unique_ptr<PlanarBackground>(new PlanarBackground(id, modelFactory.get(), uniformColorFactory.get(), scene, color, transformTreeFactory.get(), localPosition, localRotation, width, height, loggerFactory));
+			return std::unique_ptr<PlanarBackground>(new PlanarBackground(id, modelFactory.get(), uniformColorFactory.get(), scene, color, 
+																		  transformTreeFactory.get(), localPosition, localRotation, width, height, loggerFactory));
 		}
 
 		std::unique_ptr<CharacterElement> createCharacterElement(std::string id, CL_Vec2 origin, CL_GLfloat height, CL_GLfloat width, MaterialText *material, Scene *scene){

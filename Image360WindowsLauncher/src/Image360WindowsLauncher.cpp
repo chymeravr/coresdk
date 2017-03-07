@@ -28,11 +28,12 @@
 #include <renderer/RendererNoHMD.h>
 #include <coreEngine/modifier/ImageBMPLoader.h>
 #include <coreEngine/components/transformTree/TransformTreeFactory.h>
-#include <glImplementation/factory/UniformColorFactoryGL.h>
+#include <glImplementation/factory/opengl/UniformColorFactoryGL.h>
 #include <coreEngine/ui/UIFactory.h>
-#include <glImplementation/ui/TextMaterialFactoryGL.h>
+#include <glImplementation/factory/opengl/TextMaterialFactoryGL.h>
 #include <coreEngine/components/gazeDetector/GazeDetectorFactory.h>
 #include <coreEngine/modifier/ImagePNGLoader.h>
+#include <coreEngine/modifier/ImageJPEGLoader.h>
 
 #include <GLFW/glfw3.h>
 
@@ -155,12 +156,16 @@ int _tmain(int argc, _TCHAR** argv)
 	std::unique_ptr<IModelFactory> modelFactory(new ModelGLFactory(loggerFactory.get()));
 	std::unique_ptr<IDiffuseTextureFactory> diffuseTextureFactory(new DiffuseTextureGLFactory(loggerFactory.get()));
 	std::unique_ptr<IDiffuseTextureCubeMapFactory> diffuseTextureCubeMapFactory(new DiffuseTextureCubeMapGLFactory(loggerFactory.get()));
+	
 	std::unique_ptr<IRenderer> renderer(new RendererNoHMD());
+	
 	std::unique_ptr<ITransformCameraFactory> transformCameraFactory(new TransformCameraFactory(loggerFactory.get()));
 	std::unique_ptr<ITransformModelFactory> transformModelFactory(new TransformModelFactory(loggerFactory.get()));
 	std::unique_ptr<ICameraFactory> cameraFactory(new CameraGLFactory(loggerFactory.get()));
+	
 	std::unique_ptr<IMutexLock> mutexLock(new MutexLockWindows);
 	eventQueue = std::unique_ptr<IEventQueue>(new EventQueue(std::move(mutexLock)));
+	
 	std::unique_ptr<ITransformTreeFactory> transformTreeFactory(new TransformTreeFactory(loggerFactory.get()));
 	std::unique_ptr<IModelFactory> uiModelFactory(new ModelGLFactory(loggerFactory.get()));
 	std::unique_ptr<IUniformColorFactory> uiUniformColorFactory(new UniformColorFactoryGL(loggerFactory.get()));
@@ -168,8 +173,10 @@ int _tmain(int argc, _TCHAR** argv)
 	std::unique_ptr<GazeDetectorFactory> gazeDetectorFactory(new GazeDetectorFactory);
 
 	std::unique_ptr<ITextMaterialFactory> textMaterialFactory(new TextMaterialFactoryGL(loggerFactory.get()));
-	std::unique_ptr<UIFactory> uiFactory(new UIFactory(loggerFactory.get(), std::move(uiModelFactory), std::move(uiUniformColorFactory), std::move(uiTransformTreeFactory), std::move(textMaterialFactory)));
+	std::unique_ptr<UIFactory> uiFactory(new UIFactory(loggerFactory.get(), std::move(uiModelFactory), std::move(uiUniformColorFactory), 
+										std::move(uiTransformTreeFactory), std::move(textMaterialFactory)));
 	
+	std::string fontFilePath = "fonts/arial.ttf";
 	application = std::unique_ptr<Image360>(new Image360(std::move(renderer),
 		std::move(sceneFactory),
 		std::move(modelFactory),
@@ -182,7 +189,8 @@ int _tmain(int argc, _TCHAR** argv)
 		eventQueue.get(),
 		loggerFactory.get(),
 		std::move(uiFactory),
-		std::move(gazeDetectorFactory)));
+		std::move(gazeDetectorFactory),
+		fontFilePath));
 
 	//// register callbacks
 	application->start();
@@ -191,12 +199,15 @@ int _tmain(int argc, _TCHAR** argv)
 
 	ImageBMPLoader imageBMPLoader(logger.get());
 	ImagePNGLoader imagePNGLoader(logger.get());
+	ImageJPEGLoader imageJPEGLoader(logger.get());
+
 	std::vector< std::unique_ptr<Image> > textureImages;
 	TEXTURE_MAP_MODE mode = CUBE_MAP_MODE_SINGLE_IMAGE; // image mode
 
 	switch (mode){
 	case CUBE_MAP_MODE_SINGLE_IMAGE:
-		textureImages.push_back(imagePNGLoader.loadImage("cubemap_current.png"));
+		//textureImages.push_back(imagePNGLoader.loadImage("cubemap_current.png"));
+		textureImages.push_back(imageJPEGLoader.loadImage("cubemap_current2.jpg"));
 		break;
 	case CUBE_MAP_MODE_SIX_IMAGES:
 		textureImages.push_back(imageBMPLoader.loadImage("cubemap_geo_front.bmp"));
@@ -220,6 +231,25 @@ int _tmain(int argc, _TCHAR** argv)
 		glfwPollEvents();
 
 		application->draw();
+
+		glColor3ub(240, 240, 240);//white
+		glLineWidth(2.0);
+
+		int crossHair[8] =
+		{
+			WIDTH / 2 - 7, HEIGHT / 2, // horizontal line
+			WIDTH / 2 + 7, HEIGHT / 2,
+
+			WIDTH / 2, HEIGHT / 2 + 7, //vertical line
+			WIDTH / 2, HEIGHT / 2 - 7
+		};
+
+		glVertexPointer(2, GL_INT, 0, crossHair);
+
+		//draw primitive GL_LINES starting at the first vertex, use 2 total vertices
+		glDrawArrays(GL_LINES, 0, 2); //draw horizontal line
+		//Same as above but start at second vertex
+		glDrawArrays(GL_LINES, 2, 2); //draw vertical line
 	
 		// Swap the screen buffers
 		glfwSwapBuffers(window);
