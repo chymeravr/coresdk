@@ -41,6 +41,7 @@ namespace cl{
         }
     }
 
+
     void CameraGLOVR::setViewMatrix(CL_Mat44 viewMatrix){
         this->viewMatrix = viewMatrix;
     }

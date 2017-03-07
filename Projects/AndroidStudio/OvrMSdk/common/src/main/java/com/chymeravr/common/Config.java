@@ -1,5 +1,6 @@
 package com.chymeravr.common;
 
+import lombok.Getter;
 import lombok.Setter;
 
 /**
@@ -16,6 +17,9 @@ public class Config {
     public static final int hmdId = 1;
 
     public static final String osId = "Android";
+
+    @Getter
+    static final String fontPath = "chymeraSDKAssets/fonts/";
 
     public static final String Image360AdAssetDirectory = "chymeraSDKAssets/image360/";
 

@@ -16,6 +16,8 @@
 #include <android/native_window_jni.h>                                                              // requires ndk r5 or newer
 #include <coreEngine/util/ILogger.h>
 
+#include <glImplementation/renderObjects/CameraGL.h>
+
 #include <android/log.h>
 
 #include <VrApi.h>
@@ -247,10 +249,14 @@ static void GLCheckErrors( int line )
         long long frameIndex;
         int minimumVSyncs;
 
-        CameraGLOVR* renderCamera;
+        //CameraGLOVR* renderCamera;
+        CameraGL* renderCamera;
 
         ILoggerFactory *loggerFactory;
 
+//    protected:
+//        static void toEulerianAngle(const ovrQuatf& q, float& roll, float& pitch, float& yaw);
+//        static CL_Vec3 getCameraLocation(const ovrHeadModelParms * headModelParms, const int eye);
 
 
     public:

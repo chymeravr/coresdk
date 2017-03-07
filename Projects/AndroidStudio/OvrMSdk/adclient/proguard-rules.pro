@@ -17,6 +17,11 @@
 #}
 
 -keep class com.chymeravr.adclient.AdRequest{*;}
+-keep public enum com.chymeravr.adclient.AdRequest$** {
+    **[] $VALUES;
+    public *;
+}
+-keep class com.chymeravr.adclient.AdRequest$AdRequestBuilder{*;}
 -keep class com.chymeravr.adclient.Image360Ad{*;}
 -keep class com.chymeravr.adclient.ChymeraVrSdk{*;}
 -keep interface com.chymeravr.adclient.AdListener{*;}

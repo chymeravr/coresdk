@@ -11,8 +11,15 @@
 #include <CameraGLOVR.h>
 #include <RendererGearVR.h>
 #include <stdlib.h>
+#include <glImplementation/renderObjects/CameraGL.h>
+#include <coreEngine/components/transformTree/TransformTreeCamera.h>
 
 namespace cl {
+
+    static const float FAR_PLANE = 0.0f;
+    static const float NEAR_PLANE = 1.0f;
+
+    #define REDUCED_LATENCY 1
 
 #if defined EGL_SYNC
 // EGL_KHR_reusable_sync
@@ -471,7 +478,6 @@ namespace cl {
         simulation->CurrentRotation.z = (float) (predictedDisplayTime);
     }
 
-
     /**
      *
      * OvrRenderer methods
@@ -508,11 +514,11 @@ namespace cl {
             }
         }
 
-        // Setup the projection matrix.
+        // Setup the projection matrix. - controls the near plane, far plane and fov
         renderer->ProjectionMatrix = ovrMatrix4f_CreateProjectionFov(
                 vrapi_GetSystemPropertyFloat(java, VRAPI_SYS_PROP_SUGGESTED_EYE_FOV_DEGREES_X),
                 vrapi_GetSystemPropertyFloat(java, VRAPI_SYS_PROP_SUGGESTED_EYE_FOV_DEGREES_Y),
-                0.0f, 0.0f, 0.1f, 0.0f);
+                0.0f, 0.0f, NEAR_PLANE, FAR_PLANE);
         renderer->TexCoordsTanAnglesMatrix = ovrMatrix4f_TanAngleMatrixFromProjection(
                 &renderer->ProjectionMatrix);
     }
@@ -560,7 +566,7 @@ namespace cl {
     static ovrFrameParms ovrRenderer_RenderFrame(ovrRenderer *renderer, const ovrJava *java,
                                                  long long frameIndex, int minimumVsyncs,
                                                  const ovrPerformanceParms *perfParms,
-                                                 CameraGLOVR *camera,
+                                                 CameraGL *camera,
                                                  Scene *scene, const ovrSimulation *simulation,
                                                  const ovrTracking *tracking, ovrMobile *ovr) {
         ovrFrameParms parms = vrapi_DefaultFrameParms(java, VRAPI_FRAME_INIT_DEFAULT,
@@ -593,9 +599,6 @@ namespace cl {
         eyeViewMatrixTransposed[0] = ovrMatrix4f_Transpose(&eyeViewMatrix[0]);
         eyeViewMatrixTransposed[1] = ovrMatrix4f_Transpose(&eyeViewMatrix[1]);
 
-        ovrMatrix4f projectionMatrixTransposed;
-        projectionMatrixTransposed = ovrMatrix4f_Transpose(&renderer->ProjectionMatrix);
-
 
         for (int eye = 0; eye < VRAPI_FRAME_LAYER_EYE_MAX; eye++) {
             ovrFramebuffer *frameBuffer = &renderer->FrameBuffer[renderer->NumBuffers == 1 ? 0
@@ -611,10 +614,24 @@ namespace cl {
         unsigned long long completionFence[VRAPI_FRAME_LAYER_EYE_MAX] = {0};
 
         /* update camera projection matrix - it remains the same for each of the eye */
-        CL_Mat44 sceneProjectionMat = CL_Make_Mat44(
-                &projectionMatrixTransposed.M[0][0]);
-        camera->setProjectionMatrix(sceneProjectionMat);
+        //CL_Mat44 sceneProjectionMat = CL_Make_Mat44(
+        //        &projectionMatrixTransposed.M[0][0]);
+        //camera->setProjectionMatrix(sceneProjectionMat);
 
+
+        // update rotation of camera - remains same for each eye
+        TransformTreeCamera *transform = (TransformTreeCamera*)camera->getComponentList().getComponent("transformTree");
+        auto trackingQuat = tracking->HeadPose.Pose.Orientation;
+        transform->setLocalQuaternion(CL_Quat(trackingQuat.w, trackingQuat.x, trackingQuat.y, trackingQuat.z));
+
+        // update projection parameters - remains same for each eye
+//        auto fovx = vrapi_GetSystemPropertyFloat(java, VRAPI_SYS_PROP_SUGGESTED_EYE_FOV_DEGREES_X);
+//        auto fovy = vrapi_GetSystemPropertyFloat(java, VRAPI_SYS_PROP_SUGGESTED_EYE_FOV_DEGREES_Y);
+//
+//        camera->setAspect(fovx/fovy);
+//        camera->setFov(fovy * CL_PI/ 180.0f);                 // our camera works with radians
+//        camera->setNearPlane(NEAR_PLANE);
+//        camera->setFarPlane(FAR_PLANE);
 
         // Render the eye images.
         for (int eye = 0; eye < renderer->NumBuffers; eye++) {
@@ -622,9 +639,13 @@ namespace cl {
             // for each eye (updates orientation, not position)
 
             /* Update the view matrix for each eye */
-            CL_Mat44 sceneViewMat = CL_Make_Mat44(&eyeViewMatrixTransposed[eye].M[0][0]);
-            camera->setViewMatrix(sceneViewMat);
+            //CL_Mat44 sceneViewMat = CL_Make_Mat44(&eyeViewMatrixTransposed[eye].M[0][0]);
+            //camera->setViewMatrix(sceneViewMat);
 
+            // update the position of camera for each eye - left of center & right of center
+            const ovrVector3f centerEyeOffset = tracking->HeadPose.Pose.Position;
+            const float eyeOffset = ( eye ? -0.5f : 0.5f ) * headModelParms.InterpupillaryDistance;
+            transform->setLocalPosition(CL_Vec3(centerEyeOffset.x + eyeOffset, centerEyeOffset.y, centerEyeOffset.z));
 
             ovrFramebuffer *frameBuffer = &renderer->FrameBuffer[eye];
             ovrFramebuffer_SetCurrent(frameBuffer);
@@ -775,7 +796,16 @@ namespace cl {
             }
         }
 
-        this->renderCamera = (CameraGLOVR *) cameraRelations[0];
+        //this->renderCamera = (CameraGLOVR *) cameraRelations[0];
+        this->renderCamera = (CameraGL *) cameraRelations[0];
+
+        auto fovx = vrapi_GetSystemPropertyFloat(&this->java, VRAPI_SYS_PROP_SUGGESTED_EYE_FOV_DEGREES_X);
+        auto fovy = vrapi_GetSystemPropertyFloat(&this->java, VRAPI_SYS_PROP_SUGGESTED_EYE_FOV_DEGREES_Y);
+
+        this->renderCamera->setAspect(fovx/fovy);
+        this->renderCamera->setFov(fovy * CL_PI/ 180.0f);                 // our camera works with radians
+        this->renderCamera->setNearPlane(NEAR_PLANE);
+        this->renderCamera->setFarPlane(FAR_PLANE);
 
         return true;
     }

@@ -54,13 +54,14 @@ android {
                 jniLibs.srcDirs = ["${distributionDir}/soil", "${distributionDir}/coreEngine",
                                    "${distributionDir}/glImplementation", "${distributionDir}/renderer",
                                    "${distributionDir}/image360", "${distributionDir}/image360AndroidNative",
-                                   "${distributionDir}/ovrApi"]
+                                   "${distributionDir}/ovrApi", "${distributionDir}/freetype"]
 
         }
         release {
                 jniLibs.srcDirs = ["${distributionDir}/soil", "${distributionDir}/coreEngine",
                                    "${distributionDir}/glImplementation", "${distributionDir}/renderer",
-                                   "${distributionDir}/image360", "${distributionDir}/image360AndroidNative"]
+                                   "${distributionDir}/image360", "${distributionDir}/image360AndroidNative",
+                                   "${distributionDir}/freetype"]
 
         }
     }
@@ -115,12 +116,13 @@ tasks.whenTaskAdded { task ->
     if (task.name.contains('compileDebug')) {
         task.dependsOn([':coreEngine:distributeDebugLib', ':glImplementation:distributeDebugLib',
                         ':renderer:distributeDebugLib', ':image360:distributeDebugLib',
-                        ':image360AndroidNative:distributeDebugLib',
+                        ':soil:distributeDebugLib',
+                        ':image360AndroidNative:distributeDebugLib',':freetype:distributeDebugLib',
                         'copyVrApiLib'])
     } else if (task.name.contains('compileRelease')) {
         task.dependsOn([':coreEngine:distributeReleaseLib', ':glImplementation:distributeReleaseLib',
                         ':renderer:distributeReleaseLib', ':image360:distributeReleaseLib',
-                        ':image360AndroidNative:distributeReleaseLib'
-        ])
+                        ':image360AndroidNative:distributeReleaseLib', ':soil:distributeReleaseLib',
+                        ':freetype:distributeReleaseLib' ])
     }
 }

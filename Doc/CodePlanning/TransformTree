@@ -1,0 +1,29 @@
+Include/coreEngine/components/Transform/TransformTree.h
+
+class TransformTree{
+	private:
+		TransformTree *parent;
+		std::vector<TransformTree *> children;
+		CL_Vec3 localPosition;
+		CL_Vec3 localRotation;
+		CL_Vec3 localScale;
+		bool isDirty;
+		mat44 globalTransform;
+	public:
+		createTransform();
+		setIsDirty(bool isDirty);
+		setLocalPosition();
+		setLocalRotation();
+		setLocalScale();
+		mat44 getGlobalTranform();
+}
+
+class TransformTreeModel : public IComponent, public TransformTree, public Renderable{
+}
+
+class TransformTreeCamera : public IComponent, public TransformTree, public Renderable{
+}
+
+src/plugins/TransformTree.cpp
+src/plugins/TransformTreeModel.cpp
+src/plugins/TransformTreeCamera.cpp

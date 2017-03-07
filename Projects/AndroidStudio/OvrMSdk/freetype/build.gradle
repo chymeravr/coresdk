@@ -1,0 +1,69 @@
+apply plugin: 'com.android.library'
+
+def freetypeModule = "${rootProject.rootDir}/freetype"
+def distributionDir = "${rootProject.rootDir}/distribution"
+
+android {
+    compileSdkVersion 23
+    buildToolsVersion "23.0.3"
+
+    defaultConfig {
+        minSdkVersion 21
+        targetSdkVersion 23
+        versionCode 1
+        versionName "1.0"
+
+        externalNativeBuild {
+            cmake {
+                // when using arguments, the latest (cmake version 3.6+, android studio
+                // beta2+) must be used to compile
+
+                // I have to use gcc to compile, clang compiled code generate error
+                // at run time for any std::queue etc.
+                targets 'freetype'
+                //arguments = ['-DANDROID_STL=gnustl_shared', '-DANDROID_NATIVE_API_LEVEL=android-23']
+
+                cFlags = ["-DANDROID_NDK", "-DFT2_BUILD_LIBRARY=1"]
+                abiFilters 'armeabi-v7a'
+            }
+        }
+
+    }
+    buildTypes {
+        debug {
+            minifyEnabled false
+            jniDebuggable true
+        }
+        release {
+            minifyEnabled false
+            proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
+        }
+    }
+
+    externalNativeBuild {
+        cmake {
+            path 'CMakeLists.txt'
+            //path '../../../../freetype/CMakeLists.txt'
+        }
+    }
+}
+
+
+task clean(type: Delete) {
+    delete "${rootProject.rootDir}/freetype/build"
+}
+
+task distributeDebugLib (type : Copy) {
+    // trigger build library
+    dependsOn "assembleDebug"
+    from "${freetypeModule}/build/intermediates/cmake/debug/obj/armeabi-v7a/libfreetype.so"
+    into "${distributionDir}/freetype/armeabi-v7a/"
+
+}
+
+task(distributeReleaseLib, type : Copy) {
+    // trigger build library
+    dependsOn "assembleRelease"
+    from "${freetypeModule}/build/intermediates/cmake/release/obj/armeabi-v7a/libfreetype.so"
+    into "${distributionDir}/freetype/armeabi-v7a/"
+}

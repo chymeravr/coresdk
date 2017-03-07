@@ -1,6 +1,7 @@
 #include <coreEngine/components/transform/TransformCamera.h>
 #include <assert.h>
 
+// todo - can be deleted
 namespace cl{
 	TransformCamera::TransformCamera(Camera *camera, ILoggerFactory *loggerFactory){
 		assert(camera != nullptr);

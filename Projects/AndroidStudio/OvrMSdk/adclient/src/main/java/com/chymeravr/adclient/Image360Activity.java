@@ -9,6 +9,7 @@ import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
+import android.content.res.AssetManager;
 import android.net.Uri;
 import android.os.Bundle;
 import android.support.v4.app.NotificationCompat;
@@ -70,7 +71,7 @@ public final class Image360Activity extends Activity implements SurfaceHolder.Ca
     };
 
     // Native methods for Activity lifecyle
-    private native long onCreateNative(Activity activity, String appDir, String appFileName);
+    private native long onCreateNative(Activity activity, String appDir, String appFileName, AssetManager mgr);
 
     private native void onStartNative(long handle);
 
@@ -139,7 +140,10 @@ public final class Image360Activity extends Activity implements SurfaceHolder.Ca
 
         // call native creation method for all the HMD magic with OVR
         String basePath = this.getFilesDir().getAbsolutePath();
-        this.mNativeHandle = this.onCreateNative(this, basePath, imageAdFilePath);
+
+        AssetManager mgr = getResources().getAssets();
+
+        this.mNativeHandle = this.onCreateNative(this, basePath, imageAdFilePath, mgr);
 
         // We draw everything in a surface embedded within the activity layout
         this.mView = new SurfaceView(this);

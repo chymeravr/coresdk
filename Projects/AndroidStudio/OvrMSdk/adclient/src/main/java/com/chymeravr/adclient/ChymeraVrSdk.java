@@ -1,6 +1,7 @@
 package com.chymeravr.adclient;
 
 import android.content.Context;
+import android.content.res.AssetManager;
 import android.os.Build.VERSION;
 import android.util.Log;
 
@@ -16,12 +17,19 @@ import com.chymeravr.common.WebRequestQueue;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
 import java.util.Iterator;
 
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NonNull;
 import lombok.Setter;
+
+import static com.chymeravr.common.Util.createDir;
 
 /**
  * Created by robin_chimera on 11/28/2016.
@@ -71,6 +79,7 @@ public final class ChymeraVrSdk {
 
         setApplicationId(applicationId);
 
+        copyAssets(context);
         /* Check whether client has granted the mandatory permissions for this SDK to function
             We need internet and network state
         */
@@ -145,5 +154,47 @@ public final class ChymeraVrSdk {
             }
         };
         requestQueue.addToRequestQueue(jsonRequest);
+    }
+
+    private static void copyAssets(Context context) {
+        AssetManager assetManager = context.getAssets();
+        String[] files = null;
+        try {
+            files = assetManager.list("fonts");
+        } catch (IOException e) {
+            Log.e("tag", "Failed to get asset file list.", e);
+        }
+        for(String filename : files) {
+            InputStream in = null;
+            OutputStream out = null;
+            try {
+                in = assetManager.open("fonts/" + filename);
+
+                File appPath = context.getFilesDir();
+                String appSdkPath = appPath + Util.addLeadingSlash(Config.getFontPath());
+                File dest_dir = new File(appSdkPath);
+                createDir(dest_dir);
+
+                File outFile = new File(dest_dir, filename);
+                Log.d(TAG, "Absolute font file path : " + outFile.getAbsolutePath());
+                out = new FileOutputStream(outFile);
+                copyFile(in, out);
+
+                in.close();
+
+                out.flush();
+                out.close();
+            } catch(IOException e) {
+                Log.e("tag", "Failed to copy asset file: " + filename, e);
+            }
+        }
+        Log.v(TAG, "Copied Fonts Successfully");
+    }
+    private static void copyFile(InputStream in, OutputStream out) throws IOException {
+        byte[] buffer = new byte[1024];
+        int read;
+        while((read = in.read(buffer)) != -1){
+            out.write(buffer, 0, read);
+        }
     }
 }

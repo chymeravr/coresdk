@@ -12,12 +12,13 @@ include_directories(${Conf_INCLUDE_DIRS}
 					${REPO_PATH}/thirdParty/glm/glm-${GLM_VERSION}/glm 
 					${CoreEngine_INCLUDE_DIRS}
 					${PROJECT_SOURCE_DIR}/include)
-
+FILE(GLOB_RECURSE INCLUDE_HEADERS "include/*.h")
 set(SOURCES ${PROJECT_SOURCE_DIR}/src/RendererNoHMD.cpp
 )
 
+
 if(WINDOWS)
-	add_library(${PROJECT_NAME} STATIC ${SOURCES})
+	add_library(${PROJECT_NAME} STATIC ${INCLUDE_HEADERS} ${SOURCES})
 	target_link_libraries(${PROJECT_NAME} CoreEngine)
 else()
 	###### Android Studio is not able to build static libraries with cmake ######
@@ -26,6 +27,7 @@ else()
 	find_library(log-lib log)
 	find_library(android-lib android)
 
+	# do we need to explicitly add headers again?
 	add_library(${PROJECT_NAME} SHARED ${SOURCES})
 	add_library(core_engine SHARED IMPORTED)
 	set_target_properties(

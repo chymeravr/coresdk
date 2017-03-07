@@ -1,4 +1,4 @@
-include ':soil', ':appgvr2'
+include ':soil', ':appgvr2', ':freetype'
 include ':coreEngine'
 include ':glImplementation'
 include ':image360'

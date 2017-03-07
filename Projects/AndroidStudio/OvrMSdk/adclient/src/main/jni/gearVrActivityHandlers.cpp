@@ -12,12 +12,18 @@
 #include <coreEngine/events/EventQueue.h>
 #include <coreEngine/modifier/ImagePNGLoader.h>
 #include <coreEngine/modifier/Image.h>
+#include <coreEngine/components/transformTree/TransformTreeFactory.h>
+#include <coreEngine/components/gazeDetector/GazeDetectorFactory.h>
+#include <coreEngine/ui/UIFactory.h>
 
 // GLImplementation Modules
 #include <glImplementation/factory/SceneGLFactory.h>
 #include <glImplementation/factory/ModelGLFactory.h>
 #include <glImplementation/factory/opengles3/DiffuseTextureGLES3Factory.h>
 #include <glImplementation/factory/opengles3/DiffuseTextureCubeMapGLES3Factory.h>
+#include <glImplementation/factory/opengles3/UniformColorFactoryGLES3.h>
+#include <glImplementation/factory/opengles3/TextMaterialFactoryGLES3.h>
+#include <glImplementation/factory/CameraGLFactory.h>
 
 // Image360 Application
 #include <image360/Image360.h>
@@ -25,7 +31,7 @@
 // Android Modules
 #include <LoggerAndroidFactory.h>
 #include <MutexLockAndroid.h>
-#include <CameraGLOVRFactory.h>
+//#include <CameraGLOVRFactory.h>
 #include <ImageBMPLoaderAndroid.h>
 #include <RendererGearVR.h>
 
@@ -376,7 +382,7 @@ void *AppThreadFunction(void *parm) {
 }
 
 static void ovrAppThread_Create(ovrAppThread *appThread, JNIEnv *env, jobject activity,
-                                jstring appDir, jstring appFileName) {
+                                jstring appDir, jstring appFileName, jobject mgr) {
     appThread->Thread = 0;
     appThread->Resumed = false;
     appThread->Started = false;
@@ -392,8 +398,8 @@ static void ovrAppThread_Create(ovrAppThread *appThread, JNIEnv *env, jobject ac
     /* need a separate Camera for OVR due to the way it gives us access to view and projection
      * matrices for each of the eye
      */
-    std::unique_ptr<cl::CameraGLOVRFactory> cameraFactory(new cl::CameraGLOVRFactory(loggerFactory.get()));
-
+    //std::unique_ptr<cl::CameraGLOVRFactory> cameraFactory(new cl::CameraGLOVRFactory(loggerFactory.get()));
+    std::unique_ptr<cl::CameraGLFactory> cameraFactory(new cl::CameraGLFactory(loggerFactory.get()));
     /*
      * Separate Texture Factories for OpenGLES - shader language is separate
      */
@@ -414,6 +420,21 @@ static void ovrAppThread_Create(ovrAppThread *appThread, JNIEnv *env, jobject ac
     std::unique_ptr<cl::MutexLockAndroid> mutexLock(new cl::MutexLockAndroid);
     eventQueue = std::unique_ptr<cl::IEventQueue>(new cl::EventQueue(std::move(mutexLock)));
 
+    std::unique_ptr<cl::ITransformTreeFactory> transformTreeFactory(new cl::TransformTreeFactory(loggerFactory.get()));
+    std::unique_ptr<cl::ITransformTreeFactory> uiTransformTreeFactory(new cl::TransformTreeFactory(loggerFactory.get()));
+    std::unique_ptr<cl::GazeDetectorFactory> gazeDetectorFactory(new cl::GazeDetectorFactory);
+    std::unique_ptr<cl::IModelFactory> uiModelFactory(new cl::ModelGLFactory(loggerFactory.get()));
+    std::unique_ptr<cl::IUniformColorFactory> uiUniformColorFactory(new cl::UniformColorFactoryGLES3(loggerFactory.get()));
+
+    std::unique_ptr<cl::ITextMaterialFactory> textMaterialFactory(new cl::TextMaterialFactoryGLES3(loggerFactory.get()));
+    std::unique_ptr<cl::UIFactory> uiFactory(new cl::UIFactory(loggerFactory.get(), std::move(uiModelFactory), std::move(uiUniformColorFactory),
+                                                               std::move(uiTransformTreeFactory), std::move(textMaterialFactory)));
+
+
+    std::string absoluteFontFilePath = std::string(appThread->appDir) + std::string("/")
+                                   + std::string("chymeraSDKAssets/fonts/arial.ttf");
+    logger->log(cl::LOG_DEBUG, absoluteFontFilePath);
+
     appThread->Application = new cl::Image360(std::move(renderer),
                                     std::move(sceneFactory),
                                     std::move(modelFactory),
@@ -421,9 +442,13 @@ static void ovrAppThread_Create(ovrAppThread *appThread, JNIEnv *env, jobject ac
                                     std::move(diffuseTextureCubeMapFactory),
                                     std::move(transformCameraFactory),
                                     std::move(transformModelFactory),
+                                    std::move(transformTreeFactory),
                                     std::move(cameraFactory),
                                     eventQueue.get(),
-                                    loggerFactory.get());
+                                    loggerFactory.get(),
+                                    std::move(uiFactory),
+                                    std::move(gazeDetectorFactory),
+                                    absoluteFontFilePath);
 
     const int createErr = pthread_create(&appThread->Thread, NULL, AppThreadFunction, appThread);
     if (createErr != 0) {
@@ -448,14 +473,14 @@ static void ovrAppThread_Destroy(ovrAppThread *appThread, JNIEnv *env) {
 
 JNIEXPORT jlong JNICALL
 Java_com_chymeravr_adclient_Image360Activity_onCreateNative(JNIEnv *env, jobject obj,
-                                                        jobject activity, jstring appDir, jstring appFilename) {
+                                                        jobject activity, jstring appDir, jstring appFilename, jobject mgr) {
     ovrAppThread *appThread = (ovrAppThread *) malloc(sizeof(ovrAppThread));
 
     loggerFactory = std::unique_ptr<cl::LoggerFactoryAndroid>(new cl::LoggerFactoryAndroid());
     logger = loggerFactory->createLogger("Image360::Native Android");
     logger->log(cl::LOG_DEBUG, "Native Logger Created Successfully");
 
-    ovrAppThread_Create(appThread, env, activity, appDir, appFilename);
+    ovrAppThread_Create(appThread, env, activity, appDir, appFilename, mgr);
 
     ovrMessageQueue_Enable(&appThread->MessageQueue, true);
     ovrMessage message;

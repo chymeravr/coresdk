@@ -49,7 +49,7 @@ android {
 
     sourceSets {
         main {
-            jniLibs.srcDirs = ["${distributionDir}/soil"]
+            jniLibs.srcDirs = ["${distributionDir}/soil", "${distributionDir}/freetype"]
         }
     }
 
@@ -78,9 +78,9 @@ task(distributeReleaseLib, type : Copy) {
 
 tasks.whenTaskAdded { task ->
     if (task.name.contains('compileDebug')) {
-        task.dependsOn ':soil:distributeDebugLib'
+        task.dependsOn ':soil:distributeDebugLib', ':freetype:distributeDebugLib'
     }
     else if(task.name.contains('compileRelease')) {
-        task.dependsOn ':soil:distributeReleaseLib'
+        task.dependsOn ':soil:distributeReleaseLib', ':freetype:distributeReleaseLib'
     }
 }
