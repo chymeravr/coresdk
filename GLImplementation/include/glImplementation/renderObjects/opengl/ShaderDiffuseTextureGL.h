@@ -35,7 +35,7 @@ namespace cl
 			"uniform mat4 p;\n"
 			"void main(){\n"
 			"    // Output position of the vertex, in clip space : MVP * position \n"
-			"    gl_Position = p * v * m * vec4(vertexPosition_modelspace, 1); \n"
+			"    gl_Position = p * v * m * vec4(vertexPosition_modelspace, 1.0); \n"
 			"    // UV of the vertex. No special space for this one. \n"
 			"    UV = vertexUV;\n"
 			"}\n";
@@ -49,36 +49,8 @@ namespace cl
 			"uniform sampler2D diffuseTexture;\n"
 			"void main(){\n"
 			"// Output color = color of the texture at the specified UV\n"
-			"color = texture2D(diffuseTexture, UV).rgb;\n"
+			"color = texture(diffuseTexture, UV).rgb;\n"
 			"}";
-
-		// std::string vertexShaderSrc__ = "#version 300 es\n"
-		//                                 "\n"
-		//                                 "// Input vertex data, different for all executions of this shader.\n"
-		//                                 "layout(location = 0) in vec3 vertexPosition_modelspace;\n"
-		//                                 "\n"
-		//                                 "// Values that stay constant for the whole mesh.\n"
-		//                                 "uniform mat4 m;\n"
-		//                                 "uniform mat4 v;\n"
-		//                                 "uniform mat4 p;\n"
-		//                                 "\n"
-		//                                 "void main(){\t\n"
-		//                                 "\n"
-		//                                 "\t// Output position of the vertex, in clip space : MVP * position\n"
-		//                                 "\tgl_Position =  p * v * m * vec4(vertexPosition_modelspace,1);\n"
-		//                                 "\n"
-		//                                 "}\n";
-		// std::string fragmentShaderSrc__ = "#version 300 es\n"
-		//                                   "\n"
-		//                                   "// Ouput data\n"
-		//                                   "out vec3 color;\n"
-		//                                   "\n"
-		//                                   "uniform vec3 uniformColor"
-		//                                   "void main(){\n"
-		//                                   "\n"
-		//                                   "\tcolor = uniformColor;\n"
-		//                                   "\n"
-		//                                   "}";
 	};
 }
 

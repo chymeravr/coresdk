@@ -13,40 +13,38 @@ namespace cl{
 					   std::unique_ptr<IModelFactory> modelFactory,
 					   std::unique_ptr<IDiffuseTextureFactory> diffuseTextureFactory,
 					   std::unique_ptr<IDiffuseTextureCubeMapFactory> diffuseTextureCubeMapFactory,
-					   std::unique_ptr<ITransformCameraFactory> transformCameraFactory,
-					   std::unique_ptr<ITransformModelFactory> transformModelFactory,
 					   std::unique_ptr<ITransformTreeFactory> transformTreeFactory,
 					   std::unique_ptr<ICameraFactory> cameraFactory,
 					   IEventQueue *eventQueue, 
 					   ILoggerFactory *loggerFactory,
 					   std::unique_ptr<UIFactory> uiFactory,
 					   std::unique_ptr<GazeDetectorFactory> gazeDetectorFactory,
+					   std::unique_ptr<IEventGazeListenerFactory> eventGazeListenerFactory,
                        std::string fontFolderPath){
 		assert(renderer != nullptr);
 		assert(sceneFactory != nullptr);
 		assert(modelFactory != nullptr);
 		assert(diffuseTextureFactory != nullptr);
 		assert(diffuseTextureCubeMapFactory != nullptr);
-		assert(transformCameraFactory != nullptr);
-		assert(transformModelFactory != nullptr);
 		assert(transformTreeFactory != nullptr);
 		assert(eventQueue != nullptr);
 		assert(cameraFactory != nullptr);
 		assert(uiFactory != nullptr);
 		assert(gazeDetectorFactory != nullptr);
+		assert(eventGazeListenerFactory != nullptr);
+
 		this->renderer = std::move(renderer);
 		this->sceneFactory = std::move(sceneFactory);
 		this->modelFactory = std::move(modelFactory);
 		this->diffuseTextureFactory = std::move(diffuseTextureFactory);
 		this->diffuseTextureCubeMapFactory = std::move(diffuseTextureCubeMapFactory);
-		this->transformCameraFactory = std::move(transformCameraFactory);
-		this->transformModelFactory = std::move(transformModelFactory);
 		this->transformTreeFactory = std::move(transformTreeFactory);
 		this->cameraFactory = std::move(cameraFactory);
 		this->eventQueue = eventQueue;
-		this->logger = loggerFactory->createLogger("image360::Image360: ");
+		this->logger = loggerFactory->createLogger("Image360::");
 		this->uiFactory = std::move(uiFactory);
 		this->gazeDetectorFactory = std::move(gazeDetectorFactory);
+		this->eventGazeListenerFactory = std::move(eventGazeListenerFactory);
         this->fontFolderPath = fontFolderPath;
 	}
 
@@ -65,9 +63,9 @@ namespace cl{
 		camera = cameraFactory->create("camera", scene.get());
 		assert(camera != nullptr);
 		camera->setAspect(1.5f);
-		camera->setFarPlane(100.0f);
+		camera->setFarPlane(1000.0f);
 		camera->setFov(1.5f);
-		camera->setNearPlane(0.001f);
+		camera->setNearPlane(1.0f);
 		this->camera = camera.get();
 		scene->addToScene(std::move(camera));
 
@@ -105,25 +103,22 @@ namespace cl{
 			std::unique_ptr<TransformTreeCamera> transformTreeCameraUptr = transformTreeFactory->createTransformTreeCamera(this->camera);
 			this->camera->getComponentList().addComponent(std::move(transformTreeCameraUptr));
 
-			std::unique_ptr<TransformModel> transformSphereUptr = transformModelFactory->create(this->imageContainer);
+			std::unique_ptr<TransformTreeModel> transformSphereUptr = transformTreeFactory->createTransformTreeModel(this->imageContainer);
 			this->imageContainer->getComponentList().addComponent(std::move(transformSphereUptr));
 
 			transformTreeCamera = (TransformTreeCamera*)this->camera->getComponentList().getComponent("transformTree");
 			transformTreeCamera->setLocalPosition(CL_Vec3(0.0f, 0.0f, 0.0f));
 			transformTreeCamera->setLocalRotation(CL_Vec3(0.0f, 0.0f, 0.0f));
 
-			TransformModel *transformSphere = (TransformModel*)this->imageContainer->getComponentList().getComponent("transform");
-			transformSphere->setPosition(CL_Vec3(0.0f, 0.0f, 0.0f));
+			TransformTreeModel *transformSphere = (TransformTreeModel*)this->imageContainer->getComponentList().getComponent("transformTree");
+			transformSphere->setLocalPosition(CL_Vec3(0.0f, 0.0f, 0.0f));
+			transformSphere->setLocalScale(CL_Vec3(100.0f, 100.0f, 100.0f));
 
 			this->imageContainer->createBiRelation(this->material);
 
 			std::unique_ptr<ModelModifier> modelModifier(new ModelModifier);
 			UVSphereBuilder uvSphereBuilder(modelModifier.get());
 			uvSphereBuilder.buildUnitSphere(this->imageContainer, 5);
-			//uvSphereBuilder.generateUVMapForAllVertices(this->imageContainer);
-			//SimpleOBJLoader::load("uvsphere.obj", this->imageContainer);
-			//modelModifier->invertNormal(this->imageContainer);
-			//transformSphere->setRotation(CL_Vec3(180.0f, 0.0f, 0.0f));
 		}
 		else{
 			std::unique_ptr<ShaderDiffuseTextureCubeMap> shaderUPtr = diffuseTextureCubeMapFactory->createShader("shader", scene.get());
@@ -131,11 +126,12 @@ namespace cl{
 			this->shader = shaderUPtr.get();
 			scene->addToScene(std::move(shaderUPtr));
 
-			std::unique_ptr<MaterialDiffuseTextureCubeMap> materialUPtr = diffuseTextureCubeMapFactory->createMaterial("material", (ShaderDiffuseTextureCubeMap*)this->shader);
+			std::unique_ptr<MaterialDiffuseTextureCubeMap> materialUPtr = diffuseTextureCubeMapFactory->createMaterial("material",
+				(ShaderDiffuseTextureCubeMap*)this->shader);
 			assert(materialUPtr != nullptr);
 			this->material = materialUPtr.get();
 			scene->addToScene(std::move(materialUPtr));
-
+			
 			std::unique_ptr<TextureCubeMap> textureUPtr = diffuseTextureCubeMapFactory->createTexture("imageTexture");
 			assert(textureUPtr != nullptr);
 			std::unique_ptr<Image> frontImage(new Image);
@@ -158,7 +154,8 @@ namespace cl{
 				assert(textureImages[0] != nullptr);
 				std::unique_ptr<Image> originalImage = std::move(textureImages[0]);
 				ImageModifier imageModifier(logger.get());
-				imageModifier.convertSingleCubicImageIntoSix(originalImage.get(), frontImage.get(), leftImage.get(), backImage.get(), rightImage.get(), bottomImage.get(), topImage.get());//why I have to reverse top and bottom??
+				imageModifier.convertSingleCubicImageIntoSix(originalImage.get(), frontImage.get(), leftImage.get(), backImage.get(), 
+					rightImage.get(), bottomImage.get(), topImage.get());						
 			}
 			assert(rightImage != nullptr);
 			textureUPtr->setTextureData(TEXTURE_CUBE_MAP_FACE_RIGHT, std::move(rightImage->data));
@@ -203,17 +200,17 @@ namespace cl{
 			std::unique_ptr<TransformTreeCamera> transformTreeCameraUptr = transformTreeFactory->createTransformTreeCamera(this->camera);
 			this->camera->getComponentList().addComponent(std::move(transformTreeCameraUptr));
 
-			std::unique_ptr<TransformModel> transformSphereUptr = transformModelFactory->create(this->imageContainer);
+			std::unique_ptr<TransformTreeModel> transformSphereUptr = transformTreeFactory->createTransformTreeModel(this->imageContainer);
 			this->imageContainer->getComponentList().addComponent(std::move(transformSphereUptr));
 
 			transformTreeCamera = (TransformTreeCamera*)this->camera->getComponentList().getComponent("transformTree");
 			transformTreeCamera->setLocalPosition(CL_Vec3(0.0f, 0.0f, 0.0f));
 			transformTreeCamera->setLocalRotation(CL_Vec3(0.0f, 0.0f, 0.0f));
 
-			TransformModel *transformSphere = (TransformModel*)this->imageContainer->getComponentList().getComponent("transform");
-			transformSphere->setPosition(CL_Vec3(0.0f, 0.0f, 0.0f));
-			transformSphere->setScale(CL_Vec3(100.0f, 100.0f, 100.0f));
-
+			TransformTreeModel *transformSphere = (TransformTreeModel*)this->imageContainer->getComponentList().getComponent("transformTree");
+			transformSphere->setLocalPosition(CL_Vec3(0.0f, 0.0f, 0.0f));
+			transformSphere->setLocalScale(CL_Vec3(100.0f, 100.0f, 100.0f));
+			
 			this->imageContainer->createBiRelation(this->material);
 
 			std::unique_ptr<ModelModifier> modelModifier(new ModelModifier);
@@ -227,14 +224,14 @@ namespace cl{
 		auto vec3_two =  CL_Vec3(0.0, 0.0, 0.0);
 		notifyMeBackground = uiFactory->createPlanarBackground("notifyMe", scene.get(), CL_Vec4(0.0, 0.0, 0.0, 0.7), vec3_one, vec3_two , 3.0, 1.0);
 
-		std::unique_ptr<FontStore> fontStore = uiFactory->createFontStore(scene.get(), this->fontFolderPath.c_str());//"fonts/arial.ttf");
+		std::unique_ptr<FontStore> fontStore = uiFactory->createFontStore(scene.get(), this->fontFolderPath.c_str());
 		
 		TextStyle textStyle;
 		textStyle.fontSize = 20;
 		textStyle.scale = 0.025f;
 		textStyle.color = CL_Vec4(1.0, 1.0, 1.0, 1.0);
 
-		vec3_one = CL_Vec3(-1.0, -0.1, 0.001);
+		vec3_one = CL_Vec3(-1.0, -0.2, 0.001);
 		vec3_two = CL_Vec3(0.0, 0.0, 0.0);
 		std::unique_ptr<TextElement> notifyMeElement = uiFactory->createTextElement("notifyMeElement", fontStore.get(), &textStyle, "Notify Me",
 																					vec3_one, vec3_two, scene.get());
@@ -244,7 +241,7 @@ namespace cl{
 		vec3_two =  CL_Vec3(0.0, 0.0, 0.0);
 		closeBackground = uiFactory->createPlanarBackground("closeMe", scene.get(), CL_Vec4(0.0, 0.0, 0.0, 0.7), vec3_one, vec3_two, 3.0, 1.0);
 
-		vec3_one = CL_Vec3(-1.0, -0.1, 1.0);
+		vec3_one = CL_Vec3(-1.0, -0.2, 1.0);
 		vec3_two = CL_Vec3(0.0, 0.0, 0.0);
 		std::unique_ptr<TextElement> closeElement = uiFactory->createTextElement("closeElement", fontStore.get(), &textStyle, "Close", 
 																				 vec3_one, vec3_two, scene.get());
@@ -257,26 +254,24 @@ namespace cl{
 
 		Model *notifyMeModel = (Model*) scene->getFromScene("notifyMe");
 		TransformTreeModel *transformNotifyMe = (TransformTreeModel*)notifyMeModel->getComponentList().getComponent("transformTree");
-		notifyMeListener = std::unique_ptr<NotifyMeListener>(new NotifyMeListener);
+		notifyMeListener = eventGazeListenerFactory->createNotifyMeListener();
 
 		auto boxMessage = std::string("notifyMe");
 		vec3_one = CL_Vec3(0.0f, 0.0f, 0.0f);
 		vec3_two = CL_Vec3(0.0f, 0.0f, -1.0f);
 		std::unique_ptr<IComponent> gazeDetectorNotifyMe = gazeDetectorFactory->createGazeDetectorBox(boxMessage, transformTreeCamera,
-																									  transformNotifyMe, notifyMeListener.get(), gazeDetectorContainer.get(),
-																									  vec3_one, vec3_two, 0.1f, 0.03f, 0.00001f);
+			transformNotifyMe, notifyMeListener.get(), gazeDetectorContainer.get(), vec3_one, vec3_two, 3.0f, 1.0f, 0.00001f);
 		notifyMeModel->getComponentList().addComponent(std::move(gazeDetectorNotifyMe));
 		
 		Model *closeMeModel = (Model*)scene->getFromScene("closeMe");
 		TransformTreeModel *transformCloseMe = (TransformTreeModel*)closeMeModel->getComponentList().getComponent("transformTree");
-		closeMeListener = std::unique_ptr<CloseMeListener>(new CloseMeListener);
+		closeMeListener = eventGazeListenerFactory->createCloseMeListener();
 
 		auto boxMessage2 = std::string("closeMe");
 		vec3_one = CL_Vec3(0.0f, 0.0f, 0.0f);
 		vec3_two = CL_Vec3(0.0f, 0.0f, -1.0f);
 		std::unique_ptr<IComponent> gazeDetectorCloseMe = gazeDetectorFactory->createGazeDetectorBox(boxMessage2, transformTreeCamera,
-																									 transformCloseMe, closeMeListener.get(), gazeDetectorContainer.get(),
-																									 vec3_one, vec3_two, 3.0f, 1.0f, 0.00001f);
+			transformCloseMe, closeMeListener.get(), gazeDetectorContainer.get(), vec3_one, vec3_two, 3.0f, 1.0f, 0.00001f);
 		closeMeModel->getComponentList().addComponent(std::move(gazeDetectorCloseMe));
 
 		renderer->initialize(scene.get());

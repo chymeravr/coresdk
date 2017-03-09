@@ -18,6 +18,7 @@ set(SOURCES ${PROJECT_SOURCE_DIR}/src/RendererNoHMD.cpp
 
 
 if(WINDOWS)
+	include_directories(${REPO_PATH}/thirdParty/glew/glew-${GLEW_VERSION}/include)
 	add_library(${PROJECT_NAME} STATIC ${INCLUDE_HEADERS} ${SOURCES})
 	target_link_libraries(${PROJECT_NAME} CoreEngine)
 else()

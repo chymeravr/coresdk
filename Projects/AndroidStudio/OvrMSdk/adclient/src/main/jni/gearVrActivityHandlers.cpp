@@ -7,14 +7,14 @@
 
 
 // Core Engine modules
-#include <coreEngine/components/transform/TransformCameraFactory.h>
-#include <coreEngine/components/transform/TransformModelFactory.h>
 #include <coreEngine/events/EventQueue.h>
 #include <coreEngine/modifier/ImagePNGLoader.h>
 #include <coreEngine/modifier/Image.h>
 #include <coreEngine/components/transformTree/TransformTreeFactory.h>
 #include <coreEngine/components/gazeDetector/GazeDetectorFactory.h>
+#include <coreEngine/factory/IEventGazeListenerFactory.h>
 #include <coreEngine/ui/UIFactory.h>
+
 
 // GLImplementation Modules
 #include <glImplementation/factory/SceneGLFactory.h>
@@ -31,9 +31,10 @@
 // Android Modules
 #include <LoggerAndroidFactory.h>
 #include <MutexLockAndroid.h>
-//#include <CameraGLOVRFactory.h>
 #include <ImageBMPLoaderAndroid.h>
 #include <RendererGearVR.h>
+#include <GazeListenerFactoryAndroidGvr.h>
+#include <coreEngine/modifier/ImageJPEGLoader.h>
 
 #ifdef __cplusplus
 extern "C" {
@@ -53,6 +54,11 @@ std::unique_ptr<cl::LoggerFactoryAndroid> loggerFactory = nullptr;
 std::unique_ptr<cl::ILogger> logger = nullptr;
 std::unique_ptr<cl::IEventQueue> eventQueue = nullptr;
 
+typedef enum{
+    NO_EVENT=0,
+    NOTIFY_ME=1,
+    CLOSE_AD=2
+} keyEventResponse;
 
 /*
 ====================================================================================================
@@ -163,8 +169,7 @@ static void ovrMessageQueue_PostMessage(ovrMessageQueue *messageQueue, const ovr
                               &messageQueue->Mutex);
         }
         messageQueue->ReceivedFlag = false;
-    }
-    else if (message->Wait == MQ_WAIT_PROCESSED) {
+    } else if (message->Wait == MQ_WAIT_PROCESSED) {
         while (!messageQueue->ProcessedFlag) {
             pthread_cond_wait(&messageQueue->ProcessedCondition, &messageQueue->Mutex);
         }
@@ -213,8 +218,7 @@ static bool ovrMessageQueue_GetNextMessage(ovrMessageQueue *messageQueue, ovrMes
     if (message->Wait == MQ_WAIT_RECEIVED) {
         messageQueue->ReceivedFlag = true;
         pthread_cond_broadcast(&messageQueue->ReceivedCondition);
-    }
-    else if (message->Wait == MQ_WAIT_PROCESSED) {
+    } else if (message->Wait == MQ_WAIT_PROCESSED) {
         messageQueue->Wait = MQ_WAIT_PROCESSED;
     }
     return true;
@@ -264,7 +268,7 @@ void *AppThreadFunction(void *parm) {
     appThread->Application->start();
 
     for (bool destroyed = false; destroyed == false;) {
-        for (; ;) {
+        for (;;) {
             ovrMessage message;
             const bool waitForMessages = (renderer->getOvr() == NULL && destroyed == false);
             if (!ovrMessageQueue_GetNextMessage(&appThread->MessageQueue, &message,
@@ -321,48 +325,58 @@ void *AppThreadFunction(void *parm) {
 
         if (!appThread->Started && appThread->Resumed) {
 
-            cl::ImageBMPLoaderAndroid imageBMPLoader(logger.get());
-            cl::ImagePNGLoader imagePNGLoader(logger.get());
+            //cl::ImageBMPLoaderAndroid imageBMPLoader(logger.get());
+            //cl::ImagePNGLoader imagePNGLoader(logger.get());
+            cl::ImageJPEGLoader imageJPEGLoader(logger.get());
             std::vector<std::unique_ptr<cl::Image> > textureImages;
-            cl::TEXTURE_MAP_MODE mode = cl::CUBE_MAP_MODE_SINGLE_IMAGE;
+            std::string absoluteFilePath = std::string(appThread->appDir) + std::string("/")
+                                           + std::string(appThread->appFileName);
+            textureImages.push_back(imageJPEGLoader.loadImage(absoluteFilePath));
+            //textureImages.push_back(imageBMPLoader.loadImage(absoluteFilePath));
 
-            switch (mode) {
-                case cl::CUBE_MAP_MODE_SINGLE_IMAGE: {
-                    std::string absoluteFilePath = std::string(appThread->appDir) + std::string("/")
-                                                   + std::string(appThread->appFileName);
-                    textureImages.push_back(imagePNGLoader.loadImage(absoluteFilePath));
-                    break;
-                }
-                case cl::CUBE_MAP_MODE_SIX_IMAGES: {
+            cl::TEXTURE_MAP_MODE mode = cl::EQUIRECTANGULAR_MAP_MODE;
 
-                    textureImages.push_back(imageBMPLoader.loadImage(std::string(appThread->appDir)
-                                                                     + std::string(
-                            "/chymeraSDKAssets/image360/cubemap_geo_front.bmp")));
-                    textureImages.push_back(imageBMPLoader.loadImage(std::string(appThread->appDir)
-                                                                     + std::string(
-                            "/chymeraSDKAssets/image360/cubemap_geo_left.bmp")));
-                    textureImages.push_back(imageBMPLoader.loadImage(std::string(appThread->appDir)
-                                                                     + std::string(
-                            "/chymeraSDKAssets/image360/cubemap_geo_back.bmp")));
-                    textureImages.push_back(imageBMPLoader.loadImage(std::string(appThread->appDir)
-                                                                     + std::string(
-                            "/chymeraSDKAssets/image360/cubemap_geo_right.bmp")));
-                    textureImages.push_back(imageBMPLoader.loadImage(std::string(appThread->appDir)
-                                                                     + std::string(
-                            "/chymeraSDKAssets/image360/cubemap_geo_top.bmp")));
-                    textureImages.push_back(imageBMPLoader.loadImage(std::string(appThread->appDir)
-                                                                     + std::string(
-                            "/chymeraSDKAssets/image360/cubemap_geo_bottom.bmp")));
-                    break;
-                }
-                case cl::EQUIRECTANGULAR_MAP_MODE: {
-                    textureImages.push_back(
-                            imageBMPLoader.loadImage(std::string(appThread->appDir)
-                                                     + std::string(
-                                    "/chymeraSDKAssets/image360/cubemap_geo_front.bmp")));
-                    break;
-                }
+            if((textureImages[0]->width / textureImages[0]->height) != 2) {
+                mode = cl::CUBE_MAP_MODE_SINGLE_IMAGE;
+                logger->log(cl::LOG_DEBUG, "Switching Image format to CubeMap");
             }
+
+//            switch (mode) {
+//                case cl::CUBE_MAP_MODE_SINGLE_IMAGE: {
+//                    std::string absoluteFilePath = std::string(appThread->appDir) + std::string("/")
+//                                                   + std::string(appThread->appFileName);
+//                    textureImages.push_back(imagePNGLoader.loadImage(absoluteFilePath));
+//                    break;
+//                }
+//                case cl::CUBE_MAP_MODE_SIX_IMAGES: {
+//                    textureImages.push_back(imageBMPLoader.loadImage(std::string(appThread->appDir)
+//                                                                     + std::string(
+//                            "/chymeraSDKAssets/image360/cubemap_geo_front.bmp")));
+//                    textureImages.push_back(imageBMPLoader.loadImage(std::string(appThread->appDir)
+//                                                                     + std::string(
+//                            "/chymeraSDKAssets/image360/cubemap_geo_left.bmp")));
+//                    textureImages.push_back(imageBMPLoader.loadImage(std::string(appThread->appDir)
+//                                                                     + std::string(
+//                            "/chymeraSDKAssets/image360/cubemap_geo_back.bmp")));
+//                    textureImages.push_back(imageBMPLoader.loadImage(std::string(appThread->appDir)
+//                                                                     + std::string(
+//                            "/chymeraSDKAssets/image360/cubemap_geo_right.bmp")));
+//                    textureImages.push_back(imageBMPLoader.loadImage(std::string(appThread->appDir)
+//                                                                     + std::string(
+//                            "/chymeraSDKAssets/image360/cubemap_geo_top.bmp")));
+//                    textureImages.push_back(imageBMPLoader.loadImage(std::string(appThread->appDir)
+//                                                                     + std::string(
+//                            "/chymeraSDKAssets/image360/cubemap_geo_bottom.bmp")));
+//                    break;
+//                }
+//                case cl::EQUIRECTANGULAR_MAP_MODE: {
+//                    textureImages.push_back(
+//                            imageBMPLoader.loadImage(std::string(appThread->appDir)
+//                                                     + std::string(
+//                                    "/chymeraSDKAssets/image360/cubemap_geo_front.bmp")));
+//                    break;
+//                }
+//            }
 
             appThread->Application->initialize(mode, textureImages);
 
@@ -399,7 +413,8 @@ static void ovrAppThread_Create(ovrAppThread *appThread, JNIEnv *env, jobject ac
      * matrices for each of the eye
      */
     //std::unique_ptr<cl::CameraGLOVRFactory> cameraFactory(new cl::CameraGLOVRFactory(loggerFactory.get()));
-    std::unique_ptr<cl::CameraGLFactory> cameraFactory(new cl::CameraGLFactory(loggerFactory.get()));
+    std::unique_ptr<cl::CameraGLFactory> cameraFactory(
+            new cl::CameraGLFactory(loggerFactory.get()));
     /*
      * Separate Texture Factories for OpenGLES - shader language is separate
      */
@@ -411,44 +426,46 @@ static void ovrAppThread_Create(ovrAppThread *appThread, JNIEnv *env, jobject ac
     std::unique_ptr<cl::RendererGearVR> renderer(
             new cl::RendererGearVR(env, activity, loggerFactory.get()));
 
-    std::unique_ptr<cl::TransformCameraFactory> transformCameraFactory(
-            new cl::TransformCameraFactory(loggerFactory.get()));
-    std::unique_ptr<cl::TransformModelFactory> transformModelFactory(
-            new cl::TransformModelFactory(loggerFactory.get()));
-
 
     std::unique_ptr<cl::MutexLockAndroid> mutexLock(new cl::MutexLockAndroid);
     eventQueue = std::unique_ptr<cl::IEventQueue>(new cl::EventQueue(std::move(mutexLock)));
 
-    std::unique_ptr<cl::ITransformTreeFactory> transformTreeFactory(new cl::TransformTreeFactory(loggerFactory.get()));
-    std::unique_ptr<cl::ITransformTreeFactory> uiTransformTreeFactory(new cl::TransformTreeFactory(loggerFactory.get()));
+    std::unique_ptr<cl::ITransformTreeFactory> transformTreeFactory(
+            new cl::TransformTreeFactory(loggerFactory.get()));
+    std::unique_ptr<cl::ITransformTreeFactory> uiTransformTreeFactory(
+            new cl::TransformTreeFactory(loggerFactory.get()));
     std::unique_ptr<cl::GazeDetectorFactory> gazeDetectorFactory(new cl::GazeDetectorFactory);
     std::unique_ptr<cl::IModelFactory> uiModelFactory(new cl::ModelGLFactory(loggerFactory.get()));
-    std::unique_ptr<cl::IUniformColorFactory> uiUniformColorFactory(new cl::UniformColorFactoryGLES3(loggerFactory.get()));
+    std::unique_ptr<cl::IUniformColorFactory> uiUniformColorFactory(
+            new cl::UniformColorFactoryGLES3(loggerFactory.get()));
 
-    std::unique_ptr<cl::ITextMaterialFactory> textMaterialFactory(new cl::TextMaterialFactoryGLES3(loggerFactory.get()));
-    std::unique_ptr<cl::UIFactory> uiFactory(new cl::UIFactory(loggerFactory.get(), std::move(uiModelFactory), std::move(uiUniformColorFactory),
-                                                               std::move(uiTransformTreeFactory), std::move(textMaterialFactory)));
+    std::unique_ptr<cl::ITextMaterialFactory> textMaterialFactory(
+            new cl::TextMaterialFactoryGLES3(loggerFactory.get()));
+    std::unique_ptr<cl::UIFactory> uiFactory(
+            new cl::UIFactory(loggerFactory.get(), std::move(uiModelFactory),
+                              std::move(uiUniformColorFactory),
+                              std::move(uiTransformTreeFactory), std::move(textMaterialFactory)));
 
+    std::unique_ptr<cl::IEventGazeListenerFactory> eventGazeListenerFactory(
+            new cl::GazeListenerFactoryAndroidGvr(loggerFactory.get()));
 
     std::string absoluteFontFilePath = std::string(appThread->appDir) + std::string("/")
-                                   + std::string("chymeraSDKAssets/fonts/arial.ttf");
+                                       + std::string("chymeraSDKAssets/fonts/arial.ttf");
     logger->log(cl::LOG_DEBUG, absoluteFontFilePath);
 
     appThread->Application = new cl::Image360(std::move(renderer),
-                                    std::move(sceneFactory),
-                                    std::move(modelFactory),
-                                    std::move(diffuseTextureFactory),
-                                    std::move(diffuseTextureCubeMapFactory),
-                                    std::move(transformCameraFactory),
-                                    std::move(transformModelFactory),
-                                    std::move(transformTreeFactory),
-                                    std::move(cameraFactory),
-                                    eventQueue.get(),
-                                    loggerFactory.get(),
-                                    std::move(uiFactory),
-                                    std::move(gazeDetectorFactory),
-                                    absoluteFontFilePath);
+                                              std::move(sceneFactory),
+                                              std::move(modelFactory),
+                                              std::move(diffuseTextureFactory),
+                                              std::move(diffuseTextureCubeMapFactory),
+                                              std::move(transformTreeFactory),
+                                              std::move(cameraFactory),
+                                              eventQueue.get(),
+                                              loggerFactory.get(),
+                                              std::move(uiFactory),
+                                              std::move(gazeDetectorFactory),
+                                              std::move(eventGazeListenerFactory),
+                                              absoluteFontFilePath);
 
     const int createErr = pthread_create(&appThread->Thread, NULL, AppThreadFunction, appThread);
     if (createErr != 0) {
@@ -473,7 +490,8 @@ static void ovrAppThread_Destroy(ovrAppThread *appThread, JNIEnv *env) {
 
 JNIEXPORT jlong JNICALL
 Java_com_chymeravr_adclient_Image360Activity_onCreateNative(JNIEnv *env, jobject obj,
-                                                        jobject activity, jstring appDir, jstring appFilename, jobject mgr) {
+                                                            jobject activity, jstring appDir,
+                                                            jstring appFilename, jobject mgr) {
     ovrAppThread *appThread = (ovrAppThread *) malloc(sizeof(ovrAppThread));
 
     loggerFactory = std::unique_ptr<cl::LoggerFactoryAndroid>(new cl::LoggerFactoryAndroid());
@@ -502,7 +520,8 @@ Java_com_chymeravr_adclient_Image360Activity_onStartNative(JNIEnv *env, jobject 
 }
 
 JNIEXPORT void JNICALL
-Java_com_chymeravr_adclient_Image360Activity_onResumeNative(JNIEnv *env, jobject obj, jlong handle) {
+Java_com_chymeravr_adclient_Image360Activity_onResumeNative(JNIEnv *env, jobject obj,
+                                                            jlong handle) {
     ovrAppThread *appThread = (ovrAppThread *) ((size_t) handle);
     logger->log(cl::LOG_DEBUG, "onResumeNative()");
 
@@ -534,7 +553,7 @@ Java_com_chymeravr_adclient_Image360Activity_onStopNative(JNIEnv *env, jobject o
 
 JNIEXPORT void JNICALL
 Java_com_chymeravr_adclient_Image360Activity_onDestroyNative(JNIEnv *env, jobject obj,
-                                                            jlong handle) {
+                                                             jlong handle) {
     ovrAppThread *appThread = (ovrAppThread *) ((size_t) handle);
     logger->log(cl::LOG_DEBUG, "onDestroyNative()");
 
@@ -557,7 +576,7 @@ Java_com_chymeravr_adclient_Image360Activity_onDestroyNative(JNIEnv *env, jobjec
 
 JNIEXPORT void JNICALL
 Java_com_chymeravr_adclient_Image360Activity_onSurfaceCreatedNative(JNIEnv *env, jobject obj,
-                                                                   jlong handle, jobject surface) {
+                                                                    jlong handle, jobject surface) {
     logger->log(cl::LOG_DEBUG, "onSurfaceCreatedNative() Begin");
     ovrAppThread *appThread = (ovrAppThread *) ((size_t) handle);
     ANativeWindow *newNativeWindow = ANativeWindow_fromSurface(env, surface);
@@ -581,7 +600,7 @@ Java_com_chymeravr_adclient_Image360Activity_onSurfaceCreatedNative(JNIEnv *env,
 
 JNIEXPORT void JNICALL
 Java_com_chymeravr_adclient_Image360Activity_onSurfaceChangedNative(JNIEnv *env, jobject obj,
-                                                                   jlong handle, jobject surface) {
+                                                                    jlong handle, jobject surface) {
     ovrAppThread *appThread = (ovrAppThread *) ((size_t) handle);
     logger->log(cl::LOG_DEBUG, "onSurfaceChangedNative()");
 
@@ -615,15 +634,14 @@ Java_com_chymeravr_adclient_Image360Activity_onSurfaceChangedNative(JNIEnv *env,
             ovrMessage_SetPointerParm(&message, 0, appThread->NativeWindow);
             ovrMessageQueue_PostMessage(&appThread->MessageQueue, &message);
         }
-    }
-    else if (newNativeWindow != NULL) {
+    } else if (newNativeWindow != NULL) {
         ANativeWindow_release(newNativeWindow);
     }
 }
 
 JNIEXPORT void JNICALL
 Java_com_chymeravr_adclient_Image360Activity_onSurfaceDestroyedNative(JNIEnv *env, jobject obj,
-                                                                     jlong handle) {
+                                                                      jlong handle) {
     ovrAppThread *appThread = (ovrAppThread *) ((size_t) handle);
     logger->log(cl::LOG_DEBUG, "onSurfaceDestroyedNative()");
 
@@ -646,9 +664,10 @@ Java_com_chymeravr_adclient_Image360Activity_onSurfaceDestroyedNative(JNIEnv *en
 ====================================================================================================
  */
 
-JNIEXPORT void JNICALL
-Java_com_chymeravr_adclient_Image360Activity_onKeyEventNative(JNIEnv *env, jobject obj, jlong handle,
-                                                             int keyCode, int action) {
+JNIEXPORT jint JNICALL
+Java_com_chymeravr_adclient_Image360Activity_onKeyEventNative(JNIEnv *env, jobject obj,
+                                                              jlong handle,
+                                                              int keyCode, int action) {
     if (action == AKEY_EVENT_ACTION_UP) {
         ALOGV("    Image360ActivityNative::onKeyEvent( %d, %d )", keyCode, action);
     }
@@ -658,12 +677,20 @@ Java_com_chymeravr_adclient_Image360Activity_onKeyEventNative(JNIEnv *env, jobje
     ovrMessage_SetIntegerParm(&message, 0, keyCode);
     ovrMessage_SetIntegerParm(&message, 1, action);
     ovrMessageQueue_PostMessage(&appThread->MessageQueue, &message);
+
+    if(appThread->Application->closeMeListener->inFocus()){
+        return CLOSE_AD;
+    } else if(appThread->Application->notifyMeListener->inFocus()){
+        return NOTIFY_ME;
+    }else{
+        return NO_EVENT;
+    }
 }
 
-JNIEXPORT void JNICALL
+JNIEXPORT int JNICALL
 Java_com_chymeravr_adclient_Image360Activity_onTouchEventNative(JNIEnv *env, jobject obj,
-                                                               jlong handle, int action, float x,
-                                                               float y) {
+                                                                jlong handle, int action, float x,
+                                                                float y) {
     if (action == AMOTION_EVENT_ACTION_UP) {
         ALOGV("    Image360ActivityNative::onTouchEvent( %d, %1.0f, %1.0f )", action, x, y);
     }
@@ -674,6 +701,16 @@ Java_com_chymeravr_adclient_Image360Activity_onTouchEventNative(JNIEnv *env, job
     ovrMessage_SetFloatParm(&message, 1, x);
     ovrMessage_SetFloatParm(&message, 2, y);
     ovrMessageQueue_PostMessage(&appThread->MessageQueue, &message);
+
+    if(appThread->Application->closeMeListener->inFocus()){
+        logger->log(cl::LOG_DEBUG, "Close Me Event Detected");
+        return CLOSE_AD;
+    } else if(appThread->Application->notifyMeListener->inFocus()){
+        logger->log(cl::LOG_DEBUG, "Notify Me Event Detected");
+        return NOTIFY_ME;
+    }else{
+        return NO_EVENT;
+    }
 }
 
 JNIEXPORT jfloatArray JNICALL
@@ -688,11 +725,9 @@ Java_com_chymeravr_adclient_Image360Activity_getHMDParamsNative(JNIEnv *env, job
     auto hmdParams = renderer->getHMDParams();
 
     float params[32];
-    for(int i = 0; i < 2; i++)
-    {
-        for(int j = 0; j < 16; j++)
-        {
-            params[16*i + j] = hmdParams[16*i + j];
+    for (int i = 0; i < 2; i++) {
+        for (int j = 0; j < 16; j++) {
+            params[16 * i + j] = hmdParams[16 * i + j];
         }
     }
 
