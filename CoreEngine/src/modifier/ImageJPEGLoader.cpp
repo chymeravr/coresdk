@@ -36,6 +36,7 @@ namespace cl{
 				//logger->log(LOG_DEBUG, std::to_string(i) + ", " + std::to_string(j));
 				unsigned int firstIndex = (i*width*channels) + j ;
 				unsigned int lastIndex =  ((height - i - 1)*width*channels) + j;
+
 				unsigned char temp = data[firstIndex];
 				data[firstIndex] = data[lastIndex];
 				data[lastIndex] = temp;

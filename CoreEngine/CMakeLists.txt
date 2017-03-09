@@ -7,6 +7,7 @@ set(REPO_PATH ../Repository)
 set(Conf_INCLUDE_DIRS ../Conf/include)
 set(SOIL_INCLUDE_DIRS ../SOIL/include)
 set (GLM_VERSION 0.9.7.6)
+set (GLEW_VERSION 2.0.0)
 
 include_directories (${REPO_PATH}/thirdParty/glm/glm-${GLM_VERSION}/glm 
 					 ${Conf_INCLUDE_DIRS} 
@@ -44,7 +45,8 @@ if(WINDOWS)
 	)
 
 	add_subdirectory(${freetype_SOURCE_DIR} ${freetype_BINARY_DIR})
-	include_directories("${freetype_SOURCE_DIR}/include")
+	include_directories("${freetype_SOURCE_DIR}/include"
+						${REPO_PATH}/thirdParty/glew/glew-${GLEW_VERSION}/include)
 	########################################################
 
 	add_library(${PROJECT_NAME} STATIC ${INCLUDE_HEADERS}  ${SOURCES})

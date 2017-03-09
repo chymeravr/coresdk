@@ -57,6 +57,12 @@ public final class Image360Activity extends Activity implements SurfaceHolder.Ca
     @Getter
     private int instanceId;
 
+    private enum KeyEventResponse{
+        NO_EVENT,
+        NOTIFY_ME,
+        CLOSE_AD
+    }
+
     // load the native library for image 360 ads
     static {
         System.loadLibrary("image360ad");
@@ -91,9 +97,9 @@ public final class Image360Activity extends Activity implements SurfaceHolder.Ca
     public native void onSurfaceDestroyedNative(long handle);
 
     // Native methods for handling touch and key events
-    public native void onKeyEventNative(long handle, int keyCode, int action);
+    public native int onKeyEventNative(long handle, int keyCode, int action);
 
-    public native void onTouchEventNative(long handle, int action, float x, float y);
+    public native int onTouchEventNative(long handle, int action, float x, float y);
 
     public native float[] getHMDParamsNative(long handle);
 
@@ -242,6 +248,9 @@ public final class Image360Activity extends Activity implements SurfaceHolder.Ca
         if(event.getAction() == KeyEvent.ACTION_UP){
             return false;
         }
+
+        KeyEventResponse keyEventResponse = KeyEventResponse.NO_EVENT;
+
         Log.d(TAG, "dispatchKeyEvent");
         if (mNativeHandle != 0) {
             int keyCode = event.getKeyCode();
@@ -250,27 +259,43 @@ public final class Image360Activity extends Activity implements SurfaceHolder.Ca
             {
                 return super.dispatchKeyEvent( event );
             }
-            if (action == KeyEvent.ACTION_UP) {
-                Log.d(TAG, "dispatchKeyEvent( " + keyCode + ", " + action + " )");
+
+            if(event.getAction()==KeyEvent.ACTION_UP){
                 return false;
             }
 
-            if ( keyCode == KeyEvent.KEYCODE_VOLUME_UP )
-            {
-                Intent intent = new Intent("finishAd");
-                LocalBroadcastManager.getInstance(this).sendBroadcast(intent);
-                return true;
+            keyEventResponse = KeyEventResponse.values()[onKeyEventNative(mNativeHandle, keyCode, action)];
+
+            switch (keyEventResponse){
+                case NO_EVENT:
+                    break;
+                case NOTIFY_ME:
+                    notifyUser();
+                    break;
+                case CLOSE_AD:
+                    Intent intent = new Intent("finishAd");
+                    LocalBroadcastManager.getInstance(this).sendBroadcast(intent);
+                    break;
             }
-            if ( keyCode == KeyEvent.KEYCODE_VOLUME_DOWN )
-            {
-                notifyUser();
-                return true;
-            }
-            if (keyCode == KeyEvent.KEYCODE_BACK) {
-                Intent intent = new Intent("finishAd");
-                LocalBroadcastManager.getInstance(this).sendBroadcast(intent);
-                return true;
-            }
+            return true;
+
+//            if ( keyCode == KeyEvent.KEYCODE_VOLUME_UP )
+//            {
+//                Intent intent = new Intent("finishAd");
+//                LocalBroadcastManager.getInstance(this).sendBroadcast(intent);
+//                return true;
+//            }
+//            if ( keyCode == KeyEvent.KEYCODE_VOLUME_DOWN )
+//            {
+//                notifyUser();
+//                return true;
+//            }
+            // what do we do if user pressed back button?
+//            if (keyCode == KeyEvent.KEYCODE_BACK) {
+//                Intent intent = new Intent("finishAd");
+//                LocalBroadcastManager.getInstance(this).sendBroadcast(intent);
+//                return true;
+//            }
         }
 
         return false;
@@ -284,9 +309,27 @@ public final class Image360Activity extends Activity implements SurfaceHolder.Ca
             int action = event.getAction();
             float x = event.getRawX();
             float y = event.getRawY();
+            KeyEventResponse keyEventResponse = KeyEventResponse.NO_EVENT;
             if (action == MotionEvent.ACTION_UP) {
                 Log.d(TAG, "GLES3JNIActivity::dispatchTouchEvent( " + action + ", " + x + ", " + y + " )");
             }
+
+            keyEventResponse = KeyEventResponse.values()[onTouchEventNative(mNativeHandle, action, x, y)];
+
+            switch (keyEventResponse){
+                case NO_EVENT:
+                    break;
+                case NOTIFY_ME:
+                    Log.d(TAG, "Notifying Me");
+                    notifyUser();
+                    break;
+                case CLOSE_AD:
+                    Log.d(TAG, "Closing This Ad ");
+                    Intent intent = new Intent("finishAd");
+                    LocalBroadcastManager.getInstance(this).sendBroadcast(intent);
+                    break;
+            }
+            return true;
         }
         return true;
     }

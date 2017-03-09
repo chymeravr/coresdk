@@ -1,5 +1,6 @@
 #include <coreEngine/components/gazeDetector/GazeDetector.h>
 #include <assert.h>
+#include <iostream>
 
 namespace cl{
 	GazeDetector::GazeDetector(std::string &idOfObjectComponentAttachedTo,

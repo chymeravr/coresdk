@@ -8,7 +8,6 @@
 #include <coreEngine/renderObjects/Shader.h>
 #include <coreEngine/renderObjects/Material.h>
 #include <coreEngine/renderObjects/Model.h>
-#include <CameraGLOVR.h>
 #include <RendererGearVR.h>
 #include <stdlib.h>
 #include <glImplementation/renderObjects/CameraGL.h>

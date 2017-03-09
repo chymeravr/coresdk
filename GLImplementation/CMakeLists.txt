@@ -41,6 +41,8 @@ if (WINDOWS)
 	set(SOURCES "")
 	exclude_subdirectory( "${NEW_SOURCES}" "${EXCLUDE_DIR2}" SOURCES)
 
+	include_directories(${REPO_PATH}/thirdParty/glew/glew-${GLEW_VERSION}/include)
+
 	add_library(${PROJECT_NAME} STATIC ${HEADERS} ${SOURCES})
 	target_link_libraries(${PROJECT_NAME} CoreEngine)
 else ()

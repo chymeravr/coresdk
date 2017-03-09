@@ -6,35 +6,45 @@
 
 #include <GL/glew.h>
 #include <GL/freeglut.h>
+
 #include <memory>
-#include <image360/Image360.h>
 #include <assert.h>
 
 #include <fstream>
 
-#include <windowsImplementation/LoggerFactoryWindows.h>
+// CoreEngine Dependencies
+#include <coreEngine/events/EventQueue.h>
+#include <coreEngine/events/EventKeyPress.h>
+#include <coreEngine/events/EventKeyPressListener.h>
+#include <coreEngine/events/EventPassiveMouseMotion.h>
+#include <coreEngine/components/gazeDetector/GazeDetectorFactory.h>
+#include <coreEngine/modifier/ImagePNGLoader.h>
+#include <coreEngine/modifier/ImageJPEGLoader.h>
+#include <coreEngine/ui/UIFactory.h>
+#include <coreEngine/modifier/ImageBMPLoader.h>
+#include <coreEngine/components/transformTree/TransformTreeFactory.h>
+
+// GLImplementation Dependencies
 #include <glImplementation/factory/SceneGLFactory.h>
 #include <glImplementation/factory/ModelGLFactory.h>
 #include <glImplementation/factory/opengl/DiffuseTextureCubeMapGLFactory.h>
 #include <glImplementation/factory/opengl/DiffuseTextureGLFactory.h>
 #include <glImplementation/factory/CameraGLFactory.h>
-#include <coreEngine/components/transform/TransformCameraFactory.h>
-#include <coreEngine/components/transform/TransformModelFactory.h>
-#include <coreEngine/events/EventQueue.h>
-#include <coreEngine/events/EventKeyPress.h>
-#include <coreEngine/events/EventKeyPressListener.h>
-#include <coreEngine/events/EventPassiveMouseMotion.h>
-#include <windowsImplementation/MutexLockWindows.h>
-#include <renderer/RendererNoHMD.h>
-#include <coreEngine/modifier/ImageBMPLoader.h>
-#include <coreEngine/components/transformTree/TransformTreeFactory.h>
 #include <glImplementation/factory/opengl/UniformColorFactoryGL.h>
-#include <coreEngine/ui/UIFactory.h>
 #include <glImplementation/factory/opengl/TextMaterialFactoryGL.h>
-#include <coreEngine/components/gazeDetector/GazeDetectorFactory.h>
-#include <coreEngine/modifier/ImagePNGLoader.h>
-#include <coreEngine/modifier/ImageJPEGLoader.h>
 
+// WindowsImplementation Dependencies
+#include <windowsImplementation/LoggerFactoryWindows.h>
+#include <windowsImplementation/MutexLockWindows.h>
+#include <windowsImplementation/GazeListenerFactoryWindows.h>
+
+// Windows Renderer
+#include <renderer/RendererNoHMD.h>
+
+// Application Dependency
+#include <image360/Image360.h>
+
+//  Windowing Library
 #include <GLFW/glfw3.h>
 
 using namespace std;
@@ -75,39 +85,18 @@ void mouse_pos_callback(GLFWwindow* window, double mouseXPos, double mouseYPos)
 	eventQueue->push(std::move(mousePassiveEvent));
 }
 
-void mouse(int button, int state,
-	int x, int y){
-	switch (button){
-	case GLUT_LEFT_BUTTON:
-		if (state == GLUT_UP){
-			logger->log(LOG_DEBUG, "Left button up at " + std::to_string(x) + "," + std::to_string(y));
+void mouse_button_callback(GLFWwindow* window, int button, int action, int mods)
+{
+	std::cout << "Mouse Clicked " << std::endl;
+	if (button == GLFW_MOUSE_BUTTON_LEFT && action == GLFW_PRESS)
+	{
+		if (application->notifyMeListener->inFocus()){
+			std::cout << "Notification Pressed" << std::endl;
 		}
-		else if (state == GLUT_DOWN){
-			logger->log(LOG_DEBUG, "Left button down at " + std::to_string(x) + "," + std::to_string(y));
+		else if (application->closeMeListener->inFocus()){
+			std::cout << "Close Box Pressed" << std::endl;
 		}
-		break;
-	case GLUT_MIDDLE_BUTTON:
-		if (state == GLUT_UP){
-			logger->log(LOG_DEBUG, "Middle button up at " + std::to_string(x) + "," + std::to_string(y));
-		}
-		else if (state == GLUT_DOWN){
-			logger->log(LOG_DEBUG, "Middle button down at " + std::to_string(x) + "," + std::to_string(y));
-		}
-		break;
-	case GLUT_RIGHT_BUTTON:
-		if (state == GLUT_UP){
-			logger->log(LOG_DEBUG, "Right button up at " + std::to_string(x) + "," + std::to_string(y));
-		}
-		else if (state == GLUT_DOWN){
-			logger->log(LOG_DEBUG, "Right button down at " + std::to_string(x) + "," + std::to_string(y));
-		}
-		break;
 	}
-}
-
-void mousePassiveMotion(int x, int y){
-	std::unique_ptr<IEvent> mousePassiveEvent(new EventPassiveMouseMotion((EventPassiveMouseMotionListener*)(Image360*)application.get(), x, y));
-	eventQueue->push(std::move(mousePassiveEvent));
 }
 
 // Window dimensions
@@ -159,14 +148,13 @@ int _tmain(int argc, _TCHAR** argv)
 	
 	std::unique_ptr<IRenderer> renderer(new RendererNoHMD());
 	
-	std::unique_ptr<ITransformCameraFactory> transformCameraFactory(new TransformCameraFactory(loggerFactory.get()));
-	std::unique_ptr<ITransformModelFactory> transformModelFactory(new TransformModelFactory(loggerFactory.get()));
 	std::unique_ptr<ICameraFactory> cameraFactory(new CameraGLFactory(loggerFactory.get()));
 	
 	std::unique_ptr<IMutexLock> mutexLock(new MutexLockWindows);
 	eventQueue = std::unique_ptr<IEventQueue>(new EventQueue(std::move(mutexLock)));
 	
 	std::unique_ptr<ITransformTreeFactory> transformTreeFactory(new TransformTreeFactory(loggerFactory.get()));
+
 	std::unique_ptr<IModelFactory> uiModelFactory(new ModelGLFactory(loggerFactory.get()));
 	std::unique_ptr<IUniformColorFactory> uiUniformColorFactory(new UniformColorFactoryGL(loggerFactory.get()));
 	std::unique_ptr<ITransformTreeFactory> uiTransformTreeFactory(new TransformTreeFactory(loggerFactory.get()));
@@ -176,25 +164,27 @@ int _tmain(int argc, _TCHAR** argv)
 	std::unique_ptr<UIFactory> uiFactory(new UIFactory(loggerFactory.get(), std::move(uiModelFactory), std::move(uiUniformColorFactory), 
 										std::move(uiTransformTreeFactory), std::move(textMaterialFactory)));
 	
+	std::unique_ptr<IEventGazeListenerFactory> eventGazeListenerFactory(new GazeListenerFactoryWindows(loggerFactory.get()));
+	//std::string fontFilePath = "C:\\Users\\robin_chimera\\Documents\\SDK\\Projects\\VisualStudio\\Image360WindowsLauncher\\Debug\\fonts\\arial.ttf";
 	std::string fontFilePath = "fonts/arial.ttf";
 	application = std::unique_ptr<Image360>(new Image360(std::move(renderer),
 		std::move(sceneFactory),
 		std::move(modelFactory),
 		std::move(diffuseTextureFactory),
 		std::move(diffuseTextureCubeMapFactory),
-		std::move(transformCameraFactory),
-		std::move(transformModelFactory),
 		std::move(transformTreeFactory),
 		std::move(cameraFactory),
 		eventQueue.get(),
 		loggerFactory.get(),
 		std::move(uiFactory),
 		std::move(gazeDetectorFactory),
+		std::move(eventGazeListenerFactory),
 		fontFilePath));
 
 	//// register callbacks
 	application->start();
 	glfwSetKeyCallback(window, key_callback);
+	glfwSetMouseButtonCallback(window, mouse_button_callback);
 	glfwSetCursorPosCallback(window, mouse_pos_callback);
 
 	ImageBMPLoader imageBMPLoader(logger.get());
@@ -202,12 +192,13 @@ int _tmain(int argc, _TCHAR** argv)
 	ImageJPEGLoader imageJPEGLoader(logger.get());
 
 	std::vector< std::unique_ptr<Image> > textureImages;
-	TEXTURE_MAP_MODE mode = CUBE_MAP_MODE_SINGLE_IMAGE; // image mode
+	TEXTURE_MAP_MODE mode = EQUIRECTANGULAR_MAP_MODE; //CUBE_MAP_MODE_SINGLE_IMAGE; // image mode
 
 	switch (mode){
 	case CUBE_MAP_MODE_SINGLE_IMAGE:
 		//textureImages.push_back(imagePNGLoader.loadImage("cubemap_current.png"));
-		textureImages.push_back(imageJPEGLoader.loadImage("cubemap_current2.jpg"));
+		textureImages.push_back(imageJPEGLoader.loadImage("cubemap_desert.jpg"));
+		//textureImages.push_back(imagePNGLoader.loadImage("C:\\Users\\robin_chimera\\Documents\\SDK\\Projects\\VisualStudio\\Image360WindowsLauncher\\Debug\\cubemap_current2.jpg"));
 		break;
 	case CUBE_MAP_MODE_SIX_IMAGES:
 		textureImages.push_back(imageBMPLoader.loadImage("cubemap_geo_front.bmp"));
@@ -218,7 +209,8 @@ int _tmain(int argc, _TCHAR** argv)
 		textureImages.push_back(imageBMPLoader.loadImage("cubemap_geo_bottom.bmp"));
 		break;
 	case EQUIRECTANGULAR_MAP_MODE:
-		textureImages.push_back(imageBMPLoader.loadImage("tex_current.bmp"));
+		//textureImages.push_back(imageBMPLoader.loadImage("tex_current.bmp"));
+		textureImages.push_back(imageJPEGLoader.loadImage("equirectangular_desert2.jpg"));
 		break;
 	}
 
@@ -231,25 +223,6 @@ int _tmain(int argc, _TCHAR** argv)
 		glfwPollEvents();
 
 		application->draw();
-
-		glColor3ub(240, 240, 240);//white
-		glLineWidth(2.0);
-
-		int crossHair[8] =
-		{
-			WIDTH / 2 - 7, HEIGHT / 2, // horizontal line
-			WIDTH / 2 + 7, HEIGHT / 2,
-
-			WIDTH / 2, HEIGHT / 2 + 7, //vertical line
-			WIDTH / 2, HEIGHT / 2 - 7
-		};
-
-		glVertexPointer(2, GL_INT, 0, crossHair);
-
-		//draw primitive GL_LINES starting at the first vertex, use 2 total vertices
-		glDrawArrays(GL_LINES, 0, 2); //draw horizontal line
-		//Same as above but start at second vertex
-		glDrawArrays(GL_LINES, 2, 2); //draw vertical line
 	
 		// Swap the screen buffers
 		glfwSwapBuffers(window);

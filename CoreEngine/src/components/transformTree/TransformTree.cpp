@@ -52,7 +52,7 @@ namespace cl{
 		return this->localQuaternion;
 	}
 
-	void TransformTree::setLocalScale(CL_Vec3 scale){
+	void TransformTree::setLocalScale(CL_Vec3 localScale){
 		this->localScale = localScale;
 		markAllDescendantsDirty();
 	}
@@ -65,10 +65,10 @@ namespace cl{
 		if (!isDirty)
 			return globalTransform;
 
-		// CL_Mat44 Rx = CL_RotationMatrixX(localRotation[0] * CL_PI / 180);
-		// CL_Mat44 Ry = CL_RotationMatrixY(localRotation[1] * CL_PI / 180);
-		// CL_Mat44 Rz = CL_RotationMatrixZ(localRotation[2] * CL_PI / 180);
-		CL_Mat44 R = CL_RotationMatrix(localQuaternion);
+		 /*CL_Mat44 Rx = CL_RotationMatrixX(localRotation[0] * CL_PI / 180);
+		 CL_Mat44 Ry = CL_RotationMatrixY(localRotation[1] * CL_PI / 180);
+		 CL_Mat44 Rz = CL_RotationMatrixZ(localRotation[2] * CL_PI / 180);*/
+		 CL_Mat44 R = CL_RotationMatrix(localQuaternion);
 		CL_Mat44 T = CL_TranlationMatrix(localPosition);
 		CL_Mat44 S = CL_ScaleMatrix(localScale);
 		//CL_Mat44 localTransform = T * Ry * Rx * Rz * S;

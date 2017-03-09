@@ -4,9 +4,10 @@
 namespace cl{
 	class EventGazeListener{
 	public:
-		virtual void onGazeStarted(){}
-		virtual void onGazeEnded(){}
-		virtual void onGaze(){}
+		virtual void onGazeStarted() = 0;
+		virtual void onGazeEnded() = 0;
+		virtual void onGaze() = 0;
+		virtual bool inFocus() = 0;
 	};
 }
 

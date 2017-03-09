@@ -10,14 +10,14 @@
 #include <coreEngine/events/IEventQueue.h>
 #include <coreEngine/factory/IDiffuseTextureFactory.h>
 #include <coreEngine/factory/IDiffuseTextureCubeMapFactory.h>
-#include <coreEngine/components/transform/ITransformCameraFactory.h>
-#include <coreEngine/components/transform/ITransformModelFactory.h>
+
 #include <coreEngine/modifier/Image.h>
 #include <coreEngine/ui/UIFactory.h>
 #include <coreEngine/components/transformTree/ITransformTreeFactory.h>
 #include <coreEngine/components/gazeDetector/GazeDetectorFactory.h>
-#include <image360/NotifyMeListener.h>
-#include <image360/CloseMeListener.h>
+
+#include <coreEngine/factory/IEventGazeListenerFactory.h>
+
 
 namespace cl{
 	enum TEXTURE_MAP_MODE{
@@ -32,14 +32,13 @@ namespace cl{
 				 std::unique_ptr<IModelFactory> modelFactory, 
 				 std::unique_ptr<IDiffuseTextureFactory> diffuseTextureFactory, 
 				 std::unique_ptr<IDiffuseTextureCubeMapFactory> diffuseTextureCubeMapFactory, 
-				 std::unique_ptr<ITransformCameraFactory> transformCameraFactory, 
-				 std::unique_ptr<ITransformModelFactory> transformModelFactory, 
 				 std::unique_ptr<ITransformTreeFactory> transformTreeFactory,
 				 std::unique_ptr<ICameraFactory> cameraFactory,
 				 IEventQueue *eventQueue, 
 				 ILoggerFactory *loggerFactory,
 				 std::unique_ptr<UIFactory> uiFactory,
 				 std::unique_ptr<GazeDetectorFactory> gazeDetectorFactory,
+				 std::unique_ptr<IEventGazeListenerFactory> gazeEventListenerFactory,
 				 std::string fontFolderPath);
 
 		//IApplication implementation
@@ -56,22 +55,24 @@ namespace cl{
 		void onKeyPress(char key, int x, int y);
 		void onPassiveMouseMotion(int x, int y);
 		IRenderer* getRenderer();
-		void onGazeStarted();
-		void onGazeEnded();
-		void onGaze();
+
+		std::unique_ptr<EventGazeListener> notifyMeListener;
+		std::unique_ptr<EventGazeListener> closeMeListener;
 	private:
 		std::unique_ptr<IRenderer> renderer;
+		std::unique_ptr<ILogger> logger;
+		std::unique_ptr<Scene> scene;
+
 		std::unique_ptr<ISceneFactory> sceneFactory;
 		std::unique_ptr<IModelFactory> modelFactory;
 		std::unique_ptr<IDiffuseTextureFactory> diffuseTextureFactory;
 		std::unique_ptr<IDiffuseTextureCubeMapFactory> diffuseTextureCubeMapFactory;
-		std::unique_ptr<ITransformCameraFactory> transformCameraFactory;
-		std::unique_ptr<ITransformModelFactory> transformModelFactory;
 		std::unique_ptr<ITransformTreeFactory> transformTreeFactory;
 		std::unique_ptr<ICameraFactory> cameraFactory;
 		std::unique_ptr<UIFactory> uiFactory;
-		std::unique_ptr<ILogger> logger;
-		std::unique_ptr<Scene> scene;
+		std::unique_ptr<GazeDetectorFactory> gazeDetectorFactory;
+		std::unique_ptr<IEventGazeListenerFactory> eventGazeListenerFactory;
+
 		Camera *camera;
 		Shader *shader;
 		Material *material;
@@ -81,13 +82,11 @@ namespace cl{
 		std::unique_ptr<PlanarBackground> notifyMeBackground;
 		std::unique_ptr<PlanarBackground> closeBackground;
 		std::unique_ptr<Reticle> reticle;
+		std::unique_ptr<GazeDetectorContainer> gazeDetectorContainer;
+
 		int lastPassiveMousePositionX = -1;
 		int lastPassiveMousePositionY = -1;
-		float passiveMouseMotionSensitivity = 0.02f;
-		std::unique_ptr<GazeDetectorFactory> gazeDetectorFactory;
-		std::unique_ptr<GazeDetectorContainer> gazeDetectorContainer;
-		std::unique_ptr<NotifyMeListener> notifyMeListener;
-		std::unique_ptr<CloseMeListener> closeMeListener;
+		float passiveMouseMotionSensitivity = 1.0f;
 
 		std::string fontFolderPath = "";
 	};
