@@ -45,9 +45,9 @@ android {
     }
 }
 
-task clean(type: Delete) {
-    delete "${rootProject.rootDir}/soil/build"
-}
+//task clean(type: Delete) {
+//    delete "${rootProject.rootDir}/soil/build"
+//}
 
 task distributeDebugLib (type : Copy) {
     // trigger build library

@@ -24,9 +24,6 @@ allprojects {
     repositories {
         jcenter()
         mavenCentral()
-        flatDir {
-            dirs 'aar', 'libs'//, 'C:\\Users\\robin_chimera\\Documents\\serving\\schemas\\target'
-        }
     }
 }
 

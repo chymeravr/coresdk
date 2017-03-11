@@ -78,9 +78,18 @@ namespace cl{
 			return this->isStatic;
 		}
 
+		bool getIsVisible(){
+			return this->isVisible;
+		}
+
+		void setIsVisible(bool visible){
+			this->isVisible = visible;
+		}
+
 	protected:
 		std::string sceneId;
 		bool isStatic = true;
+		bool isVisible = true;
 		const std::string type = "model";
 		std::vector <CL_Vec3> vertices;
 		std::vector <CL_Vec2> uvs;

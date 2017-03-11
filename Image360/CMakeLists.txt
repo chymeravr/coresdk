@@ -17,7 +17,8 @@ include_directories(${Conf_INCLUDE_DIRS}
 set (INCLUDE_DIRS ${PROJECT_SOURCE_DIR}/include)
 
 FILE(GLOB_RECURSE INCLUDE_HEADERS "include/*.h")
-set(SOURCES ${PROJECT_SOURCE_DIR}/src/Image360.cpp)
+set(SOURCES ${PROJECT_SOURCE_DIR}/src/Image360.cpp
+			${PROJECT_SOURCE_DIR}/src/Image360Stereo.cpp)
 
 if(WINDOWS)
 	link_directories(${Conf_GL_LINK_DIRECTORIES})

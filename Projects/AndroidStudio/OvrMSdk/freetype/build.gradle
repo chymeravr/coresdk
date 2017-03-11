@@ -49,9 +49,9 @@ android {
 }
 
 
-task clean(type: Delete) {
-    delete "${rootProject.rootDir}/freetype/build"
-}
+//task clean(type: Delete) {
+//    delete "${rootProject.rootDir}/freetype/build"
+//}
 
 task distributeDebugLib (type : Copy) {
     // trigger build library

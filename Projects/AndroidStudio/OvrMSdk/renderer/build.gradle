@@ -52,10 +52,10 @@ android {
     }
 }
 
-task clean(type: Delete) {
-    delete "${rootProject.rootDir}/renderer/build"
-    delete fileTree(dir: 'libs', include: '*.so')
-}
+//task clean(type: Delete) {
+//    delete "${rootProject.rootDir}/renderer/build"
+//    delete fileTree(dir: 'libs', include: '*.so')
+//}
 
 task distributeDebugLib (type : Copy) {
     // trigger build library

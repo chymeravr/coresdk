@@ -33,8 +33,10 @@
 #include <MutexLockAndroid.h>
 #include <ImageBMPLoaderAndroid.h>
 #include <RendererGearVR.h>
+#include <RendererGearVRStereo.h>
 #include <GazeListenerFactoryAndroidGvr.h>
 #include <coreEngine/modifier/ImageJPEGLoader.h>
+#include <image360/Image360Stereo.h>
 
 #ifdef __cplusplus
 extern "C" {
@@ -248,7 +250,7 @@ enum {
 };
 
 typedef struct {
-    cl::Image360 *Application;
+    cl::Image360Stereo *Application;
     jobject Activity;
     const char *appDir;
     const char *appFileName;
@@ -263,7 +265,7 @@ typedef struct {
 void *AppThreadFunction(void *parm) {
     ovrAppThread *appThread = (ovrAppThread *) parm;
 
-    auto renderer = (cl::RendererGearVR *) appThread->Application->getRenderer();
+    auto renderer = (cl::RendererGearVRStereo *) appThread->Application->getRenderer();
 
     appThread->Application->start();
 
@@ -336,10 +338,10 @@ void *AppThreadFunction(void *parm) {
 
             cl::TEXTURE_MAP_MODE mode = cl::EQUIRECTANGULAR_MAP_MODE;
 
-            if((textureImages[0]->width / textureImages[0]->height) != 2) {
-                mode = cl::CUBE_MAP_MODE_SINGLE_IMAGE;
-                logger->log(cl::LOG_DEBUG, "Switching Image format to CubeMap");
-            }
+//            if((textureImages[0]->width / textureImages[0]->height) != 2) {
+//                mode = cl::CUBE_MAP_MODE_SINGLE_IMAGE;
+//                logger->log(cl::LOG_DEBUG, "Switching Image format to CubeMap");
+//            }
 
 //            switch (mode) {
 //                case cl::CUBE_MAP_MODE_SINGLE_IMAGE: {
@@ -382,10 +384,14 @@ void *AppThreadFunction(void *parm) {
 
             appThread->Started = true;
             appThread->Application->draw();
+//            appThread->Application->draw(cl::LEFT);
+//            appThread->Application->draw(cl::RIGHT);
         }
 
         if (appThread->Resumed) {
             appThread->Application->draw();
+//            appThread->Application->draw(cl::LEFT);
+//            appThread->Application->draw(cl::RIGHT);
         }
 
     }
@@ -423,9 +429,10 @@ static void ovrAppThread_Create(ovrAppThread *appThread, JNIEnv *env, jobject ac
     std::unique_ptr<cl::DiffuseTextureCubeMapGLES3Factory> diffuseTextureCubeMapFactory(
             new cl::DiffuseTextureCubeMapGLES3Factory(loggerFactory.get()));
 
-    std::unique_ptr<cl::RendererGearVR> renderer(
-            new cl::RendererGearVR(env, activity, loggerFactory.get()));
-
+//    std::unique_ptr<cl::RendererGearVR> renderer(
+//            new cl::RendererGearVR(env, activity, loggerFactory.get()));
+    std::unique_ptr<cl::RendererGearVRStereo> renderer(
+            new cl::RendererGearVRStereo(env, activity, loggerFactory.get()));
 
     std::unique_ptr<cl::MutexLockAndroid> mutexLock(new cl::MutexLockAndroid);
     eventQueue = std::unique_ptr<cl::IEventQueue>(new cl::EventQueue(std::move(mutexLock)));
@@ -453,7 +460,7 @@ static void ovrAppThread_Create(ovrAppThread *appThread, JNIEnv *env, jobject ac
                                        + std::string("chymeraSDKAssets/fonts/arial.ttf");
     logger->log(cl::LOG_DEBUG, absoluteFontFilePath);
 
-    appThread->Application = new cl::Image360(std::move(renderer),
+    appThread->Application = new cl::Image360Stereo(std::move(renderer),
                                               std::move(sceneFactory),
                                               std::move(modelFactory),
                                               std::move(diffuseTextureFactory),
@@ -720,7 +727,7 @@ Java_com_chymeravr_adclient_Image360Activity_getHMDParamsNative(JNIEnv *env, job
     result = env->NewFloatArray(32);
 
     ovrAppThread *appThread = (ovrAppThread *) ((size_t) handle);
-    auto renderer = (cl::RendererGearVR *) appThread->Application->getRenderer();
+    auto renderer = (cl::RendererGearVRStereo *) appThread->Application->getRenderer();
 
     auto hmdParams = renderer->getHMDParams();
 

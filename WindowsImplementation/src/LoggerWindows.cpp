@@ -4,7 +4,7 @@
 
 namespace cl{
 	LoggerWindows::LoggerWindows(std::string tag){
-		this->tag = tag;
+		this->setTag(tag);
 	}
 	void LoggerWindows::log(LOG_LEVEL level, std::string logString){
 		std::unordered_map<LOG_LEVEL, std::string> logLevelString;
@@ -13,6 +13,6 @@ namespace cl{
 		logLevelString[LOG_WARN] = "WARN";
 		logLevelString[LOG_ERROR] = "ERROR";
 		logLevelString[LOG_FATAL] = "FATAL";
-		std::cout << tag << " " << logLevelString[level] << " " << logString << std::endl;
+		std::cout << this->getTag() << " " << logLevelString[level] << " " << logString << std::endl;
 	}
 }

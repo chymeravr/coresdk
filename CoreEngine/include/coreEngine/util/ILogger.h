@@ -20,6 +20,16 @@ namespace cl {
 	class ILogger {
 	public:
 		virtual void log(LOG_LEVEL level, std::string logString) = 0;
+
+		void setTag(std::string tag){
+			this->TAG = tag;
+		}
+
+		std::string  getTag(){
+			return this->TAG;
+		}
+	private:
+		std::string TAG;
 	};
 }
 #endif //LOGGER_H

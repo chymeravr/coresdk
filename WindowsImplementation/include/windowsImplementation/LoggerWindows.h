@@ -9,8 +9,7 @@ namespace cl{
 	public:
 		LoggerWindows(std::string tag);
 		void log(LOG_LEVEL level, std::string logString);
-	private:
-		std::string tag;
+		//std::string tag;
 	};
 }
 

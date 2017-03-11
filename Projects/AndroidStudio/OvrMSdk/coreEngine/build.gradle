@@ -55,10 +55,10 @@ android {
 
 }
 
-task clean(type: Delete) {
-    delete "${coreEngineModule}/build"
-    delete fileTree(dir: 'libs', include: '*.so')
-}
+//task clean(type: Delete) {
+//    delete "${coreEngineModule}/build"
+//    delete fileTree(dir: 'libs', include: '*.so')
+//}
 
 
 task distributeDebugLib (type : Copy) {

@@ -108,6 +108,6 @@ dependencies {
     testCompile 'junit:junit:4.12'
 }
 
-task clean(type: Delete) {
-    delete "${rootProject.rootDir}/appNoHmd/build"
-}
+//task clean(type: Delete) {
+//    delete "${rootProject.rootDir}/appNoHmd/build"
+//}

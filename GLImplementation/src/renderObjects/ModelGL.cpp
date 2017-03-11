@@ -37,6 +37,9 @@ namespace cl{
 	}
 
 	void ModelGL::draw(){
+		if (!this->getIsVisible()){
+			return;
+		}
 		ComponentList &componentList = getComponentList();
 		std::vector<IComponent*> components = componentList.getComponents();
 		for (auto it = components.cbegin(); it != components.cend(); it++) {

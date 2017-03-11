@@ -279,6 +279,13 @@ namespace cl{
 	void Image360::update(){
 		renderer->update();
 	}
+	void Image360::draw(EYE eye){
+		/*while (!eventQueue->empty()){
+			std::unique_ptr<IEvent> event = eventQueue->pop();
+			event->callListener();
+		}
+		*/renderer->draw(scene.get(), eye);
+	}
 	void Image360::draw(){
 		while (!eventQueue->empty()){
 			std::unique_ptr<IEvent> event = eventQueue->pop();
@@ -286,6 +293,7 @@ namespace cl{
 		}
 		renderer->draw(scene.get());
 	}
+
 	void Image360::deinitialize(){
 		renderer->deinitialize(scene.get());
 	}

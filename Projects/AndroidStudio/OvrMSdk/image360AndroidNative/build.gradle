@@ -25,7 +25,7 @@ android {
                 arguments = ['-DANDROID_STL=gnustl_shared', '-DANDROID_NATIVE_API_LEVEL=android-23']
 
                 cppFlags = ["-DGLES2_0", "-std=c++11", "-frtti", "-fexceptions", '-Wall', '-fno-exceptions',
-                            "-Wno-error=format-security"]
+                            '-Wno-error=format-security', '-Wno-unused-function']
 
                 abiFilters 'armeabi-v7a'
             }
@@ -66,10 +66,10 @@ android {
 //    into "${image360AndroidModule}/libs"
 //}
 
-task clean(type: Delete) {
-    delete "${rootProject.rootDir}/image360AndroidNative/build"
-    delete fileTree(dir: 'libs', include: '*.so')
-}
+//task clean(type: Delete) {
+//    delete "${rootProject.rootDir}/image360AndroidNative/build"
+//    delete fileTree(dir: 'libs', include: '*.so')
+//}
 
 tasks.whenTaskAdded { task ->
     if (task.name.contains('compileDebug')) {

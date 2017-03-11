@@ -41,6 +41,6 @@ dependencies {
     debugCompile project(path: ':adclient', configuration: 'debug')
 }
 
-task clean(type: Delete) {
-    delete "${rootProject.rootDir}/appGearVR/build"
-}
+//task clean(type: Delete) {
+//    delete "${rootProject.rootDir}/appGearVR/build"
+//}
