@@ -93,7 +93,7 @@ namespace cl{
 
 		int lastPassiveMousePositionX = -1;
 		int lastPassiveMousePositionY = -1;
-		float passiveMouseMotionSensitivity = 1.0f;
+		float passiveMouseMotionSensitivity = 0.35f;
 
 		std::string fontFolderPath = "";
 	};

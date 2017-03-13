@@ -309,11 +309,11 @@ namespace cl{
 		//logger->log(LOG_DEBUG, "Mouse move:" + std::to_string(x) + "," + std::to_string(y));
 		if (lastPassiveMousePositionX != -1){
 			float xoff = (x - lastPassiveMousePositionX)*passiveMouseMotionSensitivity;
-			float yoff = (lastPassiveMousePositionY - y)*passiveMouseMotionSensitivity;
+			float yoff = (y - lastPassiveMousePositionY)*passiveMouseMotionSensitivity;
 
 			TransformTreeCamera *transform = (TransformTreeCamera*)camera->getComponentList().getComponent("transformTree");
 			CL_Vec3 rotation = transform->getLocalRotation();
-			transform->setLocalRotation(CL_Vec3(rotation.x + yoff, rotation.y + xoff, rotation.z));
+			transform->setLocalRotation(CL_Vec3(rotation.x - yoff, rotation.y - xoff, rotation.z));
 		}
 		lastPassiveMousePositionX = x;
 		lastPassiveMousePositionY = y;

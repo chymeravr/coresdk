@@ -214,7 +214,7 @@ int _tmain(int argc, _TCHAR** argv)
 		case EQUIRECTANGULAR_MAP_MODE:
 			//textureImages.push_back(imageBMPLoader.loadImage("tex_current.bmp"));
 			//textureImages.push_back(imageJPEGLoader.loadImage("equirectangular_desert2.jpg"));
-			textureImages.push_back(imageJPEGLoader.loadImage("Witcher-BoatSunset-SmartPhone-360-Stereo-2016-05-03-22-13-08.jpg"));
+			textureImages.push_back(imageJPEGLoader.loadImage("360images\\WitnessSquare-Smartphone-360-Stereo-2016-05-04-00-11-48.jpg"));
 			//textureImages.push_back(imageJPEGLoader.loadImage("C:\\Users\\robin_chimera\\Documents\\SDK\\Projects\\VisualStudio\\Image360WindowsLauncher\\Debug\\Witcher-BoatSunset-SmartPhone-360-Stereo-2016-05-03-22-13-08.jpg"));
 			break;
 		}
