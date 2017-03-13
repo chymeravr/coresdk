@@ -19,12 +19,30 @@ namespace cl{
 		virtual CL_Vec2 getUVMap(CL_Vec3 vertex);
 		virtual CL_Vec2 getUVMap(float longitude, float latitude);
 
+		void setVMax(float vMax){ this->vMax = vMax;}
+		void setVMin(float vMin){ this->vMin = vMin;}
+
+		float getVMax(){ return this->vMax;}
+		float getVMin(){ return this->vMin;}
+
+		void setUMax(float uMax){ this->uMax = uMax;}
+		void setUMin(float uMin){ this->uMin = uMin;}
+
+		float getUMax(){ return this->uMax;}
+		float getUMin(){ return this->uMin;}
+
 	private:
 		CL_Vec3 getCartesianCoordinateFromThetaAndPhi(float phi, float theta);
 		unsigned int getIndex(unsigned int iPhi, unsigned int iTheta, unsigned int nThetaDivisions);
 
 		ModelModifier *modelModifier = nullptr;
 		float epsilon = 0.000001f;
+
+		float vMax = 1.0f;
+		float vMin = 0.0f;
+
+		float uMax = 1.0f;
+		float uMin = 0.0f;
 	};
 }
 

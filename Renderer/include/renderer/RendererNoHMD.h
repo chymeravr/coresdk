@@ -10,6 +10,7 @@ namespace cl{
 		bool initialize(Scene *scene);
 		void update();
 		void draw(Scene *scene);
+		void draw(Scene *scene, EYE eye);
 		void deinitialize(Scene *scene);
 		void stop();
 	};

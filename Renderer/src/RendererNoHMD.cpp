@@ -1,3 +1,4 @@
+
 #include <assert.h>
 #include <renderer/RendererNoHMD.h>
 #include <coreEngine/renderObjects/Camera.h>
@@ -63,6 +64,11 @@ namespace cl{
 			}
 		}
 	}
+
+	void RendererNoHMD::draw(Scene *scene, EYE eye){
+		return;
+	}
+
 	void RendererNoHMD::deinitialize(Scene *scene){
 		IRenderable *sceneRenderer = scene->getRenderable();
 		sceneRenderer->deinitialize();

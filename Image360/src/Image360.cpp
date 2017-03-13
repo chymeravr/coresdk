@@ -279,6 +279,13 @@ namespace cl{
 	void Image360::update(){
 		renderer->update();
 	}
+	void Image360::draw(EYE eye){
+		/*while (!eventQueue->empty()){
+			std::unique_ptr<IEvent> event = eventQueue->pop();
+			event->callListener();
+		}
+		*/renderer->draw(scene.get(), eye);
+	}
 	void Image360::draw(){
 		while (!eventQueue->empty()){
 			std::unique_ptr<IEvent> event = eventQueue->pop();
@@ -286,6 +293,7 @@ namespace cl{
 		}
 		renderer->draw(scene.get());
 	}
+
 	void Image360::deinitialize(){
 		renderer->deinitialize(scene.get());
 	}
@@ -301,11 +309,11 @@ namespace cl{
 		//logger->log(LOG_DEBUG, "Mouse move:" + std::to_string(x) + "," + std::to_string(y));
 		if (lastPassiveMousePositionX != -1){
 			float xoff = (x - lastPassiveMousePositionX)*passiveMouseMotionSensitivity;
-			float yoff = (lastPassiveMousePositionY - y)*passiveMouseMotionSensitivity;
+			float yoff = (y - lastPassiveMousePositionY)*passiveMouseMotionSensitivity;
 
 			TransformTreeCamera *transform = (TransformTreeCamera*)camera->getComponentList().getComponent("transformTree");
 			CL_Vec3 rotation = transform->getLocalRotation();
-			transform->setLocalRotation(CL_Vec3(rotation.x + yoff, rotation.y + xoff, rotation.z));
+			transform->setLocalRotation(CL_Vec3(rotation.x - yoff, rotation.y - xoff, rotation.z));
 		}
 		lastPassiveMousePositionX = x;
 		lastPassiveMousePositionY = y;

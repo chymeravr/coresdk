@@ -40,6 +40,6 @@ dependencies {
     compile 'com.android.volley:volley:1.0.0'
 }
 
-task clean(type: Delete) {
-    delete "${rootProject.rootDir}/common/build"
-}
+//task clean(type: Delete) {
+//    delete "${rootProject.rootDir}/common/build"
+//}

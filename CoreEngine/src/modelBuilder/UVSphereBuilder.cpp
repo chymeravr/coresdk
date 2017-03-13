@@ -32,15 +32,18 @@ namespace cl{
 			float uvy;
 			if (iPhi <= extraRowsPerPole){
 				currentPhi = lowerPhi + iPhi*(stepPhi / (extraRowsPerPole + 1));
-				uvy = (iPhi / (extraRowsPerPole + 1.0f)) * (1.0f / nPhiDivisions);
+				//uvy = (iPhi / (extraRowsPerPole + 1.0f)) * (1.0f / nPhiDivisions);
+				uvy = (iPhi / (extraRowsPerPole + 1.0f)) * ((vMax-vMin) / nPhiDivisions) + vMin;
 			}
 			else if (iPhi >= totalPhis - extraRowsPerPole){
 				currentPhi = lowerPhi + (totalPhis - (2.0f * extraRowsPerPole + 1)) * stepPhi + (iPhi - (totalPhis - (extraRowsPerPole + 1.0f)))*(stepPhi / (extraRowsPerPole + 1.0f));
-				uvy = 1.0f - 1.0f / nPhiDivisions + (iPhi - (totalPhis - extraRowsPerPole - 1.0f)) / (extraRowsPerPole + 1.0f) * 1.0f / nPhiDivisions;
+				float vMaxMinusMin = vMax-vMin;
+				uvy = vMaxMinusMin - vMaxMinusMin / nPhiDivisions + (iPhi - (totalPhis - extraRowsPerPole - vMaxMinusMin)) / (extraRowsPerPole + vMaxMinusMin) * vMaxMinusMin / nPhiDivisions + vMin;
 			}
 			else{
 				currentPhi = lowerPhi + (iPhi - extraRowsPerPole) * stepPhi;
-				uvy = ((iPhi - extraRowsPerPole) *1.0f) / nPhiDivisions;
+				//uvy = ((iPhi - extraRowsPerPole) *1.0f) / nPhiDivisions;
+				uvy = ((iPhi - extraRowsPerPole) *(vMax-vMin)) / nPhiDivisions + vMin;
 			}
 			currentTheta = lowerTheta;
 			for (unsigned int iTheta = 0; iTheta <= nThetaDivisions; iTheta++){
@@ -52,13 +55,13 @@ namespace cl{
 				vertices.push_back(CL_Vec3(cosphi*cosf(currentTheta), sinf(currentPhi), cosphi*sinf(currentTheta)));
 				CL_Vec2 uv;
 				if (iPhi == 0 || iPhi == totalPhis){
-					uv.x = 0.5f; //Using the middle value of texture. Helpful in getting just one seam as opposed to one seam per triangle at poles
+					uv.x = (uMax+uMin)/2; //Using the middle value of texture. Helpful in getting just one seam as opposed to one seam per triangle at poles
 				}
 				else if (iTheta == nThetaDivisions){
-					uv.x = 1.0f;
+					uv.x = uMax;
 				}
 				else{
-					uv.x = iTheta * 1.0f / nThetaDivisions;
+					uv.x = iTheta * (uMax-uMin) / nThetaDivisions + uMin;
 				}
 				uv.y = uvy;
 				uvs.push_back(uv);

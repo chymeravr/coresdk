@@ -52,6 +52,6 @@ dependencies {
 
 }
 
-task clean(type: Delete) {
-    delete "${rootProject.rootDir}/analytics/build"
-}
+//task clean(type: Delete) {
+//    delete "${rootProject.rootDir}/analytics/build"
+//}

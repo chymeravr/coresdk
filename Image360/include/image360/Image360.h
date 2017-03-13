@@ -25,8 +25,14 @@ namespace cl{
 		CUBE_MAP_MODE_SINGLE_IMAGE,
 		EQUIRECTANGULAR_MAP_MODE
 	};
+	enum IMAGE_MODE{
+		STEREO,
+		MONO
+	};
+	
 	class Image360 : public EventKeyPressListener, public EventPassiveMouseMotionListener{
 	public:
+		
 		Image360(std::unique_ptr<IRenderer> renderer, 
 				 std::unique_ptr<ISceneFactory> sceneFactory, 
 				 std::unique_ptr<IModelFactory> modelFactory, 
@@ -47,10 +53,11 @@ namespace cl{
 		* @arg mode: One of the values of enum TEXTURE_MAP_MODE - CUBE_MAP_MODE_SIX_IMAGES, CUBE_MAP_MODE_SINGLE_IMAGE, EQUIRECTANGULAR_MAP_MODE
 		* @arg textureImages: Images required to generate textures. In case of CUBE_MAP_MODE_SIX_IMAGES order of images should be FRONT, LEFT, BACK, RIGHT, TOP AND BOTTOM. In other cases just one image is required.
 		*/
-		void initialize(TEXTURE_MAP_MODE mode, std::vector<std::unique_ptr<Image>> &textureImages);
+		virtual void initialize(TEXTURE_MAP_MODE mode, std::vector<std::unique_ptr<Image>> &textureImages);
 		void update();
-		void draw();
-		void deinitialize();
+		virtual void draw();						// draw common stuff
+		virtual void draw(EYE eye);					// draw eye specific stuff - camera, models etc. 
+		void deinitialize();						// todo - this has to be a virtual function as well
 		void stop();
 		void onKeyPress(char key, int x, int y);
 		void onPassiveMouseMotion(int x, int y);
@@ -58,7 +65,7 @@ namespace cl{
 
 		std::unique_ptr<EventGazeListener> notifyMeListener;
 		std::unique_ptr<EventGazeListener> closeMeListener;
-	private:
+	protected:
 		std::unique_ptr<IRenderer> renderer;
 		std::unique_ptr<ILogger> logger;
 		std::unique_ptr<Scene> scene;
@@ -86,7 +93,7 @@ namespace cl{
 
 		int lastPassiveMousePositionX = -1;
 		int lastPassiveMousePositionY = -1;
-		float passiveMouseMotionSensitivity = 1.0f;
+		float passiveMouseMotionSensitivity = 0.35f;
 
 		std::string fontFolderPath = "";
 	};

@@ -32,6 +32,7 @@ namespace cl{
 		else{
 			glDisable(GL_BLEND);
 		}
+		//glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 		glGenVertexArrays(1, &vertexArrayId);
 		glBindVertexArray(vertexArrayId);
 		logger->log(LOG_INFO, "scene initialized");

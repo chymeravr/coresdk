@@ -26,9 +26,11 @@ set (INCLUDE_DIRS ${PROJECT_SOURCE_DIR}/include)
 
 set(SOURCES ${PROJECT_SOURCE_DIR}/src/ImageBMPLoaderAndroid.cpp
             ${PROJECT_SOURCE_DIR}/src/LoggerAndroid.cpp
+            ${PROJECT_SOURCE_DIR}/src/OVRUtils.cpp
             ${PROJECT_SOURCE_DIR}/src/RendererGearVR.cpp
             ${PROJECT_SOURCE_DIR}/src/CloseMeListenerAndroidGvr.cpp
-            ${PROJECT_SOURCE_DIR}/src/NotifyMeListenerAndroidGvr.cpp)
+            ${PROJECT_SOURCE_DIR}/src/NotifyMeListenerAndroidGvr.cpp
+            ${PROJECT_SOURCE_DIR}/src/RendererGearVRStereo.cpp)
 
 add_library(${PROJECT_NAME} SHARED ${INCLUDE_DIRS} ${SOURCES})
 
