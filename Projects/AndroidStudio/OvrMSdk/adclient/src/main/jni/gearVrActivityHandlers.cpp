@@ -383,15 +383,17 @@ void *AppThreadFunction(void *parm) {
             appThread->Application->initialize(mode, textureImages);
 
             appThread->Started = true;
-            appThread->Application->draw();
-//            appThread->Application->draw(cl::LEFT);
-//            appThread->Application->draw(cl::RIGHT);
+            appThread->Application->drawInit();
+            appThread->Application->draw(cl::LEFT);
+            appThread->Application->draw(cl::RIGHT);
+            appThread->Application->drawComplete();
         }
 
         if (appThread->Resumed) {
-            appThread->Application->draw();
-//            appThread->Application->draw(cl::LEFT);
-//            appThread->Application->draw(cl::RIGHT);
+            appThread->Application->drawInit();
+            appThread->Application->draw(cl::LEFT);
+            appThread->Application->draw(cl::RIGHT);
+            appThread->Application->drawComplete();
         }
 
     }

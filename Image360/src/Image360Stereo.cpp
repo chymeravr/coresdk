@@ -200,19 +200,16 @@ void Image360Stereo::initialize(TEXTURE_MAP_MODE mapMode, std::vector<std::uniqu
 
     renderer->initialize(scene.get());
 }
-void Image360Stereo::draw(){
+void Image360Stereo::drawInit(){
 	while (!eventQueue->empty()){
 		std::unique_ptr<IEvent> event = eventQueue->pop();
 		event->callListener();
 	}
-	renderer->draw(scene.get());
+	// Render objects common to both eyes
+	renderer->drawInit(scene.get());
 }
 
 void Image360Stereo::draw(EYE eye){
-	/*while (!eventQueue->empty()){
-		std::unique_ptr<IEvent> event = eventQueue->pop();
-		event->callListener();
-	}*/
 	auto rightContainer = (Model*)this->scene->getFromScene("imageContainerRight");
 	auto leftContainer = (Model*)this->scene->getFromScene("imageContainerLeft");
 
@@ -229,5 +226,9 @@ void Image360Stereo::draw(EYE eye){
 	}
 	renderer->draw(scene.get(), eye);
 }
+
+    void Image360Stereo::drawComplete(){
+		renderer->drawComplete();
+    }
 
 }

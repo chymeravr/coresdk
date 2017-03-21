@@ -55,9 +55,10 @@ namespace cl{
 		*/
 		virtual void initialize(TEXTURE_MAP_MODE mode, std::vector<std::unique_ptr<Image>> &textureImages);
 		void update();
-		virtual void draw();						// draw common stuff
+		virtual void drawInit();						// draw common stuff
 		virtual void draw(EYE eye);					// draw eye specific stuff - camera, models etc. 
-		void deinitialize();						// todo - this has to be a virtual function as well
+		virtual void drawComplete();
+		void deinitialize();							// todo - this has to be a virtual function as well
 		void stop();
 		void onKeyPress(char key, int x, int y);
 		void onPassiveMouseMotion(int x, int y);

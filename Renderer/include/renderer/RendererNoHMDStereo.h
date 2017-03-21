@@ -7,8 +7,9 @@
 namespace cl{
 	class RendererNoHMDStereo : public RendererNoHMD{
 	public:
-		void draw(Scene *scene);
+		void drawInit(Scene *scene);
 		void draw(Scene *scene, EYE eye);
+		void drawComplete();
 	};
 }
 

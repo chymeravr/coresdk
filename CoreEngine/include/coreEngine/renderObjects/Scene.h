@@ -33,19 +33,6 @@ namespace cl{
 		std::unique_ptr<ILogger> logger;
 		std::unordered_map<std::string, std::unique_ptr<IScenable> > scenableMap;
 	};
-	/*
-		class MaterialUniformColorGL : public MaterialUniformColor{
-		public:
-		IRenderable *getRenderable(){}
-		private:
-		MaterialUniformColor *material;
-		};
-
-		class SceneGL : public IRenderable{
-		Scene scene;
-		};
-
-		*/
 }
 
 #endif //COREENGIN_SCENE_H

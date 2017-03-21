@@ -37,8 +37,13 @@ namespace cl{
 		return true;
 	}
 	void RendererNoHMD::update(){
+		return;
 	}
-	void RendererNoHMD::draw(Scene *scene){
+	void RendererNoHMD::drawInit(Scene *scene){
+		return;
+	}
+
+	void RendererNoHMD::draw(Scene *scene, EYE eye){
 		IRenderable *sceneRenderer = scene->getRenderable();
 		sceneRenderer->draw();
 
@@ -65,8 +70,7 @@ namespace cl{
 		}
 	}
 
-	void RendererNoHMD::draw(Scene *scene, EYE eye){
-		return;
+	void RendererNoHMD::drawComplete(){
 	}
 
 	void RendererNoHMD::deinitialize(Scene *scene){
@@ -96,5 +100,6 @@ namespace cl{
 		}
 	}
 	void RendererNoHMD::stop(){
+		return;
 	}
 }

@@ -159,33 +159,46 @@ public final class ChymeraVrSdk {
     private static void copyAssets(Context context) {
         AssetManager assetManager = context.getAssets();
         String[] files = null;
-        try {
-            files = assetManager.list("fonts");
-        } catch (IOException e) {
-            Log.e("tag", "Failed to get asset file list.", e);
-        }
-        for(String filename : files) {
-            InputStream in = null;
-            OutputStream out = null;
+        String[] assets = new String[2];
+        assets[0] = "fonts";
+        assets[1] = "image360";
+
+        for(String folderName : assets) {
             try {
-                in = assetManager.open("fonts/" + filename);
+                files = assetManager.list(folderName);
+            } catch (IOException e) {
+                Log.e("tag", "Failed to get asset file list.", e);
+            }
+            for (String filename : files) {
+                InputStream in = null;
+                OutputStream out = null;
+                try {
 
-                File appPath = context.getFilesDir();
-                String appSdkPath = appPath + Util.addLeadingSlash(Config.getFontPath());
-                File dest_dir = new File(appSdkPath);
-                createDir(dest_dir);
+                    File appPath = context.getFilesDir();
+                    String appSdkPath = appPath + Util.addLeadingSlash(Config.getChymeraFolder())
+                            + Util.addLeadingSlash(folderName);
+                    File dest_dir = new File(appSdkPath);
 
-                File outFile = new File(dest_dir, filename);
-                Log.d(TAG, "Absolute font file path : " + outFile.getAbsolutePath());
-                out = new FileOutputStream(outFile);
-                copyFile(in, out);
+                    if(!dest_dir.exists()) {
+                        createDir(dest_dir);
+                    }
 
-                in.close();
+                    File outFile = new File(dest_dir, filename);
+                    Log.d(TAG, "Absolute font file path : " + outFile.getAbsolutePath());
 
-                out.flush();
-                out.close();
-            } catch(IOException e) {
-                Log.e("tag", "Failed to copy asset file: " + filename, e);
+                    if(!outFile.exists()) {
+                        in = assetManager.open(folderName + "/" + filename);
+                        out = new FileOutputStream(outFile);
+                        copyFile(in, out);
+
+                        in.close();
+
+                        out.flush();
+                        out.close();
+                    }
+                } catch (IOException e) {
+                    Log.e("tag", "Failed to copy asset file: " + filename, e);
+                }
             }
         }
         Log.v(TAG, "Copied Fonts Successfully");

@@ -3,6 +3,7 @@ package com.chymeravr.appgvr2;
 
 import android.app.Activity;
 import android.content.Context;
+import android.graphics.Bitmap;
 import android.location.Location;
 import android.media.AudioManager;
 import android.os.Bundle;
@@ -12,6 +13,9 @@ import android.view.MotionEvent;
 import android.view.SurfaceHolder;
 import android.view.SurfaceView;
 import android.view.WindowManager;
+import android.view.animation.AlphaAnimation;
+import android.view.animation.Animation;
+import android.widget.ImageView;
 
 import com.chymeravr.adclient.AdListener;
 import com.chymeravr.adclient.AdRequest;
@@ -35,7 +39,10 @@ public class GLES3JNIActivity extends Activity implements SurfaceHolder.Callback
 	private SurfaceHolder mSurfaceHolder;
 	private long mNativeHandle;
 
-	Image360Ad image360TestAd;
+    Animation anim;
+    ImageView fadeImage;
+
+    Image360Ad image360TestAd;
     public boolean isShowing = false;
 
 	private void adjustVolume(int direction)
@@ -49,6 +56,8 @@ public class GLES3JNIActivity extends Activity implements SurfaceHolder.Callback
 		Log.v( TAG, "----------------------------------------------------------------" );
 		Log.v( TAG, "GLES3JNIActivity::onCreate()" );
 		super.onCreate( icicle );
+        setContentView(R.layout.gl_context);
+
 
         ChymeraVrSdk.initialize(this, "89ec2db1-284e-44af-968e-0618103f89c8");
 
@@ -104,8 +113,11 @@ public class GLES3JNIActivity extends Activity implements SurfaceHolder.Callback
         this.image360TestAd.loadAd(adRequest);
 
 
-		mView = new SurfaceView( this );
-		setContentView( mView );
+		mView = (SurfaceView) findViewById(R.id.mView);//new SurfaceView( this );
+
+        fadeImage = (ImageView)findViewById(R.id.fadeview);
+
+        //setContentView( mView );
 		mView.getHolder().addCallback( this );
 
 		// Force the screen to stay on, rather than letting it dim and shut off
@@ -132,15 +144,20 @@ public class GLES3JNIActivity extends Activity implements SurfaceHolder.Callback
 	{
 		Log.v( TAG, "GLES3JNIActivity::onResume()" );
 		super.onResume();
-
+//        if(fadeImage != null) {
+//			//fadeImage = null;
+//            fadeImage.setAlpha(0.0f);
+//        }
+        fadeImage.setImageBitmap(null);
 		GLES3JNILib.onResume( mNativeHandle );
 	}
 
 	@Override protected void onPause()
 	{
 		Log.v( TAG, "GLES3JNIActivity::onPause()" );
-		GLES3JNILib.onPause( mNativeHandle );
-		super.onPause();
+        GLES3JNILib.onPause( mNativeHandle );
+        GLES3JNIActivity.super.onPause();
+
 	}
 
 	@Override protected void onStop()
@@ -164,7 +181,7 @@ public class GLES3JNIActivity extends Activity implements SurfaceHolder.Callback
 
 	@Override public void surfaceCreated( SurfaceHolder holder )
 	{
-		Log.v( TAG, "GLES3JNIActivity::surfaceCreated()" );
+        Log.v( TAG, "GLES3JNIActivity::surfaceCreated()" );
 		if ( mNativeHandle != 0 )
 		{
 			GLES3JNILib.onSurfaceCreated( mNativeHandle, holder.getSurface() );
@@ -217,13 +234,49 @@ public class GLES3JNIActivity extends Activity implements SurfaceHolder.Callback
             if ( keyCode == KeyEvent.KEYCODE_VOLUME_UP )
             {
                 adjustVolume( 1 );
-                if (this.image360TestAd.isLoaded() && !this.isShowing) {
+                //if (this.image360TestAd.isLoaded()){// && !this.isShowing) {
                     Log.d(TAG, "Going to show u an ad now . . . .");
-                    this.isShowing = true;
-                    this.image360TestAd.show();
-                } else {
-                    Log.d(TAG, "No Ad Loaded!! Try again after some time.");
-                }
+                    //this.isShowing = true;
+
+
+                //fadeImage.setAlpha(0.0f);
+                    Bitmap image = Bitmap.createBitmap(fadeImage.getWidth(), fadeImage.getHeight(), Bitmap.Config.ARGB_8888);
+                    image.eraseColor(android.graphics.Color.BLACK);
+
+				fadeImage.setImageBitmap(image);
+
+                    anim = new AlphaAnimation(0.0f, 1.0f);
+                    anim.setDuration(1500);
+                    anim.setRepeatCount(0);
+
+                    anim.setAnimationListener(new Animation.AnimationListener() {
+
+                        @Override
+                        public void onAnimationStart(Animation animation) {
+                            // TODO Auto-generated method stub
+
+                        }
+
+                        @Override
+                        public void onAnimationRepeat(Animation animation) {
+                            // TODO Auto-generated method stub
+
+                        }
+
+                        @Override
+                        public void onAnimationEnd(Animation animation) {
+                            Log.d(TAG, "VISIBILITY IS GONE");
+                            //mView.setVisibility(View.INVISIBLE);
+                            GLES3JNIActivity.this.image360TestAd.show();
+                        }
+                    });
+
+				fadeImage.startAnimation(anim);
+                    //setContentView(mView);
+                    //this.image360TestAd.show();
+//                } else {
+//                    Log.d(TAG, "No Ad Loaded!! Try again after some time.");
+//                }
                 return true;
             }
 

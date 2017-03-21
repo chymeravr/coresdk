@@ -19,7 +19,10 @@ public class Config {
     public static final String osId = "Android";
 
     @Getter
-    static final String fontPath = "chymeraSDKAssets/fonts/";
+    static final String fontPath =                        "chymeraSDKAssets/fonts/";
+
+    @Getter
+    static final String chymeraFolder =                   "chymeraSDKAssets/";
 
     public static final String Image360AdAssetDirectory = "chymeraSDKAssets/image360/";
 

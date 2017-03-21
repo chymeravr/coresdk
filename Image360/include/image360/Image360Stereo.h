@@ -40,8 +40,9 @@ class Image360Stereo : public Image360
 		std::string fontFolderPath);
 	void initialize(TEXTURE_MAP_MODE mapMode, std::vector<std::unique_ptr<Image>> &textureImages);
 
-	void draw();
+	void drawInit();
 	void draw(EYE eye);
+	void drawComplete();
   private:
     void extractTexture(Image *image, EYE eye);
     Shader *stereoShader;
