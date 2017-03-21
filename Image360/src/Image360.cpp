@@ -284,14 +284,19 @@ namespace cl{
 			std::unique_ptr<IEvent> event = eventQueue->pop();
 			event->callListener();
 		}
-		*/renderer->draw(scene.get(), eye);
+		*/
+		renderer->draw(scene.get(), eye);
 	}
-	void Image360::draw(){
+	void Image360::drawInit(){
 		while (!eventQueue->empty()){
 			std::unique_ptr<IEvent> event = eventQueue->pop();
 			event->callListener();
 		}
-		renderer->draw(scene.get());
+		renderer->drawInit(scene.get());
+	}
+
+	void Image360::drawComplete(){
+		renderer->drawComplete();
 	}
 
 	void Image360::deinitialize(){

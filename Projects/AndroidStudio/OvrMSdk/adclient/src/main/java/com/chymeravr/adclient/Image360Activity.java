@@ -10,6 +10,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.res.AssetManager;
+import android.graphics.Bitmap;
 import android.net.Uri;
 import android.os.Bundle;
 import android.support.v4.app.NotificationCompat;
@@ -20,7 +21,11 @@ import android.view.MotionEvent;
 import android.view.Surface;
 import android.view.SurfaceHolder;
 import android.view.SurfaceView;
+import android.view.View;
 import android.view.WindowManager;
+import android.view.animation.AlphaAnimation;
+import android.view.animation.Animation;
+import android.widget.ImageView;
 
 import com.chymeravr.analytics.AnalyticsManager;
 import com.chymeravr.common.Config;
@@ -48,6 +53,9 @@ public final class Image360Activity extends Activity implements SurfaceHolder.Ca
     private SurfaceView mView;
     private SurfaceHolder mSurfaceHolder;
     private long mNativeHandle;
+
+    private Animation anim;
+    private ImageView v;
 
     private String clickUrl;
 
@@ -130,6 +138,8 @@ public final class Image360Activity extends Activity implements SurfaceHolder.Ca
     protected void onCreate(Bundle icicle) {
         Log.d(TAG, "onCreate()");
         super.onCreate(icicle);
+        setContentView(R.layout.gl_context);
+        //overridePendingTransition(R.anim.image360fadein, R.anim.image360fadeout);
 
         // Fetch url to show when user clicks
         Intent intent = getIntent();
@@ -152,8 +162,9 @@ public final class Image360Activity extends Activity implements SurfaceHolder.Ca
         this.mNativeHandle = this.onCreateNative(this, basePath, imageAdFilePath, mgr);
 
         // We draw everything in a surface embedded within the activity layout
-        this.mView = new SurfaceView(this);
-        this.setContentView(mView);
+        //this.mView = new SurfaceView(this);
+        this.mView = (SurfaceView) findViewById(R.id.mView);
+        //this.setContentView(mView);
         this.mView.getHolder().addCallback(this);
 
         // Force the screen to stay on, rather than letting it dim and shut off
@@ -278,24 +289,6 @@ public final class Image360Activity extends Activity implements SurfaceHolder.Ca
                     break;
             }
             return true;
-
-//            if ( keyCode == KeyEvent.KEYCODE_VOLUME_UP )
-//            {
-//                Intent intent = new Intent("finishAd");
-//                LocalBroadcastManager.getInstance(this).sendBroadcast(intent);
-//                return true;
-//            }
-//            if ( keyCode == KeyEvent.KEYCODE_VOLUME_DOWN )
-//            {
-//                notifyUser();
-//                return true;
-//            }
-            // what do we do if user pressed back button?
-//            if (keyCode == KeyEvent.KEYCODE_BACK) {
-//                Intent intent = new Intent("finishAd");
-//                LocalBroadcastManager.getInstance(this).sendBroadcast(intent);
-//                return true;
-//            }
         }
 
         return false;
@@ -322,11 +315,11 @@ public final class Image360Activity extends Activity implements SurfaceHolder.Ca
                 case NOTIFY_ME:
                     Log.d(TAG, "Notifying Me");
                     notifyUser();
+                    exit();
                     break;
                 case CLOSE_AD:
                     Log.d(TAG, "Closing This Ad ");
-                    Intent intent = new Intent("finishAd");
-                    LocalBroadcastManager.getInstance(this).sendBroadcast(intent);
+                    exit();
                     break;
             }
             return true;
@@ -375,5 +368,43 @@ public final class Image360Activity extends Activity implements SurfaceHolder.Ca
 
             this.emitEvent(EventType.AD_VIEW_METRICS, AnalyticsManager.Priority.LOW, hmdEyeMap);
         }
+    }
+
+    public void exit(){
+        v = (ImageView)findViewById(R.id.fadeview);
+
+        Bitmap image = Bitmap.createBitmap(v.getWidth(), v.getHeight(), Bitmap.Config.ARGB_8888);
+        image.eraseColor(android.graphics.Color.BLACK);
+
+        v.setImageBitmap(image);
+
+        anim = new AlphaAnimation(0.0f, 1.0f);
+        anim.setDuration(1500);
+        anim.setRepeatCount(0);
+
+        anim.setAnimationListener(new Animation.AnimationListener() {
+
+            @Override
+            public void onAnimationStart(Animation animation) {
+                // TODO Auto-generated method stub
+
+            }
+
+            @Override
+            public void onAnimationRepeat(Animation animation) {
+                // TODO Auto-generated method stub
+
+            }
+
+            @Override
+            public void onAnimationEnd(Animation animation) {
+                Log.d(TAG, "VISIBILITY IS GONE");
+                mView.setVisibility(View.GONE);
+                Intent intent = new Intent("finishAd");
+                LocalBroadcastManager.getInstance(Image360Activity.this).sendBroadcast(intent);
+            }
+        });
+
+        v.startAnimation(anim);
     }
 }

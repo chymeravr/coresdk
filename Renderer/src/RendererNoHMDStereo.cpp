@@ -7,7 +7,7 @@
 #include <coreEngine/renderObjects/Model.h>
 
 namespace cl{
-	void RendererNoHMDStereo::draw(Scene *scene){
+	void RendererNoHMDStereo::drawInit(Scene *scene){
 		IRenderable *sceneRenderer = scene->getRenderable();
 		sceneRenderer->draw();
 	}
@@ -37,5 +37,8 @@ namespace cl{
 				}
 			}
 		}
+	}
+
+	void RendererNoHMDStereo::drawComplete(){
 	}
 }

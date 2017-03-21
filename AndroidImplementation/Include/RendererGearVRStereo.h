@@ -215,10 +215,10 @@ static void GLCheckErrors( int line )
         GLuint *				FrameBuffers;
     } ovrFramebuffer;
 
-    typedef struct
-    {
-        ovrVector3f			CurrentRotation;
-    } ovrSimulation;
+//    typedef struct
+//    {
+//        ovrVector3f			CurrentRotation;
+//    } ovrSimulation;
 
     typedef struct
     {
@@ -243,35 +243,30 @@ static void GLCheckErrors( int line )
         OpenGLExtensions_t glExtensions;
         ovrEgl eglParams;
         ovrRenderer OVRRenderer;
-        ovrSimulation OVRSimulation;
 
         bool useMultiView;
         long long frameIndex;
         int minimumVSyncs;
 
-        //CameraGLOVR* renderCamera;
         CameraGL* renderCamera;
 
+        ovrFrameParms *frameParmeters;
         ILoggerFactory *loggerFactory;
-
-//    protected:
-//        static void toEulerianAngle(const ovrQuatf& q, float& roll, float& pitch, float& yaw);
-//        static CL_Vec3 getCameraLocation(const ovrHeadModelParms * headModelParms, const int eye);
-
+        unsigned long long completionFence[VRAPI_FRAME_LAYER_EYE_MAX];
 
     public:
         RendererGearVRStereo(JNIEnv *env, jobject activityObject, ILoggerFactory* loggerFactory);
         bool start();
         bool initialize(Scene* scene);
         void update();
-        void draw(Scene* scene);
+        void drawInit(Scene* scene);
         void draw(Scene* scene, EYE eye);
+        void drawComplete();
         void deinitialize(Scene* scene);
         void stop();
         void setWindow(ANativeWindow *window);
         ANativeWindow* getWindow();
         ovrMobile* getOvr();
-//    private:
         void enterIntoVrMode();
         void leaveVrMode();
         void handleVrModeChanges(bool resumed);

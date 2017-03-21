@@ -9,8 +9,9 @@ namespace cl{
 		bool start();
 		bool initialize(Scene *scene);
 		void update();
-		void draw(Scene *scene);
+		void drawInit(Scene *scene);
 		void draw(Scene *scene, EYE eye);
+		void drawComplete();
 		void deinitialize(Scene *scene);
 		void stop();
 	};

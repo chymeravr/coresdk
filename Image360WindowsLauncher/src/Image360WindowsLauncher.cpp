@@ -1,6 +1,10 @@
 // TestAppWindowsLauncher.cpp : Defines the entry point for the console application.
 //
 
+#define _CRTDBG_MAP_ALLOC
+#include <stdlib.h>
+#include <crtdbg.h>
+
 #include "stdafx.h"
 #include <iostream>
 
@@ -62,52 +66,55 @@ Threading and mutex from here https://msdn.microsoft.com/en-us/library/windows/d
 Glut tutorial http://www.lighthouse3d.com/tutorials/glut-tutorial/
 */
 
-std::unique_ptr<Image360> application;
-std::unique_ptr<ILogger> logger;
-std::unique_ptr<IEventQueue> eventQueue = nullptr;
 
-//enum APPLICATION_MODE { MONO, STEREO };
-
-void key_callback(GLFWwindow* window, int key, int scancode, int action, int mode)
-{
-	
-	if (key == GLFW_KEY_ESCAPE && action == GLFW_PRESS)
-	{
-		glfwSetWindowShouldClose(window, GL_TRUE);
-	}
-	else{
-		std::unique_ptr<IEvent> keyPressEvent(new EventKeyPress((EventKeyPressListener*)(Image360*)application.get(), key, action, mode));
-		eventQueue->push(std::move(keyPressEvent));
-	}
-	
-}
-
-void mouse_pos_callback(GLFWwindow* window, double mouseXPos, double mouseYPos)
-{
-	std::unique_ptr<IEvent> mousePassiveEvent(new EventPassiveMouseMotion((EventPassiveMouseMotionListener*)(Image360*)application.get(), mouseXPos, mouseYPos));
-	eventQueue->push(std::move(mousePassiveEvent));
-}
-
-void mouse_button_callback(GLFWwindow* window, int button, int action, int mods)
-{
-	std::cout << "Mouse Clicked " << std::endl;
-	if (button == GLFW_MOUSE_BUTTON_LEFT && action == GLFW_PRESS)
-	{
-		if (application->notifyMeListener->inFocus()){
-			std::cout << "Notification Pressed" << std::endl;
-		}
-		else if (application->closeMeListener->inFocus()){
-			std::cout << "Close Box Pressed" << std::endl;
-			glfwSetWindowShouldClose(window, GL_TRUE);
-		}
-	}
-}
-
-// Window dimensions
-const int WIDTH = 1600, HEIGHT = 1000;
 
 int _tmain(int argc, _TCHAR** argv)
 {
+
+	std::unique_ptr<Image360> application;
+	std::unique_ptr<ILogger> logger;
+	std::unique_ptr<IEventQueue> eventQueue = nullptr;
+
+	//enum APPLICATION_MODE { MONO, STEREO };
+
+	void key_callback(GLFWwindow* window, int key, int scancode, int action, int mode)
+	{
+
+		if (key == GLFW_KEY_ESCAPE && action == GLFW_PRESS)
+		{
+			glfwSetWindowShouldClose(window, GL_TRUE);
+		}
+		else{
+			std::unique_ptr<IEvent> keyPressEvent(new EventKeyPress((EventKeyPressListener*)(Image360*)application.get(), key, action, mode));
+			eventQueue->push(std::move(keyPressEvent));
+		}
+
+	}
+
+	void mouse_pos_callback(GLFWwindow* window, double mouseXPos, double mouseYPos)
+	{
+		std::unique_ptr<IEvent> mousePassiveEvent(new EventPassiveMouseMotion((EventPassiveMouseMotionListener*)(Image360*)application.get(), mouseXPos, mouseYPos));
+		eventQueue->push(std::move(mousePassiveEvent));
+	}
+
+	void mouse_button_callback(GLFWwindow* window, int button, int action, int mods)
+	{
+		std::cout << "Mouse Clicked " << std::endl;
+		if (button == GLFW_MOUSE_BUTTON_LEFT && action == GLFW_PRESS)
+		{
+			if (application->notifyMeListener->inFocus()){
+				std::cout << "Notification Pressed" << std::endl;
+			}
+			else if (application->closeMeListener->inFocus()){
+				std::cout << "Close Box Pressed" << std::endl;
+				glfwSetWindowShouldClose(window, GL_TRUE);
+			}
+		}
+	}
+
+	// Window dimensions
+	const int WIDTH = 1600, HEIGHT = 1000;
+
 	char ** argvTyped = (char **)argv;
 	glfwInit();
 	// Set all the required options for GLFW
@@ -169,8 +176,8 @@ int _tmain(int argc, _TCHAR** argv)
 		std::move(uiTransformTreeFactory), std::move(textMaterialFactory)));
 
 	std::unique_ptr<IEventGazeListenerFactory> eventGazeListenerFactory(new GazeListenerFactoryWindows(loggerFactory.get()));
-	//std::string fontFilePath = "C:\\Users\\robin_chimera\\Documents\\SDK\\Projects\\VisualStudio\\Image360WindowsLauncher\\Debug\\fonts\\arial.ttf";
-	std::string fontFilePath = "fonts/arial.ttf";
+	std::string fontFilePath = "C:\\Users\\robin_chimera\\Documents\\SDK\\Projects\\VisualStudio\\Image360WindowsLauncher\\Debug\\fonts\\arial.ttf";
+	//std::string fontFilePath = "fonts/arial.ttf";
 
 	IMAGE_MODE appMode = STEREO; //MONO;
 	
@@ -214,8 +221,8 @@ int _tmain(int argc, _TCHAR** argv)
 		case EQUIRECTANGULAR_MAP_MODE:
 			//textureImages.push_back(imageBMPLoader.loadImage("tex_current.bmp"));
 			//textureImages.push_back(imageJPEGLoader.loadImage("equirectangular_desert2.jpg"));
-			textureImages.push_back(imageJPEGLoader.loadImage("360images\\WitnessSquare-Smartphone-360-Stereo-2016-05-04-00-11-48.jpg"));
-			//textureImages.push_back(imageJPEGLoader.loadImage("C:\\Users\\robin_chimera\\Documents\\SDK\\Projects\\VisualStudio\\Image360WindowsLauncher\\Debug\\Witcher-BoatSunset-SmartPhone-360-Stereo-2016-05-03-22-13-08.jpg"));
+			//textureImages.push_back(imageJPEGLoader.loadImage("360images\\WitnessSquare-Smartphone-360-Stereo-2016-05-04-00-11-48.jpg"));
+			textureImages.push_back(imageJPEGLoader.loadImage("C:\\Users\\robin_chimera\\Documents\\SDK\\Projects\\VisualStudio\\Image360WindowsLauncher\\Debug\\360images\\Witcher-BoatSunset-SmartPhone-360-Stereo-2016-05-03-22-13-08.jpg"));
 			break;
 		}
 
@@ -234,7 +241,7 @@ int _tmain(int argc, _TCHAR** argv)
 			glfwPollEvents();
 
 			glViewport(0, 0, width, height);
-			application->draw();
+			application->drawInit();
 
 			//glEnable(GL_SCISSOR_TEST);
 
@@ -246,12 +253,16 @@ int _tmain(int argc, _TCHAR** argv)
 			//glScissor(0, 0, width , height);
 			application->draw(RIGHT);
 
+			application->drawComplete();
+
 			// Swap the screen buffers
 			glfwSwapBuffers(window);
 		}
 
 		application->stop();
 		application->deinitialize();
+
+		_CrtSetDbgFlag(_CRTDBG_ALLOC_MEM_DF | _CRTDBG_LEAK_CHECK_DF);
 
 		// Terminate GLFW, clearing any resources allocated by GLFW.
 		glfwTerminate();
@@ -314,7 +325,7 @@ int _tmain(int argc, _TCHAR** argv)
 		// Check if any events have been activiated (key pressed, mouse moved etc.) and call corresponding response functions
 		glfwPollEvents();
 
-		application->draw();
+		application->drawInit();
 
 		// Swap the screen buffers
 		glfwSwapBuffers(window);
@@ -324,9 +335,12 @@ int _tmain(int argc, _TCHAR** argv)
 	application->deinitialize();
 
 	// Terminate GLFW, clearing any resources allocated by GLFW.
+	_CrtSetDbgFlag(_CRTDBG_ALLOC_MEM_DF | _CRTDBG_LEAK_CHECK_DF);
+
 	glfwTerminate();
 }
 	
+	_CrtSetDbgFlag(_CRTDBG_ALLOC_MEM_DF | _CRTDBG_LEAK_CHECK_DF);
 
 	return 1;
 }
