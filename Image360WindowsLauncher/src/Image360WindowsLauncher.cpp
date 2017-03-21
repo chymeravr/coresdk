@@ -66,55 +66,52 @@ Threading and mutex from here https://msdn.microsoft.com/en-us/library/windows/d
 Glut tutorial http://www.lighthouse3d.com/tutorials/glut-tutorial/
 */
 
+std::unique_ptr<Image360> application;
+std::unique_ptr<ILogger> logger;
+std::unique_ptr<IEventQueue> eventQueue = nullptr;
 
+//enum APPLICATION_MODE { MONO, STEREO };
+
+void key_callback(GLFWwindow* window, int key, int scancode, int action, int mode)
+{
+	
+	if (key == GLFW_KEY_ESCAPE && action == GLFW_PRESS)
+	{
+		glfwSetWindowShouldClose(window, GL_TRUE);
+	}
+	else{
+		std::unique_ptr<IEvent> keyPressEvent(new EventKeyPress((EventKeyPressListener*)(Image360*)application.get(), key, action, mode));
+		eventQueue->push(std::move(keyPressEvent));
+	}
+	
+}
+
+void mouse_pos_callback(GLFWwindow* window, double mouseXPos, double mouseYPos)
+{
+	std::unique_ptr<IEvent> mousePassiveEvent(new EventPassiveMouseMotion((EventPassiveMouseMotionListener*)(Image360*)application.get(), mouseXPos, mouseYPos));
+	eventQueue->push(std::move(mousePassiveEvent));
+}
+
+void mouse_button_callback(GLFWwindow* window, int button, int action, int mods)
+{
+	std::cout << "Mouse Clicked " << std::endl;
+	if (button == GLFW_MOUSE_BUTTON_LEFT && action == GLFW_PRESS)
+	{
+		if (application->notifyMeListener->inFocus()){
+			std::cout << "Notification Pressed" << std::endl;
+		}
+		else if (application->closeMeListener->inFocus()){
+			std::cout << "Close Box Pressed" << std::endl;
+			glfwSetWindowShouldClose(window, GL_TRUE);
+		}
+	}
+}
+
+// Window dimensions
+const int WIDTH = 1600, HEIGHT = 1000;
 
 int _tmain(int argc, _TCHAR** argv)
 {
-
-	std::unique_ptr<Image360> application;
-	std::unique_ptr<ILogger> logger;
-	std::unique_ptr<IEventQueue> eventQueue = nullptr;
-
-	//enum APPLICATION_MODE { MONO, STEREO };
-
-	void key_callback(GLFWwindow* window, int key, int scancode, int action, int mode)
-	{
-
-		if (key == GLFW_KEY_ESCAPE && action == GLFW_PRESS)
-		{
-			glfwSetWindowShouldClose(window, GL_TRUE);
-		}
-		else{
-			std::unique_ptr<IEvent> keyPressEvent(new EventKeyPress((EventKeyPressListener*)(Image360*)application.get(), key, action, mode));
-			eventQueue->push(std::move(keyPressEvent));
-		}
-
-	}
-
-	void mouse_pos_callback(GLFWwindow* window, double mouseXPos, double mouseYPos)
-	{
-		std::unique_ptr<IEvent> mousePassiveEvent(new EventPassiveMouseMotion((EventPassiveMouseMotionListener*)(Image360*)application.get(), mouseXPos, mouseYPos));
-		eventQueue->push(std::move(mousePassiveEvent));
-	}
-
-	void mouse_button_callback(GLFWwindow* window, int button, int action, int mods)
-	{
-		std::cout << "Mouse Clicked " << std::endl;
-		if (button == GLFW_MOUSE_BUTTON_LEFT && action == GLFW_PRESS)
-		{
-			if (application->notifyMeListener->inFocus()){
-				std::cout << "Notification Pressed" << std::endl;
-			}
-			else if (application->closeMeListener->inFocus()){
-				std::cout << "Close Box Pressed" << std::endl;
-				glfwSetWindowShouldClose(window, GL_TRUE);
-			}
-		}
-	}
-
-	// Window dimensions
-	const int WIDTH = 1600, HEIGHT = 1000;
-
 	char ** argvTyped = (char **)argv;
 	glfwInit();
 	// Set all the required options for GLFW
