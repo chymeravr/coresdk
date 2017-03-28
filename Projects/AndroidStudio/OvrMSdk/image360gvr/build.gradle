@@ -1,0 +1,124 @@
+apply plugin: 'com.android.library'
+
+def image360GvrModule = "${rootProject.rootDir}/image360gvr"
+def distributionDir = "${rootProject.rootDir}/distribution"
+
+android {
+    compileSdkVersion 24
+    buildToolsVersion "25.0.0"
+
+    defaultConfig {
+        minSdkVersion 19
+        targetSdkVersion 24
+        versionCode 1
+        versionName "1.0"
+
+        externalNativeBuild {
+            cmake {
+                // when using arguments, the latest (cmake version 3.6+, android studio
+                // beta2+) must be used to compile
+
+                // I have to use gcc to compile, clang compiled code generate error
+                // at run time for any std::queue etc.
+                targets 'Image360Gvr'
+                arguments = ['-DANDROID_STL=gnustl_shared', '-DANDROID_NATIVE_API_LEVEL=android-24']
+
+                cppFlags = ["-DGLES2_0", "-std=c++11", "-frtti", "-fexceptions", '-Wall', '-fno-exceptions',
+                            '-Wno-error=format-security', '-Wno-unused-function', '-Wno-unused-variable']
+
+                abiFilters = ['armeabi-v7a', 'arm64-v8a', 'x86']
+            }
+        }
+    }
+    buildTypes {
+        debug{
+            minifyEnabled false
+            jniDebuggable true
+        }
+        release {
+            minifyEnabled false
+            proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
+        }
+    }
+
+    externalNativeBuild {
+        cmake {
+            path '../../../../GVRAndroidImplementation/CMakeLists.txt'
+        }
+    }
+
+    sourceSets {
+        main {
+            jniLibs.srcDirs = ["${distributionDir}/coreEngine", "${distributionDir}/glImplementation",
+                               "${distributionDir}/renderer", "${distributionDir}/image360"]
+        }
+    }
+}
+
+tasks.whenTaskAdded { task ->
+    if (task.name.contains('compileDebug')) {
+        task.dependsOn([':coreEngine:distributeDebugLib', ':glImplementation:distributeDebugLib',
+                        ':renderer:distributeDebugLib', ':image360:distributeDebugLib'])
+    }
+    else if(task.name.contains('compileRelease')) {
+        task.dependsOn([':coreEngine:distributeReleaseLib', ':glImplementation:distributeReleaseLib',
+                        ':renderer:distributeReleaseLib', ':image360:distributeReleaseLib'])
+    }
+}
+
+/*
+task distributeDebugLib (type : Copy) {
+    // trigger build library
+    dependsOn "assembleDebug"
+    from "${image360GvrModule}/build/intermediates/cmake/debug/obj/armeabi-v7a/libImage360Gvr.so"
+    into "${distributionDir}/image360Gvr/armeabi-v7a/"
+
+}
+
+task(distributeReleaseLib, type : Copy) {
+    // trigger build library
+    dependsOn "assembleRelease"
+    from "${image360GvrModule}/build/intermediates/cmake/release/obj/armeabi-v7a/libImage360Gvr.so"
+    into "${distributionDir}/image360Gvr/armeabi-v7a/"
+}
+*/
+task distributeDebugLib << {
+    // trigger build library
+    //dependsOn "assembleRelease"
+    copy {
+        from "${image360GvrModule}/build/intermediates/cmake/debug/obj/armeabi-v7a/libImage360Gvr.so"
+        into "${distributionDir}/image360Gvr/armeabi-v7a/"
+    }
+
+    copy {
+        from "${image360GvrModule}/build/intermediates/cmake/debug/obj/arm64-v8a/libImage360Gvr.so"
+        into "${distributionDir}/image360Gvr/arm64-v8a/"
+    }
+
+    copy {
+        from "${image360GvrModule}/build/intermediates/cmake/debug/obj/x86/libImage360Gvr.so"
+        into "${distributionDir}/image360Gvr/x86/"
+    }
+}
+
+task distributeReleaseLib << {
+    // trigger build library
+    //dependsOn "assembleRelease"
+    copy {
+        from "${image360GvrModule}/build/intermediates/cmake/release/obj/armeabi-v7a/libImage360Gvr.so"
+        into "${distributionDir}/image360Gvr/armeabi-v7a/"
+    }
+
+    copy {
+        from "${image360GvrModule}/build/intermediates/cmake/release/obj/arm64-v8a/libImage360Gvr.so"
+        into "${distributionDir}/image360Gvr/arm64-v8a/"
+    }
+
+    copy {
+        from "${image360GvrModule}/build/intermediates/cmake/release/obj/x86/libImage360Gvr.so"
+        into "${distributionDir}/image360Gvr/x86/"
+    }
+}
+
+build.dependsOn(':extractNdk')
+build.finalizedBy(distributeDebugLib)

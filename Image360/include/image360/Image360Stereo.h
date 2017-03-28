@@ -24,27 +24,36 @@ namespace cl
 class Image360Stereo : public Image360
 {
   public:
-    
-	Image360Stereo(std::unique_ptr<IRenderer> renderer,
-		std::unique_ptr<ISceneFactory> sceneFactory,
-		std::unique_ptr<IModelFactory> modelFactory,
-		std::unique_ptr<IDiffuseTextureFactory> diffuseTextureFactory,
-		std::unique_ptr<IDiffuseTextureCubeMapFactory> diffuseTextureCubeMapFactory,
-		std::unique_ptr<ITransformTreeFactory> transformTreeFactory,
-		std::unique_ptr<ICameraFactory> cameraFactory,
-		IEventQueue * eventQueue,
-		ILoggerFactory * loggerFactory,
-		std::unique_ptr<UIFactory> uiFactory,
-		std::unique_ptr<GazeDetectorFactory> gazeDetectorFactory,
-		std::unique_ptr<IEventGazeListenerFactory> eventGazeListenerFactory,
-		std::string fontFolderPath);
-	void initialize(TEXTURE_MAP_MODE mapMode, std::vector<std::unique_ptr<Image>> &textureImages);
+    Image360Stereo(std::unique_ptr<IRenderer> renderer,
+		   std::unique_ptr<ISceneFactory> sceneFactory,
+		   std::unique_ptr<IModelFactory> modelFactory,
+		   std::unique_ptr<IDiffuseTextureFactory> diffuseTextureFactory,
+		   std::unique_ptr<IDiffuseTextureCubeMapFactory> diffuseTextureCubeMapFactory,
+		   std::unique_ptr<ITransformTreeFactory> transformTreeFactory,
+		   std::unique_ptr<ICameraFactory> cameraFactory,
+		   IEventQueue *eventQueue,
+		   ILoggerFactory *loggerFactory,
+		   std::unique_ptr<UIFactory> uiFactory,
+		   std::unique_ptr<GazeDetectorFactory> gazeDetectorFactory,
+		   std::unique_ptr<IEventGazeListenerFactory> eventGazeListenerFactory,
+		   std::string fontFolderPath);
 
-	void drawInit();
-	void draw(EYE eye);
-	void drawComplete();
+    ~Image360Stereo();
+
+    void start();
+    void stop();
+
+    void initialize(TEXTURE_MAP_MODE mapMode, std::vector<std::unique_ptr<Image>> &textureImages);
+    void deinitialize();
+    void drawInit();
+    void draw(EYE eye);
+    void drawComplete();
+    void pause();
+    void resume();
+
+
   private:
-    void extractTexture(Image *image, EYE eye);
+    //void extractTexture(Image *image, EYE eye);
     Shader *stereoShader;
     Material *stereoMaterial;
     Texture *stereoImageTexture;

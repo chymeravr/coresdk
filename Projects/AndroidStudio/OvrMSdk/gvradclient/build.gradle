@@ -1,0 +1,112 @@
+apply plugin: 'com.android.library'
+apply from: "${rootProject.rootDir}/fat-aar.gradle"
+
+def distributionDir = "${rootProject.rootDir}/distribution"
+
+android {
+    compileSdkVersion 25
+    buildToolsVersion "25.0.0"
+
+    defaultConfig {
+        minSdkVersion 24
+        targetSdkVersion 25
+        versionCode 1
+        versionName "1.0"
+
+        publishNonDefault true
+
+        testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
+        externalNativeBuild {
+            cmake {
+                // when using arguments, the latest (cmake version 3.6+, android studio
+                // beta2+) must be used to compile
+
+                // I have to use gcc to compile, clang compiled code generate error
+                // at run time for any std::queue etc.
+                targets 'image360ad'
+                arguments = ['-DANDROID_STL=gnustl_shared', '-DANDROID_NATIVE_API_LEVEL=android-24']
+
+                cppFlags = ["-DGLES2_0", "-std=c++11", "-frtti", "-fexceptions", '-Wall',
+                            '-fno-exceptions', '-Wno-unused-variable']
+
+                abiFilters = ['armeabi-v7a', 'arm64-v8a', 'x86']
+            }
+        }
+    }
+    buildTypes {
+        debug {
+            minifyEnabled false
+            jniDebuggable true
+        }
+        release {
+            minifyEnabled false
+            proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
+        }
+    }
+
+    sourceSets{
+        debug {
+            jniLibs.srcDirs = ["${distributionDir}/soil", "${distributionDir}/coreEngine",
+                               "${distributionDir}/glImplementation", "${distributionDir}/renderer",
+                               "${distributionDir}/image360", "${distributionDir}/image360Gvr",
+                                "${distributionDir}/freetype"]
+
+        }
+        release {
+            jniLibs.srcDirs = ["${distributionDir}/soil", "${distributionDir}/coreEngine",
+                               "${distributionDir}/glImplementation", "${distributionDir}/renderer",
+                               "${distributionDir}/image360", "${distributionDir}/image360Gvr",
+                               "${distributionDir}/freetype"]
+
+        }
+    }
+
+    externalNativeBuild {
+        cmake {
+            path 'CMakeLists.txt'
+        }
+    }
+}
+
+dependencies {
+    compile fileTree(dir: 'libs', include: ['*.jar'])
+    androidTestCompile('com.android.support.test.espresso:espresso-core:2.2.2', {
+        exclude group: 'com.android.support', module: 'support-annotations'
+    })
+    testCompile 'junit:junit:4.12'
+    androidTestCompile 'org.mockito:mockito-core:1.10.19'
+    androidTestCompile 'com.google.dexmaker:dexmaker-mockito:1.2'
+    compile 'org.projectlombok:lombok:1.16.12'
+    compile 'javax.annotation:javax.annotation-api:1.2'
+
+    compile 'com.google.vr:sdk-audio:1.30.0'
+    compile 'com.google.vr:sdk-base:1.30.0'
+
+    embedded project(':common')
+    embedded project(':analytics')
+    embedded project(':adclient')
+
+}
+
+
+
+//task clean(type: Delete) {
+//    delete "${rootProject.rootDir}/adclient/build"
+//    delete fileTree(dir: 'libs', include: ['*.a', '*.so'])
+//}
+
+tasks.whenTaskAdded { task ->
+    if (task.name.contains('compileDebug')) {
+        task.dependsOn([':coreEngine:distributeDebugLib', ':glImplementation:distributeDebugLib',
+                        ':renderer:distributeDebugLib', ':image360:distributeDebugLib',
+                        ':soil:distributeDebugLib',
+                        ':image360gvr:distributeDebugLib',':freetype:distributeDebugLib'])
+    } else if (task.name.contains('compileRelease')) {
+        task.dependsOn([':coreEngine:distributeReleaseLib', ':glImplementation:distributeReleaseLib',
+                        ':renderer:distributeReleaseLib', ':image360:distributeReleaseLib',
+                        ':image360gvr:distributeReleaseLib', ':soil:distributeReleaseLib',
+                        ':freetype:distributeReleaseLib' ])
+    }
+}
+
+build.dependsOn(':extractNdk')

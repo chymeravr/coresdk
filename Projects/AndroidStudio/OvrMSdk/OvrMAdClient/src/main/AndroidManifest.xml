@@ -1,5 +1,5 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
-    package="com.chymeravr.adclient">
+    package="com.chymeravr.ovrmadclient">
 
     <uses-permission android:name="android.permission.INTERNET" />
     <uses-permission android:name="android.permission.ACCESS_WIFI_STATE" />
@@ -8,7 +8,7 @@
         android:supportsRtl="true">
 
         <activity
-            android:name=".Image360Activity"
+            android:name="com.chymeravr.ovrmadclient.Image360Activity"
             android:theme="@android:style/Theme.Black.NoTitleBar.Fullscreen"
             android:launchMode="singleTask"
             android:screenOrientation="landscape"

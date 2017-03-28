@@ -24,7 +24,7 @@ android {
 
                 cppFlags = ["-DGLES2_0", "-std=c++11", "-frtti", "-fexceptions"]
 
-                abiFilters 'armeabi-v7a'
+                abiFilters = ['armeabi-v7a', 'arm64-v8a', 'x86']
             }
         }
     }
@@ -59,6 +59,7 @@ android {
 //    delete fileTree(dir: 'libs', include: '*.so')
 //}
 
+/*
 task distributeDebugLib (type : Copy) {
     // trigger build library
     dependsOn "assembleDebug"
@@ -73,6 +74,45 @@ task(distributeReleaseLib, type : Copy) {
     from "${image360Module}/build/intermediates/cmake/release/obj/armeabi-v7a/libImage360.so"
     into "${distributionDir}/image360/armeabi-v7a/"
 }
+*/
+
+task distributeDebugLib << {
+    // trigger build library
+    //dependsOn "assembleRelease"
+    copy {
+        from "${image360Module}/build/intermediates/cmake/debug/obj/armeabi-v7a/libImage360.so"
+        into "${distributionDir}/image360/armeabi-v7a/"
+    }
+
+    copy {
+        from "${image360Module}/build/intermediates/cmake/debug/obj/arm64-v8a/libImage360.so"
+        into "${distributionDir}/image360/arm64-v8a/"
+    }
+
+    copy {
+        from "${image360Module}/build/intermediates/cmake/debug/obj/x86/libImage360.so"
+        into "${distributionDir}/image360/x86/"
+    }
+}
+
+task distributeReleaseLib << {
+    // trigger build library
+    //dependsOn "assembleRelease"
+    copy {
+        from "${image360Module}/build/intermediates/cmake/release/obj/armeabi-v7a/libImage360.so"
+        into "${distributionDir}/image360/armeabi-v7a/"
+    }
+
+    copy {
+        from "${image360Module}/build/intermediates/cmake/release/obj/arm64-v8a/libImage360.so"
+        into "${distributionDir}/image360/arm64-v8a/"
+    }
+
+    copy {
+        from "${image360Module}/build/intermediates/cmake/release/obj/x86/libImage360.so"
+        into "${distributionDir}/image360/x86/"
+    }
+}
 
 tasks.whenTaskAdded { task ->
     if (task.name.contains('compileDebug')) {
@@ -82,3 +122,5 @@ tasks.whenTaskAdded { task ->
         task.dependsOn ':coreEngine:distributeReleaseLib'
     }
 }
+
+build.finalizedBy(distributeDebugLib)

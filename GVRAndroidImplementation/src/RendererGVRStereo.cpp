@@ -1,0 +1,471 @@
+////
+// Created by robin_chimera on 1/9/2017.
+// Contains an implementation for Daydream and Cardboard HMDS using Google VR Api (gvr)
+// for android
+//
+
+#include <coreEngine/renderObjects/Shader.h>
+#include <coreEngine/renderObjects/Material.h>
+#include <coreEngine/renderObjects/Model.h>
+#include <RendererGVRStereo.h>
+#include <stdlib.h>
+#include <glImplementation/renderObjects/CameraGL.h>
+#include <coreEngine/components/transformTree/TransformTreeCamera.h>
+
+#include <android/log.h>
+#include <random>
+
+#define LOG_TAG "RendererGVRStereo"
+#define LOGW(...) __android_log_print(ANDROID_LOG_WARN, LOG_TAG, __VA_ARGS__)
+#define LOGD(...) __android_log_print(ANDROID_LOG_DEBUG, LOG_TAG, __VA_ARGS__)
+#define LOGE(...) __android_log_print(ANDROID_LOG_ERROR, LOG_TAG, __VA_ARGS__)
+#define CHECK(condition)                                                   \
+  if (!(condition)) {                                                      \
+    LOGE("*** CHECK FAILED at %s:%d: %s", __FILE__, __LINE__, #condition); \
+    abort();                                                               \
+  }
+
+namespace cl {
+    static const float kZNear = 1.0f;
+    static const float kZFar = 100.0f;
+
+    static const uint64_t kPredictionTimeWithoutVsyncNanos = 50000000;
+
+
+    static std::array<float, 16> MatrixToGLArray(const gvr::Mat4f &matrix) {
+        // Note that this performs a *tranpose* to a column-major matrix array, as
+        // expected by GL.
+        std::array<float, 16> result;
+        for (int i = 0; i < 4; ++i) {
+            for (int j = 0; j < 4; ++j) {
+                result[j * 4 + i] = matrix.m[i][j];
+            }
+        }
+        return result;
+    }
+
+    static std::array<float, 4> MatrixVectorMul(const gvr::Mat4f &matrix,
+                                                const std::array<float, 4> &vec) {
+        std::array<float, 4> result;
+        for (int i = 0; i < 4; ++i) {
+            result[i] = 0;
+            for (int k = 0; k < 4; ++k) {
+                result[i] += matrix.m[i][k] * vec[k];
+            }
+        }
+        return result;
+    }
+
+    static gvr::Mat4f MatrixMul(const gvr::Mat4f &matrix1,
+                                const gvr::Mat4f &matrix2) {
+        gvr::Mat4f result;
+        for (int i = 0; i < 4; ++i) {
+            for (int j = 0; j < 4; ++j) {
+                result.m[i][j] = 0.0f;
+                for (int k = 0; k < 4; ++k) {
+                    result.m[i][j] += matrix1.m[i][k] * matrix2.m[k][j];
+                }
+            }
+        }
+        return result;
+    }
+
+    static gvr::Mat4f PerspectiveMatrixFromView(const gvr::Rectf &fov, float z_near,
+                                                float z_far) {
+        gvr::Mat4f result;
+        const float x_left = -std::tan(fov.left * M_PI / 180.0f) * z_near;
+        const float x_right = std::tan(fov.right * M_PI / 180.0f) * z_near;
+        const float y_bottom = -std::tan(fov.bottom * M_PI / 180.0f) * z_near;
+        const float y_top = std::tan(fov.top * M_PI / 180.0f) * z_near;
+        const float zero = 0.0f;
+
+        assert(x_left < x_right && y_bottom < y_top && z_near < z_far &&
+               z_near > zero && z_far > zero);
+        const float X = (2 * z_near) / (x_right - x_left);
+        const float Y = (2 * z_near) / (y_top - y_bottom);
+        const float A = (x_right + x_left) / (x_right - x_left);
+        const float B = (y_top + y_bottom) / (y_top - y_bottom);
+        const float C = (z_near + z_far) / (z_near - z_far);
+        const float D = (2 * z_near * z_far) / (z_near - z_far);
+
+        for (int i = 0; i < 4; ++i) {
+            for (int j = 0; j < 4; ++j) {
+                result.m[i][j] = 0.0f;
+            }
+        }
+        result.m[0][0] = X;
+        result.m[0][2] = A;
+        result.m[1][1] = Y;
+        result.m[1][2] = B;
+        result.m[2][2] = C;
+        result.m[2][3] = D;
+        result.m[3][2] = -1;
+
+        return result;
+    }
+
+    static gvr::Rectf ModulateRect(const gvr::Rectf &rect, float width,
+                                   float height) {
+        gvr::Rectf result = {rect.left * width, rect.right * width,
+                             rect.bottom * height, rect.top * height};
+        return result;
+    }
+
+    static gvr::Recti CalculatePixelSpaceRect(const gvr::Sizei &texture_size,
+                                              const gvr::Rectf &texture_rect) {
+        const float width = static_cast<float>(texture_size.width);
+        const float height = static_cast<float>(texture_size.height);
+        const gvr::Rectf rect = ModulateRect(texture_rect, width, height);
+        const gvr::Recti result = {
+                static_cast<int>(rect.left), static_cast<int>(rect.right),
+                static_cast<int>(rect.bottom), static_cast<int>(rect.top)};
+        return result;
+    }
+
+// Generate a random floating point number between 0 and 1.
+    static float RandomUniformFloat() {
+        static std::random_device random_device;
+        static std::mt19937 random_generator(random_device());
+        static std::uniform_real_distribution<float> random_distribution(0, 1);
+        return random_distribution(random_generator);
+    }
+
+    static void CheckGLError(const char *label) {
+        int gl_error = glGetError();
+        if (gl_error != GL_NO_ERROR) {
+            LOGW("GL error @ %s: %d", label, gl_error);
+            // Crash immediately to make OpenGL errors obvious.
+            abort();
+        }
+    }
+
+    static gvr::Sizei HalfPixelCount(const gvr::Sizei &in) {
+        // Scale each dimension by sqrt(2)/2 ~= 7/10ths.
+        gvr::Sizei out;
+        out.width = (7 * in.width) / 10;
+        out.height = (7 * in.height) / 10;
+        return out;
+    }
+
+    static gvr::Mat4f ControllerQuatToMatrix(const gvr::ControllerQuat &quat) {
+        gvr::Mat4f result;
+        const float x = quat.qx;
+        const float x2 = quat.qx * quat.qx;
+        const float y = quat.qy;
+        const float y2 = quat.qy * quat.qy;
+        const float z = quat.qz;
+        const float z2 = quat.qz * quat.qz;
+        const float w = quat.qw;
+        const float xy = quat.qx * quat.qy;
+        const float xz = quat.qx * quat.qz;
+        const float xw = quat.qx * quat.qw;
+        const float yz = quat.qy * quat.qz;
+        const float yw = quat.qy * quat.qw;
+        const float zw = quat.qz * quat.qw;
+
+        const float m11 = 1.0f - 2.0f * y2 - 2.0f * z2;
+        const float m12 = 2.0f * (xy - zw);
+        const float m13 = 2.0f * (xz + yw);
+        const float m21 = 2.0f * (xy + zw);
+        const float m22 = 1.0f - 2.0f * x2 - 2.0f * z2;
+        const float m23 = 2.0f * (yz - xw);
+        const float m31 = 2.0f * (xz - yw);
+        const float m32 = 2.0f * (yz + xw);
+        const float m33 = 1.0f - 2.0f * x2 - 2.0f * y2;
+
+        return {{{m11, m12, m13, 0.0f},
+                        {m21, m22, m23, 0.0f},
+                        {m31, m32, m33, 0.0f},
+                        {0.0f, 0.0f, 0.0f, 1.0f}}};
+    }
+
+    static inline float VectorNorm(const std::array<float, 4> &vect) {
+        return std::sqrt(vect[0] * vect[0] + vect[1] * vect[1] + vect[2] * vect[2]);
+    }
+
+    static float VectorInnerProduct(const std::array<float, 4> &vect1,
+                                    const std::array<float, 4> &vect2) {
+        float product = 0;
+        for (int i = 0; i < 3; i++) {
+            product += vect1[i] * vect2[i];
+        }
+        return product;
+    }
+
+    RendererGVRStereo::RendererGVRStereo(gvr_context *gvr_context, ILoggerFactory *loggerFactory) :
+            gvr_api_(gvr::GvrApi::WrapNonOwned(gvr_context)),
+            scratch_viewport_(gvr_api_->CreateBufferViewport()),
+            gvr_viewer_type_(gvr_api_->GetViewerType()) {
+        if (gvr_viewer_type_ == GVR_VIEWER_TYPE_CARDBOARD) {
+            LOGD("Viewer type: CARDBOARD");
+        } else if (gvr_viewer_type_ == GVR_VIEWER_TYPE_DAYDREAM) {
+            LOGD("Viewer type: DAYDREAM");
+        } else {
+            LOGE("Unexpected viewer type.");
+        }
+    }
+
+    RendererGVRStereo::~RendererGVRStereo() {
+
+    }
+
+    bool RendererGVRStereo::start() {
+        return true;
+    }
+
+    bool RendererGVRStereo::initialize(Scene *scene) {
+        IRenderable *sceneRenderer = scene->getRenderable();
+        sceneRenderer->initialize();
+        std::vector<Relation *> cameraRelations = scene->getRelations("camera");
+        assert(cameraRelations.size() == 1);
+        ((Camera *) cameraRelations[0])->getRenderable()->initialize();
+
+        std::vector<Relation *> shaderRelations = scene->getRelations("shader");
+        for (auto it = shaderRelations.cbegin(); it != shaderRelations.cend(); it++) {
+            Shader *shader = (Shader *) (*it);
+            shader->getRenderable()->initialize();
+
+            std::vector<Relation *> materialRelations = shader->getRelations("material");
+            for (auto it = materialRelations.cbegin(); it != materialRelations.cend(); it++) {
+                Material *material = (Material *) (*it);
+                material->getRenderable()->initialize();
+
+                std::vector<Relation *> modelRelations = material->getRelations("model");
+                for (auto it = modelRelations.cbegin(); it != modelRelations.cend(); it++) {
+                    Model *model = (Model *) (*it);
+                    model->getRenderable()->initialize();
+                }
+            }
+        }
+//
+        this->renderCamera = (CameraGL *) cameraRelations[0];
+
+        auto fovs = this->scratch_viewport_.GetSourceFov();
+        auto fovx = fovs.left + fovs.right;
+        auto fovy = fovs.top + fovs.bottom;
+        this->renderCamera->setAspect(fovx / fovy);
+
+
+
+//        this->renderCamera->setFov(
+//                fovy * CL_PI / 180.0f); // our camera works with radians
+//        this->renderCamera->setNearPlane(kZNear);
+//        this->renderCamera->setFarPlane(kZFar);
+
+        InitializeGl();
+
+        frame = (gvr::Frame *)malloc(sizeof(gvr::Frame));
+        return true;
+    }
+
+    void RendererGVRStereo::update() {
+
+    }
+
+    void RendererGVRStereo::drawInit(Scene *scene) {
+
+        PrepareFramebuffer();
+        //gvr::Frame frame = swapchain_->AcquireFrame();
+        *this->frame = swapchain_->AcquireFrame();
+
+        // A client app does its rendering here.
+        gvr::ClockTimePoint target_time = gvr::GvrApi::GetTimePointNow();
+        target_time.monotonic_system_time_nanos += kPredictionTimeWithoutVsyncNanos;
+
+        this->head_view_ = this->gvr_api_->GetHeadSpaceFromStartSpaceRotation(target_time);
+
+        TransformTreeCamera *transform = (TransformTreeCamera *) this->renderCamera->getComponentList().getComponent(
+                "transformTree");
+
+        auto matArray = MatrixToGLArray(head_view_);
+        auto rotMat = CL_Mat44(matArray[0], matArray[4], matArray[8], matArray[12],
+                               matArray[1], matArray[5], matArray[9], matArray[13],
+                               matArray[2], matArray[6], matArray[10], matArray[14],
+                               matArray[3], matArray[7], matArray[11], matArray[15]);
+
+        CL_Quat rotQuat = CL_Rot_To_Quat(rotMat);
+        transform->setLocalQuaternion(rotQuat);
+
+        // A client app does its rendering here.
+        gvr::Mat4f left_eye_matrix = gvr_api_->GetEyeFromHeadMatrix(GVR_LEFT_EYE);
+        gvr::Mat4f right_eye_matrix = gvr_api_->GetEyeFromHeadMatrix(GVR_RIGHT_EYE);
+
+        this->viewport_list_->SetToRecommendedBufferViewports();
+
+        glEnable(GL_DEPTH_TEST);
+        glEnable(GL_CULL_FACE);
+        glDisable(GL_SCISSOR_TEST);
+        glDisable(GL_BLEND);
+
+        // Draw the left and right viewport scenes.
+        this->frame->BindBuffer(0);
+        glClearColor(0.1f, 0.1f, 0.1f, 0.5f);  // Dark background so text shows up.
+
+        IRenderable *sceneRenderer = scene->getRenderable();
+        sceneRenderer->draw();
+        //glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+
+        this->viewport_list_->GetBufferViewport(0, &this->scratch_viewport_);
+        transform->setLocalPosition(CL_Vec3(left_eye_matrix.m[0][3], left_eye_matrix.m[1][3], left_eye_matrix.m[2][3]));
+        this->draw(scene, LEFT);
+
+        this->viewport_list_->GetBufferViewport(1, &this->scratch_viewport_);
+        transform->setLocalPosition(CL_Vec3(right_eye_matrix.m[0][3], right_eye_matrix.m[1][3], right_eye_matrix.m[2][3]));
+        this->draw(scene, RIGHT);
+        //glClearColor(1.0f, 0.0f, 0.0f, 0.5f);
+
+        this->frame->Unbind();
+
+        // Submit frame.
+        this->frame->Submit(*viewport_list_, head_view_);
+
+        CheckGLError("onDrawFrame");
+    }
+
+    void RendererGVRStereo::draw(Scene *scene, EYE eye) {
+
+//        if(eye == LEFT) {
+//            viewport_list_->GetBufferViewport(0, &scratch_viewport_);
+//        }else{
+//            viewport_list_->GetBufferViewport(1, &scratch_viewport_);
+//        }
+        gvr::Recti pixel_rect = CalculatePixelSpaceRect(this->render_size_, this->scratch_viewport_.GetSourceUv());
+
+        glViewport(pixel_rect.left, pixel_rect.bottom,
+                   pixel_rect.right - pixel_rect.left,
+                   pixel_rect.top - pixel_rect.bottom);
+
+        CheckGLError("World drawing setup");
+
+
+            auto rightContainer = (Model *) scene->getFromScene("imageContainerRight");
+            auto leftContainer = (Model *) scene->getFromScene("imageContainerLeft");
+
+
+        if(eye == LEFT) {
+//        gvr::Mat4f eye_matrix = gvr_api_->GetEyeFromHeadMatrix(GVR_RIGHT_EYE);
+//        //gvr::Mat4f view_matrix = MatrixMul(eye_matrix, head_view_);
+//
+//        if (eye == LEFT) {
+//            eye_matrix = gvr_api_->GetEyeFromHeadMatrix(GVR_LEFT_EYE);
+//            //view_matrix = MatrixMul(eye_matrix, head_view_);
+//        }
+//
+//        TransformTreeCamera *transform = (TransformTreeCamera *) this->renderCamera->getComponentList().getComponent(
+//                "transformTree");
+//
+//        transform->setLocalPosition(CL_Vec3(eye_matrix.m[0][3], eye_matrix.m[1][3], eye_matrix.m[2][3]));
+
+
+            //
+            leftContainer->setIsVisible(true);
+            rightContainer->setIsVisible(false);
+            drawScene(scene);
+        }else{
+            leftContainer->setIsVisible(false);
+            rightContainer->setIsVisible(true);
+            drawScene(scene);
+            //glClearColor(1.0f, 0.0f, 0.0f, 0.5f);
+        }
+
+    }
+
+    void RendererGVRStereo::drawComplete() {
+//        frame->Unbind();
+//
+//        frame->Submit(*viewport_list_, head_view_);
+//
+//        CheckGLError("onDrawFrame");
+    }
+
+    void RendererGVRStereo::deinitialize(Scene *scene) {
+        free(frame);
+    }
+
+    void RendererGVRStereo::stop() {
+    }
+
+    void RendererGVRStereo::pause() {
+        gvr_api_->PauseTracking();
+    }
+
+    void RendererGVRStereo::resume() {
+//        if (gvr_api_) {
+//            gvr_api_->ResumeTracking();
+//        }
+    }
+
+
+    std::vector<float> RendererGVRStereo::getHMDParams() {
+
+    }
+
+
+
+    /*************************************************************************************************************************
+     *************************************************************************************************************************/
+
+
+    void RendererGVRStereo::PrepareFramebuffer() {
+        // Because we are using 2X MSAA, we can render to half as many pixels and
+        // achieve similar quality.
+        const gvr::Sizei recommended_size =
+                HalfPixelCount(gvr_api_->GetMaximumEffectiveRenderTargetSize());
+        if (render_size_.width != recommended_size.width ||
+            render_size_.height != recommended_size.height) {
+            // We need to resize the framebuffer.
+            swapchain_->ResizeBuffer(0, recommended_size);
+            render_size_ = recommended_size;
+        }
+    }
+
+
+    void RendererGVRStereo::InitializeGl() {
+        gvr_api_->InitializeGl();
+
+        // Because we are using 2X MSAA, we can render to half as many pixels and
+        // achieve similar quality.
+        render_size_ =
+                HalfPixelCount(gvr_api_->GetMaximumEffectiveRenderTargetSize());
+        std::vector<gvr::BufferSpec> specs;
+
+        specs.push_back(gvr_api_->CreateBufferSpec());
+        specs[0].SetColorFormat(GVR_COLOR_FORMAT_RGBA_8888);
+        specs[0].SetDepthStencilFormat(GVR_DEPTH_STENCIL_FORMAT_DEPTH_16);
+        specs[0].SetSize(render_size_);
+        specs[0].SetSamples(2);
+
+        swapchain_.reset(new gvr::SwapChain(gvr_api_->CreateSwapChain(specs)));
+
+        viewport_list_.reset(
+                new gvr::BufferViewportList(gvr_api_->CreateEmptyBufferViewportList()));
+    }
+
+    void RendererGVRStereo::drawScene(Scene *scene) {
+        IRenderable *sceneRenderer = scene->getRenderable();
+        //sceneRenderer->draw();
+
+        std::vector<Relation *> cameraRelations = scene->getRelations("camera");
+        assert(cameraRelations.size() == 1);
+        ((Camera *) cameraRelations[0])->getRenderable()->draw();
+
+        std::vector<Relation *> shaderRelations = scene->getRelations("shader");
+        for (auto it = shaderRelations.cbegin(); it != shaderRelations.cend(); it++) {
+            Shader *shader = (Shader *) (*it);
+            shader->getRenderable()->draw();
+
+            std::vector<Relation *> materialRelations = shader->getRelations("material");
+            for (auto it = materialRelations.cbegin(); it != materialRelations.cend(); it++) {
+                Material *material = (Material *) (*it);
+                material->getRenderable()->draw();
+
+                std::vector<Relation *> modelRelations = material->getRelations("model");
+                for (auto it = modelRelations.cbegin(); it != modelRelations.cend(); it++) {
+                    Model *model = (Model *) (*it);
+                    model->getRenderable()->draw();
+                }
+            }
+        }
+    }
+}

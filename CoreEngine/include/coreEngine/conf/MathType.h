@@ -14,15 +14,16 @@
 #include <glm/gtc/quaternion.hpp>
 #include <glm/gtx/euler_angles.hpp>
 
-namespace cl {
+namespace cl
+{
 #define CL_PI 3.14159265358979323846
 
-	typedef glm::vec2 CL_Vec2;
-	typedef glm::vec3 CL_Vec3;
-	typedef glm::vec4 CL_Vec4;
-	typedef glm::mat4x4 CL_Mat44;
-	typedef glm::quat CL_Quat;
-	/**
+typedef glm::vec2 CL_Vec2;
+typedef glm::vec3 CL_Vec3;
+typedef glm::vec4 CL_Vec4;
+typedef glm::mat4x4 CL_Mat44;
+typedef glm::quat CL_Quat;
+/**
 	 * Wrapper function for getting perspective camera matrix
 	 *
 	 * @param fov: Field of View
@@ -32,10 +33,10 @@ namespace cl {
 	 *
 	 * @return A 4x4 matrix that represents the perspective matrix
 	 */
-	CL_Mat44 CL_perspective(float &fov, float &aspect, float &nearPlane, float &farPlane);
+CL_Mat44 CL_perspective(float &fov, float &aspect, float &nearPlane, float &farPlane);
 
-	CL_Mat44 CL_tweakedInfinitePerspective(float &fovy, float &aspect, float &nearPlane);
-	/**
+CL_Mat44 CL_tweakedInfinitePerspective(float &fovy, float &aspect, float &nearPlane);
+/**
 	 * Wrapper function for getting lookat camera view matrix
 	 *
 	 * @param cameraPosition: The location where center of camera is located
@@ -44,67 +45,69 @@ namespace cl {
 	 *
 	 * @return: A 4x4 matrix that represent the view matrix
 	 */
-	CL_Mat44 CL_lookAt(CL_Vec3 &cameraPosition, CL_Vec3 &lookAtCenter, CL_Vec3 &up);
+CL_Mat44 CL_lookAt(CL_Vec3 &cameraPosition, CL_Vec3 &lookAtCenter, CL_Vec3 &up);
 
-	/**
+/**
 	 * Get Rotation Matrix from Quaternion
 	 */
-	CL_Mat44 CL_RotationMatrix(CL_Quat quaternion);
-	/**
+CL_Mat44 CL_RotationMatrix(CL_Quat quaternion);
+/**
 	 * Get Rotation Matrix around X axis
 	 *
 	 * @param angle: angle of rotation. Angles in radians.
 	 *
 	 * @return A 4x4 matrix representing the rotation
 	 */
-	CL_Mat44 CL_RotationMatrixX(float angle);
+CL_Mat44 CL_RotationMatrixX(float angle);
 
-	/**
+/**
 	 * Get Rotation Matrix around Y axis.
 	 *
 	 * @param angle: angle of rotation. Angles in radians.
 	 *
 	 * @return A 4x4 matrix representing the rotation
 	 */
-	CL_Mat44 CL_RotationMatrixY(float angle);
+CL_Mat44 CL_RotationMatrixY(float angle);
 
-	/**
+/**
 	 * Get Rotation Matrix around Y axis
 	 *
 	 * @param angle: angle of rotation. Angles in radians.
 	 *
 	 * @return A 4x4 matrix representing the rotation
 	 */
-	CL_Mat44 CL_RotationMatrixZ(float angle);
+CL_Mat44 CL_RotationMatrixZ(float angle);
 
-	/**
+/**
 	 * Get Translation Matrix
 	 *
 	 * @param position: position to which translation should happen
 	 *
 	 */
-	CL_Mat44 CL_TranlationMatrix(CL_Vec3 position);
+CL_Mat44 CL_TranlationMatrix(CL_Vec3 position);
 
-	/**
+/**
 	 * Get Scale Matrix
 	 *
 	 * @param scale vector
 	 */
-	CL_Mat44 CL_ScaleMatrix(CL_Vec3 scale);
+CL_Mat44 CL_ScaleMatrix(CL_Vec3 scale);
 
-	CL_Mat44 CL_IdentityMatrix4X4();
+CL_Mat44 CL_IdentityMatrix4X4();
 
-	CL_Vec3 CL_CrossProduct(CL_Vec3 v1, CL_Vec3 v2);
+CL_Vec3 CL_CrossProduct(CL_Vec3 v1, CL_Vec3 v2);
 
-	CL_Vec3 CL_Normalize(CL_Vec3 v);
+CL_Vec3 CL_Normalize(CL_Vec3 v);
 
-	CL_Mat44 CL_Make_Mat44(float mat[16]);
+CL_Mat44 CL_Make_Mat44(float mat[16]);
 
-	CL_Vec3 CL_Euler_Angles(CL_Quat quat);
+CL_Vec3 CL_Euler_Angles(CL_Quat quat);
 
-	CL_Mat44 CL_Invert_Mat44(CL_Mat44 mat);
+CL_Mat44 CL_Invert_Mat44(CL_Mat44 mat);
 
-	CL_Quat CL_Angle_Axis(CL_Vec3 axis);
+CL_Quat CL_Angle_Axis(CL_Vec3 axis);
+
+CL_Quat CL_Rot_To_Quat(CL_Mat44 mat);
 }
 
 #endif //ANDROIDSDK_MATHTYPE_H

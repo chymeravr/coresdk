@@ -1,4 +1,4 @@
-include ':soil', ':appOvrM', ':freetype'
+include ':soil', ':appOvrM', ':freetype', ':image360gvr', ':appgvr', ':gvradclient', ':adclient'
 include ':coreEngine'
 include ':glImplementation'
 include ':image360'
@@ -8,5 +8,3 @@ include ':image360Ovrm'
 include ':common'
 include ':analytics'
 include ':OvrMAdClient'
-
-include ':appGVR'

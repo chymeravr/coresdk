@@ -498,7 +498,7 @@ static void ovrAppThread_Destroy(ovrAppThread *appThread, JNIEnv *env) {
 */
 
 JNIEXPORT jlong JNICALL
-Java_com_chymeravr_adclient_Image360Activity_onCreateNative(JNIEnv *env, jobject obj,
+Java_com_chymeravr_ovrmadclient_Image360Activity_onCreateNative(JNIEnv *env, jobject obj,
                                                             jobject activity, jstring appDir,
                                                             jstring appFilename, jobject mgr) {
     ovrAppThread *appThread = (ovrAppThread *) malloc(sizeof(ovrAppThread));
@@ -519,7 +519,7 @@ Java_com_chymeravr_adclient_Image360Activity_onCreateNative(JNIEnv *env, jobject
 }
 
 JNIEXPORT void JNICALL
-Java_com_chymeravr_adclient_Image360Activity_onStartNative(JNIEnv *env, jobject obj, jlong handle) {
+Java_com_chymeravr_ovrmadclient_Image360Activity_onStartNative(JNIEnv *env, jobject obj, jlong handle) {
     logger->log(cl::LOG_DEBUG, "onStartNative()");
     ovrAppThread *appThread = (ovrAppThread *) ((size_t) handle);
 
@@ -529,7 +529,7 @@ Java_com_chymeravr_adclient_Image360Activity_onStartNative(JNIEnv *env, jobject 
 }
 
 JNIEXPORT void JNICALL
-Java_com_chymeravr_adclient_Image360Activity_onResumeNative(JNIEnv *env, jobject obj,
+Java_com_chymeravr_ovrmadclient_Image360Activity_onResumeNative(JNIEnv *env, jobject obj,
                                                             jlong handle) {
     ovrAppThread *appThread = (ovrAppThread *) ((size_t) handle);
     logger->log(cl::LOG_DEBUG, "onResumeNative()");
@@ -540,7 +540,7 @@ Java_com_chymeravr_adclient_Image360Activity_onResumeNative(JNIEnv *env, jobject
 }
 
 JNIEXPORT void JNICALL
-Java_com_chymeravr_adclient_Image360Activity_onPauseNative(JNIEnv *env, jobject obj, jlong handle) {
+Java_com_chymeravr_ovrmadclient_Image360Activity_onPauseNative(JNIEnv *env, jobject obj, jlong handle) {
     ovrAppThread *appThread = (ovrAppThread *) ((size_t) handle);
     logger->log(cl::LOG_DEBUG, "onPauseNative()");
 
@@ -550,7 +550,7 @@ Java_com_chymeravr_adclient_Image360Activity_onPauseNative(JNIEnv *env, jobject 
 }
 
 JNIEXPORT void JNICALL
-Java_com_chymeravr_adclient_Image360Activity_onStopNative(JNIEnv *env, jobject obj, jlong handle) {
+Java_com_chymeravr_ovrmadclient_Image360Activity_onStopNative(JNIEnv *env, jobject obj, jlong handle) {
     ovrAppThread *appThread = (ovrAppThread *) ((size_t) handle);
     logger->log(cl::LOG_DEBUG, "onStopNative()");
 
@@ -561,7 +561,7 @@ Java_com_chymeravr_adclient_Image360Activity_onStopNative(JNIEnv *env, jobject o
 }
 
 JNIEXPORT void JNICALL
-Java_com_chymeravr_adclient_Image360Activity_onDestroyNative(JNIEnv *env, jobject obj,
+Java_com_chymeravr_ovrmadclient_Image360Activity_onDestroyNative(JNIEnv *env, jobject obj,
                                                              jlong handle) {
     ovrAppThread *appThread = (ovrAppThread *) ((size_t) handle);
     logger->log(cl::LOG_DEBUG, "onDestroyNative()");
@@ -584,7 +584,7 @@ Java_com_chymeravr_adclient_Image360Activity_onDestroyNative(JNIEnv *env, jobjec
 */
 
 JNIEXPORT void JNICALL
-Java_com_chymeravr_adclient_Image360Activity_onSurfaceCreatedNative(JNIEnv *env, jobject obj,
+Java_com_chymeravr_ovrmadclient_Image360Activity_onSurfaceCreatedNative(JNIEnv *env, jobject obj,
                                                                     jlong handle, jobject surface) {
     logger->log(cl::LOG_DEBUG, "onSurfaceCreatedNative() Begin");
     ovrAppThread *appThread = (ovrAppThread *) ((size_t) handle);
@@ -608,7 +608,7 @@ Java_com_chymeravr_adclient_Image360Activity_onSurfaceCreatedNative(JNIEnv *env,
 }
 
 JNIEXPORT void JNICALL
-Java_com_chymeravr_adclient_Image360Activity_onSurfaceChangedNative(JNIEnv *env, jobject obj,
+Java_com_chymeravr_ovrmadclient_Image360Activity_onSurfaceChangedNative(JNIEnv *env, jobject obj,
                                                                     jlong handle, jobject surface) {
     ovrAppThread *appThread = (ovrAppThread *) ((size_t) handle);
     logger->log(cl::LOG_DEBUG, "onSurfaceChangedNative()");
@@ -649,7 +649,7 @@ Java_com_chymeravr_adclient_Image360Activity_onSurfaceChangedNative(JNIEnv *env,
 }
 
 JNIEXPORT void JNICALL
-Java_com_chymeravr_adclient_Image360Activity_onSurfaceDestroyedNative(JNIEnv *env, jobject obj,
+Java_com_chymeravr_ovrmadclient_Image360Activity_onSurfaceDestroyedNative(JNIEnv *env, jobject obj,
                                                                       jlong handle) {
     ovrAppThread *appThread = (ovrAppThread *) ((size_t) handle);
     logger->log(cl::LOG_DEBUG, "onSurfaceDestroyedNative()");
@@ -674,7 +674,7 @@ Java_com_chymeravr_adclient_Image360Activity_onSurfaceDestroyedNative(JNIEnv *en
  */
 
 JNIEXPORT jint JNICALL
-Java_com_chymeravr_adclient_Image360Activity_onKeyEventNative(JNIEnv *env, jobject obj,
+Java_com_chymeravr_ovrmadclient_Image360Activity_onKeyEventNative(JNIEnv *env, jobject obj,
                                                               jlong handle,
                                                               int keyCode, int action) {
     if (action == AKEY_EVENT_ACTION_UP) {
@@ -697,7 +697,7 @@ Java_com_chymeravr_adclient_Image360Activity_onKeyEventNative(JNIEnv *env, jobje
 }
 
 JNIEXPORT int JNICALL
-Java_com_chymeravr_adclient_Image360Activity_onTouchEventNative(JNIEnv *env, jobject obj,
+Java_com_chymeravr_ovrmadclient_Image360Activity_onTouchEventNative(JNIEnv *env, jobject obj,
                                                                 jlong handle, int action, float x,
                                                                 float y) {
     if (action == AMOTION_EVENT_ACTION_UP) {
@@ -723,7 +723,7 @@ Java_com_chymeravr_adclient_Image360Activity_onTouchEventNative(JNIEnv *env, job
 }
 
 JNIEXPORT jfloatArray JNICALL
-Java_com_chymeravr_adclient_Image360Activity_getHMDParamsNative(JNIEnv *env, jobject obj,
+Java_com_chymeravr_ovrmadclient_Image360Activity_getHMDParamsNative(JNIEnv *env, jobject obj,
                                                                 jlong handle) {
     jfloatArray result;
     result = env->NewFloatArray(32);

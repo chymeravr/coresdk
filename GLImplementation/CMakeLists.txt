@@ -62,13 +62,17 @@ else ()
 	find_library(log-lib log)
 	find_library(android-lib android)
 	find_library(egl EGL)
-	find_library(gles-v3 GLESv3)
-
+	
 	add_library(core_engine SHARED IMPORTED)
 	set_target_properties(
 		core_engine
 		PROPERTIES IMPORTED_LOCATION
 		${ANDROID_LIBRARIES}/coreEngine/${ANDROID_ABI}/libCoreEngine.so
 	)
-	target_link_libraries(${PROJECT_NAME} core_engine ${log-lib} ${android-lib} ${egl} ${gles-v3})
+	if(GLES2_0)
+		find_library(gles GLESv2)
+	else()
+		find_library(gles GLESv3)
+	endif()
+	target_link_libraries(${PROJECT_NAME} core_engine ${log-lib} ${android-lib} ${egl} ${gles})
 endif ()

@@ -17,10 +17,10 @@ import android.view.animation.AlphaAnimation;
 import android.view.animation.Animation;
 import android.widget.ImageView;
 
-import com.chymeravr.adclient.AdListener;
-import com.chymeravr.adclient.AdRequest;
-import com.chymeravr.adclient.ChymeraVrSdk;
-import com.chymeravr.adclient.Image360Ad;
+import com.chymeravr.adclient.VrAdListener;
+import com.chymeravr.adclient.VrAdRequest;
+import com.chymeravr.ovrmadclient.ChymeraVrSdk;
+import com.chymeravr.ovrmadclient.Image360Ad;
 
 import java.text.SimpleDateFormat;
 import java.util.Date;
@@ -58,16 +58,15 @@ public class GLES3JNIActivity extends Activity implements SurfaceHolder.Callback
 		super.onCreate( icicle );
         setContentView(com.chymeravr.appovrm.R.layout.gl_context);
 
-
         ChymeraVrSdk.initialize(this, "89ec2db1-284e-44af-968e-0618103f89c8");
 
-        this.image360TestAd = new Image360Ad(this, new AdListener() {
+        this.image360TestAd = new Image360Ad(this, new VrAdListener() {
             @Override
             public void onAdLoaded() {
             }
 
             @Override
-            public void onAdLoadFailed(AdRequest.Error error, String errorReason) {
+            public void onAdLoadFailed(VrAdRequest.Error error, String errorReason) {
             }
 
             @Override
@@ -104,13 +103,13 @@ public class GLES3JNIActivity extends Activity implements SurfaceHolder.Callback
         } catch (Exception e) {
             e.printStackTrace();
         }
-        final AdRequest adRequest = AdRequest.builder()
+        final VrAdRequest vrAdRequest = VrAdRequest.builder()
                 .location(location)
                 .birthday(dob)
-                .gender(AdRequest.Gender.MALE).build();
+                .gender(VrAdRequest.Gender.MALE).build();
 
 
-        this.image360TestAd.loadAd(adRequest);
+        this.image360TestAd.loadAd(vrAdRequest);
 
 
 		mView = (SurfaceView) findViewById(com.chymeravr.appovrm.R.id.mView);//new SurfaceView( this );

@@ -1,6 +1,5 @@
 apply plugin: 'com.android.library'
 
-def ovrMobileModule = "${rootProject.rootDir}/ovr_sdk_mobile"
 def image360OvrmModule = "${rootProject.rootDir}/image360Ovrm"
 def distributionDir = "${rootProject.rootDir}/distribution"
 

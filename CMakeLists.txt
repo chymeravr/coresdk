@@ -12,7 +12,8 @@ option (x64 "Use x64 Libraries" OFF)
 
 ##GL options
 option (WINDOWS_GL "Use GL in Windows" ON)
-option (GLES2_0 "Use GLES in Mobile" OFF)
+option (GLES2_0 "Use GLES 2 in Mobile" OFF)
+option (GLES3_0 "Use GLES 3 in Mobile" OFF)
 option (NOGL "Don't use GL" OFF)
 
 set (REPO_PATH ${PROJECT_SOURCE_DIR}/Repository)
@@ -27,6 +28,8 @@ if(WINDOWS_GL)
 	add_definitions(-DWINDOWS_GL)
 elseif(GLES2_0)
 	add_definitions(-DGLES2_0)
+elseif(GLES3_0)
+	add_definitions(-DGLES3_0)
 elseif(NOGL)
 	add_definitions(-DNOGL)
 endif()

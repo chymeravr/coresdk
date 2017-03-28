@@ -295,6 +295,8 @@ class RendererOVRMStereo : public IRenderer
     void drawComplete();
     void deinitialize(Scene *scene);
     void stop();
+    void pause();
+    void resume();
     void setWindow(ANativeWindow *window);
     ANativeWindow *getWindow();
     ovrMobile *getOvr();
