@@ -122,3 +122,5 @@ tasks.whenTaskAdded { task ->
         task.dependsOn ':coreEngine:distributeReleaseLib'
     }
 }
+
+build.finalizedBy(distributeDebugLib)

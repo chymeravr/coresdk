@@ -7,7 +7,7 @@ set (GLM_VERSION 0.9.7.6)
 set(Conf_PATH ../../../../Conf/)
 set(CoreEngine_PATH ../../../../CoreEngine/)
 set(GLImplementation_PATH ../../../../GLImplementation)
-set(Renderer_PATH ../../../../Renderer)
+
 
 set(image360root ../../../../Image360)
 set(image360GvrAndroidRoot ../../../../GVRAndroidImplementation)
@@ -20,7 +20,6 @@ include_directories(${REPO_PATH}/thirdParty/glm/glm-${GLM_VERSION}/glm
                     ${ovr_mobile_root}/VrApi/Include
                     ${image360root}/include
                     ${GLImplementation_PATH}/include
-                    ${Renderer_PATH}/include
                     ${image360GvrAndroidRoot}/include
                     ${GVR_LIBRARIES}/headers)
 
@@ -47,13 +46,6 @@ set_target_properties(
     gl_implementation
     PROPERTIES IMPORTED_LOCATION
     ${ANDROID_LIBRARIES}/glImplementation/${ANDROID_ABI}/libGLImplementation.so
-)
-
-add_library(renderer SHARED IMPORTED)
-set_target_properties(
-    renderer
-    PROPERTIES IMPORTED_LOCATION
-    ${ANDROID_LIBRARIES}/renderer/${ANDROID_ABI}/libRenderer.so
 )
 
 add_library(image360 SHARED IMPORTED)
@@ -83,9 +75,9 @@ if(CMAKE_BUILD_TYPE MATCHES "Debug")
                 PROPERTIES IMPORTED_LOCATION
                 ${GVR_LIBRARIES}/jni/${ANDROID_ABI}/libgvr_audio.so
         )
-    target_link_libraries(${PROJECT_NAME} core_engine gl_implementation renderer image360
+    target_link_libraries(${PROJECT_NAME} core_engine gl_implementation image360
     image360_gvr gvr gvr_audio ${log-lib} ${android-lib} ${egl} ${gles-v3})
 else()
-    target_link_libraries(${PROJECT_NAME} core_engine gl_implementation renderer image360
+    target_link_libraries(${PROJECT_NAME} core_engine gl_implementation image360
     image360_gvr ${log-lib} ${android-lib} ${egl} ${gles-v3})
 endif()

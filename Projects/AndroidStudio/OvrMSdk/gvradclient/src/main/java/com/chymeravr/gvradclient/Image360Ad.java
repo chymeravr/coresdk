@@ -26,6 +26,7 @@ import com.chymeravr.schemas.serving.ResponseCode;
 import com.google.android.gms.ads.identifier.AdvertisingIdClient;
 import com.google.android.gms.common.GooglePlayServicesNotAvailableException;
 import com.google.android.gms.common.GooglePlayServicesRepairableException;
+import com.google.vr.ndk.base.DaydreamApi;
 
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -47,6 +48,8 @@ public class Image360Ad extends Ad {
 
     static final int IMAGE360_ACTIVIT_REQUEST = 1;
 
+    DaydreamApi daydreamApi;
+
     private void adListenerCallbacks() {
         this.getVrAdListener().onAdClosed();
     }
@@ -57,6 +60,7 @@ public class Image360Ad extends Ad {
             ((Activity) Image360Ad.this.getContext()).finishActivity(IMAGE360_ACTIVIT_REQUEST);
             //((Activity)Image360Ad.this.getContext()).overridePendingTransition(R.anim.image360fadein, R.anim.image360fadeout);
             adListenerCallbacks();
+            Image360Ad.this.daydreamApi.close();
         }
     }
 
@@ -71,6 +75,7 @@ public class Image360Ad extends Ad {
                 new IntentFilter("adClosed"));
 
         this.requestGenerator = new RequestGenerator(this);
+
     }
 
     /* Request AdServer for a new image360 ad.
@@ -199,17 +204,22 @@ public class Image360Ad extends Ad {
 
         //if(file.exists()) {
 
+        daydreamApi = DaydreamApi.create(this.getContext());
 
-        String files[] = {"Witcher-BoatSunset-SmartPhone-360-Stereo",
-                "Witcher-CiriForestSunset-Smartphone-360-Stereo",
-                "Witcher-Fireball-SmartPhone-360-Stereo",
-                "Witcher-LightHouse-SmartPhone-360-Stereo",
-                "Witcher-Tower-Smartphone-360-Stereo",
-                "Witcher-Valley-Smartphone-360-Stereo",
-                "WitnessCreek-Smartphone-360-Stereo",
-                "WitnessHand-Smartphone-360-Stereo",
-                "WitnessSquare-Smartphone-360-Stereo"};
-        int fileIndex = (int)(Math.random() * 9);
+//        String files[] = {"Witcher-BoatSunset-SmartPhone-360-Stereo",
+//                "Witcher-CiriForestSunset-Smartphone-360-Stereo",
+//                "Witcher-Fireball-SmartPhone-360-Stereo",
+//                "Witcher-LightHouse-SmartPhone-360-Stereo",
+//                "Witcher-Tower-Smartphone-360-Stereo",
+//                "Witcher-Valley-Smartphone-360-Stereo",
+//                "WitnessCreek-Smartphone-360-Stereo",
+//                "WitnessHand-Smartphone-360-Stereo",
+//                "WitnessSquare-Smartphone-360-Stereo"};
+//        int fileIndex = (int)(Math.random() * 9);
+
+        String files[] = {"equirectangular_desert2",
+                };
+        int fileIndex = (int)(Math.random() * 0);
 
         String filePath =  Config.Image360AdAssetDirectory + files[fileIndex] + ".jpg";
 
@@ -225,7 +235,9 @@ public class Image360Ad extends Ad {
             intent.putExtra("instanceId", this.getInstanceId());
 
             // start activity for showing ad
-            ((Activity) this.getContext()).startActivityForResult(intent, IMAGE360_ACTIVIT_REQUEST);
+            //((Activity) this.getContext()).startActivityForResult(intent, IMAGE360_ACTIVIT_REQUEST);
+            Intent vrIntent =  DaydreamApi.setupVrIntent(intent);
+            daydreamApi.launchInVr(vrIntent);
             this.getVrAdListener().onAdOpened();
         } else {
             Log.i(TAG, "No Ad to Show");

@@ -39,7 +39,9 @@
 //#include <ImageBMPLoaderAndroid.h>
 //#include <RendererOVRM.h>
 #include <RendererGVRStereo.h>
+#include <RendererGVR.h>
 #include <GazeListenerFactoryGVR.h>
+#include <image360/Image360Mono.h>
 
 
 #define JNI_METHOD(return_type, method_name) \
@@ -52,17 +54,23 @@ namespace {
     std::unique_ptr<cl::LoggerFactoryGVR> loggerFactory = nullptr;
     std::unique_ptr<cl::ILogger> logger = nullptr;
     std::unique_ptr<cl::IEventQueue> eventQueue = nullptr;
+    std::vector<std::unique_ptr<cl::Image> > textureImages;
+
+    std::thread imageLoader;
+
     const char *appDir;
     const char *image360File;
     //bool isRendering = false;
 
-    inline jlong jptr(cl::Image360Stereo *nativeImage360) {
+    inline jlong jptr(cl::Image360 *nativeImage360) {
         return reinterpret_cast<intptr_t>(nativeImage360);
     }
 
-    inline cl::Image360Stereo *native(jlong ptr) {
+    inline cl::Image360 *native(jlong ptr) {
         return reinterpret_cast<cl::Image360Stereo *>(ptr);
     }
+
+
 }  // anonymous namespace
 
 #ifdef __cplusplus
@@ -100,10 +108,10 @@ JNI_METHOD(jlong, nativeCreateRenderer)
     std::unique_ptr<cl::DiffuseTextureCubeMapGLES2Factory> diffuseTextureCubeMapFactory(
             new cl::DiffuseTextureCubeMapGLES2Factory(loggerFactory.get()));
 
-//    std::unique_ptr<cl::RendererGearVR> renderer(
-//            new cl::RendererGearVR(env, activity, loggerFactory.get()));
-    std::unique_ptr<cl::RendererGVRStereo> renderer(
-            new cl::RendererGVRStereo(reinterpret_cast<gvr_context *>(native_gvr_api), loggerFactory.get()));
+    std::unique_ptr<cl::RendererGVR> renderer(
+            new cl::RendererGVR(reinterpret_cast<gvr_context *>(native_gvr_api), loggerFactory.get()));
+//    std::unique_ptr<cl::RendererGVRStereo> renderer(
+//            new cl::RendererGVRStereo(reinterpret_cast<gvr_context *>(native_gvr_api), loggerFactory.get()));
 
     std::unique_ptr<cl::MutexLockGVR> mutexLock(new cl::MutexLockGVR);
     eventQueue = std::unique_ptr<cl::IEventQueue>(new cl::EventQueue(std::move(mutexLock)));
@@ -132,8 +140,23 @@ JNI_METHOD(jlong, nativeCreateRenderer)
     logger->log(cl::LOG_DEBUG, absoluteFontFilePath);
 
 
+//    return jptr(
+//            new cl::Image360Stereo(std::move(renderer),
+//                                   std::move(sceneFactory),
+//                                   std::move(modelFactory),
+//                                   std::move(diffuseTextureFactory),
+//                                   std::move(diffuseTextureCubeMapFactory),
+//                                   std::move(transformTreeFactory),
+//                                   std::move(cameraFactory),
+//                                   eventQueue.get(),
+//                                   loggerFactory.get(),
+//                                   std::move(uiFactory),
+//                                   std::move(gazeDetectorFactory),
+//                                   std::move(eventGazeListenerFactory),
+//                                   absoluteFontFilePath)
+//    );
     return jptr(
-            new cl::Image360Stereo(std::move(renderer),
+            new cl::Image360Mono(std::move(renderer),
                                    std::move(sceneFactory),
                                    std::move(modelFactory),
                                    std::move(diffuseTextureFactory),
@@ -154,22 +177,35 @@ JNI_METHOD(void, nativeDestroyRenderer)
     delete native(nativeImage360);
 }
 
+JNI_METHOD(void, nativeOnStart)
+(JNIEnv *env, jobject obj, jlong nativeImage360) {
+    logger->log(cl::LOG_DEBUG, "Starting Image 360 Application");
+    auto image360 = native(nativeImage360);
+    image360->start();
+
+    logger->log(cl::LOG_DEBUG, "Loading Ad Image");
+
+
+    cl::ImageJPEGLoader imageJPEGLoader(logger.get());
+    std::string absoluteFilePath = std::string(appDir) + std::string("/")
+                                   + std::string(image360File);
+    //textureImages.push_back(image);
+    textureImages.push_back(imageJPEGLoader.loadImage(absoluteFilePath));
+
+    logger->log(cl::LOG_DEBUG, "Ad Image Loaded");
+}
+
 JNI_METHOD(void, nativeInitializeGl)
 (JNIEnv *env, jobject obj, jlong nativeImage360) {
     logger->log(cl::LOG_DEBUG, "Initializing Native GL");
-    auto image360stereo = native(nativeImage360);
-    image360stereo->start();
-
-    cl::ImageJPEGLoader imageJPEGLoader(logger.get());
-    std::vector<std::unique_ptr<cl::Image> > textureImages;
-    std::string absoluteFilePath = std::string(appDir) + std::string("/")
-                                   + std::string(image360File);
-    textureImages.push_back(imageJPEGLoader.loadImage(absoluteFilePath));
-    //textureImages.push_back(imageBMPLoader.loadImage(absoluteFilePath));
+    auto image360 = native(nativeImage360);
+    image360->start();
 
     auto mode = cl::EQUIRECTANGULAR_MAP_MODE;
 
-    image360stereo->initialize(mode, textureImages);
+    logger->log(cl::LOG_DEBUG, "Joining image load thread");
+    //imageLoader.join();
+    image360->initialize(mode, textureImages);
 }
 
 JNI_METHOD(void, nativeDrawFrame)
@@ -198,8 +234,8 @@ JNI_METHOD(void, nativeOnPause)
 
 JNI_METHOD(void, nativeOnResume)
 (JNIEnv *env, jobject obj, jlong nativeImage360) {
-    auto image360stereo = native(nativeImage360);
-    image360stereo->resume();
+    auto image360 = native(nativeImage360);
+    image360->resume();
     //isRendering = true;
 }
 

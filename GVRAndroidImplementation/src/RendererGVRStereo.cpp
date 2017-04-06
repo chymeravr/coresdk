@@ -44,66 +44,6 @@ namespace cl {
         return result;
     }
 
-    static std::array<float, 4> MatrixVectorMul(const gvr::Mat4f &matrix,
-                                                const std::array<float, 4> &vec) {
-        std::array<float, 4> result;
-        for (int i = 0; i < 4; ++i) {
-            result[i] = 0;
-            for (int k = 0; k < 4; ++k) {
-                result[i] += matrix.m[i][k] * vec[k];
-            }
-        }
-        return result;
-    }
-
-    static gvr::Mat4f MatrixMul(const gvr::Mat4f &matrix1,
-                                const gvr::Mat4f &matrix2) {
-        gvr::Mat4f result;
-        for (int i = 0; i < 4; ++i) {
-            for (int j = 0; j < 4; ++j) {
-                result.m[i][j] = 0.0f;
-                for (int k = 0; k < 4; ++k) {
-                    result.m[i][j] += matrix1.m[i][k] * matrix2.m[k][j];
-                }
-            }
-        }
-        return result;
-    }
-
-    static gvr::Mat4f PerspectiveMatrixFromView(const gvr::Rectf &fov, float z_near,
-                                                float z_far) {
-        gvr::Mat4f result;
-        const float x_left = -std::tan(fov.left * M_PI / 180.0f) * z_near;
-        const float x_right = std::tan(fov.right * M_PI / 180.0f) * z_near;
-        const float y_bottom = -std::tan(fov.bottom * M_PI / 180.0f) * z_near;
-        const float y_top = std::tan(fov.top * M_PI / 180.0f) * z_near;
-        const float zero = 0.0f;
-
-        assert(x_left < x_right && y_bottom < y_top && z_near < z_far &&
-               z_near > zero && z_far > zero);
-        const float X = (2 * z_near) / (x_right - x_left);
-        const float Y = (2 * z_near) / (y_top - y_bottom);
-        const float A = (x_right + x_left) / (x_right - x_left);
-        const float B = (y_top + y_bottom) / (y_top - y_bottom);
-        const float C = (z_near + z_far) / (z_near - z_far);
-        const float D = (2 * z_near * z_far) / (z_near - z_far);
-
-        for (int i = 0; i < 4; ++i) {
-            for (int j = 0; j < 4; ++j) {
-                result.m[i][j] = 0.0f;
-            }
-        }
-        result.m[0][0] = X;
-        result.m[0][2] = A;
-        result.m[1][1] = Y;
-        result.m[1][2] = B;
-        result.m[2][2] = C;
-        result.m[2][3] = D;
-        result.m[3][2] = -1;
-
-        return result;
-    }
-
     static gvr::Rectf ModulateRect(const gvr::Rectf &rect, float width,
                                    float height) {
         gvr::Rectf result = {rect.left * width, rect.right * width,
@@ -120,14 +60,6 @@ namespace cl {
                 static_cast<int>(rect.left), static_cast<int>(rect.right),
                 static_cast<int>(rect.bottom), static_cast<int>(rect.top)};
         return result;
-    }
-
-// Generate a random floating point number between 0 and 1.
-    static float RandomUniformFloat() {
-        static std::random_device random_device;
-        static std::mt19937 random_generator(random_device());
-        static std::uniform_real_distribution<float> random_distribution(0, 1);
-        return random_distribution(random_generator);
     }
 
     static void CheckGLError(const char *label) {
@@ -192,6 +124,20 @@ namespace cl {
         return product;
     }
 
+    static gvr::Mat4f MatrixMul(const gvr::Mat4f& matrix1,
+                                const gvr::Mat4f& matrix2) {
+        gvr::Mat4f result;
+        for (int i = 0; i < 4; ++i) {
+            for (int j = 0; j < 4; ++j) {
+                result.m[i][j] = 0.0f;
+                for (int k = 0; k < 4; ++k) {
+                    result.m[i][j] += matrix1.m[i][k] * matrix2.m[k][j];
+                }
+            }
+        }
+        return result;
+    }
+
     RendererGVRStereo::RendererGVRStereo(gvr_context *gvr_context, ILoggerFactory *loggerFactory) :
             gvr_api_(gvr::GvrApi::WrapNonOwned(gvr_context)),
             scratch_viewport_(gvr_api_->CreateBufferViewport()),
@@ -214,6 +160,10 @@ namespace cl {
     }
 
     bool RendererGVRStereo::initialize(Scene *scene) {
+        InitializeGl();
+
+        frame = (gvr::Frame *)malloc(sizeof(gvr::Frame));
+
         IRenderable *sceneRenderer = scene->getRenderable();
         sceneRenderer->initialize();
         std::vector<Relation *> cameraRelations = scene->getRelations("camera");
@@ -244,17 +194,12 @@ namespace cl {
         auto fovx = fovs.left + fovs.right;
         auto fovy = fovs.top + fovs.bottom;
         this->renderCamera->setAspect(fovx / fovy);
+//
+        this->renderCamera->setFov(
+                fovy * CL_PI / 180.0f); // our camera works with radians
+        this->renderCamera->setNearPlane(kZNear);
+        this->renderCamera->setFarPlane(0.0f);
 
-
-
-//        this->renderCamera->setFov(
-//                fovy * CL_PI / 180.0f); // our camera works with radians
-//        this->renderCamera->setNearPlane(kZNear);
-//        this->renderCamera->setFarPlane(kZFar);
-
-        InitializeGl();
-
-        frame = (gvr::Frame *)malloc(sizeof(gvr::Frame));
         return true;
     }
 
@@ -292,6 +237,22 @@ namespace cl {
 
         this->viewport_list_->SetToRecommendedBufferViewports();
 
+        auto fov = this->scratch_viewport_.GetSourceFov();
+
+        const float x_left = -std::tan(fov.left * M_PI / 180.0f) * kZNear;
+        const float x_right = std::tan(fov.right * M_PI / 180.0f) * kZNear;
+        const float y_bottom = -std::tan(fov.bottom * M_PI / 180.0f) * kZNear;
+        const float y_top = std::tan(fov.top * M_PI / 180.0f) * kZNear;
+
+//        auto fovx = fov.left + fov.right;
+        auto fovy = fov.top + fov.bottom;
+
+        this->renderCamera->setAspect((x_right - x_left) / (y_top - y_bottom));
+
+        this->renderCamera->setFov(
+                fovy * CL_PI / 180.0f);
+
+
         glEnable(GL_DEPTH_TEST);
         glEnable(GL_CULL_FACE);
         glDisable(GL_SCISSOR_TEST);
@@ -303,17 +264,19 @@ namespace cl {
 
         IRenderable *sceneRenderer = scene->getRenderable();
         sceneRenderer->draw();
-        //glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
 
         this->viewport_list_->GetBufferViewport(0, &this->scratch_viewport_);
-        transform->setLocalPosition(CL_Vec3(left_eye_matrix.m[0][3], left_eye_matrix.m[1][3], left_eye_matrix.m[2][3]));
+        auto left_camera_position = CL_Vec3( left_eye_matrix.m[0][3] , left_eye_matrix.m[1][3], left_eye_matrix.m[2][3]);
+        transform->setLocalPosition(left_camera_position);
+
         this->draw(scene, LEFT);
 
         this->viewport_list_->GetBufferViewport(1, &this->scratch_viewport_);
-        transform->setLocalPosition(CL_Vec3(right_eye_matrix.m[0][3], right_eye_matrix.m[1][3], right_eye_matrix.m[2][3]));
+        auto right_camera_position = CL_Vec3( right_eye_matrix.m[0][3] , right_eye_matrix.m[1][3], right_eye_matrix.m[2][3]);
+        transform->setLocalPosition(right_camera_position);
+
         this->draw(scene, RIGHT);
-        //glClearColor(1.0f, 0.0f, 0.0f, 0.5f);
 
         this->frame->Unbind();
 
@@ -338,36 +301,22 @@ namespace cl {
 
         CheckGLError("World drawing setup");
 
-
-            auto rightContainer = (Model *) scene->getFromScene("imageContainerRight");
-            auto leftContainer = (Model *) scene->getFromScene("imageContainerLeft");
-
+        auto rightContainer = (Model *) scene->getFromScene("imageContainerRight");
+        auto leftContainer = (Model *) scene->getFromScene("imageContainerLeft");
 
         if(eye == LEFT) {
-//        gvr::Mat4f eye_matrix = gvr_api_->GetEyeFromHeadMatrix(GVR_RIGHT_EYE);
-//        //gvr::Mat4f view_matrix = MatrixMul(eye_matrix, head_view_);
-//
-//        if (eye == LEFT) {
-//            eye_matrix = gvr_api_->GetEyeFromHeadMatrix(GVR_LEFT_EYE);
-//            //view_matrix = MatrixMul(eye_matrix, head_view_);
-//        }
-//
-//        TransformTreeCamera *transform = (TransformTreeCamera *) this->renderCamera->getComponentList().getComponent(
-//                "transformTree");
-//
-//        transform->setLocalPosition(CL_Vec3(eye_matrix.m[0][3], eye_matrix.m[1][3], eye_matrix.m[2][3]));
+            leftContainer->setIsVisible(true);
+            rightContainer->setIsVisible(false);
+            drawScene(scene);
 
-
-            //
+        }else if(eye == RIGHT){
             leftContainer->setIsVisible(true);
             rightContainer->setIsVisible(false);
             drawScene(scene);
         }else{
-            leftContainer->setIsVisible(false);
-            rightContainer->setIsVisible(true);
-            drawScene(scene);
-            //glClearColor(1.0f, 0.0f, 0.0f, 0.5f);
+            return;
         }
+        //drawScene(scene);
 
     }
 

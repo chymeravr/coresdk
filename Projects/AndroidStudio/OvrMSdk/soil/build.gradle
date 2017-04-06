@@ -4,12 +4,12 @@ def soilModule = "${rootProject.rootDir}/soil"
 def distributionDir = "${rootProject.rootDir}/distribution"
 
 android {
-    compileSdkVersion 23
-    buildToolsVersion "23.0.3"
+    compileSdkVersion 25
+    buildToolsVersion "25.0.0"
 
     defaultConfig {
-        minSdkVersion 21
-        targetSdkVersion 23
+        minSdkVersion 23
+        targetSdkVersion 25
         versionCode 1
         versionName "1.0"
 
@@ -21,7 +21,7 @@ android {
                 // I have to use gcc to compile, clang compiled code generate error
                 // at run time for any std::queue etc.
                 targets 'SOIL'
-                arguments = ['-DANDROID_STL=gnustl_shared', '-DANDROID_NATIVE_API_LEVEL=android-23']
+                arguments = ['-DANDROID_STL=gnustl_shared', '-DANDROID_NATIVE_API_LEVEL=android-24']
 
                 abiFilters = ['armeabi-v7a', 'arm64-v8a', 'x86']
             }
@@ -89,17 +89,19 @@ task distributeReleaseLib << {
     // trigger build library
     //dependsOn "assembleRelease"
     copy {
-        from "${soilModule}/build/intermediates/cmake/release/obj/armeabi-v7a/libfreetype.so"
+        from "${soilModule}/build/intermediates/cmake/release/obj/armeabi-v7a/libSOIL.so"
         into "${distributionDir}/soil/armeabi-v7a/"
     }
 
     copy {
-        from "${soilModule}/build/intermediates/cmake/release/obj/arm64-v8a/libfreetype.so"
+        from "${soilModule}/build/intermediates/cmake/release/obj/arm64-v8a/libSOIL.so"
         into "${distributionDir}/soil/arm64-v8a/"
     }
 
     copy {
-        from "${soilModule}/build/intermediates/cmake/release/obj/x86/libfreetype.so"
+        from "${soilModule}/build/intermediates/cmake/release/obj/x86/libSOIL.so"
         into "${distributionDir}/soil/x86/"
     }
 }
+
+build.finalizedBy(distributeReleaseLib)

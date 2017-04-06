@@ -2,17 +2,24 @@
 
 namespace cl
 {
-glm::mat4x4 CL_perspective(float &fov, float &aspect, float &nearPlane, float &farPlane)
+    CL_Mat44 CL_perspective(float &fov, float &aspect, float &nearPlane, float &farPlane)
 {
     return glm::perspective(fov, aspect, nearPlane, farPlane);
 }
+    CL_Mat44 CL_frustum(float &left, float &right, float &bottom, float &top, float &nearPlane, float &farPlane)
+    {
+        return glm::frustum(left, right, bottom, top, nearPlane, farPlane);
+    }
 
 CL_Mat44 CL_tweakedInfinitePerspective(float &fovy, float &aspect, float &nearPlane)
 {
     return glm::tweakedInfinitePerspective(fovy, aspect, nearPlane);
 }
+//    CL_Mat44 CL_infinteFrustum(float &left, float &right, float &top, float &bottom, float &nearPlane){
+//
+//    }
 
-glm::mat4x4 CL_lookAt(CL_Vec3 &cameraPosition, CL_Vec3 &lookAtCenter, CL_Vec3 &up)
+    CL_Mat44 CL_lookAt(CL_Vec3 &cameraPosition, CL_Vec3 &lookAtCenter, CL_Vec3 &up)
 {
     return glm::lookAt(cameraPosition, lookAtCenter, glm::normalize(up));
 }

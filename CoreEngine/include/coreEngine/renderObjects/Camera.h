@@ -38,7 +38,14 @@ namespace cl{
 		void setAspect(const float &aspect);
 		void setNearPlane(const float &nearPlane);
 		void setFarPlane(const float &farPlane);
-		CL_Vec3 getLocalLookAtPoint();
+
+        void setIsAsymetricProjection(bool isAsymetric);
+		void setLeft(const float &left);
+        void setRight(const float &right);
+        void setTop(const float &top);
+        void setBottom(const float &bottom);
+
+        CL_Vec3 getLocalLookAtPoint();
 		CL_Vec3 getLocalUpVector();
 		CL_Vec3 getLocalLocation();
 
@@ -50,6 +57,15 @@ namespace cl{
 		CL_Vec3 upVector;
 		CL_Mat44 viewMatrix;
 		CL_Mat44 projectionMatrix;
+
+        bool isAsymetricProjection = false;
+
+        // explicitly get frustum paramters if projection frustum is assymetric
+        float left;
+        float right;
+        float top;
+        float bottom;
+        // use fov and aspect if projection frustum is symmetric
 		/**
 		* fov is in radians. It represents vertical field of view from top to down.
 		*/
@@ -58,6 +74,7 @@ namespace cl{
 		* aspect ratio = width/height
 		*/
 		float aspect;
+
 		float nearPlane;
 		float farPlane;
 		CL_Vec3 localLocation = CL_Vec3(0.0, 0.0, 0.0);

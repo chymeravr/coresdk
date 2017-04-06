@@ -126,4 +126,5 @@ void RendererNoHMD::pause()
 void RendererNoHMD::resume()
 {
 }
+
 }

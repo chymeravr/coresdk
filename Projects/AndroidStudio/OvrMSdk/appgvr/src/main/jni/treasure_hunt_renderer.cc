@@ -498,18 +498,18 @@ void TreasureHuntRenderer::DrawFrame() {
   gvr::Mat4f right_eye_view = MatrixMul(right_eye_matrix, head_view_);
 
   viewport_list_->SetToRecommendedBufferViewports();
-  gvr::BufferViewport reticle_viewport = gvr_api_->CreateBufferViewport();
-  reticle_viewport.SetSourceBufferIndex(1);
-  reticle_viewport.SetReprojection(GVR_REPROJECTION_NONE);
-  reticle_viewport.SetSourceUv({0.f, 1.f, 0.f, 1.f});
-
-  // Use the viewport transform to put the reticle in the correct place.
-  reticle_viewport.SetTransform(MatrixMul(left_eye_matrix, model_reticle_));
-  reticle_viewport.SetTargetEye(GVR_LEFT_EYE);
-  viewport_list_->SetBufferViewport(2, reticle_viewport);
-  reticle_viewport.SetTransform(MatrixMul(right_eye_matrix, model_reticle_));
-  reticle_viewport.SetTargetEye(GVR_RIGHT_EYE);
-  viewport_list_->SetBufferViewport(3, reticle_viewport);
+//  gvr::BufferViewport reticle_viewport = gvr_api_->CreateBufferViewport();
+//  reticle_viewport.SetSourceBufferIndex(1);
+//  reticle_viewport.SetReprojection(GVR_REPROJECTION_NONE);
+//  reticle_viewport.SetSourceUv({0.f, 1.f, 0.f, 1.f});
+//
+//  // Use the viewport transform to put the reticle in the correct place.
+//  reticle_viewport.SetTransform(MatrixMul(left_eye_matrix, model_reticle_));
+//  reticle_viewport.SetTargetEye(GVR_LEFT_EYE);
+//  viewport_list_->SetBufferViewport(2, reticle_viewport);
+//  reticle_viewport.SetTransform(MatrixMul(right_eye_matrix, model_reticle_));
+//  reticle_viewport.SetTargetEye(GVR_RIGHT_EYE);
+//  viewport_list_->SetBufferViewport(3, reticle_viewport);
 
   glEnable(GL_DEPTH_TEST);
   glEnable(GL_CULL_FACE);
@@ -534,9 +534,9 @@ void TreasureHuntRenderer::DrawFrame() {
   // cursor is controlled by head movement. In Daydream viewer, this layer is
   // left empty, since the cursor is controlled by controller and drawn with
   // DrawCursor() in the same frame buffer as the virtual scene.
-  if (gvr_viewer_type_ == GVR_VIEWER_TYPE_CARDBOARD) {
-    DrawReticle();
-  }
+//  if (gvr_viewer_type_ == GVR_VIEWER_TYPE_CARDBOARD) {
+//    DrawReticle();
+//  }
   frame.Unbind();
 
   // Submit frame.

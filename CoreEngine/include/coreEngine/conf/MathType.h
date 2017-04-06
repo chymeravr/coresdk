@@ -24,7 +24,7 @@ typedef glm::vec4 CL_Vec4;
 typedef glm::mat4x4 CL_Mat44;
 typedef glm::quat CL_Quat;
 /**
-	 * Wrapper function for getting perspective camera matrix
+	 * Wrapper function for getting symmteric perspective camera matrix
 	 *
 	 * @param fov: Field of View
 	 * @param aspect: Aspect ratio of camera (horizontal/vertical)
@@ -34,8 +34,23 @@ typedef glm::quat CL_Quat;
 	 * @return A 4x4 matrix that represents the perspective matrix
 	 */
 CL_Mat44 CL_perspective(float &fov, float &aspect, float &nearPlane, float &farPlane);
-
 CL_Mat44 CL_tweakedInfinitePerspective(float &fovy, float &aspect, float &nearPlane);
+
+/**
+	 * Wrapper function for getting asymmteric perspective camera matrix
+	 *
+	 * @param left: left x coordinate of projection plane
+	 * @param right: right x coordinate of projection plane
+	 * @param top: top y coordinate of projection plane
+	 * @param bottom: bottom y coordinate of projection plane
+	 * @param nearPlane: Distance from camera nearer to which scene will be culled
+	 * @param farPlane: Dstance from camera farther from which scene will be culled
+	 *
+	 * @return A 4x4 matrix that represents the perspective matrix
+	 */
+CL_Mat44 CL_frustum(float &left, float &right, float &bottom, float &top, float &nearPlane, float &farPlane);
+//CL_Mat44 CL_infinteFrustum(float &left, float &right, float &bottom, float &top, float &nearPlane);
+
 /**
 	 * Wrapper function for getting lookat camera view matrix
 	 *
@@ -45,6 +60,7 @@ CL_Mat44 CL_tweakedInfinitePerspective(float &fovy, float &aspect, float &nearPl
 	 *
 	 * @return: A 4x4 matrix that represent the view matrix
 	 */
+
 CL_Mat44 CL_lookAt(CL_Vec3 &cameraPosition, CL_Vec3 &lookAtCenter, CL_Vec3 &up);
 
 /**

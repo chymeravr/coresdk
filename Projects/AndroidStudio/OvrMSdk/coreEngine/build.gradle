@@ -21,7 +21,7 @@ android {
                 // I have to use gcc to compile, clang compiled code generate error
                 // at run time for any std::queue etc.
                 targets 'CoreEngine'
-                arguments = ['-DANDROID_STL=gnustl_shared', '-DANDROID_NATIVE_API_LEVEL=android-23']
+                arguments = ['-DANDROID_STL=gnustl_shared', '-DANDROID_NATIVE_API_LEVEL=android-24']
 
                 cppFlags = ["-DGLES2_0", "-std=c++11", "-frtti", "-fexceptions"]
 
@@ -123,3 +123,5 @@ tasks.whenTaskAdded { task ->
         task.dependsOn ':soil:distributeReleaseLib', ':freetype:distributeReleaseLib'
     }
 }
+
+build.finalizedBy(distributeDebugLib)

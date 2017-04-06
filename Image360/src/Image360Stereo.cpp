@@ -259,6 +259,11 @@ namespace cl {
         renderer->drawComplete();
     }
 
+	void Image360Stereo::update()
+	{
+		renderer->update();
+	}
+
     void Image360Stereo::pause() {
         renderer->pause();
     }
@@ -270,4 +275,48 @@ namespace cl {
     void Image360Stereo::stop() {
         renderer->stop();
     }
+
+	void Image360Stereo::onKeyPress(char key, int x, int y)
+	{
+		logger->log(LOG_DEBUG, "Key pressed:" + std::string(1, key));
+		TransformTreeCamera *transform = (TransformTreeCamera *)camera->getComponentList().getComponent("transformTree");
+		CL_Vec3 pos = transform->getLocalPosition();
+
+		if (key == 'W'){
+			pos[2] -= 0.6f;
+		} else if (key == 'S'){
+			pos[2] += 0.6f;
+		}
+		else if (key == 'A'){
+			pos[0] -= 0.6f;
+		}
+		else if (key == 'D'){
+			pos[0] += 0.6f;
+		}
+		else{
+			return;
+		}
+		transform->setLocalPosition(pos);
+	}
+
+	void Image360Stereo::onPassiveMouseMotion(int x, int y)
+	{
+		//logger->log(LOG_DEBUG, "Mouse move:" + std::to_string(x) + "," + std::to_string(y));
+		if (lastPassiveMousePositionX != -1)
+		{
+			float xoff = (x - lastPassiveMousePositionX) * passiveMouseMotionSensitivity;
+			float yoff = (y - lastPassiveMousePositionY) * passiveMouseMotionSensitivity;
+
+			TransformTreeCamera *transform = (TransformTreeCamera *)camera->getComponentList().getComponent("transformTree");
+			CL_Vec3 rotation = transform->getLocalRotation();
+			transform->setLocalRotation(CL_Vec3(rotation.x - yoff, rotation.y - xoff, rotation.z));
+		}
+		lastPassiveMousePositionX = x;
+		lastPassiveMousePositionY = y;
+	}
+
+	IRenderer *Image360Stereo::getRenderer()
+	{
+		return this->renderer.get();
+	}
 }

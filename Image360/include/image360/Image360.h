@@ -47,9 +47,36 @@ class Image360 : public EventKeyPressListener, public EventPassiveMouseMotionLis
 	     std::unique_ptr<UIFactory> uiFactory,
 	     std::unique_ptr<GazeDetectorFactory> gazeDetectorFactory,
 	     std::unique_ptr<IEventGazeListenerFactory> gazeEventListenerFactory,
-	     std::string fontFolderPath);
+	     std::string fontFolderPath)
+    {
+	assert(renderer != nullptr);
+	assert(sceneFactory != nullptr);
+	assert(modelFactory != nullptr);
+	assert(diffuseTextureFactory != nullptr);
+	assert(diffuseTextureCubeMapFactory != nullptr);
+	assert(transformTreeFactory != nullptr);
+	assert(eventQueue != nullptr);
+	assert(cameraFactory != nullptr);
+	assert(uiFactory != nullptr);
+	assert(gazeDetectorFactory != nullptr);
+	assert(gazeEventListenerFactory != nullptr);
 
-    virtual ~Image360() = 0;
+	this->renderer = std::move(renderer);
+	this->sceneFactory = std::move(sceneFactory);
+	this->modelFactory = std::move(modelFactory);
+	this->diffuseTextureFactory = std::move(diffuseTextureFactory);
+	this->diffuseTextureCubeMapFactory = std::move(diffuseTextureCubeMapFactory);
+	this->transformTreeFactory = std::move(transformTreeFactory);
+	this->cameraFactory = std::move(cameraFactory);
+	this->eventQueue = eventQueue;
+	this->logger = loggerFactory->createLogger("Image360::");
+	this->uiFactory = std::move(uiFactory);
+	this->gazeDetectorFactory = std::move(gazeDetectorFactory);
+	this->eventGazeListenerFactory = std::move(gazeEventListenerFactory);
+	this->fontFolderPath = fontFolderPath;
+    }
+
+    //virtual ~Image360() = 0;
     //IApplication implementation
     virtual void start() = 0;
     /**
@@ -57,7 +84,7 @@ class Image360 : public EventKeyPressListener, public EventPassiveMouseMotionLis
 		* @arg textureImages: Images required to generate textures. In case of CUBE_MAP_MODE_SIX_IMAGES order of images should be FRONT, LEFT, BACK, RIGHT, TOP AND BOTTOM. In other cases just one image is required.
 		*/
     virtual void initialize(TEXTURE_MAP_MODE mode, std::vector<std::unique_ptr<Image>> &textureImages) = 0;
-    void update();
+    virtual void update() = 0;
     virtual void drawInit() = 0;    // draw common stuff
     virtual void draw(EYE eye) = 0; // draw eye specific stuff - camera, models etc.
     virtual void drawComplete() = 0;
@@ -65,8 +92,8 @@ class Image360 : public EventKeyPressListener, public EventPassiveMouseMotionLis
     virtual void stop() = 0;
     virtual void pause() = 0;
     virtual void resume() = 0;
-    void onKeyPress(char key, int x, int y);
-    void onPassiveMouseMotion(int x, int y);
+    virtual void onKeyPress(char key, int x, int y) = 0;
+    virtual void onPassiveMouseMotion(int x, int y) = 0;
     IRenderer *getRenderer();
 
     std::unique_ptr<EventGazeListener> notifyMeListener;
@@ -74,8 +101,8 @@ class Image360 : public EventKeyPressListener, public EventPassiveMouseMotionLis
 
   protected:
     std::unique_ptr<IRenderer> renderer;
+    IEventQueue *eventQueue;
     std::unique_ptr<ILogger> logger;
-    std::unique_ptr<Scene> scene;
 
     std::unique_ptr<ISceneFactory> sceneFactory;
     std::unique_ptr<IModelFactory> modelFactory;
@@ -86,21 +113,6 @@ class Image360 : public EventKeyPressListener, public EventPassiveMouseMotionLis
     std::unique_ptr<UIFactory> uiFactory;
     std::unique_ptr<GazeDetectorFactory> gazeDetectorFactory;
     std::unique_ptr<IEventGazeListenerFactory> eventGazeListenerFactory;
-
-    Camera *camera;
-    Shader *shader;
-    Material *material;
-    Texture *imageTexture;
-    Model *imageContainer;
-    IEventQueue *eventQueue;
-    std::unique_ptr<PlanarBackground> notifyMeBackground;
-    std::unique_ptr<PlanarBackground> closeBackground;
-    std::unique_ptr<Reticle> reticle;
-    std::unique_ptr<GazeDetectorContainer> gazeDetectorContainer;
-
-    int lastPassiveMousePositionX = -1;
-    int lastPassiveMousePositionY = -1;
-    float passiveMouseMotionSensitivity = 0.35f;
 
     std::string fontFolderPath = "";
 };

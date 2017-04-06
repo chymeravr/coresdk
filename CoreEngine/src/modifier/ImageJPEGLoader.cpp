@@ -1,17 +1,21 @@
 #include <string>
 #include <coreEngine/modifier/ImageJPEGLoader.h>
 #include <SOIL.h>
+#include <coreEngine/modifier/textureLoader.h>
 
 namespace cl{
-	ImageJPEGLoader::ImageJPEGLoader(ILogger *logger){
+
+ImageJPEGLoader::ImageJPEGLoader(ILogger *logger){
 		this->logger = logger;
 	}
 
+    // todo : use libjpeg for best performance - current one is too bad for pixel
 	std::unique_ptr<Image> ImageJPEGLoader::loadImage(std::string imagePath){
 		// Data read from the header of the BMP file
 		int width, height, channels;
-		std::unique_ptr<unsigned char> data(SOIL_load_image(imagePath.c_str(), &width, &height, &channels, SOIL_LOAD_RGB));
-		
+		//std::unique_ptr<unsigned char> data(SOIL_load_image(imagePath.c_str(), &width, &height, &channels, SOIL_LOAD_RGB));
+		std::unique_ptr<unsigned char> data(cvr_load_image(imagePath.c_str(), &width, &height, &channels, CVR_LOAD_RGB));
+
 //		logger->log(LOG_DEBUG, "Image Width: " + std::to_string(width));
 //		logger->log(LOG_DEBUG, "Image Height: " + std::to_string(height));
 //		logger->log(LOG_DEBUG, "Image Channels: " + std::to_string(channels));

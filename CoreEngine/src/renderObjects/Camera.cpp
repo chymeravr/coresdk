@@ -23,12 +23,44 @@ namespace cl{
 	}
 
 	void Camera::calculateProjectionMatrix(){
-		if(farPlane > nearPlane){
-			projectionMatrix = CL_perspective(fov, aspect, nearPlane, farPlane);
+        // projection matrix calculations can be done for symetric and asymetric viewing frustum
+		if(!this->isAsymetricProjection) {
+            // symetric case
+			if (farPlane > nearPlane) {
+				projectionMatrix = CL_perspective(fov, aspect, nearPlane, farPlane);
+			} else {
+				projectionMatrix = CL_tweakedInfinitePerspective(fov, aspect, nearPlane);
+			}
 		}else{
-			projectionMatrix = CL_tweakedInfinitePerspective(fov, aspect, nearPlane);
+            // asymetric case - more general
+			if (farPlane > nearPlane) {
+				projectionMatrix = CL_frustum(left, right, bottom, top, nearPlane, farPlane);
+			} else {
+				// todo: does this case arise?
+				//projectionMatrix = CL_infiniteFrustum(left, right, top, bottom, nearPlane);
+			}
 		}
 	}
+
+    void Camera::setIsAsymetricProjection(bool isAsymetric) {
+        this->isAsymetricProjection = isAsymetric;
+    }
+
+    void Camera::setLeft(const float &left){
+        this->left = left;
+    }
+
+    void Camera::setRight(const float &right){
+        this->right = right;
+    }
+
+    void Camera::setTop(const float &top){
+        this->top = top;
+    }
+
+    void Camera::setBottom(const float &bottom){
+        this->bottom = bottom;
+    }
 
 	CL_Mat44 Camera::getViewMatrix(){
 		return this->viewMatrix;

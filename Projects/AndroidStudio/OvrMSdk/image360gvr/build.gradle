@@ -58,11 +58,11 @@ android {
 tasks.whenTaskAdded { task ->
     if (task.name.contains('compileDebug')) {
         task.dependsOn([':coreEngine:distributeDebugLib', ':glImplementation:distributeDebugLib',
-                        ':renderer:distributeDebugLib', ':image360:distributeDebugLib'])
+                        ':image360:distributeDebugLib'])
     }
     else if(task.name.contains('compileRelease')) {
         task.dependsOn([':coreEngine:distributeReleaseLib', ':glImplementation:distributeReleaseLib',
-                        ':renderer:distributeReleaseLib', ':image360:distributeReleaseLib'])
+                        ':image360:distributeReleaseLib'])
     }
 }
 

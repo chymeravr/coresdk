@@ -26,8 +26,6 @@ import android.view.KeyEvent;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.WindowManager;
-import android.view.animation.Animation;
-import android.widget.ImageView;
 
 import com.chymeravr.adclient.VrAdListener;
 import com.chymeravr.adclient.VrAdRequest;
@@ -49,9 +47,6 @@ public class MainActivity extends Activity {
     private GvrLayout gvrLayout;
     private long nativeTreasureHuntRenderer;
     private GLSurfaceView surfaceView;
-
-    Animation anim;
-    ImageView fadeImage;
 
     Image360Ad image360TestAd;
     public boolean isShowing = false;
@@ -129,7 +124,6 @@ public class MainActivity extends Activity {
 
 
         this.image360TestAd.loadAd(vrAdRequest);
-        fadeImage = (ImageView)findViewById(com.chymeravr.appgvr.R.id.fadeview);
 
         // Ensure fullscreen immersion.
         setImmersiveSticky();
@@ -224,6 +218,8 @@ public class MainActivity extends Activity {
         gvrLayout.onResume();
         surfaceView.onResume();
         surfaceView.queueEvent(refreshViewerProfileRunnable);
+
+        ChymeraVrSdk.shutdown();
     }
 
     @Override

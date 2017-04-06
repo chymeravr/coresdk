@@ -48,6 +48,7 @@
 
 // Application Dependency
 #include <image360/Image360.h>
+#include <image360/Image360Mono.h>
 #include <image360/Image360Stereo.h>
 
 //  Windowing Library
@@ -74,6 +75,7 @@ std::unique_ptr<IEventQueue> eventQueue = nullptr;
 
 void key_callback(GLFWwindow* window, int key, int scancode, int action, int mode)
 {
+	std::cout << "Key Pressed " << std::endl;
 	
 	if (key == GLFW_KEY_ESCAPE && action == GLFW_PRESS)
 	{
@@ -236,7 +238,7 @@ int _tmain(int argc, _TCHAR** argv)
 		{
 			// Check if any events have been activiated (key pressed, mouse moved etc.) and call corresponding response functions
 			glfwPollEvents();
-
+			
 			glViewport(0, 0, width, height);
 			application->drawInit();
 
@@ -267,7 +269,7 @@ int _tmain(int argc, _TCHAR** argv)
 	} 
 	else{
 		std::unique_ptr<IRenderer> renderer(new RendererNoHMD());
-	application = std::unique_ptr<Image360>(new Image360(std::move(renderer),
+	application = std::unique_ptr<Image360>(new Image360Mono(std::move(renderer),
 		std::move(sceneFactory),
 		std::move(modelFactory),
 		std::move(diffuseTextureFactory),

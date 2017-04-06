@@ -49,7 +49,7 @@ public class Image360Activity extends Activity {
 
     static {
         System.loadLibrary("gvr");
-        System.loadLibrary("gvr_audio");
+        //System.loadLibrary("gvr_audio");
         System.loadLibrary("image360ad");
     }
 
@@ -89,6 +89,9 @@ public class Image360Activity extends Activity {
                         getClass().getClassLoader(),
                         this.getApplicationContext(),
                         gvrLayout.getGvrApi().getNativeGvrContext(), basePath, imageAdFilePath);
+
+
+        nativeOnStart(nativeImage360ActivityHandler);
 
         // Add the GLSurfaceView to the GvrLayout.
         surfaceView = new GLSurfaceView(this);
@@ -209,6 +212,8 @@ public class Image360Activity extends Activity {
     private native long nativeCreateRenderer(
             ClassLoader appClassLoader, Context context, long nativeGvrContext, String appDir, String Image360AdFileName);
 
+    private native void nativeOnStart(long nativeImage360ActivityHandler);
+
     private native void nativeDestroyRenderer(long nativeTreasureHuntRenderer);
 
     private native void nativeInitializeGl(long nativeTreasureHuntRenderer);
@@ -221,3 +226,4 @@ public class Image360Activity extends Activity {
 
     private native void nativeOnResume(long nativeTreasureHuntRenderer);
 }
+

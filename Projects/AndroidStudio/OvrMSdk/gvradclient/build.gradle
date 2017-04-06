@@ -47,14 +47,14 @@ android {
     sourceSets{
         debug {
             jniLibs.srcDirs = ["${distributionDir}/soil", "${distributionDir}/coreEngine",
-                               "${distributionDir}/glImplementation", "${distributionDir}/renderer",
+                               "${distributionDir}/glImplementation",
                                "${distributionDir}/image360", "${distributionDir}/image360Gvr",
                                 "${distributionDir}/freetype"]
 
         }
         release {
             jniLibs.srcDirs = ["${distributionDir}/soil", "${distributionDir}/coreEngine",
-                               "${distributionDir}/glImplementation", "${distributionDir}/renderer",
+                               "${distributionDir}/glImplementation",
                                "${distributionDir}/image360", "${distributionDir}/image360Gvr",
                                "${distributionDir}/freetype"]
 
@@ -98,12 +98,12 @@ dependencies {
 tasks.whenTaskAdded { task ->
     if (task.name.contains('compileDebug')) {
         task.dependsOn([':coreEngine:distributeDebugLib', ':glImplementation:distributeDebugLib',
-                        ':renderer:distributeDebugLib', ':image360:distributeDebugLib',
+                        ':image360:distributeDebugLib',
                         ':soil:distributeDebugLib',
                         ':image360gvr:distributeDebugLib',':freetype:distributeDebugLib'])
     } else if (task.name.contains('compileRelease')) {
         task.dependsOn([':coreEngine:distributeReleaseLib', ':glImplementation:distributeReleaseLib',
-                        ':renderer:distributeReleaseLib', ':image360:distributeReleaseLib',
+                        ':image360:distributeReleaseLib',
                         ':image360gvr:distributeReleaseLib', ':soil:distributeReleaseLib',
                         ':freetype:distributeReleaseLib' ])
     }
