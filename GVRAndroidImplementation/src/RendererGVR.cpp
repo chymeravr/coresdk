@@ -275,10 +275,6 @@ void RendererGVR::drawInit(Scene *scene)
 
     this->viewport_list_->SetToRecommendedBufferViewports();
 
-    glEnable(GL_DEPTH_TEST);
-    glEnable(GL_CULL_FACE);
-    glDisable(GL_SCISSOR_TEST);
-    glDisable(GL_BLEND);
 
     // Draw the left and right viewport scenes.
     //this->frame->BindBuffer(0);

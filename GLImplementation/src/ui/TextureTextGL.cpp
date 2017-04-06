@@ -25,11 +25,11 @@ bool TextureTextGL::initialize()
     glTexImage2D(
 	GL_TEXTURE_2D,
 	0,
-	GL_RED,
+	GL_LUMINANCE,
 	width,
 	height,
 	0,
-	GL_RED,
+	GL_LUMINANCE,
 	GL_UNSIGNED_BYTE,
 	data.get());
     // Set texture options

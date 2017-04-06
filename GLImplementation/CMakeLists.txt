@@ -35,7 +35,7 @@ endfunction(exclude_subdirectory)
 if (WINDOWS)
 	# remove opengl es files and keep only core files
 	set (EXCLUDE_DIR1 "opengles2")
-	set (EXCLUDE_DIR2 "opengles2")
+	set (EXCLUDE_DIR2 "opengles3")
 	set (NEW_SOURCES "")
 	exclude_subdirectory( "${SOURCES}" "${EXCLUDE_DIR1}" NEW_SOURCES)
 	set(SOURCES "")
@@ -48,14 +48,13 @@ if (WINDOWS)
 else ()
 	# remove opengl core files and keep only es files
 	set (EXCLUDE_DIR "opengl")
+
 	set (NEW_SOURCES "")
-	exclude_subdirectory( "${SOURCES}" "${EXCLUDE_DIR}" NEW_SOURCES)
-	# message("NEW SOURCES = ${NEW_SOURCES}")
-
 	set (NEW_HEADERS "")
+	exclude_subdirectory( "${SOURCES}" "${EXCLUDE_DIR}" NEW_SOURCES)
+	
 	exclude_subdirectory( "${HEADERS}" "${EXCLUDE_DIR}" NEW_HEADERS)
-	#message("NEW HEADERS = ${NEW_HEADERS}")
-
+	
 	add_library(${PROJECT_NAME} SHARED ${NEW_HEADERS} ${NEW_SOURCES})
 	set(ANDROID_LIBRARIES ${CMAKE_SOURCE_DIR}/../Projects/AndroidStudio/OvrMSdk/distribution)
 
