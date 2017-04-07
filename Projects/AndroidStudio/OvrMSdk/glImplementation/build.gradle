@@ -21,7 +21,8 @@ android {
                 // I have to use gcc to compile, clang compiled code generate error
                 // at run time for any std::queue etc.
                 targets 'GLImplementation'
-                arguments = ['-DANDROID_STL=gnustl_shared', '-DANDROID_NATIVE_API_LEVEL=android-24']
+                arguments = ['-DANDROID_STL=gnustl_shared', '-DANDROID_NATIVE_API_LEVEL=android-24',
+                             "-DGLES_V2=TRUE"]
 
                 cppFlags = ["-DGLES2_0", "-std=c++11", "-frtti", "-fexceptions"]
 

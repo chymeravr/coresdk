@@ -2,7 +2,7 @@
 #define GLIMPLEMENTATION_TEXTMATERIALFACTORYGLES2_H
 
 #include <coreEngine/ui/ITextMaterialFactory.h>
-#include <glImplementation/ui/TextureTextGL.h>
+#include <glImplementation/ui/opengles2/TextureTextGLES2.h>
 #include <glImplementation/ui/opengles2/MaterialTextGLES2.h>
 #include <glImplementation/ui/opengles2/ShaderTextGLES2.h>
 
@@ -21,7 +21,7 @@ class TextMaterialFactoryGLES2 : public ITextMaterialFactory
 					       std::unique_ptr<unsigned char> data)
     {
 
-	return std::unique_ptr<TextureText>(new TextureTextGL(sceneId, loggerFactory, width, height, std::move(data)));
+	return std::unique_ptr<TextureText>(new TextureTextGLES2(sceneId, loggerFactory, width, height, std::move(data)));
     }
     ShaderText *getShader(Scene *scene)
     {
@@ -38,7 +38,7 @@ class TextMaterialFactoryGLES2 : public ITextMaterialFactory
     }
     std::unique_ptr<MaterialText> createMaterial(const std::string &sceneId, ShaderText *shaderText, TextureText *textureText)
     {
-	return std::unique_ptr<MaterialText>(new MaterialTextGLES2(sceneId, (ShaderTextGLES2 *)shaderText, (TextureTextGL *)textureText, loggerFactory));
+	return std::unique_ptr<MaterialText>(new MaterialTextGLES2(sceneId, (ShaderTextGLES2 *)shaderText, (TextureTextGLES2 *)textureText, loggerFactory));
     }
 
   private:

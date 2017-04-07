@@ -2,7 +2,7 @@
 
 namespace cl
 {
-MaterialTextGLES2::MaterialTextGLES2(const std::string &sceneId, ShaderTextGLES2 *shader, TextureTextGL *texture, ILoggerFactory *loggerFactory)
+MaterialTextGLES2::MaterialTextGLES2(const std::string &sceneId, ShaderTextGLES2 *shader, TextureTextGLES2 *texture, ILoggerFactory *loggerFactory)
     : MaterialText(sceneId, shader, texture, loggerFactory)
 {
     logger = loggerFactory->createLogger("glImplementation::MaterialTextGLES2: ");
