@@ -50,6 +50,12 @@
 
 namespace {
 
+    typedef enum{
+        NO_EVENT=0,
+        NOTIFY_ME=1,
+        CLOSE_AD=2
+    } keyEventResponse;
+
     // Logger, Event Queue and Application
     std::unique_ptr<cl::LoggerFactoryGVR> loggerFactory = nullptr;
     std::unique_ptr<cl::ILogger> logger = nullptr;
@@ -174,6 +180,8 @@ JNI_METHOD(jlong, nativeCreateRenderer)
 
 JNI_METHOD(void, nativeDestroyRenderer)
 (JNIEnv *env, jclass clazz, jlong nativeImage360) {
+    auto image360 = native(nativeImage360);
+    image360->stop();
     delete native(nativeImage360);
 }
 
@@ -220,15 +228,40 @@ JNI_METHOD(void, nativeDrawFrame)
 //    native(nativeImage360)->drawComplete();
 }
 
-JNI_METHOD(void, nativeOnTriggerEvent)
+JNI_METHOD(int, nativeOnTriggerEvent)
 (JNIEnv *env, jobject obj, jlong nativeImage360) {
-    //native(nativeImage360)->OnTriggerEvent();
+    auto image360 = native(nativeImage360);
+    logger->log(cl::LOG_DEBUG, "Trigger Event");
+    if(image360->closeMeListener->inFocus()){
+        logger->log(cl::LOG_DEBUG, "Close Me Event Detected");
+        return CLOSE_AD;
+    } else if(image360->notifyMeListener->inFocus()){
+        logger->log(cl::LOG_DEBUG, "Notify Me Event Detected");
+        return NOTIFY_ME;
+    }else{
+        return NO_EVENT;
+    }
+}
+
+JNI_METHOD(int, nativeOnControllerClicked)
+(JNIEnv *env, jobject obj, jlong nativeImage360){
+    auto image360 = native(nativeImage360);
+    logger->log(cl::LOG_DEBUG, "Trigger Event");
+    if(image360->closeMeListener->inFocus()){
+        logger->log(cl::LOG_DEBUG, "Close Me Event Detected");
+        return CLOSE_AD;
+    } else if(image360->notifyMeListener->inFocus()){
+        logger->log(cl::LOG_DEBUG, "Notify Me Event Detected");
+        return NOTIFY_ME;
+    }else{
+        return NO_EVENT;
+    }
 }
 
 JNI_METHOD(void, nativeOnPause)
 (JNIEnv *env, jobject obj, jlong nativeImage360) {
     native(nativeImage360)->pause();
-    //gvr_api_->PauseTracking();
+//    gvr_api_->PauseTracking();
     //isRendering = false;
 }
 
@@ -236,7 +269,6 @@ JNI_METHOD(void, nativeOnResume)
 (JNIEnv *env, jobject obj, jlong nativeImage360) {
     auto image360 = native(nativeImage360);
     image360->resume();
-    //isRendering = true;
 }
 
 #ifdef __cplusplus

@@ -14,6 +14,7 @@
 
 #include <android/log.h>
 #include <random>
+#include <coreEngine/components/transformTree/TransformTreeModel.h>
 
 #define LOG_TAG "RendererGVRMono"
 #define LOGW(...) __android_log_print(ANDROID_LOG_WARN, LOG_TAG, __VA_ARGS__)
@@ -28,6 +29,12 @@
 
 namespace cl
 {
+    typedef enum{
+        NO_EVENT=0,
+        NOTIFY_ME=1,
+        CLOSE_AD=2
+    } keyEventResponse;
+
 static const float kZNear = 1.0f;
 static const float kZFar = 100.0f;
 
@@ -155,10 +162,73 @@ static gvr::Mat4f MatrixMul(const gvr::Mat4f &matrix1,
     return result;
 }
 
+    static std::array<float, 4> MatrixVectorMul(const gvr::Mat4f& matrix,
+                                                const std::array<float, 4>& vec) {
+        std::array<float, 4> result;
+        for (int i = 0; i < 4; ++i) {
+            result[i] = 0;
+            for (int k = 0; k < 4; ++k) {
+                result[i] += matrix.m[i][k] * vec[k];
+            }
+        }
+        return result;
+    }
+
+    void RendererGVR::ResumeControllerApiAsNeeded() {
+        switch (gvr_viewer_type_) {
+            case GVR_VIEWER_TYPE_CARDBOARD:
+                gvr_controller_api_.reset();
+                break;
+            case GVR_VIEWER_TYPE_DAYDREAM:
+                if (!gvr_controller_api_) {
+                    // Initialized controller api.
+                    gvr_controller_api_.reset(new gvr::ControllerApi);
+                    CHECK(gvr_controller_api_);
+                    CHECK(gvr_controller_api_->Init(gvr::ControllerApi::DefaultOptions(),
+                                                    gvr_api_->cobj()));
+                }
+                gvr_controller_api_->Resume();
+                break;
+            default:
+                LOGE("unexpected viewer type.");
+                break;
+        }
+    }
+
+
+    void RendererGVR::ProcessControllerInput() {
+        const int old_status = gvr_controller_state_.GetApiStatus();
+        const int old_connection_state = gvr_controller_state_.GetConnectionState();
+
+        // Read current controller state.
+        gvr_controller_state_.Update(*gvr_controller_api_);
+
+        // Print new API status and connection state, if they changed.
+        if (gvr_controller_state_.GetApiStatus() != old_status ||
+            gvr_controller_state_.GetConnectionState() != old_connection_state) {
+            LOGD("TreasureHuntApp: controller API status: %s, connection state: %s",
+                 gvr_controller_api_status_to_string(
+                         gvr_controller_state_.GetApiStatus()),
+                 gvr_controller_connection_state_to_string(
+                         gvr_controller_state_.GetConnectionState()));
+        }
+
+        // Trigger click event if app/click button is clicked.
+        if (gvr_controller_state_.GetButtonDown(GVR_CONTROLLER_BUTTON_APP) ||
+            gvr_controller_state_.GetButtonDown(GVR_CONTROLLER_BUTTON_CLICK)) {
+            // todo : bind the click events to close and notify me
+            logger->log(LOG_DEBUG, "Controller Button Click");
+            //this->OnTriggerEvent();
+        }
+    }
+
+
+
 RendererGVR::RendererGVR(gvr_context *gvr_context, ILoggerFactory *loggerFactory) : gvr_api_(gvr::GvrApi::WrapNonOwned(gvr_context)),
                                                                                     scratch_viewport_(gvr_api_->CreateBufferViewport()),
                                                                                     gvr_viewer_type_(gvr_api_->GetViewerType())
 {
+    ResumeControllerApiAsNeeded();
     if (gvr_viewer_type_ == GVR_VIEWER_TYPE_CARDBOARD)
     {
         LOGD("Viewer type: CARDBOARD");
@@ -171,6 +241,7 @@ RendererGVR::RendererGVR(gvr_context *gvr_context, ILoggerFactory *loggerFactory
     {
         LOGE("Unexpected viewer type.");
     }
+    logger = loggerFactory->createLogger("RendererGVR");
 }
 
 RendererGVR::~RendererGVR()
@@ -246,6 +317,9 @@ void RendererGVR::update()
 
 void RendererGVR::drawInit(Scene *scene)
 {
+    if (gvr_viewer_type_ == GVR_VIEWER_TYPE_DAYDREAM) {
+        ProcessControllerInput();
+    }
 
     PrepareFramebuffer();
     gvr::Frame frame = swapchain_->AcquireFrame();
@@ -448,6 +522,19 @@ void RendererGVR::drawScene(Scene *scene)
                 model->getRenderable()->draw();
             }
         }
+    }
+
+    if (gvr_viewer_type_ == GVR_VIEWER_TYPE_DAYDREAM) {
+
+        auto gvrReticleQuat = gvr_controller_state_.GetOrientation();
+        CL_Quat reticleQuat = CL_Quat(gvrReticleQuat.qw, gvrReticleQuat.qx, gvrReticleQuat.qy, gvrReticleQuat.qz);
+        auto reticle4scene = (Model *)scene->getFromScene("reticle");
+        auto reticleTransform = (TransformTreeModel *)reticle4scene->getComponentList().getComponent("transformTree");
+        //LOGD("Quaternion parameters : %f, %f, %f, %f", gvrReticleQuat.qw, gvrReticleQuat.qx, gvrReticleQuat.qy, gvrReticleQuat.qz);
+        //auto rotmat = CL_RotationMatrix(reticleQuat);
+        auto reticleBaseTransform = (TransformTreeModel *)reticleTransform->getParent();
+        reticleBaseTransform->setLocalQuaternion(reticleQuat);
+
     }
 }
 }

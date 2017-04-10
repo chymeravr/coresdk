@@ -115,6 +115,8 @@ class Image360 : public EventKeyPressListener, public EventPassiveMouseMotionLis
     std::unique_ptr<IEventGazeListenerFactory> eventGazeListenerFactory;
 
     std::string fontFolderPath = "";
+
+	bool isControllerPresent = false;
 };
 }
 

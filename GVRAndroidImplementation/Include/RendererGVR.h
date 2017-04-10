@@ -31,6 +31,13 @@ class RendererGVR : public IRenderer
 
   private:
     void PrepareFramebuffer();
+    void ResumeControllerApiAsNeeded();
+    void ProcessControllerInput();
+    // Controller API entry point.
+    std::unique_ptr<gvr::ControllerApi> gvr_controller_api_;
+
+    // The latest controller state (updated once per frame).
+    gvr::ControllerState gvr_controller_state_;
 
     gvr::Frame *frame;
 
@@ -51,6 +58,8 @@ class RendererGVR : public IRenderer
     CameraGL *renderCamera;
 
     ILoggerFactory *loggerFactory;
+
+    std::unique_ptr<ILogger> logger;
 
   public:
     RendererGVR(gvr_context *gvr_context, ILoggerFactory *loggerFactory);

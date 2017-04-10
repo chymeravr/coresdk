@@ -124,6 +124,8 @@ CL_Mat44 CL_Invert_Mat44(CL_Mat44 mat);
 CL_Quat CL_Angle_Axis(CL_Vec3 axis);
 
 CL_Quat CL_Rot_To_Quat(CL_Mat44 mat);
+
+CL_Mat44 CL_MultMat(CL_Mat44 mat, CL_Mat44 mat2);
 }
 
 #endif //ANDROIDSDK_MATHTYPE_H

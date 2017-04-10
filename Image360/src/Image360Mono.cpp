@@ -42,6 +42,7 @@ void Image360Mono::start()
 void Image360Mono::initialize(TEXTURE_MAP_MODE mapMode, std::vector<std::unique_ptr<Image>> &textureImages)
 {
     std::unique_ptr<Camera> camera;
+
     scene = sceneFactory->create("testScene");
     assert(scene != nullptr);
     scene->setBackgroundColor(CL_Vec4(0.0f, 0.0f, 0.4f, 0.0f));
@@ -237,8 +238,15 @@ void Image360Mono::initialize(TEXTURE_MAP_MODE mapMode, std::vector<std::unique_
 									     vec3_one, vec3_two, scene.get());
     closeBackground->addChild("child2", std::move(closeElement));
 
-    auto vec3_zero = CL_Vec4(0.0, 1.0, 0.0, 1.0);
-    reticle = uiFactory->createReticle("reticle", scene.get(), transformTreeCamera, vec3_zero);
+	auto vec3_zero = CL_Vec4(0.0, 1.0, 0.0, 1.0);
+	if (isControllerPresent){
+		reticleBase = uiFactory->createReticle("reticleBase", scene.get(), nullptr, vec3_zero);
+		TransformTreeModel *transform = reticleBase->getTransformTreeModel();
+		reticle = uiFactory->createReticle("reticle", scene.get(), transform, vec3_zero);
+	}
+	else{
+		reticle = uiFactory->createReticle("reticle", scene.get(), transformTreeCamera, vec3_zero);
+	}
 
     gazeDetectorContainer = gazeDetectorFactory->createGazeDetectorContainer();
 
@@ -318,7 +326,26 @@ void Image360Mono::resume()
 void Image360Mono::onKeyPress(char key, int x, int y)
 {
     //logger->log(LOG_DEBUG, "Key pressed:" + std::string(1, key));
-}
+		logger->log(LOG_DEBUG, "Key pressed:" + std::string(1, key));
+		TransformTreeModel *transform = reticle->getTransformTreeModel();
+		CL_Vec3 rot = transform->getParent()->getLocalRotation();
+
+		if (key == 'W'){
+			rot[1] -= 0.6f;
+		} else if (key == 'S'){
+			rot[1] += 0.6f;
+		}
+		else if (key == 'A'){
+			rot[0] -= 0.6f;
+		}
+		else if (key == 'D'){
+			rot[0] += 0.6f;
+		}
+		else{
+			return;
+		}
+		transform->getParent()->setLocalRotation(rot);
+	}
 
 void Image360Mono::onPassiveMouseMotion(int x, int y)
 {

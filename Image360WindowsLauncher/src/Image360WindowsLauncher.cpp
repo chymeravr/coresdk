@@ -178,7 +178,7 @@ int _tmain(int argc, _TCHAR** argv)
 	std::string fontFilePath = "C:\\Users\\robin_chimera\\Documents\\SDK\\Projects\\VisualStudio\\Image360WindowsLauncher\\Debug\\fonts\\arial.ttf";
 	//std::string fontFilePath = "fonts/arial.ttf";
 
-	IMAGE_MODE appMode = STEREO; //MONO;
+	IMAGE_MODE appMode = MONO;
 	
 	if (appMode == STEREO){
 		std::unique_ptr<IRenderer> renderer(new RendererNoHMDStereo());
@@ -269,7 +269,7 @@ int _tmain(int argc, _TCHAR** argv)
 	} 
 	else{
 		std::unique_ptr<IRenderer> renderer(new RendererNoHMD());
-	application = std::unique_ptr<Image360>(new Image360Mono(std::move(renderer),
+	application = std::unique_ptr<Image360Mono>(new Image360Mono(std::move(renderer),
 		std::move(sceneFactory),
 		std::move(modelFactory),
 		std::move(diffuseTextureFactory),
@@ -306,7 +306,8 @@ int _tmain(int argc, _TCHAR** argv)
 		break;
 	case EQUIRECTANGULAR_MAP_MODE:
 		//textureImages.push_back(imageBMPLoader.loadImage("tex_current.bmp"));
-		textureImages.push_back(imageJPEGLoader.loadImage("equirectangular_desert2.jpg"));
+		//textureImages.push_back(imageJPEGLoader.loadImage("equirectangular_desert2.jpg"));
+		textureImages.push_back(imageJPEGLoader.loadImage("C:\\Users\\robin_chimera\\Documents\\SDK\\Projects\\VisualStudio\\Image360WindowsLauncher\\Debug\\equirectangular_desert2.jpg"));
 		break;
 	}
 

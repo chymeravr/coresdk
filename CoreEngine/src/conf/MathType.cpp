@@ -39,6 +39,10 @@ CL_Mat44 CL_RotationMatrixY(float angle)
     return glm::eulerAngleY(angle);
 }
 
+CL_Mat44 CL_MultMat(CL_Mat44 mat, CL_Mat44 mat2){
+    return glm::matrixCompMult(mat, mat2);
+}
+
 CL_Mat44 CL_RotationMatrixZ(float angle)
 {
     return glm::eulerAngleZ(angle);

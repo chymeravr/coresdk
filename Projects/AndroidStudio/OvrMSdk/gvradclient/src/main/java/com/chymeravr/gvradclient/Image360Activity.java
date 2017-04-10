@@ -1,11 +1,14 @@
 package com.chymeravr.gvradclient;
 
 import android.app.Activity;
+import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
+import android.content.IntentFilter;
 import android.opengl.GLSurfaceView;
 import android.os.Bundle;
 import android.os.Vibrator;
+import android.support.v4.content.LocalBroadcastManager;
 import android.util.Log;
 import android.view.KeyEvent;
 import android.view.MotionEvent;
@@ -14,6 +17,8 @@ import android.view.WindowManager;
 
 import com.google.vr.ndk.base.AndroidCompat;
 import com.google.vr.ndk.base.GvrLayout;
+import com.google.vr.sdk.controller.Controller;
+import com.google.vr.sdk.controller.ControllerManager;
 
 import javax.microedition.khronos.egl.EGLConfig;
 import javax.microedition.khronos.opengles.GL10;
@@ -28,6 +33,9 @@ public class Image360Activity extends Activity {
     private GvrLayout gvrLayout;
     private long nativeImage360ActivityHandler;
     private GLSurfaceView surfaceView;
+
+    private ControllerManager ddControllerManager;
+    private Controller ddController;
 
     private String clickUrl;
 
@@ -47,16 +55,56 @@ public class Image360Activity extends Activity {
                 }
             };
 
+    private enum KeyEventResponse{
+        NO_EVENT,
+        NOTIFY_ME,
+        CLOSE_AD
+    }
+
     static {
         System.loadLibrary("gvr");
         //System.loadLibrary("gvr_audio");
         System.loadLibrary("image360ad");
     }
 
+    private void finishAdActivity() {
+        // TODO: 2/2/2017 the surface is closed in correctly here - fix it
+        // signal parent activity (from the client) to end the ad
+        Intent intent = new Intent("adClosed");
+        LocalBroadcastManager.getInstance(this).sendBroadcast(intent);
+        //finish();
+    }
+
+    class MessageHandler extends BroadcastReceiver {
+        @Override
+        public void onReceive(Context context, Intent intent) {
+            Log.d(TAG, "signalling parent to close activity for image360 ad");
+            finishAdActivity();
+        }
+    }
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         Log.d(TAG, "onCreate");
+        // Register an kill activity intent to destroy the activity when user is done and return to parent
+        LocalBroadcastManager.getInstance(this).registerReceiver(new MessageHandler(),
+                new IntentFilter("finishAd"));
+
+        this.ddControllerManager = new ControllerManager(this, new ControllerManager.EventListener() {
+            @Override
+            public void onApiStatusChanged(int i) {
+                Log.d(TAG, "Api Status Changed");
+            }
+
+            @Override
+            public void onRecentered() {
+                Log.d(TAG, "Recentered");
+            }
+        });
+
+        this.ddController = this.ddControllerManager.getController();
+
         // Ensure fullscreen immersion.
         setImmersiveSticky();
         getWindow()
@@ -111,6 +159,31 @@ public class Image360Activity extends Activity {
                     @Override
                     public void onDrawFrame(GL10 gl) {
                         nativeDrawFrame(nativeImage360ActivityHandler);
+                        ddController.update();
+                        if(ddController.clickButtonState) {
+                            Log.d(TAG, "Click Status : " + ddController.clickButtonState);
+
+
+                            KeyEventResponse keyEventResponse = KeyEventResponse.values()[nativeOnControllerClicked(nativeImage360ActivityHandler)];
+
+                            Log.d(TAG, "Response : " + keyEventResponse);
+                            switch (keyEventResponse){
+                                case NO_EVENT:
+                                    Log.d(TAG, "No Event");
+                                    break;
+                                case NOTIFY_ME:
+                                    //notifyUser();
+                                    Log.d(TAG, "Notify Me");
+                                    break;
+                                case CLOSE_AD:
+                                    Log.d(TAG, "Closing Image 360 Activity");
+                                    Image360Activity.this.finish();
+//                                    Intent intent = new Intent("finishAd");
+//                                    LocalBroadcastManager.getInstance(Image360Activity.this).sendBroadcast(intent);
+                                    break;
+                            }
+                        }
+
                     }
                 });
         surfaceView.setOnTouchListener(
@@ -120,7 +193,8 @@ public class Image360Activity extends Activity {
                         if (event.getAction() == MotionEvent.ACTION_DOWN) {
                             // Give user feedback and signal a trigger event.
                             ((Vibrator) getSystemService(Context.VIBRATOR_SERVICE)).vibrate(50);
-                            nativeOnTriggerEvent(nativeImage360ActivityHandler);
+                            int keyEventResult = nativeOnTriggerEvent(nativeImage360ActivityHandler);
+                            Log.d(TAG, "Key event : " + keyEventResult);
                             return true;
                         }
                         return false;
@@ -150,6 +224,7 @@ public class Image360Activity extends Activity {
     protected void onPause() {
         super.onPause();
         Log.d(TAG, "onPause");
+        ddControllerManager.start();
         nativeOnPause(nativeImage360ActivityHandler);
         gvrLayout.onPause();
         surfaceView.onPause();
@@ -159,6 +234,7 @@ public class Image360Activity extends Activity {
     protected void onResume() {
         super.onResume();
         Log.d(TAG, "onResume");
+        ddControllerManager.start();
         nativeOnResume(nativeImage360ActivityHandler);
         gvrLayout.onResume();
         surfaceView.onResume();
@@ -220,7 +296,9 @@ public class Image360Activity extends Activity {
 
     private native long nativeDrawFrame(long nativeTreasureHuntRenderer);
 
-    private native void nativeOnTriggerEvent(long nativeTreasureHuntRenderer);
+    private native int nativeOnTriggerEvent(long nativeTreasureHuntRenderer);
+
+    private native int nativeOnControllerClicked(long nativeTreasureHuntRenderer);
 
     private native void nativeOnPause(long nativeTreasureHuntRenderer);
 
