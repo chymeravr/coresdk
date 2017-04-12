@@ -24,7 +24,11 @@ android {
                 arguments = ['-DANDROID_STL=gnustl_shared', '-DANDROID_NATIVE_API_LEVEL=android-24']
 
                 cFlags = ["-DANDROID_NDK", "-DFT2_BUILD_LIBRARY=1"]
-                abiFilters = ['armeabi-v7a', 'arm64-v8a', 'x86']
+                // for all daydream supported architecutres
+                // abiFilters = ['armeabi-v7a', 'arm64-v8a', 'x86']
+
+                // for pixel only
+                abiFilters = ['arm64-v8a']
             }
         }
 
@@ -70,39 +74,39 @@ task(distributeReleaseLib, type : Copy) {
 task distributeDebugLib << {
     // trigger build library
     //dependsOn "assembleRelease"
-    copy {
-        from "${freetypeModule}/build/intermediates/cmake/debug/obj/armeabi-v7a/libfreetype.so"
-        into "${distributionDir}/freetype/armeabi-v7a/"
-    }
+//    copy {
+//        from "${freetypeModule}/build/intermediates/cmake/debug/obj/armeabi-v7a/libfreetype.so"
+//        into "${distributionDir}/freetype/armeabi-v7a/"
+//    }
 
     copy {
         from "${freetypeModule}/build/intermediates/cmake/debug/obj/arm64-v8a/libfreetype.so"
         into "${distributionDir}/freetype/arm64-v8a/"
     }
 
-    copy {
-        from "${freetypeModule}/build/intermediates/cmake/debug/obj/x86/libfreetype.so"
-        into "${distributionDir}/freetype/x86/"
-    }
+//    copy {
+//        from "${freetypeModule}/build/intermediates/cmake/debug/obj/x86/libfreetype.so"
+//        into "${distributionDir}/freetype/x86/"
+//    }
 }
 
 task distributeReleaseLib << {
     // trigger build library
     //dependsOn "assembleRelease"
-    copy {
-        from "${freetypeModule}/build/intermediates/cmake/release/obj/armeabi-v7a/libfreetype.so"
-        into "${distributionDir}/freetype/armeabi-v7a/"
-    }
+//    copy {
+//        from "${freetypeModule}/build/intermediates/cmake/release/obj/armeabi-v7a/libfreetype.so"
+//        into "${distributionDir}/freetype/armeabi-v7a/"
+//    }
 
     copy {
         from "${freetypeModule}/build/intermediates/cmake/release/obj/arm64-v8a/libfreetype.so"
         into "${distributionDir}/freetype/arm64-v8a/"
     }
 
-    copy {
-        from "${freetypeModule}/build/intermediates/cmake/release/obj/x86/libfreetype.so"
-        into "${distributionDir}/freetype/x86/"
-    }
+//    copy {
+//        from "${freetypeModule}/build/intermediates/cmake/release/obj/x86/libfreetype.so"
+//        into "${distributionDir}/freetype/x86/"
+//    }
 }
 
 build.finalizedBy(distributeReleaseLib)

@@ -49,7 +49,7 @@ public class Image360Ad extends Ad {
 
     static final int IMAGE360_ACTIVIT_REQUEST = 1;
 
-    DaydreamApi daydreamApi;
+    private DaydreamApi daydreamApi;
 
     private void adListenerCallbacks() {
         this.getVrAdListener().onAdClosed();
@@ -64,7 +64,7 @@ public class Image360Ad extends Ad {
             ((Activity) Image360Ad.this.getContext()).finishActivity(IMAGE360_ACTIVIT_REQUEST);
             //daydreamApi.exitFromVr((Activity) Image360Ad.this.getContext(), IMAGE360_ACTIVIT_REQUEST, null);
             adListenerCallbacks();
-            Image360Ad.this.daydreamApi.close();
+            //Image360Ad.this.daydreamApi.close();
         }
     }
 
@@ -87,6 +87,7 @@ public class Image360Ad extends Ad {
     public void loadAd(final VrAdRequest vrAdRequest) {
         this.setLoading(true);
 
+        daydreamApi = DaydreamApi.create(this.getContext());
         Log.i(TAG, "Requesting Server for a New 360 Image Ad");
 
         // Fetching advertisingId completely asynchronously will lead to race condition.
@@ -208,7 +209,7 @@ public class Image360Ad extends Ad {
 
         //if(file.exists()) {
 
-        daydreamApi = DaydreamApi.create(this.getContext());
+        //daydreamApi = DaydreamApi.create(this.getContext());
 
 //        String files[] = {"Witcher-BoatSunset-SmartPhone-360-Stereo",
 //                "Witcher-CiriForestSunset-Smartphone-360-Stereo",
@@ -249,5 +250,6 @@ public class Image360Ad extends Ad {
             this.getVrAdListener().onAdLoadFailed(VrAdRequest.Error.NO_AD_TO_SHOW, "There is no ad Loaded.");
         }
 
+        daydreamApi.close();
     }
 }

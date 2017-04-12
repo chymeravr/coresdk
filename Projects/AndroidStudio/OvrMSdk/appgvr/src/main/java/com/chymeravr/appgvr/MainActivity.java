@@ -61,6 +61,7 @@ public class MainActivity extends Activity {
                 }
             };
 
+    private VrAdRequest vrAdRequest;
     static {
         System.loadLibrary("gvr");
         System.loadLibrary("gvr_audio");
@@ -117,7 +118,7 @@ public class MainActivity extends Activity {
         } catch (Exception e) {
             e.printStackTrace();
         }
-        final VrAdRequest vrAdRequest = VrAdRequest.builder()
+        vrAdRequest = VrAdRequest.builder()
                 .location(location)
                 .birthday(dob)
                 .gender(VrAdRequest.Gender.MALE).build();
@@ -252,8 +253,9 @@ public class MainActivity extends Activity {
         if(event.getAction() == KeyEvent.ACTION_UP){
             return false;
         }
-        this.image360TestAd.show();
 
+        this.image360TestAd.show();
+        this.image360TestAd.loadAd(vrAdRequest);
         // Avoid accidental volume key presses while the phone is in the VR headset.
         if (event.getKeyCode() == KeyEvent.KEYCODE_VOLUME_UP
                 || event.getKeyCode() == KeyEvent.KEYCODE_VOLUME_DOWN) {

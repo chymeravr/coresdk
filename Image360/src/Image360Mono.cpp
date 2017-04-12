@@ -21,17 +21,16 @@ Image360Mono::Image360Mono(std::unique_ptr<IRenderer> renderer,
 			   std::unique_ptr<UIFactory> uiFactory,
 			   std::unique_ptr<GazeDetectorFactory> gazeDetectorFactory,
 			   std::unique_ptr<IEventGazeListenerFactory> eventGazeListenerFactory,
-			   std::string fontFolderPath) 
-			   : Image360(std::move(renderer), std::move(sceneFactory), std::move(modelFactory),
-			   std::move(diffuseTextureFactory), std::move(diffuseTextureCubeMapFactory),
-			   std::move(transformTreeFactory), std::move(cameraFactory),
-			   std::move(eventQueue), std::move(loggerFactory), std::move(uiFactory),
-			   std::move(gazeDetectorFactory), std::move(eventGazeListenerFactory),
-			   std::move(fontFolderPath))
+			   std::string fontFolderPath)
+    : Image360(std::move(renderer), std::move(sceneFactory), std::move(modelFactory),
+	       std::move(diffuseTextureFactory), std::move(diffuseTextureCubeMapFactory),
+	       std::move(transformTreeFactory), std::move(cameraFactory),
+	       std::move(eventQueue), std::move(loggerFactory), std::move(uiFactory),
+	       std::move(gazeDetectorFactory), std::move(eventGazeListenerFactory),
+	       std::move(fontFolderPath))
 {
-	this->logger->setTag("Image360Mono::");
+    this->logger->setTag("Image360Mono::");
 }
-
 
 //IApplication implementation
 void Image360Mono::start()
@@ -238,37 +237,45 @@ void Image360Mono::initialize(TEXTURE_MAP_MODE mapMode, std::vector<std::unique_
 									     vec3_one, vec3_two, scene.get());
     closeBackground->addChild("child2", std::move(closeElement));
 
-	auto vec3_zero = CL_Vec4(0.0, 1.0, 0.0, 1.0);
-	if (isControllerPresent){
-		reticleBase = uiFactory->createReticle("reticleBase", scene.get(), nullptr, vec3_zero);
-		TransformTreeModel *transform = reticleBase->getTransformTreeModel();
-		reticle = uiFactory->createReticle("reticle", scene.get(), transform, vec3_zero);
-	}
-	else{
-		reticle = uiFactory->createReticle("reticle", scene.get(), transformTreeCamera, vec3_zero);
-	}
+    auto vec3_zero = CL_Vec4(0.0, 1.0, 0.0, 1.0);
 
     gazeDetectorContainer = gazeDetectorFactory->createGazeDetectorContainer();
 
+    // initializing notify me model
     Model *notifyMeModel = (Model *)scene->getFromScene("notifyMe");
     TransformTreeModel *transformNotifyMe = (TransformTreeModel *)notifyMeModel->getComponentList().getComponent("transformTree");
     notifyMeListener = eventGazeListenerFactory->createNotifyMeListener();
 
-    auto boxMessage = std::string("notifyMe");
-    vec3_one = CL_Vec3(0.0f, 0.0f, 0.0f);
-    vec3_two = CL_Vec3(0.0f, 0.0f, -1.0f);
-    std::unique_ptr<IComponent> gazeDetectorNotifyMe = gazeDetectorFactory->createGazeDetectorBox(boxMessage, transformTreeCamera,
-												  transformNotifyMe, notifyMeListener.get(), gazeDetectorContainer.get(), vec3_one, vec3_two, 3.0f, 1.0f, 0.00001f);
-    notifyMeModel->getComponentList().addComponent(std::move(gazeDetectorNotifyMe));
-
+    // initializing close me model
     Model *closeMeModel = (Model *)scene->getFromScene("closeMe");
     TransformTreeModel *transformCloseMe = (TransformTreeModel *)closeMeModel->getComponentList().getComponent("transformTree");
     closeMeListener = eventGazeListenerFactory->createCloseMeListener();
 
+    TransformTree *gazeTransformTarget = nullptr;
+    if (isControllerPresent)
+    {
+	reticleBase = uiFactory->createReticle("reticleBase", scene.get(), nullptr, vec3_zero);
+	TransformTreeModel *transform = reticleBase->getTransformTreeModel();
+	reticle = uiFactory->createReticle("reticle", scene.get(), transform, vec3_zero);
+	gazeTransformTarget = transform;
+    }
+    else
+    {
+	reticle = uiFactory->createReticle("reticle", scene.get(), transformTreeCamera, vec3_zero);
+	gazeTransformTarget = transformTreeCamera;
+    }
+
+    auto boxMessage = std::string("notifyMe");
+    vec3_one = CL_Vec3(0.0f, 0.0f, 0.0f);
+    vec3_two = CL_Vec3(0.0f, 0.0f, -1.0f);
+    std::unique_ptr<IComponent> gazeDetectorNotifyMe = gazeDetectorFactory->createGazeDetectorBox(boxMessage, gazeTransformTarget,
+												  transformNotifyMe, notifyMeListener.get(), gazeDetectorContainer.get(), vec3_one, vec3_two, 3.0f, 1.0f, 0.00001f);
+    notifyMeModel->getComponentList().addComponent(std::move(gazeDetectorNotifyMe));
+
     auto boxMessage2 = std::string("closeMe");
     vec3_one = CL_Vec3(0.0f, 0.0f, 0.0f);
     vec3_two = CL_Vec3(0.0f, 0.0f, -1.0f);
-    std::unique_ptr<IComponent> gazeDetectorCloseMe = gazeDetectorFactory->createGazeDetectorBox(boxMessage2, transformTreeCamera,
+    std::unique_ptr<IComponent> gazeDetectorCloseMe = gazeDetectorFactory->createGazeDetectorBox(boxMessage2, gazeTransformTarget,
 												 transformCloseMe, closeMeListener.get(), gazeDetectorContainer.get(), vec3_one, vec3_two, 3.0f, 1.0f, 0.00001f);
     closeMeModel->getComponentList().addComponent(std::move(gazeDetectorCloseMe));
 
@@ -326,26 +333,32 @@ void Image360Mono::resume()
 void Image360Mono::onKeyPress(char key, int x, int y)
 {
     //logger->log(LOG_DEBUG, "Key pressed:" + std::string(1, key));
-		logger->log(LOG_DEBUG, "Key pressed:" + std::string(1, key));
-		TransformTreeModel *transform = reticle->getTransformTreeModel();
-		CL_Vec3 rot = transform->getParent()->getLocalRotation();
+    logger->log(LOG_DEBUG, "Key pressed:" + std::string(1, key));
+    TransformTreeModel *transform = reticle->getTransformTreeModel();
+    CL_Vec3 rot = transform->getParent()->getLocalRotation();
 
-		if (key == 'W'){
-			rot[1] -= 0.6f;
-		} else if (key == 'S'){
-			rot[1] += 0.6f;
-		}
-		else if (key == 'A'){
-			rot[0] -= 0.6f;
-		}
-		else if (key == 'D'){
-			rot[0] += 0.6f;
-		}
-		else{
-			return;
-		}
-		transform->getParent()->setLocalRotation(rot);
-	}
+    if (key == 'W')
+    {
+	rot[1] -= 0.6f;
+    }
+    else if (key == 'S')
+    {
+	rot[1] += 0.6f;
+    }
+    else if (key == 'A')
+    {
+	rot[0] -= 0.6f;
+    }
+    else if (key == 'D')
+    {
+	rot[0] += 0.6f;
+    }
+    else
+    {
+	return;
+    }
+    transform->getParent()->setLocalRotation(rot);
+}
 
 void Image360Mono::onPassiveMouseMotion(int x, int y)
 {

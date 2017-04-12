@@ -53,6 +53,7 @@ public final class ChymeraVrSdk {
     @Getter
     private WebRequestQueue webRequestQueue;
 
+
     @Getter
     private static final ChymeraVrSdk sdkInstance = new ChymeraVrSdk();
 
@@ -63,6 +64,7 @@ public final class ChymeraVrSdk {
     public static void initialize(final Context context, final String applicationId) {
 
         setApplicationId(applicationId);
+
 
         copyAssets(context);
         /* Check whether client has granted the mandatory permissions for this SDK to function

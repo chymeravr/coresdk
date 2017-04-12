@@ -36,7 +36,7 @@ namespace cl
     } keyEventResponse;
 
 static const float kZNear = 1.0f;
-static const float kZFar = 100.0f;
+static const float kZFar = 1000.0f;
 
 static const uint64_t kPredictionTimeWithoutVsyncNanos = 50000000;
 

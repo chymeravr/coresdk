@@ -25,7 +25,11 @@ android {
 
                 cppFlags = ["-DGLES2_0", "-std=c++11", "-frtti", "-fexceptions"]
 
-                abiFilters = ['armeabi-v7a', 'arm64-v8a', 'x86']
+                // for all daydream supported architecutres
+                // abiFilters = ['armeabi-v7a', 'arm64-v8a', 'x86']
+
+                // for pixel only
+                abiFilters = ['arm64-v8a']
             }
         }
 
@@ -80,47 +84,47 @@ task(distributeReleaseLib, type : Copy) {
 task distributeDebugLib << {
     // trigger build library
     //dependsOn "assembleRelease"
-    copy {
-        from "${coreEngineModule}/build/intermediates/cmake/debug/obj/armeabi-v7a/libCoreEngine.so"
-        into "${distributionDir}/coreEngine/armeabi-v7a/"
-    }
+//    copy {
+//        from "${coreEngineModule}/build/intermediates/cmake/debug/obj/armeabi-v7a/libCoreEngine.so"
+//        into "${distributionDir}/coreEngine/armeabi-v7a/"
+//    }
 
     copy {
         from "${coreEngineModule}/build/intermediates/cmake/debug/obj/arm64-v8a/libCoreEngine.so"
         into "${distributionDir}/coreEngine/arm64-v8a/"
     }
 
-    copy {
-        from "${coreEngineModule}/build/intermediates/cmake/debug/obj/x86/libCoreEngine.so"
-        into "${distributionDir}/coreEngine/x86/"
-    }
+//    copy {
+//        from "${coreEngineModule}/build/intermediates/cmake/debug/obj/x86/libCoreEngine.so"
+//        into "${distributionDir}/coreEngine/x86/"
+//    }
 }
 
 task distributeReleaseLib << {
     // trigger build library
     //dependsOn "assembleRelease"
-    copy {
-        from "${coreEngineModule}/build/intermediates/cmake/release/obj/armeabi-v7a/libCoreEngine.so"
-        into "${distributionDir}/coreEngine/armeabi-v7a/"
-    }
+//    copy {
+//        from "${coreEngineModule}/build/intermediates/cmake/release/obj/armeabi-v7a/libCoreEngine.so"
+//        into "${distributionDir}/coreEngine/armeabi-v7a/"
+//    }
 
     copy {
         from "${coreEngineModule}/build/intermediates/cmake/release/obj/arm64-v8a/libCoreEngine.so"
         into "${distributionDir}/coreEngine/arm64-v8a/"
     }
 
-    copy {
-        from "${coreEngineModule}/build/intermediates/cmake/release/obj/x86/libCoreEngine.so"
-        into "${distributionDir}/coreEngine/x86/"
-    }
+//    copy {
+//        from "${coreEngineModule}/build/intermediates/cmake/release/obj/x86/libCoreEngine.so"
+//        into "${distributionDir}/coreEngine/x86/"
+//    }
 }
 
 tasks.whenTaskAdded { task ->
     if (task.name.contains('compileDebug')) {
-        task.dependsOn ':soil:distributeDebugLib', ':freetype:distributeDebugLib'
+        task.dependsOn ':libjpeg:distributeDebugLib', ':freetype:distributeDebugLib'
     }
     else if(task.name.contains('compileRelease')) {
-        task.dependsOn ':soil:distributeReleaseLib', ':freetype:distributeReleaseLib'
+        task.dependsOn ':libjpeg:distributeReleaseLib', ':freetype:distributeReleaseLib'
     }
 }
 

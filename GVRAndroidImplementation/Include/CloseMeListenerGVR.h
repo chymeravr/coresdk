@@ -19,7 +19,7 @@ public:
 private:
   std::unique_ptr<ILogger> logger;
   std::string tag = "CloseMeListenerGVR";
-  bool focus;
+  bool focus = false;
 };
 }
 

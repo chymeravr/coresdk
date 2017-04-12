@@ -29,7 +29,11 @@ android {
                 cppFlags = ["-DGLES2_0", "-std=c++11", "-frtti", "-fexceptions", '-Wall',
                             '-fno-exceptions', '-Wno-unused-variable']
 
-                abiFilters = ['armeabi-v7a', 'arm64-v8a', 'x86']
+                // for all daydream supported architecutres
+                // abiFilters = ['armeabi-v7a', 'arm64-v8a', 'x86']
+
+                // for pixel only
+                abiFilters = ['arm64-v8a']
             }
         }
     }
@@ -39,22 +43,22 @@ android {
             jniDebuggable true
         }
         release {
-            minifyEnabled false
-            proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
+            // minifyEnabled false
+            //proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
         }
     }
 
     sourceSets{
         debug {
-            jniLibs.srcDirs = ["${distributionDir}/soil", "${distributionDir}/coreEngine",
-                               "${distributionDir}/glImplementation",
+            jniLibs.srcDirs = ["${distributionDir}/coreEngine", "${distributionDir}/soil",
+                               "${distributionDir}/glImplementation", "${distributionDir}/libjpeg",
                                "${distributionDir}/image360", "${distributionDir}/image360Gvr",
                                 "${distributionDir}/freetype"]
 
         }
         release {
-            jniLibs.srcDirs = ["${distributionDir}/soil", "${distributionDir}/coreEngine",
-                               "${distributionDir}/glImplementation",
+            jniLibs.srcDirs = ["${distributionDir}/coreEngine", "${distributionDir}/soil",
+                               "${distributionDir}/glImplementation","${distributionDir}/libjpeg",
                                "${distributionDir}/image360", "${distributionDir}/image360Gvr",
                                "${distributionDir}/freetype"]
 
@@ -68,8 +72,14 @@ android {
     }
 }
 
+// to suppress lombok invalid package warning in adclient linter
+android.lintOptions {
+    abortOnError false
+    disable 'InvalidPackage'
+}
+
 dependencies {
-    compile fileTree(dir: 'libs', include: ['*.jar'])
+    //compile fileTree(dir: 'libs', include: ['*.jar'])
     androidTestCompile('com.android.support.test.espresso:espresso-core:2.2.2', {
         exclude group: 'com.android.support', module: 'support-annotations'
     })
@@ -99,12 +109,12 @@ dependencies {
 tasks.whenTaskAdded { task ->
     if (task.name.contains('compileDebug')) {
         task.dependsOn([':coreEngine:distributeDebugLib', ':glImplementation:distributeDebugLib',
-                        ':image360:distributeDebugLib',
-                        ':soil:distributeDebugLib',
-                        ':image360gvr:distributeDebugLib',':freetype:distributeDebugLib'])
+                        ':image360:distributeDebugLib', ':soil:distributeReleaseLib',
+                        ':libjpeg:distributeReleaseLib',
+                        ':image360gvr:distributeDebugLib',':freetype:distributeReleaseLib'])
     } else if (task.name.contains('compileRelease')) {
         task.dependsOn([':coreEngine:distributeReleaseLib', ':glImplementation:distributeReleaseLib',
-                        ':image360:distributeReleaseLib',
+                        ':image360:distributeReleaseLib', ':libjpeg:distributeReleaseLib',
                         ':image360gvr:distributeReleaseLib', ':soil:distributeReleaseLib',
                         ':freetype:distributeReleaseLib' ])
     }

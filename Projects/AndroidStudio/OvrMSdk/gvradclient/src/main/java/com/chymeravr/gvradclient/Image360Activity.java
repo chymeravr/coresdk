@@ -1,13 +1,19 @@
 package com.chymeravr.gvradclient;
 
 import android.app.Activity;
+import android.app.Notification;
+import android.app.NotificationManager;
+import android.app.PendingIntent;
+import android.app.Service;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
+import android.net.Uri;
 import android.opengl.GLSurfaceView;
 import android.os.Bundle;
 import android.os.Vibrator;
+import android.support.v4.app.NotificationCompat;
 import android.support.v4.content.LocalBroadcastManager;
 import android.util.Log;
 import android.view.KeyEvent;
@@ -38,6 +44,7 @@ public class Image360Activity extends Activity {
     private Controller ddController;
 
     private String clickUrl;
+
 
     @Getter
     private String servingId;
@@ -158,7 +165,7 @@ public class Image360Activity extends Activity {
 
                     @Override
                     public void onDrawFrame(GL10 gl) {
-                        nativeDrawFrame(nativeImage360ActivityHandler);
+
                         ddController.update();
                         if(ddController.clickButtonState) {
                             Log.d(TAG, "Click Status : " + ddController.clickButtonState);
@@ -172,18 +179,20 @@ public class Image360Activity extends Activity {
                                     Log.d(TAG, "No Event");
                                     break;
                                 case NOTIFY_ME:
-                                    //notifyUser();
+                                    notifyUser();
                                     Log.d(TAG, "Notify Me");
                                     break;
                                 case CLOSE_AD:
                                     Log.d(TAG, "Closing Image 360 Activity");
                                     Image360Activity.this.finish();
+
 //                                    Intent intent = new Intent("finishAd");
 //                                    LocalBroadcastManager.getInstance(Image360Activity.this).sendBroadcast(intent);
                                     break;
                             }
                         }
 
+                        nativeDrawFrame(nativeImage360ActivityHandler);
                     }
                 });
         surfaceView.setOnTouchListener(
@@ -193,8 +202,8 @@ public class Image360Activity extends Activity {
                         if (event.getAction() == MotionEvent.ACTION_DOWN) {
                             // Give user feedback and signal a trigger event.
                             ((Vibrator) getSystemService(Context.VIBRATOR_SERVICE)).vibrate(50);
-                            int keyEventResult = nativeOnTriggerEvent(nativeImage360ActivityHandler);
-                            Log.d(TAG, "Key event : " + keyEventResult);
+//                            int keyEventResult = nativeOnTriggerEvent(nativeImage360ActivityHandler);
+//                            Log.d(TAG, "Key event : " + keyEventResult);
                             return true;
                         }
                         return false;
@@ -283,6 +292,24 @@ public class Image360Activity extends Activity {
                                 | View.SYSTEM_UI_FLAG_HIDE_NAVIGATION
                                 | View.SYSTEM_UI_FLAG_FULLSCREEN
                                 | View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY);
+    }
+
+    private void notifyUser() {
+        Intent notificationIntent = new Intent(Intent.ACTION_VIEW);
+        notificationIntent.setData(Uri.parse(this.clickUrl));
+        PendingIntent pi = PendingIntent.getActivity(this, 0, notificationIntent, 0);
+
+        // TODO: 2/22/2017 Get these from the server as well. Issue raised in bitbucket serving repo
+        Notification notification = new NotificationCompat.Builder(this)
+                .setSmallIcon(R.drawable.download_icon)
+                .setContentTitle("<YourContentTitle>")
+                .setContentText("<YourContentText>")
+                .setContentIntent(pi)
+                .setAutoCancel(true)
+                .build();
+
+        NotificationManager notificationManager2 = (NotificationManager) this.getSystemService(Service.NOTIFICATION_SERVICE);
+        notificationManager2.notify(0, notification);
     }
 
     private native long nativeCreateRenderer(

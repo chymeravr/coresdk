@@ -99,6 +99,9 @@ class Image360 : public EventKeyPressListener, public EventPassiveMouseMotionLis
     std::unique_ptr<EventGazeListener> notifyMeListener;
     std::unique_ptr<EventGazeListener> closeMeListener;
 
+    void setIsControllerPresent(bool isControllerPresent){
+        this->isControllerPresent = true;
+    }
   protected:
     std::unique_ptr<IRenderer> renderer;
     IEventQueue *eventQueue;

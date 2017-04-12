@@ -1,13 +1,13 @@
 // common android ndk libraries
-include ':soil', ':freetype'
+include ':freetype', ':libjpeg'
 include ':coreEngine'
 include ':glImplementation'
 include ':image360'
+include ':soil' //- we moved on to libjpeg
 // include ':renderer' - don't think renderer is required anywhere in android
 
 // common android sdk libraries
 include ':common', ':analytics', ':adclient'
-
 
 // Oculus VR Libraries
 //include ':ovr_sdk_mobile'

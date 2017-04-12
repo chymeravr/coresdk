@@ -1,0 +1,87 @@
+apply plugin: 'com.android.library'
+
+def libjpegModule = "${rootProject.rootDir}/libjpeg"
+def distributionDir = "${rootProject.rootDir}/distribution"
+
+android {
+    compileSdkVersion 25
+    buildToolsVersion "25.0.0"
+
+    defaultConfig {
+        minSdkVersion 23
+        targetSdkVersion 25
+        versionCode 1
+        versionName "1.0"
+
+        externalNativeBuild {
+            cmake {
+                // when using arguments, the latest (cmake version 3.6+, android studio
+                // beta2+) must be used to compile
+
+                // I have to use gcc to compile, clang compiled code generate error
+                // at run time for any std::queue etc.
+                targets 'jpeg'
+                arguments = ['-DANDROID_STL=gnustl_shared', '-DANDROID_NATIVE_API_LEVEL=android-24']
+
+                // for all daydream supported architecutres
+                // abiFilters = ['armeabi-v7a', 'arm64-v8a', 'x86']
+
+                // for pixel only
+                abiFilters = ['arm64-v8a']
+            }
+        }
+
+    }
+    buildTypes {
+        release {
+            minifyEnabled false
+            proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
+        }
+    }
+
+    externalNativeBuild {
+        cmake {
+            path '../../../../libjpeg9/CMakeLists.txt'
+        }
+    }
+}
+
+task distributeDebugLib << {
+    // trigger build library
+    //dependsOn "assembleRelease"
+//    copy {
+//        from "${libjpegModule}/build/intermediates/cmake/debug/obj/armeabi-v7a/libjpeg.so"
+//        into "${distributionDir}/libjpeg/armeabi-v7a/"
+//    }
+
+    copy {
+        from "${libjpegModule}/build/intermediates/cmake/debug/obj/arm64-v8a/libjpeg.so"
+        into "${distributionDir}/libjpeg/arm64-v8a/"
+    }
+
+//    copy {
+//        from "${libjpegModule}/build/intermediates/cmake/debug/obj/x86/libjpeg.so"
+//        into "${distributionDir}/libjpeg/x86/"
+//    }
+}
+
+task distributeReleaseLib << {
+    // trigger build library
+    //dependsOn "assembleRelease"
+//    copy {
+//        from "${libjpegModule}/build/intermediates/cmake/release/obj/armeabi-v7a/libjpeg.so"
+//        into "${distributionDir}/libjpeg/armeabi-v7a/"
+//    }
+
+    copy {
+        from "${libjpegModule}/build/intermediates/cmake/release/obj/arm64-v8a/libjpeg.so"
+        into "${distributionDir}/libjpeg/arm64-v8a/"
+    }
+
+//    copy {
+//        from "${libjpegModule}/build/intermediates/cmake/release/obj/x86/libjpeg.so"
+//        into "${distributionDir}/libjpeg/x86/"
+//    }
+}
+
+build.finalizedBy(distributeReleaseLib)

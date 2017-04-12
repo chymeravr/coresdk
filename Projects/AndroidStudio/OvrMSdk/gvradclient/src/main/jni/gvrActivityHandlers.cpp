@@ -62,11 +62,8 @@ namespace {
     std::unique_ptr<cl::IEventQueue> eventQueue = nullptr;
     std::vector<std::unique_ptr<cl::Image> > textureImages;
 
-    std::thread imageLoader;
-
     const char *appDir;
     const char *image360File;
-    //bool isRendering = false;
 
     inline jlong jptr(cl::Image360 *nativeImage360) {
         return reinterpret_cast<intptr_t>(nativeImage360);
@@ -90,7 +87,7 @@ JNI_METHOD(jlong, nativeCreateRenderer)
  jlong native_gvr_api, jstring appDirectory, jstring image360AdFileName) {
 
     loggerFactory = std::unique_ptr<cl::LoggerFactoryGVR>(new cl::LoggerFactoryGVR());
-    logger = loggerFactory->createLogger("Image360::GvrAndroid");
+    logger = loggerFactory->createLogger("Image360AdGvrActivityNative");
     logger->log(cl::LOG_DEBUG, "Native Logger Created Successfully");
 
     appDir = env->GetStringUTFChars(appDirectory, JNI_FALSE);
@@ -182,6 +179,7 @@ JNI_METHOD(void, nativeDestroyRenderer)
 (JNIEnv *env, jclass clazz, jlong nativeImage360) {
     auto image360 = native(nativeImage360);
     image360->stop();
+    textureImages.clear();
     delete native(nativeImage360);
 }
 
@@ -189,7 +187,10 @@ JNI_METHOD(void, nativeOnStart)
 (JNIEnv *env, jobject obj, jlong nativeImage360) {
     logger->log(cl::LOG_DEBUG, "Starting Image 360 Application");
     auto image360 = native(nativeImage360);
+    image360->setIsControllerPresent(true);
     image360->start();
+
+    textureImages = std::vector<std::unique_ptr<cl::Image>>();
 
     logger->log(cl::LOG_DEBUG, "Loading Ad Image");
 
@@ -198,7 +199,8 @@ JNI_METHOD(void, nativeOnStart)
     std::string absoluteFilePath = std::string(appDir) + std::string("/")
                                    + std::string(image360File);
     //textureImages.push_back(image);
-    textureImages.push_back(imageJPEGLoader.loadImage(absoluteFilePath));
+    auto image = imageJPEGLoader.loadImage(absoluteFilePath);
+    textureImages.push_back(std::move(image));
 
     logger->log(cl::LOG_DEBUG, "Ad Image Loaded");
 }

@@ -26,7 +26,11 @@ android {
 
                 cppFlags = ["-DGLES2_0", "-std=c++11", "-frtti", "-fexceptions"]
 
-                abiFilters = ['armeabi-v7a', 'arm64-v8a', 'x86']
+                // for all daydream supported architecutres
+                // abiFilters = ['armeabi-v7a', 'arm64-v8a', 'x86']
+
+                // for pixel only
+                abiFilters = ['arm64-v8a']
             }
         }
     }
@@ -80,39 +84,39 @@ task(distributeReleaseLib, type : Copy) {
 task distributeDebugLib << {
     // trigger build library
     //dependsOn "assembleRelease"
-    copy {
-        from "${glImplementationModule}/build/intermediates/cmake/debug/obj/armeabi-v7a/libGLImplementation.so"
-        into "${distributionDir}/glImplementation/armeabi-v7a/"
-    }
+//    copy {
+//        from "${glImplementationModule}/build/intermediates/cmake/debug/obj/armeabi-v7a/libGLImplementation.so"
+//        into "${distributionDir}/glImplementation/armeabi-v7a/"
+//    }
 
     copy {
         from "${glImplementationModule}/build/intermediates/cmake/debug/obj/arm64-v8a/libGLImplementation.so"
         into "${distributionDir}/glImplementation/arm64-v8a/"
     }
 
-    copy {
-        from "${glImplementationModule}/build/intermediates/cmake/debug/obj/x86/libGLImplementation.so"
-        into "${distributionDir}/glImplementation/x86/"
-    }
+//    copy {
+//        from "${glImplementationModule}/build/intermediates/cmake/debug/obj/x86/libGLImplementation.so"
+//        into "${distributionDir}/glImplementation/x86/"
+//    }
 }
 
 task distributeReleaseLib << {
     // trigger build library
     //dependsOn "assembleRelease"
-    copy {
-        from "${glImplementationModule}/build/intermediates/cmake/release/obj/armeabi-v7a/libGLImplementation.so"
-        into "${distributionDir}/glImplementation/armeabi-v7a/"
-    }
+//    copy {
+//        from "${glImplementationModule}/build/intermediates/cmake/release/obj/armeabi-v7a/libGLImplementation.so"
+//        into "${distributionDir}/glImplementation/armeabi-v7a/"
+//    }
 
     copy {
         from "${glImplementationModule}/build/intermediates/cmake/release/obj/arm64-v8a/libGLImplementation.so"
         into "${distributionDir}/glImplementation/arm64-v8a/"
     }
 
-    copy {
-        from "${glImplementationModule}/build/intermediates/cmake/release/obj/x86/libGLImplementation.so"
-        into "${distributionDir}/glImplementation/x86/"
-    }
+//    copy {
+//        from "${glImplementationModule}/build/intermediates/cmake/release/obj/x86/libGLImplementation.so"
+//        into "${distributionDir}/glImplementation/x86/"
+//    }
 }
 tasks.whenTaskAdded { task ->
     if (task.name.contains('compileDebug')) {
