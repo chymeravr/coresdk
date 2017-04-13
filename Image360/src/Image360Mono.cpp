@@ -237,8 +237,6 @@ void Image360Mono::initialize(TEXTURE_MAP_MODE mapMode, std::vector<std::unique_
 									     vec3_one, vec3_two, scene.get());
     closeBackground->addChild("child2", std::move(closeElement));
 
-    auto vec3_zero = CL_Vec4(0.0, 1.0, 0.0, 1.0);
-
     gazeDetectorContainer = gazeDetectorFactory->createGazeDetectorContainer();
 
     // initializing notify me model
@@ -252,6 +250,7 @@ void Image360Mono::initialize(TEXTURE_MAP_MODE mapMode, std::vector<std::unique_
     closeMeListener = eventGazeListenerFactory->createCloseMeListener();
 
     TransformTree *gazeTransformTarget = nullptr;
+    auto vec3_zero = CL_Vec4(0.0, 1.0, 0.0, 1.0);
     if (isControllerPresent)
     {
 	reticleBase = uiFactory->createReticle("reticleBase", scene.get(), nullptr, vec3_zero);

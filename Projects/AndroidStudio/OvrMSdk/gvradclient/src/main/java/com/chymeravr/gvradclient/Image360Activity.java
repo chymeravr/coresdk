@@ -5,16 +5,14 @@ import android.app.Notification;
 import android.app.NotificationManager;
 import android.app.PendingIntent;
 import android.app.Service;
-import android.content.BroadcastReceiver;
+import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
-import android.content.IntentFilter;
 import android.net.Uri;
 import android.opengl.GLSurfaceView;
 import android.os.Bundle;
 import android.os.Vibrator;
 import android.support.v4.app.NotificationCompat;
-import android.support.v4.content.LocalBroadcastManager;
 import android.util.Log;
 import android.view.KeyEvent;
 import android.view.MotionEvent;
@@ -22,6 +20,7 @@ import android.view.View;
 import android.view.WindowManager;
 
 import com.google.vr.ndk.base.AndroidCompat;
+import com.google.vr.ndk.base.DaydreamApi;
 import com.google.vr.ndk.base.GvrLayout;
 import com.google.vr.sdk.controller.Controller;
 import com.google.vr.sdk.controller.ControllerManager;
@@ -36,23 +35,58 @@ import lombok.Getter;
  */
 
 public class Image360Activity extends Activity {
+
+    private static final String TAG = "Image360AdGvrActivity";
+
     private GvrLayout gvrLayout;
+
+    // native C++ handle for image360 application
     private long nativeImage360ActivityHandler;
+
+    // gl surface on which rendering happens
     private GLSurfaceView surfaceView;
 
+    // daydream parameters - api object, controller etc.
+    private DaydreamApi daydreamApi;
     private ControllerManager ddControllerManager;
     private Controller ddController;
 
+    // count vars to ensure we only notify once / close once
+    private int notifyCount = 1;
+    private int closeCount = 1;
+
+    // enum representing possible controller click responses
+    private enum ControllerClickEventResponse{
+        NO_EVENT,
+        NOTIFY_ME,
+        CLOSE_AD
+    }
+
+    // load native libraries
+    static {
+        // gvr libs
+        System.loadLibrary("gvr");
+        //System.loadLibrary("gvr_audio");
+
+        // chymera libs
+        System.loadLibrary("image360ad");
+    }
+
+    // below params are passed from Image360Ad class which in turn fetched it from server and passed to activity
+    // url to send in notification
     private String clickUrl;
 
-
+    // ad identficaiton ids
     @Getter
     private String servingId;
 
     @Getter
     private int instanceId;
 
-    private static final String TAG = "Image360AdGvrActivity";
+    // we need the class name to go transition back to
+    private String returningClassName;
+
+
     // This is done on the GL thread because refreshViewerProfile isn't thread-safe.
     private final Runnable refreshViewerProfileRunnable =
             new Runnable() {
@@ -62,31 +96,45 @@ public class Image360Activity extends Activity {
                 }
             };
 
-    private enum KeyEventResponse{
-        NO_EVENT,
-        NOTIFY_ME,
-        CLOSE_AD
-    }
 
-    static {
-        System.loadLibrary("gvr");
-        //System.loadLibrary("gvr_audio");
-        System.loadLibrary("image360ad");
-    }
+    // ddController is not thread safe - we call this from the rendering thread and execute on main UI thread
+    private final Runnable r = new Runnable() {
+        public void run() {
+            if(ddController.clickButtonState) {
 
-    private void finishAdActivity() {
-        // TODO: 2/2/2017 the surface is closed in correctly here - fix it
-        // signal parent activity (from the client) to end the ad
-        Intent intent = new Intent("adClosed");
-        LocalBroadcastManager.getInstance(this).sendBroadcast(intent);
-        //finish();
-    }
+                ControllerClickEventResponse keyEventResponse = ControllerClickEventResponse.values()[nativeOnControllerClicked(nativeImage360ActivityHandler)];
 
-    class MessageHandler extends BroadcastReceiver {
-        @Override
-        public void onReceive(Context context, Intent intent) {
-            Log.d(TAG, "signalling parent to close activity for image360 ad");
-            finishAdActivity();
+                switch (keyEventResponse){
+                    case NO_EVENT:
+                        break;
+                    case NOTIFY_ME:
+                        notifyUser();
+                        finishAdActivity();
+                        break;
+                    case CLOSE_AD:
+                        finishAdActivity();
+                        break;
+                }
+            }
+        }
+    };
+
+    // gracefully exit the vr ad back to users add - daydream provides a neat way to do this
+    // only call this function once
+    private void finishAdActivity(){
+
+        if(closeCount <= 0){
+            return;
+        }
+        closeCount--;
+        Class<?> clientClass;
+        try {
+            clientClass = Class.forName(Image360Activity.this.returningClassName);
+            ComponentName c= new ComponentName(Image360Activity.this, clientClass);
+            Intent vrIntent = DaydreamApi.createVrIntent(c);
+            daydreamApi.launchInVr(vrIntent);
+        } catch (ClassNotFoundException e) {
+            Log.e(TAG, e.toString());
         }
     }
 
@@ -94,10 +142,11 @@ public class Image360Activity extends Activity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         Log.d(TAG, "onCreate");
-        // Register an kill activity intent to destroy the activity when user is done and return to parent
-        LocalBroadcastManager.getInstance(this).registerReceiver(new MessageHandler(),
-                new IntentFilter("finishAd"));
 
+        // initialize daydream api
+        this.daydreamApi = DaydreamApi.create(this);
+
+        // initialize daydream controller manager
         this.ddControllerManager = new ControllerManager(this, new ControllerManager.EventListener() {
             @Override
             public void onApiStatusChanged(int i) {
@@ -110,6 +159,7 @@ public class Image360Activity extends Activity {
             }
         });
 
+        // initialize daydream controller
         this.ddController = this.ddControllerManager.getController();
 
         // Ensure fullscreen immersion.
@@ -126,6 +176,7 @@ public class Image360Activity extends Activity {
                             }
                         });
 
+        // get app file path
         String basePath = this.getFilesDir().getAbsolutePath();
 
         // Fetch url to show when user clicks
@@ -136,6 +187,7 @@ public class Image360Activity extends Activity {
 
         this.instanceId = intent.getIntExtra("instanceId", -1);
         this.servingId = intent.getStringExtra("servingId");
+        this.returningClassName = intent.getStringExtra("returningClass");
 
         // Initialize GvrLayout and the native renderer.
         gvrLayout = new GvrLayout(this);
@@ -165,34 +217,14 @@ public class Image360Activity extends Activity {
 
                     @Override
                     public void onDrawFrame(GL10 gl) {
-
-                        ddController.update();
-                        if(ddController.clickButtonState) {
-                            Log.d(TAG, "Click Status : " + ddController.clickButtonState);
-
-
-                            KeyEventResponse keyEventResponse = KeyEventResponse.values()[nativeOnControllerClicked(nativeImage360ActivityHandler)];
-
-                            Log.d(TAG, "Response : " + keyEventResponse);
-                            switch (keyEventResponse){
-                                case NO_EVENT:
-                                    Log.d(TAG, "No Event");
-                                    break;
-                                case NOTIFY_ME:
-                                    notifyUser();
-                                    Log.d(TAG, "Notify Me");
-                                    break;
-                                case CLOSE_AD:
-                                    Log.d(TAG, "Closing Image 360 Activity");
-                                    Image360Activity.this.finish();
-
-//                                    Intent intent = new Intent("finishAd");
-//                                    LocalBroadcastManager.getInstance(Image360Activity.this).sendBroadcast(intent);
-                                    break;
-                            }
-                        }
-
+                        // call native draw function
                         nativeDrawFrame(nativeImage360ActivityHandler);
+
+                        // update controller status
+                        ddController.update();
+
+                        // daydream functions are not thread safe - run them on UI thread
+                        Image360Activity.this.runOnUiThread(r);
                     }
                 });
         surfaceView.setOnTouchListener(
@@ -202,8 +234,7 @@ public class Image360Activity extends Activity {
                         if (event.getAction() == MotionEvent.ACTION_DOWN) {
                             // Give user feedback and signal a trigger event.
                             ((Vibrator) getSystemService(Context.VIBRATOR_SERVICE)).vibrate(50);
-//                            int keyEventResult = nativeOnTriggerEvent(nativeImage360ActivityHandler);
-//                            Log.d(TAG, "Key event : " + keyEventResult);
+                            // int keyEventResult = nativeOnTriggerEvent(nativeImage360ActivityHandler);
                             return true;
                         }
                         return false;
@@ -259,6 +290,8 @@ public class Image360Activity extends Activity {
         // native resources from the UI thread.
         gvrLayout.shutdown();
         nativeDestroyRenderer(nativeImage360ActivityHandler);
+        this.ddControllerManager.stop();
+        this.daydreamApi.close();
     }
 
     @Override
@@ -274,10 +307,17 @@ public class Image360Activity extends Activity {
     public boolean dispatchKeyEvent(KeyEvent event) {
         Log.d(TAG, "dispatchKeyEvent");
         // Avoid accidental volume key presses while the phone is in the VR headset.
+        if(event.getAction() == KeyEvent.ACTION_UP){
+            return true;
+        }
         if (event.getKeyCode() == KeyEvent.KEYCODE_VOLUME_UP
                 || event.getKeyCode() == KeyEvent.KEYCODE_VOLUME_DOWN) {
             return true;
         }
+
+
+
+
         return super.dispatchKeyEvent(event);
     }
 
@@ -295,6 +335,11 @@ public class Image360Activity extends Activity {
     }
 
     private void notifyUser() {
+        if(notifyCount <= 0){
+            return;
+        }
+        notifyCount--;
+
         Intent notificationIntent = new Intent(Intent.ACTION_VIEW);
         notificationIntent.setData(Uri.parse(this.clickUrl));
         PendingIntent pi = PendingIntent.getActivity(this, 0, notificationIntent, 0);
@@ -322,8 +367,6 @@ public class Image360Activity extends Activity {
     private native void nativeInitializeGl(long nativeTreasureHuntRenderer);
 
     private native long nativeDrawFrame(long nativeTreasureHuntRenderer);
-
-    private native int nativeOnTriggerEvent(long nativeTreasureHuntRenderer);
 
     private native int nativeOnControllerClicked(long nativeTreasureHuntRenderer);
 

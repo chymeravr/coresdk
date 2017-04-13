@@ -23,9 +23,7 @@ set (INCLUDE_DIRS ${PROJECT_SOURCE_DIR}/include)
 set(SOURCES ${PROJECT_SOURCE_DIR}/src/LoggerGVR.cpp
             ${PROJECT_SOURCE_DIR}/src/RendererGVR.cpp
             ${PROJECT_SOURCE_DIR}/src/CloseMeListenerGVR.cpp
-            ${PROJECT_SOURCE_DIR}/src/NotifyMeListenerGVR.cpp
-            ${PROJECT_SOURCE_DIR}/src/RendererGVRStereo.cpp
-            ${PROJECT_SOURCE_DIR}/src/RendererGVR.cpp)
+            ${PROJECT_SOURCE_DIR}/src/NotifyMeListenerGVR.cpp)
 
 add_library(${PROJECT_NAME} SHARED ${INCLUDE_DIRS} ${SOURCES})
 

@@ -29,11 +29,11 @@
 
 namespace cl
 {
-    typedef enum{
-        NO_EVENT=0,
-        NOTIFY_ME=1,
-        CLOSE_AD=2
-    } keyEventResponse;
+typedef enum {
+    NO_EVENT = 0,
+    NOTIFY_ME = 1,
+    CLOSE_AD = 2
+} keyEventResponse;
 
 static const float kZNear = 1.0f;
 static const float kZFar = 1000.0f;
@@ -162,67 +162,73 @@ static gvr::Mat4f MatrixMul(const gvr::Mat4f &matrix1,
     return result;
 }
 
-    static std::array<float, 4> MatrixVectorMul(const gvr::Mat4f& matrix,
-                                                const std::array<float, 4>& vec) {
-        std::array<float, 4> result;
-        for (int i = 0; i < 4; ++i) {
-            result[i] = 0;
-            for (int k = 0; k < 4; ++k) {
-                result[i] += matrix.m[i][k] * vec[k];
-            }
-        }
-        return result;
-    }
-
-    void RendererGVR::ResumeControllerApiAsNeeded() {
-        switch (gvr_viewer_type_) {
-            case GVR_VIEWER_TYPE_CARDBOARD:
-                gvr_controller_api_.reset();
-                break;
-            case GVR_VIEWER_TYPE_DAYDREAM:
-                if (!gvr_controller_api_) {
-                    // Initialized controller api.
-                    gvr_controller_api_.reset(new gvr::ControllerApi);
-                    CHECK(gvr_controller_api_);
-                    CHECK(gvr_controller_api_->Init(gvr::ControllerApi::DefaultOptions(),
-                                                    gvr_api_->cobj()));
-                }
-                gvr_controller_api_->Resume();
-                break;
-            default:
-                LOGE("unexpected viewer type.");
-                break;
+static std::array<float, 4> MatrixVectorMul(const gvr::Mat4f &matrix,
+                                            const std::array<float, 4> &vec)
+{
+    std::array<float, 4> result;
+    for (int i = 0; i < 4; ++i)
+    {
+        result[i] = 0;
+        for (int k = 0; k < 4; ++k)
+        {
+            result[i] += matrix.m[i][k] * vec[k];
         }
     }
+    return result;
+}
 
-
-    void RendererGVR::ProcessControllerInput() {
-        const int old_status = gvr_controller_state_.GetApiStatus();
-        const int old_connection_state = gvr_controller_state_.GetConnectionState();
-
-        // Read current controller state.
-        gvr_controller_state_.Update(*gvr_controller_api_);
-
-        // Print new API status and connection state, if they changed.
-        if (gvr_controller_state_.GetApiStatus() != old_status ||
-            gvr_controller_state_.GetConnectionState() != old_connection_state) {
-            LOGD("TreasureHuntApp: controller API status: %s, connection state: %s",
-                 gvr_controller_api_status_to_string(
-                         gvr_controller_state_.GetApiStatus()),
-                 gvr_controller_connection_state_to_string(
-                         gvr_controller_state_.GetConnectionState()));
+void RendererGVR::ResumeControllerApiAsNeeded()
+{
+    switch (gvr_viewer_type_)
+    {
+    case GVR_VIEWER_TYPE_CARDBOARD:
+        gvr_controller_api_.reset();
+        break;
+    case GVR_VIEWER_TYPE_DAYDREAM:
+        if (!gvr_controller_api_)
+        {
+            // Initialized controller api.
+            gvr_controller_api_.reset(new gvr::ControllerApi);
+            CHECK(gvr_controller_api_);
+            CHECK(gvr_controller_api_->Init(gvr::ControllerApi::DefaultOptions(),
+                                            gvr_api_->cobj()));
         }
+        gvr_controller_api_->Resume();
+        break;
+    default:
+        LOGE("unexpected viewer type.");
+        break;
+    }
+}
 
-        // Trigger click event if app/click button is clicked.
-        if (gvr_controller_state_.GetButtonDown(GVR_CONTROLLER_BUTTON_APP) ||
-            gvr_controller_state_.GetButtonDown(GVR_CONTROLLER_BUTTON_CLICK)) {
-            // todo : bind the click events to close and notify me
-            logger->log(LOG_DEBUG, "Controller Button Click");
-            //this->OnTriggerEvent();
-        }
+void RendererGVR::ProcessControllerInput()
+{
+    const int old_status = gvr_controller_state_.GetApiStatus();
+    const int old_connection_state = gvr_controller_state_.GetConnectionState();
+
+    // Read current controller state.
+    gvr_controller_state_.Update(*gvr_controller_api_);
+
+    // Print new API status and connection state, if they changed.
+    if (gvr_controller_state_.GetApiStatus() != old_status ||
+        gvr_controller_state_.GetConnectionState() != old_connection_state)
+    {
+        LOGD("TreasureHuntApp: controller API status: %s, connection state: %s",
+             gvr_controller_api_status_to_string(
+                 gvr_controller_state_.GetApiStatus()),
+             gvr_controller_connection_state_to_string(
+                 gvr_controller_state_.GetConnectionState()));
     }
 
-
+    // Trigger click event if app/click button is clicked.
+    if (gvr_controller_state_.GetButtonDown(GVR_CONTROLLER_BUTTON_APP) ||
+        gvr_controller_state_.GetButtonDown(GVR_CONTROLLER_BUTTON_CLICK))
+    {
+        // todo : bind the click events to close and notify me
+        logger->log(LOG_DEBUG, "Controller Button Click");
+        //this->OnTriggerEvent();
+    }
+}
 
 RendererGVR::RendererGVR(gvr_context *gvr_context, ILoggerFactory *loggerFactory) : gvr_api_(gvr::GvrApi::WrapNonOwned(gvr_context)),
                                                                                     scratch_viewport_(gvr_api_->CreateBufferViewport()),
@@ -257,7 +263,7 @@ bool RendererGVR::initialize(Scene *scene)
 {
     InitializeGl();
 
-    //frame = (gvr::Frame *)malloc(sizeof(gvr::Frame));
+    frame = (gvr::Frame *)malloc(sizeof(gvr::Frame));
 
     IRenderable *sceneRenderer = scene->getRenderable();
     sceneRenderer->initialize();
@@ -289,21 +295,21 @@ bool RendererGVR::initialize(Scene *scene)
     this->renderCamera = (CameraGL *)cameraRelations[0];
     this->renderCamera->setIsAsymetricProjection(true);
 
-//    auto fovs = this->scratch_viewport_.GetSourceFov();
-//
-//    auto left = -std::tan(fovs.left * M_PI / 180.0f) * kZNear;
-//    auto right = std::tan(fovs.right * M_PI / 180.0f) * kZNear;
-//    auto bottom = -std::tan(fovs.bottom * M_PI / 180.0f) * kZNear;
-//    auto top = std::tan(fovs.top * M_PI / 180.0f) * kZNear;
-//
-//    //this->renderCamera->setAspect(fovx / fovy);
-//    //
-////    this->renderCamera->setFov(
-////        fovy * CL_PI / 180.0f); // our camera works with radians
-//    this->renderCamera->setLeft(left);
-//    this->renderCamera->setRight(right);
-//    this->renderCamera->setTop(top);
-//    this->renderCamera->setBottom(bottom);
+    //    auto fovs = this->scratch_viewport_.GetSourceFov();
+    //
+    //    auto left = -std::tan(fovs.left * M_PI / 180.0f) * kZNear;
+    //    auto right = std::tan(fovs.right * M_PI / 180.0f) * kZNear;
+    //    auto bottom = -std::tan(fovs.bottom * M_PI / 180.0f) * kZNear;
+    //    auto top = std::tan(fovs.top * M_PI / 180.0f) * kZNear;
+    //
+    //    //this->renderCamera->setAspect(fovx / fovy);
+    //    //
+    ////    this->renderCamera->setFov(
+    ////        fovy * CL_PI / 180.0f); // our camera works with radians
+    //    this->renderCamera->setLeft(left);
+    //    this->renderCamera->setRight(right);
+    //    this->renderCamera->setTop(top);
+    //    this->renderCamera->setBottom(bottom);
 
     this->renderCamera->setNearPlane(kZNear);
     this->renderCamera->setFarPlane(kZFar);
@@ -317,13 +323,14 @@ void RendererGVR::update()
 
 void RendererGVR::drawInit(Scene *scene)
 {
-    if (gvr_viewer_type_ == GVR_VIEWER_TYPE_DAYDREAM) {
+    if (gvr_viewer_type_ == GVR_VIEWER_TYPE_DAYDREAM)
+    {
         ProcessControllerInput();
     }
 
     PrepareFramebuffer();
-    gvr::Frame frame = swapchain_->AcquireFrame();
-    //*this->frame = swapchain_->AcquireFrame();
+    //gvr::Frame frame = swapchain_->AcquireFrame();
+    *this->frame = swapchain_->AcquireFrame();
 
     // A client app does its rendering here.
     gvr::ClockTimePoint target_time = gvr::GvrApi::GetTimePointNow();
@@ -332,7 +339,7 @@ void RendererGVR::drawInit(Scene *scene)
     this->head_view_ = this->gvr_api_->GetHeadSpaceFromStartSpaceRotation(target_time);
 
     TransformTreeCamera *transform = (TransformTreeCamera *)this->renderCamera->getComponentList().getComponent(
-            "transformTree");
+        "transformTree");
 
     auto matArray = MatrixToGLArray(head_view_);
     auto rotMat = CL_Mat44(matArray[0], matArray[4], matArray[8], matArray[12],
@@ -344,41 +351,81 @@ void RendererGVR::drawInit(Scene *scene)
     transform->setLocalQuaternion(rotQuat);
 
     // A client app does its rendering here.
-    gvr::Mat4f left_eye_matrix = gvr_api_->GetEyeFromHeadMatrix(GVR_LEFT_EYE);
-    gvr::Mat4f right_eye_matrix = gvr_api_->GetEyeFromHeadMatrix(GVR_RIGHT_EYE);
+    //    gvr::Mat4f left_eye_matrix = gvr_api_->GetEyeFromHeadMatrix(GVR_LEFT_EYE);
+    //    gvr::Mat4f right_eye_matrix = gvr_api_->GetEyeFromHeadMatrix(GVR_RIGHT_EYE);
 
     this->viewport_list_->SetToRecommendedBufferViewports();
 
-
     // Draw the left and right viewport scenes.
-    //this->frame->BindBuffer(0);
-    frame.BindBuffer(0);
+    this->frame->BindBuffer(0);
+    //frame.BindBuffer(0);
     glClearColor(0.1f, 0.1f, 0.1f, 0.5f); // Dark background so text shows up.
 
     IRenderable *sceneRenderer = scene->getRenderable();
     sceneRenderer->draw();
 
-    this->viewport_list_->GetBufferViewport(0, &this->scratch_viewport_);
-    auto left_camera_position = CL_Vec3(-1 * left_eye_matrix.m[0][3], -left_eye_matrix.m[1][3], -left_eye_matrix.m[2][3]);
-    {
-        auto fovs = this->scratch_viewport_.GetSourceFov();
+    //    this->viewport_list_->GetBufferViewport(0, &this->scratch_viewport_);
+    //    auto left_camera_position = CL_Vec3(-1 * left_eye_matrix.m[0][3], -left_eye_matrix.m[1][3], -left_eye_matrix.m[2][3]);
+    //    {
+    //        auto fovs = this->scratch_viewport_.GetSourceFov();
+    //
+    //        auto left = -std::tan(fovs.left * M_PI / 180.0f) * kZNear;
+    //        auto right = std::tan(fovs.right * M_PI / 180.0f) * kZNear;
+    //        auto bottom = -std::tan(fovs.bottom * M_PI / 180.0f) * kZNear;
+    //        auto top = std::tan(fovs.top * M_PI / 180.0f) * kZNear;
+    //
+    //        this->renderCamera->setLeft(left);
+    //        this->renderCamera->setRight(right);
+    //        this->renderCamera->setTop(top);
+    //        this->renderCamera->setBottom(bottom);
+    //
+    //        transform->setLocalPosition(left_camera_position);
+    //    }
+    //    this->draw(scene, LEFT);
+    //
+    //    this->viewport_list_->GetBufferViewport(1, &this->scratch_viewport_);
+    //    auto right_camera_position = CL_Vec3(-1 * right_eye_matrix.m[0][3], -right_eye_matrix.m[1][3], -right_eye_matrix.m[2][3]);
+    //
+    //    {
+    //        auto fovs = this->scratch_viewport_.GetSourceFov();
+    //
+    //        auto left = -std::tan(fovs.left * M_PI / 180.0f) * kZNear;
+    //        auto right = std::tan(fovs.right * M_PI / 180.0f) * kZNear;
+    //        auto bottom = -std::tan(fovs.bottom * M_PI / 180.0f) * kZNear;
+    //        auto top = std::tan(fovs.top * M_PI / 180.0f) * kZNear;
+    //
+    //        this->renderCamera->setLeft(left);
+    //        this->renderCamera->setRight(right);
+    //        this->renderCamera->setTop(top);
+    //        this->renderCamera->setBottom(bottom);
+    //
+    //        transform->setLocalPosition(right_camera_position);
+    //    }
+    //    this->draw(scene, RIGHT);
 
-        auto left = -std::tan(fovs.left * M_PI / 180.0f) * kZNear;
-        auto right = std::tan(fovs.right * M_PI / 180.0f) * kZNear;
-        auto bottom = -std::tan(fovs.bottom * M_PI / 180.0f) * kZNear;
-        auto top = std::tan(fovs.top * M_PI / 180.0f) * kZNear;
+    //    this->frame->Unbind();
+    ////    frame.Unbind();
 
-        this->renderCamera->setLeft(left);
-        this->renderCamera->setRight(right);
-        this->renderCamera->setTop(top);
-        this->renderCamera->setBottom(bottom);
+    //    // Submit frame.
+    //    this->frame->Submit(*viewport_list_, head_view_);
+    //    //frame.Submit(*viewport_list_, head_view_);
+    //    CheckGLError("onDrawFrame");
+}
 
-        transform->setLocalPosition(left_camera_position);
-    }
-    this->draw(scene, LEFT);
+void RendererGVR::draw(Scene *scene, EYE eye)
+{
+    TransformTreeCamera *transform = (TransformTreeCamera *)this->renderCamera->getComponentList().getComponent(
+        "transformTree");
 
     this->viewport_list_->GetBufferViewport(1, &this->scratch_viewport_);
-    auto right_camera_position = CL_Vec3(-1 * right_eye_matrix.m[0][3], -right_eye_matrix.m[1][3], -right_eye_matrix.m[2][3]);
+    gvr::Mat4f eye_matrix = gvr_api_->GetEyeFromHeadMatrix(GVR_RIGHT_EYE);
+    if (eye == LEFT)
+    {
+        this->viewport_list_->GetBufferViewport(0, &this->scratch_viewport_);
+        eye_matrix = gvr_api_->GetEyeFromHeadMatrix(GVR_LEFT_EYE);
+    }
+
+    auto right_camera_position = CL_Vec3(-1 * eye_matrix.m[0][3], -eye_matrix.m[1][3], -eye_matrix.m[2][3]);
 
     {
         auto fovs = this->scratch_viewport_.GetSourceFov();
@@ -395,19 +442,6 @@ void RendererGVR::drawInit(Scene *scene)
 
         transform->setLocalPosition(right_camera_position);
     }
-    this->draw(scene, RIGHT);
-
-    //this->frame->Unbind();
-    frame.Unbind();
-
-    // Submit frame.
-    //this->frame->Submit(*viewport_list_, head_view_);
-    frame.Submit(*viewport_list_, head_view_);
-    CheckGLError("onDrawFrame");
-}
-
-void RendererGVR::draw(Scene *scene, EYE eye)
-{
 
     gvr::Recti pixel_rect = CalculatePixelSpaceRect(this->render_size_, this->scratch_viewport_.GetSourceUv());
 
@@ -422,11 +456,11 @@ void RendererGVR::draw(Scene *scene, EYE eye)
 
 void RendererGVR::drawComplete()
 {
-    //        frame->Unbind();
-    //
-    //        frame->Submit(*viewport_list_, head_view_);
-    //
-    //        CheckGLError("onDrawFrame");
+    this->frame->Unbind();
+
+    this->frame->Submit(*viewport_list_, head_view_);
+
+    CheckGLError("onDrawFrame");
 }
 
 void RendererGVR::deinitialize(Scene *scene)
@@ -441,13 +475,14 @@ void RendererGVR::stop()
 void RendererGVR::pause()
 {
     gvr_api_->PauseTracking();
+    if (gvr_controller_api_)
+        gvr_controller_api_->Pause();
 }
 
 void RendererGVR::resume()
 {
-    //        if (gvr_api_) {
-    //            gvr_api_->ResumeTracking();
-    //        }
+    gvr_api_->ResumeTracking();
+    ResumeControllerApiAsNeeded();
 }
 
 std::vector<float> RendererGVR::getHMDParams()
@@ -524,7 +559,8 @@ void RendererGVR::drawScene(Scene *scene)
         }
     }
 
-    if (gvr_viewer_type_ == GVR_VIEWER_TYPE_DAYDREAM) {
+    if (gvr_viewer_type_ == GVR_VIEWER_TYPE_DAYDREAM)
+    {
 
         auto gvrReticleQuat = gvr_controller_state_.GetOrientation();
         CL_Quat reticleQuat = CL_Quat(gvrReticleQuat.qw, gvrReticleQuat.qx, gvrReticleQuat.qy, gvrReticleQuat.qz);
@@ -534,7 +570,6 @@ void RendererGVR::drawScene(Scene *scene)
         //auto rotmat = CL_RotationMatrix(reticleQuat);
         auto reticleBaseTransform = (TransformTreeModel *)reticleTransform->getParent();
         reticleBaseTransform->setLocalQuaternion(reticleQuat);
-
     }
 }
 }

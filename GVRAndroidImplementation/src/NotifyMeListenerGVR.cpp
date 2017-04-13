@@ -11,12 +11,10 @@ NotifyMeListenerGVR::NotifyMeListenerGVR(ILoggerFactory *loggerFactory)
 }
 void NotifyMeListenerGVR::onGazeStarted()
 {
-    this->logger->log(LOG_DEBUG, "onGazeStarted");
     this->focus = true;
 }
 void NotifyMeListenerGVR::onGazeEnded()
 {
-    this->logger->log(LOG_DEBUG, "onGazeEnded");
     this->focus = false;
 }
 void NotifyMeListenerGVR::onGaze() {}

@@ -1,8 +1,8 @@
 package com.chymeravr.gvradclient;
 
 import android.app.Activity;
-import android.app.PendingIntent;
 import android.content.BroadcastReceiver;
+import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
@@ -58,13 +58,10 @@ public class Image360Ad extends Ad {
     class MessageHandler extends BroadcastReceiver {
         @Override
         public void onReceive(Context context, Intent intent) {
-            //((Activity) Image360Ad.this.getContext()).finishActivity(IMAGE360_ACTIVIT_REQUEST);
-            //((Activity)Image360Ad.this.getContext()).overridePendingTransition(R.anim.image360fadein, R.anim.image360fadeout);
             Log.d(TAG, "Received broadcast signal to close ad activity");
             ((Activity) Image360Ad.this.getContext()).finishActivity(IMAGE360_ACTIVIT_REQUEST);
-            //daydreamApi.exitFromVr((Activity) Image360Ad.this.getContext(), IMAGE360_ACTIVIT_REQUEST, null);
+
             adListenerCallbacks();
-            //Image360Ad.this.daydreamApi.close();
         }
     }
 
@@ -87,7 +84,7 @@ public class Image360Ad extends Ad {
     public void loadAd(final VrAdRequest vrAdRequest) {
         this.setLoading(true);
 
-        daydreamApi = DaydreamApi.create(this.getContext());
+        //daydreamApi = DaydreamApi.create(this.getContext());
         Log.i(TAG, "Requesting Server for a New 360 Image Ad");
 
         // Fetching advertisingId completely asynchronously will lead to race condition.
@@ -209,22 +206,22 @@ public class Image360Ad extends Ad {
 
         //if(file.exists()) {
 
-        //daydreamApi = DaydreamApi.create(this.getContext());
+        daydreamApi = DaydreamApi.create(this.getContext());
 
-//        String files[] = {"Witcher-BoatSunset-SmartPhone-360-Stereo",
-//                "Witcher-CiriForestSunset-Smartphone-360-Stereo",
-//                "Witcher-Fireball-SmartPhone-360-Stereo",
-//                "Witcher-LightHouse-SmartPhone-360-Stereo",
-//                "Witcher-Tower-Smartphone-360-Stereo",
-//                "Witcher-Valley-Smartphone-360-Stereo",
-//                "WitnessCreek-Smartphone-360-Stereo",
-//                "WitnessHand-Smartphone-360-Stereo",
-//                "WitnessSquare-Smartphone-360-Stereo"};
-//        int fileIndex = (int)(Math.random() * 9);
+        String files[] = {"Witcher-BoatSunset-SmartPhone-360-Stereo",
+                "Witcher-CiriForestSunset-Smartphone-360-Stereo",
+                "Witcher-Fireball-SmartPhone-360-Stereo",
+                "Witcher-LightHouse-SmartPhone-360-Stereo",
+                "Witcher-Tower-Smartphone-360-Stereo",
+                "Witcher-Valley-Smartphone-360-Stereo",
+                "WitnessCreek-Smartphone-360-Stereo",
+                "WitnessHand-Smartphone-360-Stereo",
+                "WitnessSquare-Smartphone-360-Stereo"};
+        int fileIndex = (int)(Math.random() * 9);
 
-        String files[] = {"equirectangular_desert2",
-                };
-        int fileIndex = (int)(Math.random() * 0);
+//        String files[] = {"equirectangular_desert2",
+//                };
+//        int fileIndex = (int)(Math.random() * 0);
 
         String filePath =  Config.Image360AdAssetDirectory + files[fileIndex] + ".jpg";
 
@@ -233,23 +230,37 @@ public class Image360Ad extends Ad {
 
         if (file.exists()) {
             // send relevant ad data to activity with intent
-            Intent intent = new Intent(this.getContext(), Image360Activity.class);
-            intent.putExtra("clickUrl", this.getClickUrl());
-            intent.putExtra("imageAdFilePath", filePath);
-            intent.putExtra("servingId", this.getServingId());
-            intent.putExtra("instanceId", this.getInstanceId());
+//            Intent intent = new Intent(this.getContext(), Image360Activity.class);
+//            intent.putExtra("clickUrl", this.getClickUrl());
+//            intent.putExtra("imageAdFilePath", filePath);
+//            intent.putExtra("servingId", this.getServingId());
+//            intent.putExtra("instanceId", this.getInstanceId());
+//            intent.putExtra("returningClass", this.getContext().getClass().getName());
+
+
+            ComponentName c= new ComponentName(this.getContext(), Image360Activity.class);
+            Intent vrIntent = daydreamApi.createVrIntent(c);
+
+            vrIntent.putExtra("clickUrl", this.getClickUrl());
+            vrIntent.putExtra("imageAdFilePath", filePath);
+            vrIntent.putExtra("servingId", this.getServingId());
+            vrIntent.putExtra("instanceId", this.getInstanceId());
+            vrIntent.putExtra("returningClass", this.getContext().getClass().getName());
+
+
 
             // start activity for showing ad
             //((Activity) this.getContext()).startActivityForResult(intent, IMAGE360_ACTIVIT_REQUEST);
-            Intent vrIntent =  DaydreamApi.setupVrIntent(intent);
-            PendingIntent pendingIntent = PendingIntent.getActivity(this.getContext(), IMAGE360_ACTIVIT_REQUEST, vrIntent, PendingIntent.FLAG_ONE_SHOT);
-            daydreamApi.launchInVrForResult((Activity)this.getContext(), pendingIntent, IMAGE360_ACTIVIT_REQUEST);
+            //Intent vrIntent =  //DaydreamApi.setupVrIntent(intent);
+            //PendingIntent pendingIntent = PendingIntent.getActivity(this.getContext(), IMAGE360_ACTIVIT_REQUEST, vrIntent, PendingIntent.FLAG_ONE_SHOT);
+            //daydreamApi.launchInVrForResult((Activity)this.getContext(), pendingIntent, IMAGE360_ACTIVIT_REQUEST);
+            daydreamApi.launchInVr(vrIntent);
             this.getVrAdListener().onAdOpened();
+            daydreamApi.close();
         } else {
             Log.i(TAG, "No Ad to Show");
             this.getVrAdListener().onAdLoadFailed(VrAdRequest.Error.NO_AD_TO_SHOW, "There is no ad Loaded.");
         }
 
-        daydreamApi.close();
     }
 }

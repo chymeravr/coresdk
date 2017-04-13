@@ -1,5 +1,6 @@
 //
 // Created by robin_chimera on 3/22/2017.
+// wires the ad application for daydream headset
 //
 
 
@@ -31,17 +32,14 @@
 
 // Image360 Application
 #include <image360/Image360.h>
+#include <image360/Image360Mono.h>
 #include <image360/Image360Stereo.h>
 
 // Android Modules
 #include <LoggerGVRFactory.h>
 #include <MutexLockGVR.h>
-//#include <ImageBMPLoaderAndroid.h>
-//#include <RendererOVRM.h>
-#include <RendererGVRStereo.h>
 #include <RendererGVR.h>
 #include <GazeListenerFactoryGVR.h>
-#include <image360/Image360Mono.h>
 
 
 #define JNI_METHOD(return_type, method_name) \
@@ -159,7 +157,7 @@ JNI_METHOD(jlong, nativeCreateRenderer)
 //                                   absoluteFontFilePath)
 //    );
     return jptr(
-            new cl::Image360Mono(std::move(renderer),
+            new cl::Image360Stereo(std::move(renderer),
                                    std::move(sceneFactory),
                                    std::move(modelFactory),
                                    std::move(diffuseTextureFactory),
@@ -213,21 +211,17 @@ JNI_METHOD(void, nativeInitializeGl)
 
     auto mode = cl::EQUIRECTANGULAR_MAP_MODE;
 
-    logger->log(cl::LOG_DEBUG, "Joining image load thread");
-    //imageLoader.join();
     image360->initialize(mode, textureImages);
 }
 
 JNI_METHOD(void, nativeDrawFrame)
 (JNIEnv *env, jobject obj, jlong nativeImage360) {
-    //native(nativeImage360)->DrawFrame();
-    //if(isRendering) {
-        native(nativeImage360)->drawInit();
-    //}
+    auto image360 = native(nativeImage360);
 
-//    native(nativeImage360)->draw(cl::LEFT);
-//    native(nativeImage360)->draw(cl::RIGHT);
-//    native(nativeImage360)->drawComplete();
+    image360->drawInit();
+    image360->draw(cl::LEFT);
+    image360->draw(cl::RIGHT);
+    image360->drawComplete();
 }
 
 JNI_METHOD(int, nativeOnTriggerEvent)
@@ -263,7 +257,7 @@ JNI_METHOD(int, nativeOnControllerClicked)
 JNI_METHOD(void, nativeOnPause)
 (JNIEnv *env, jobject obj, jlong nativeImage360) {
     native(nativeImage360)->pause();
-//    gvr_api_->PauseTracking();
+
     //isRendering = false;
 }
 

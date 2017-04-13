@@ -12,12 +12,13 @@
 #include <coreEngine/factory/IDiffuseTextureFactory.h>
 #include <coreEngine/factory/IDiffuseTextureCubeMapFactory.h>
 
-#include <coreEngine/modifier/Image.h>
 #include <coreEngine/ui/UIFactory.h>
 #include <coreEngine/components/transformTree/ITransformTreeFactory.h>
 #include <coreEngine/components/gazeDetector/GazeDetectorFactory.h>
 
 #include <coreEngine/factory/IEventGazeListenerFactory.h>
+
+#include <image360/Image360.h>
 
 namespace cl
 {
@@ -41,14 +42,17 @@ public:
   ~Image360Stereo();
 
   void start();
-  void stop();
-
+  /**
+		* @arg mode: One of the values of enum TEXTURE_MAP_MODE - CUBE_MAP_MODE_SIX_IMAGES, CUBE_MAP_MODE_SINGLE_IMAGE, EQUIRECTANGULAR_MAP_MODE
+		* @arg textureImages: Images required to generate textures. In case of CUBE_MAP_MODE_SIX_IMAGES order of images should be FRONT, LEFT, BACK, RIGHT, TOP AND BOTTOM. In other cases just one image is required.
+		*/
   void initialize(TEXTURE_MAP_MODE mapMode, std::vector<std::unique_ptr<Image>> &textureImages);
-  void deinitialize();
+  void update();
   void drawInit();
   void draw(EYE eye);
   void drawComplete();
-  void update();
+  void deinitialize();
+  void stop();
   void pause();
   void resume();
   void onKeyPress(char key, int x, int y);
@@ -58,8 +62,7 @@ public:
   /*std::unique_ptr<EventGazeListener> notifyMeListener;
 	std::unique_ptr<EventGazeListener> closeMeListener;*/
 
-private:
-  //void extractTexture(Image *image, EYE eye);
+protected:
   Shader *stereoShader;
   Material *stereoMaterial;
   Texture *stereoImageTexture;
@@ -76,6 +79,7 @@ private:
   std::unique_ptr<PlanarBackground> notifyMeBackground;
   std::unique_ptr<PlanarBackground> closeBackground;
   std::unique_ptr<Reticle> reticle;
+  std::unique_ptr<Reticle> reticleBase;
   std::unique_ptr<GazeDetectorContainer> gazeDetectorContainer;
 
   int lastPassiveMousePositionX = -1;

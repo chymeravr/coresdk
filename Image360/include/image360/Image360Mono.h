@@ -1,6 +1,7 @@
 #ifndef IMAGE360_IMAGE360MONO_H
 #define IMAGE360_IMAGE360MONO_H
 
+#include <coreEngine/modifier/Image.h>
 #include <coreEngine/IRenderer.h>
 #include <coreEngine/factory/ISceneFactory.h>
 #include <coreEngine/factory/IModelFactory.h>
@@ -11,7 +12,6 @@
 #include <coreEngine/factory/IDiffuseTextureFactory.h>
 #include <coreEngine/factory/IDiffuseTextureCubeMapFactory.h>
 
-#include <coreEngine/modifier/Image.h>
 #include <coreEngine/ui/UIFactory.h>
 #include <coreEngine/components/transformTree/ITransformTreeFactory.h>
 #include <coreEngine/components/gazeDetector/GazeDetectorFactory.h>
@@ -22,7 +22,6 @@
 
 namespace cl
 {
-
 class Image360Mono : public Image360
 {
 public:
