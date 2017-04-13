@@ -5,7 +5,6 @@ import android.content.Context;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.net.wifi.WifiInfo;
-import android.net.wifi.WifiManager;
 import android.os.Build;
 import android.util.Log;
 
@@ -39,7 +38,7 @@ import static android.content.Context.ACTIVITY_SERVICE;
  * Handles generation of requests for ads
  */
 
-final class RequestGenerator {
+public final class RequestGenerator {
     private static final String TAG = "RequestGenerator";
 
     private Ad ad;
@@ -55,13 +54,14 @@ final class RequestGenerator {
         this.mediaServerListener = new Image360MediaServerListener(this.ad);
     }
 
-    public JsonObjectRequest getAdServerJsonRequest(@NonNull AdRequest adRequest) {
+    public JsonObjectRequest getAdServerJsonRequest(@NonNull VrAdRequest vrAdRequest, @NonNull WifiInfo wifiInfo,
+                                                    @NonNull String appId, @NonNull String advertId) {
 
         long timestamp = new Timestamp(System.currentTimeMillis()).getTime();
 
         int sdkVersion = Config.SdkVersion;
 
-        String appId = ChymeraVrSdk.getApplicationId();
+        //String appId = ChymeraVrSdk.getApplicationId();
 
         List<Placement> placements = new ArrayList<>();
         placements.add(new Placement(this.ad.getPlacementId(), this.ad.getAdFormat()));
@@ -69,19 +69,19 @@ final class RequestGenerator {
         ServingRequest servingRequest
                 = new ServingRequest(timestamp, (short) sdkVersion, appId, placements,
                 Config.osId, String.valueOf(Build.VERSION.SDK_INT),
-                ChymeraVrSdk.getAdvertisingId(), Config.hmdId);
+                advertId, Config.hmdId);
 
-        if(adRequest.getLocation() != null) {
-            Location loc = new Location(adRequest.getLocation().getLatitude(),
-                    adRequest.getLocation().getLongitude(),
-                    adRequest.getLocation().getAccuracy());
+        if(vrAdRequest.getLocation() != null) {
+            Location loc = new Location(vrAdRequest.getLocation().getLatitude(),
+                    vrAdRequest.getLocation().getLongitude(),
+                    vrAdRequest.getLocation().getAccuracy());
             servingRequest.setLocation(loc);
         }
 
 
-        Demographics demo = new Demographics(adRequest.getBirthday().toString(),
-                adRequest.getGender().getValue(),
-                adRequest.getEmail());
+        Demographics demo = new Demographics(vrAdRequest.getBirthday().toString(),
+                vrAdRequest.getGender().getValue(),
+                vrAdRequest.getEmail());
         servingRequest.setDemographics(demo);
 
         ActivityManager actManager = (ActivityManager) this.ad.getContext().getSystemService(ACTIVITY_SERVICE);
@@ -105,9 +105,9 @@ final class RequestGenerator {
         }
         servingRequest.setConnectivity(connectivity);
 
-        WifiManager wifiManager = (WifiManager) this.ad.getContext().getSystemService(Context.WIFI_SERVICE);
-        WifiInfo info = wifiManager.getConnectionInfo();
-        String ssid = info.getSSID();
+//        WifiManager wifiManager = (WifiManager) this.ad.getContext().getApplicationContext().getSystemService(Context.WIFI_SERVICE);
+//        WifiInfo info = wifiManager.getConnectionInfo();
+        String ssid = wifiInfo.getSSID();
         servingRequest.setWifiName(ssid);
 
         String servingRequestJson = new Gson().toJson(servingRequest);

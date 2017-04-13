@@ -14,7 +14,7 @@ import java.util.Map;
  * jpeg file to app internal directory
  */
 
-final class InputStreamVolleyRequest extends Request<byte[]>{
+public final class InputStreamVolleyRequest extends Request<byte[]>{
 
     private final Response.Listener<byte[]> mListener;
     private Map<String, String> mParams;

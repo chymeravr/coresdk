@@ -6,12 +6,14 @@ project(CoreEngine)
 set(REPO_PATH ../Repository)
 set(Conf_INCLUDE_DIRS ../Conf/include)
 set(SOIL_INCLUDE_DIRS ../SOIL/include)
+set(LIBJPEG_INCLUDE_DIRS ../libjpeg9/include)
 set (GLM_VERSION 0.9.7.6)
 set (GLEW_VERSION 2.0.0)
 
 include_directories (${REPO_PATH}/thirdParty/glm/glm-${GLM_VERSION}/glm 
 					 ${Conf_INCLUDE_DIRS} 
 					 ${SOIL_INCLUDE_DIRS}
+					 ${LIBJPEG_INCLUDE_DIRS}
 					 ${PROJECT_SOURCE_DIR}/include)
 
 
@@ -50,7 +52,7 @@ if(WINDOWS)
 	########################################################
 
 	add_library(${PROJECT_NAME} STATIC ${INCLUDE_HEADERS}  ${SOURCES})
-	target_link_libraries(${PROJECT_NAME} freetype SOIL)
+	target_link_libraries(${PROJECT_NAME} freetype SOIL jpeg)
 	#target_link_libraries(${PROJECT_NAME} SOIL)
 else()
 	set(FREETYPE_DIRS ../freetype)
@@ -71,7 +73,14 @@ else()
 		PROPERTIES IMPORTED_LOCATION
 		${ANDROID_LIBRARIES}/soil/${ANDROID_ABI}/libSOIL.so
 	)
-	target_link_libraries(${PROJECT_NAME} freetype_lib soil_lib)
+
+	add_library(libjpeg SHARED IMPORTED)
+	set_target_properties(
+		libjpeg
+		PROPERTIES IMPORTED_LOCATION
+		${ANDROID_LIBRARIES}/libjpeg/${ANDROID_ABI}/libjpeg.so
+	)
+	target_link_libraries(${PROJECT_NAME} freetype_lib soil_lib libjpeg)
 endif()
 
 if(WINDOWS)

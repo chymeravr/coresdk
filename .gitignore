@@ -2,6 +2,9 @@
 *.iml
 .gradle/
 build/
+.vscode/
+*testAdClient/
+*gvr_libraries/
 .idea/
 Release/
 Debug/

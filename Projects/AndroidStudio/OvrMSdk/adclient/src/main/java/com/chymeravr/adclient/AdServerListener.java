@@ -35,16 +35,16 @@ class AdServerListener implements Response.ErrorListener, Response.Listener<JSON
         Log.e(TAG, "Error", error);
         this.ad.setLoading(false);
 
-        AdRequest.Error errorCode = null;
+        VrAdRequest.Error errorCode = null;
         if (error instanceof TimeoutError || error instanceof NoConnectionError || error instanceof ServerError) {
-            errorCode = AdRequest.Error.ADSERVER_FAILURE;
+            errorCode = VrAdRequest.Error.ADSERVER_FAILURE;
         } else if (error instanceof NetworkError) {
-            errorCode = AdRequest.Error.NETWORK_FAILURE;
+            errorCode = VrAdRequest.Error.NETWORK_FAILURE;
         } else {
-            errorCode = AdRequest.Error.UNKNOWN_FAILURE;            // screwed
+            errorCode = VrAdRequest.Error.UNKNOWN_FAILURE;            // screwed
         }
 
-        this.ad.getAdListener().onAdLoadFailed(errorCode, error.toString());
+        this.ad.getVrAdListener().onAdLoadFailed(errorCode, error.toString());
 
         this.ad.emitEvent(EventType.ERROR, AnalyticsManager.Priority.LOW, Util.getErrorMap(error));
     }

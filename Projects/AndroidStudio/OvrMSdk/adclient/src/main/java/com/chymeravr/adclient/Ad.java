@@ -14,7 +14,6 @@ import org.json.JSONObject;
 import java.sql.Timestamp;
 import java.util.Map;
 
-import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
@@ -26,7 +25,7 @@ import lombok.Setter;
  */
 
 @RequiredArgsConstructor(suppressConstructorProperties = true)
-abstract class Ad {
+public abstract class Ad {
 
     @Getter
     @NonNull
@@ -36,12 +35,12 @@ abstract class Ad {
     @Setter
     private String placementId;
 
-    @Getter(AccessLevel.PACKAGE)
-    @Setter(AccessLevel.PACKAGE)
+    @Getter
+    @Setter
     private String servingId;
 
-    @Getter(AccessLevel.PACKAGE)
-    @Setter(AccessLevel.PACKAGE)
+    @Getter
+    @Setter
     private int instanceId;
 
     @Getter
@@ -50,28 +49,28 @@ abstract class Ad {
 
     @Getter
     @NonNull
-    private AdListener adListener;
+    private VrAdListener vrAdListener;
 
-    @Getter(AccessLevel.PACKAGE)
-    @Setter(AccessLevel.PACKAGE)
+    @Getter
+    @Setter
     private String mediaUrl;
 
-    @Getter(AccessLevel.PACKAGE)
-    @Setter(AccessLevel.PACKAGE)
+    @Getter
+    @Setter
     private String clickUrl;
 
     @Getter
-    @Setter(AccessLevel.PACKAGE)
+    @Setter
     private volatile boolean isLoading = false;
 
     @Getter
-    @Setter(AccessLevel.PACKAGE)
+    @Setter
     private volatile boolean isLoaded = false;
 
-    @Getter(AccessLevel.PACKAGE)
+    @Getter
     private final AnalyticsManager analyticsManager;
 
-    @Getter(AccessLevel.PACKAGE)
+    @Getter
     private final WebRequestQueue webRequestQueue;
 
 
@@ -83,11 +82,11 @@ abstract class Ad {
         this.getAnalyticsManager().push(event, priority);
     }
 
-    public abstract void loadAd(AdRequest adRequest);
+    public abstract void loadAd(VrAdRequest vrAdRequest);
 
     public abstract void show();
 
-    abstract void onAdServerResponseSuccess(JSONObject response);
+    public abstract void onAdServerResponseSuccess(JSONObject response);
 
-    abstract void onMediaServerResponseSuccess();
+    public abstract void onMediaServerResponseSuccess();
 }

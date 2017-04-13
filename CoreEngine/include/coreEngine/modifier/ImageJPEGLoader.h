@@ -12,6 +12,7 @@ namespace cl{
 	private:
 		ILogger* logger;
 		void invertImage(unsigned char* data, unsigned int width, unsigned int height, unsigned int channels);
+		std::unique_ptr<Image> read_JPEG_file(const char * filename, int* width, int* height, int* channels);
 	};
 }
 

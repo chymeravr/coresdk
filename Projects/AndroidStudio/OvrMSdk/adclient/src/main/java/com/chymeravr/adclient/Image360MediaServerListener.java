@@ -21,8 +21,6 @@ import java.util.HashMap;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 
-import static com.chymeravr.common.Util.createDir;
-
 
 /**
  * Created by robin_chimera on 1/23/2017.
@@ -43,16 +41,16 @@ final class Image360MediaServerListener implements Response.ErrorListener,
 
         this.ad.setLoading(false);
 
-        AdRequest.Error errorCode = null;
+        VrAdRequest.Error errorCode = null;
         if (error instanceof TimeoutError || error instanceof NoConnectionError || error instanceof ServerError) {
-            errorCode = AdRequest.Error.ADSERVER_FAILURE;
+            errorCode = VrAdRequest.Error.ADSERVER_FAILURE;
         } else if (error instanceof NetworkError) {
-            errorCode = AdRequest.Error.NETWORK_FAILURE;
+            errorCode = VrAdRequest.Error.NETWORK_FAILURE;
         } else {
-            errorCode = AdRequest.Error.UNKNOWN_FAILURE;            // screwed
+            errorCode = VrAdRequest.Error.UNKNOWN_FAILURE;            // screwed
         }
 
-        this.ad.getAdListener().onAdLoadFailed(errorCode, error.toString());
+        this.ad.getVrAdListener().onAdLoadFailed(errorCode, error.toString());
         HashMap<String, String> errorMap = new HashMap<>();
         errorMap.put("Error", error.toString());
         this.ad.emitEvent(EventType.ERROR, AnalyticsManager.Priority.LOW, errorMap);
@@ -67,7 +65,7 @@ final class Image360MediaServerListener implements Response.ErrorListener,
                 File appPath = this.ad.getContext().getFilesDir();
                 String appSdkPath = appPath + Util.addLeadingSlash(Config.Image360AdAssetDirectory);
                 File dest_dir = new File(appSdkPath);
-                createDir(dest_dir);
+                Util.createDir(dest_dir);
 
                 FileOutputStream outputStream;
                 String name= this.ad.getPlacementId() + ".jpg";
@@ -80,7 +78,7 @@ final class Image360MediaServerListener implements Response.ErrorListener,
             }
         } catch (IOException e) {
             // this should not really happen
-            this.ad.getAdListener().onAdLoadFailed(AdRequest.Error.UNKNOWN_FAILURE, e.toString());
+            this.ad.getVrAdListener().onAdLoadFailed(VrAdRequest.Error.UNKNOWN_FAILURE, e.toString());
 
             // send error logs to server
 

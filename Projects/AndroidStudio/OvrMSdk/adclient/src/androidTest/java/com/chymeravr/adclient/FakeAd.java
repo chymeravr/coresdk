@@ -14,13 +14,13 @@ import org.json.JSONObject;
 
 /* A fake ad class implementation for testing. this doesnt do anything*/
 public class FakeAd extends Ad {
-    public FakeAd(Context context, AdListener adListener, AnalyticsManager analyticsManager,
+    public FakeAd(Context context, VrAdListener vrAdListener, AnalyticsManager analyticsManager,
                   WebRequestQueue webRequestQueue) {
-        super(AdFormat.IMG_360, "test", context, adListener, analyticsManager, webRequestQueue);
+        super(AdFormat.IMG_360, "test", context, vrAdListener, analyticsManager, webRequestQueue);
     }
 
     @Override
-    public void loadAd(AdRequest adRequest) {
+    public void loadAd(VrAdRequest vrAdRequest) {
         this.setLoading(true);
     }
 

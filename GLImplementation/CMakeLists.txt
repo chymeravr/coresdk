@@ -35,7 +35,7 @@ endfunction(exclude_subdirectory)
 if (WINDOWS)
 	# remove opengl es files and keep only core files
 	set (EXCLUDE_DIR1 "opengles2")
-	set (EXCLUDE_DIR2 "opengles2")
+	set (EXCLUDE_DIR2 "opengles3")
 	set (NEW_SOURCES "")
 	exclude_subdirectory( "${SOURCES}" "${EXCLUDE_DIR1}" NEW_SOURCES)
 	set(SOURCES "")
@@ -48,27 +48,49 @@ if (WINDOWS)
 else ()
 	# remove opengl core files and keep only es files
 	set (EXCLUDE_DIR "opengl")
+
 	set (NEW_SOURCES "")
-	exclude_subdirectory( "${SOURCES}" "${EXCLUDE_DIR}" NEW_SOURCES)
-	# message("NEW SOURCES = ${NEW_SOURCES}")
-
 	set (NEW_HEADERS "")
+	exclude_subdirectory( "${SOURCES}" "${EXCLUDE_DIR}" NEW_SOURCES)
 	exclude_subdirectory( "${HEADERS}" "${EXCLUDE_DIR}" NEW_HEADERS)
-	#message("NEW HEADERS = ${NEW_HEADERS}")
+	
+	set(GLES_SOURCES "")
+	set(GLES_HEADERS "")
 
-	add_library(${PROJECT_NAME} SHARED ${NEW_HEADERS} ${NEW_SOURCES})
+	message(STATUS "${GLES_V2}")
+	if(GLES_V2)
+		message(STATUS "excluding gles3 files")
+		set(EXCLUDE_GLES3_DIR "opengles3")
+		exclude_subdirectory( "${NEW_SOURCES}" "${EXCLUDE_GLES3_DIR}" GLES_SOURCES)
+		exclude_subdirectory( "${NEW_HEADERS}" "${EXCLUDE_GLES3_DIR}" GLES_HEADERS)
+		#add_library(${PROJECT_NAME} SHARED ${GLES_HEADERS} ${GLES_SOURCES})
+	else()
+		message(STATUS "excluding gles2 files")
+		set(EXCLUDE_GLES2_DIR "opengles2")
+		exclude_subdirectory( "${NEW_SOURCES}" "${EXCLUDE_GLES2_DIR}" GLES_SOURCES)
+		exclude_subdirectory( "${NEW_HEADERS}" "${EXCLUDE_GLES2_DIR}" GLES_HEADERS)
+		#add_library(${PROJECT_NAME} SHARED ${GLES_HEADERS} ${GLES_SOURCES})
+	endif()
+
+	add_library(${PROJECT_NAME} SHARED ${GLES_HEADERS} ${GLES_SOURCES})
 	set(ANDROID_LIBRARIES ${CMAKE_SOURCE_DIR}/../Projects/AndroidStudio/OvrMSdk/distribution)
 
 	find_library(log-lib log)
 	find_library(android-lib android)
 	find_library(egl EGL)
-	find_library(gles-v3 GLESv3)
-
+	
 	add_library(core_engine SHARED IMPORTED)
 	set_target_properties(
 		core_engine
 		PROPERTIES IMPORTED_LOCATION
 		${ANDROID_LIBRARIES}/coreEngine/${ANDROID_ABI}/libCoreEngine.so
 	)
-	target_link_libraries(${PROJECT_NAME} core_engine ${log-lib} ${android-lib} ${egl} ${gles-v3})
+	if(GLES_V2)
+		message(STATUS "adding OpenGLES2 libraries")
+		find_library(gles GLESv2)
+	else()
+		message(STATUS "adding OpenGLES3 libraries")
+		find_library(gles GLESv3)
+	endif()
+	target_link_libraries(${PROJECT_NAME} core_engine ${log-lib} ${android-lib} ${egl} ${gles})
 endif ()

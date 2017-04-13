@@ -17,11 +17,15 @@ namespace cl{
 			std::string id,
 			Scene *scene,
 			CL_Vec4 &color);
+		void setTransformTreeModel(TransformTreeModel *transformTreeModel);
+		TransformTreeModel* getTransformTreeModel();
 	private:
 		float distanceFromCamera = 10.0f;
 		unsigned int nDivisions = 20;
 		float innerRadius = 0.05f;
 		float outerRadius = 0.13f;
+
+		TransformTreeModel *transformTreeModel = nullptr;
 	};
 }
 

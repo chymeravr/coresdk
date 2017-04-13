@@ -35,13 +35,13 @@ public class AdServerListenerTest {
 
     private VolleyError mockVolleyError;
     private Ad mockAd;
-    private AdListener mockAdListener;
+    private VrAdListener mockVrAdListener;
     private JSONObject jsonResponseObject;
 
     @Before
     public void setUp() throws Exception {
         this.mockVolleyError = Mockito.mock(VolleyError.class);
-        this.mockAdListener = new AdListener() {
+        this.mockVrAdListener = new VrAdListener() {
             @Override
             public void onAdLoaded() {
             }
@@ -62,7 +62,7 @@ public class AdServerListenerTest {
             public void onAdLeftApplication() {
             }
         };
-        this.mockAd = new FakeAd(appContext, mockAdListener, null, null);
+        this.mockAd = new FakeAd(appContext, mockVrAdListener, null, null);
         this.mockAd.loadAd(null);
         this.jsonResponseObject = new JSONObject();
         this.jsonResponseObject.put("url", "");
