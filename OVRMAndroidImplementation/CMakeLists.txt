@@ -7,7 +7,6 @@ set (GLM_VERSION 0.9.7.6)
 set(Conf_PATH ../Conf/)
 set(CoreEngine_PATH ../CoreEngine/)
 set(GLImplementation_PATH ../GLImplementation)
-set(Renderer_PATH ../Renderer)
 set(ovr_mobile_root ../Projects/AndroidStudio/OvrMSdk/ovr_sdk_mobile)
 set(image360root ../Image360)
 
@@ -17,7 +16,6 @@ include_directories(${REPO_PATH}/thirdParty/glm/glm-${GLM_VERSION}/glm
                     ${ovr_mobile_root}/VrApi/Include
                     ${image360root}/include
 					${GLImplementation_PATH}/include
-					${Renderer_PATH}/include
 					${PROJECT_SOURCE_DIR}/include)
 
 set (INCLUDE_DIRS ${PROJECT_SOURCE_DIR}/include)
@@ -56,13 +54,6 @@ set_target_properties(
     ${ANDROID_LIBRARIES}/glImplementation/${ANDROID_ABI}/libGLImplementation.so
 )
 
-add_library(renderer SHARED IMPORTED)
-set_target_properties(
-    renderer
-    PROPERTIES IMPORTED_LOCATION
-    ${ANDROID_LIBRARIES}/renderer/${ANDROID_ABI}/libRenderer.so
-)
-
 add_library(image360 SHARED IMPORTED)
 set_target_properties(
     image360
@@ -77,6 +68,6 @@ set_target_properties(
     ${OVR_LIBRARIES}/VrApi/Libs/Android/${ANDROID_ABI}/Release/libvrapi.so
 )
 
-target_link_libraries(${PROJECT_NAME} core_engine gl_implementation renderer image360 
+target_link_libraries(${PROJECT_NAME} core_engine gl_implementation image360 
  ${log-lib} ${android-lib} ${egl} ${gles-v3} vrapi)
 

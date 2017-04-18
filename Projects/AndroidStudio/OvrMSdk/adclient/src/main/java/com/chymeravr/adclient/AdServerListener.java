@@ -44,7 +44,7 @@ class AdServerListener implements Response.ErrorListener, Response.Listener<JSON
             errorCode = VrAdRequest.Error.UNKNOWN_FAILURE;            // screwed
         }
 
-        this.ad.getVrAdListener().onAdLoadFailed(errorCode, error.toString());
+        this.ad.getVrAdListener().onVrAdLoadFailed(errorCode, error.toString());
 
         this.ad.emitEvent(EventType.ERROR, AnalyticsManager.Priority.LOW, Util.getErrorMap(error));
     }

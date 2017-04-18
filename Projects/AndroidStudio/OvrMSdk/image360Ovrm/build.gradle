@@ -4,12 +4,12 @@ def image360OvrmModule = "${rootProject.rootDir}/image360Ovrm"
 def distributionDir = "${rootProject.rootDir}/distribution"
 
 android {
-    compileSdkVersion 23
-    buildToolsVersion "23.0.3"
+    compileSdkVersion 25
+    buildToolsVersion "25.0.0"
 
     defaultConfig {
-        minSdkVersion 21
-        targetSdkVersion 23
+        minSdkVersion 23
+        targetSdkVersion 25
         versionCode 1
         versionName "1.0"
 
@@ -50,34 +50,20 @@ android {
     sourceSets {
         main {
             jniLibs.srcDirs = ["${distributionDir}/coreEngine", "${distributionDir}/glImplementation",
-                               "${distributionDir}/renderer", "${distributionDir}/image360"]
+                               "${distributionDir}/image360"]
         }
     }
 }
 
-//task copyLibOvrKernel(type: Copy){
-//    from "${ovrMobileModule}/LibOVRKernel/Libs/Android/armeabi-v7a/Release/libovrkernel.a"
-//    into "${image360AndroidModule}/libs"
-//}
-//
-//task copyVrApiLib(type: Copy){
-//    from "${ovrMobileModule}/VrApi/Libs/Android/armeabi-v7a/Release/libvrapi.so"
-//    into "${image360AndroidModule}/libs"
-//}
-
-//task clean(type: Delete) {
-//    delete "${rootProject.rootDir}/image360AndroidNative/build"
-//    delete fileTree(dir: 'libs', include: '*.so')
-//}
 
 tasks.whenTaskAdded { task ->
     if (task.name.contains('compileDebug')) {
         task.dependsOn([':coreEngine:distributeDebugLib', ':glImplementation:distributeDebugLib',
-                        ':renderer:distributeDebugLib', ':image360:distributeDebugLib'])
+                        ':image360:distributeDebugLib'])
     }
     else if(task.name.contains('compileRelease')) {
         task.dependsOn([':coreEngine:distributeReleaseLib', ':glImplementation:distributeReleaseLib',
-                        ':renderer:distributeReleaseLib', ':image360:distributeReleaseLib'])
+                        ':image360:distributeReleaseLib'])
     }
 }
 

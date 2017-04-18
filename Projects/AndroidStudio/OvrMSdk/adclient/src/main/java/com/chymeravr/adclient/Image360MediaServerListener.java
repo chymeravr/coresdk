@@ -50,7 +50,7 @@ final class Image360MediaServerListener implements Response.ErrorListener,
             errorCode = VrAdRequest.Error.UNKNOWN_FAILURE;            // screwed
         }
 
-        this.ad.getVrAdListener().onAdLoadFailed(errorCode, error.toString());
+        this.ad.getVrAdListener().onVrAdLoadFailed(errorCode, error.toString());
         HashMap<String, String> errorMap = new HashMap<>();
         errorMap.put("Error", error.toString());
         this.ad.emitEvent(EventType.ERROR, AnalyticsManager.Priority.LOW, errorMap);
@@ -78,7 +78,7 @@ final class Image360MediaServerListener implements Response.ErrorListener,
             }
         } catch (IOException e) {
             // this should not really happen
-            this.ad.getVrAdListener().onAdLoadFailed(VrAdRequest.Error.UNKNOWN_FAILURE, e.toString());
+            this.ad.getVrAdListener().onVrAdLoadFailed(VrAdRequest.Error.UNKNOWN_FAILURE, e.toString());
 
             // send error logs to server
 

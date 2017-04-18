@@ -16,6 +16,9 @@ buildscript {
 
     ext{
         commonCPPFlags = ["-DGLES2_0"]
+        build4daydream = false
+        build4gearvr   = true
+        glesVersion = 2
     }
 
 }

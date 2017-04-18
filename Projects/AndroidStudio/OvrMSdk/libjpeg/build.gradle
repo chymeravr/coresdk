@@ -21,13 +21,18 @@ android {
                 // I have to use gcc to compile, clang compiled code generate error
                 // at run time for any std::queue etc.
                 targets 'jpeg'
-                arguments = ['-DANDROID_STL=gnustl_shared', '-DANDROID_NATIVE_API_LEVEL=android-24']
+                arguments = ['-DANDROID_STL=gnustl_shared', '-DANDROID_NATIVE_API_LEVEL=android-23']
 
                 // for all daydream supported architecutres
                 // abiFilters = ['armeabi-v7a', 'arm64-v8a', 'x86']
 
                 // for pixel only
-                abiFilters = ['arm64-v8a']
+                if (project.build4daydream) {
+                    abiFilters = ['arm64-v8a']
+                }
+                if (project.build4gearvr) {
+                    abiFilters = ['armeabi-v7a']
+                }
             }
         }
 
@@ -48,16 +53,20 @@ android {
 
 task distributeDebugLib << {
     // trigger build library
-    //dependsOn "assembleRelease"
-//    copy {
-//        from "${libjpegModule}/build/intermediates/cmake/debug/obj/armeabi-v7a/libjpeg.so"
-//        into "${distributionDir}/libjpeg/armeabi-v7a/"
-//    }
-
-    copy {
-        from "${libjpegModule}/build/intermediates/cmake/debug/obj/arm64-v8a/libjpeg.so"
-        into "${distributionDir}/libjpeg/arm64-v8a/"
+    if (project.build4daydream) {
+        copy {
+            from "${libjpegModule}/build/intermediates/cmake/debug/obj/arm64-v8a/libjpeg.so"
+            into "${distributionDir}/libjpeg/arm64-v8a/"
+        }
     }
+
+    if (project.build4gearvr) {
+        copy {
+            from "${libjpegModule}/build/intermediates/cmake/debug/obj/armeabi-v7a/libjpeg.so"
+            into "${distributionDir}/libjpeg/armeabi-v7a/"
+        }
+    }
+
 
 //    copy {
 //        from "${libjpegModule}/build/intermediates/cmake/debug/obj/x86/libjpeg.so"
@@ -67,16 +76,23 @@ task distributeDebugLib << {
 
 task distributeReleaseLib << {
     // trigger build library
-    //dependsOn "assembleRelease"
-//    copy {
-//        from "${libjpegModule}/build/intermediates/cmake/release/obj/armeabi-v7a/libjpeg.so"
-//        into "${distributionDir}/libjpeg/armeabi-v7a/"
-//    }
 
-    copy {
-        from "${libjpegModule}/build/intermediates/cmake/release/obj/arm64-v8a/libjpeg.so"
-        into "${distributionDir}/libjpeg/arm64-v8a/"
+
+    if (project.build4daydream) {
+        copy {
+            from "${libjpegModule}/build/intermediates/cmake/release/obj/arm64-v8a/libjpeg.so"
+            into "${distributionDir}/libjpeg/arm64-v8a/"
+        }
     }
+
+    if (project.build4gearvr) {
+        copy {
+            from "${libjpegModule}/build/intermediates/cmake/release/obj/armeabi-v7a/libjpeg.so"
+            into "${distributionDir}/libjpeg/armeabi-v7a/"
+        }
+    }
+
+
 
 //    copy {
 //        from "${libjpegModule}/build/intermediates/cmake/release/obj/x86/libjpeg.so"

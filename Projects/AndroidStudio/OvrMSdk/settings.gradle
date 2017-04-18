@@ -10,12 +10,12 @@ include ':soil' //- we moved on to libjpeg
 include ':common', ':analytics', ':adclient'
 
 // Oculus VR Libraries
-//include ':ovr_sdk_mobile'
-//include ':image360Ovrm', ':OvrMAdClient'
-//// sample oculus vr app to test library
-//include ':appOvrM'
+include ':ovr_sdk_mobile'
+include ':image360Ovrm', ':OvrMAdClient'
+// sample oculus vr app to test library
+include ':appOvrM'
 
 // Google VR Libraries
-include ':gvradclient', ':image360gvr'
-// sample google vr app to test library
-include ':appgvr'
+//include ':gvradclient', ':image360gvr'
+//// sample google vr app to test library
+//include ':appgvr'

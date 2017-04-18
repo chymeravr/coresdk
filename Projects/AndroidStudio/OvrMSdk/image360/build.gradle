@@ -4,12 +4,12 @@ def image360Module = "${rootProject.rootDir}/image360"
 def distributionDir = "${rootProject.rootDir}/distribution"
 
 android {
-    compileSdkVersion 23
-    buildToolsVersion "23.0.3"
+    compileSdkVersion 25
+    buildToolsVersion "25.0.0"
 
     defaultConfig {
-        minSdkVersion 21
-        targetSdkVersion 23
+        minSdkVersion 23
+        targetSdkVersion 25
         versionCode 1
         versionName "1.0"
         externalNativeBuild {
@@ -20,7 +20,7 @@ android {
                 // I have to use gcc to compile, clang compiled code generate error
                 // at run time for any std::queue etc.
                 targets 'Image360'
-                arguments = ['-DANDROID_STL=gnustl_shared', '-DANDROID_NATIVE_API_LEVEL=android-24']
+                arguments = ['-DANDROID_STL=gnustl_shared', '-DANDROID_NATIVE_API_LEVEL=android-23']
 
                 cppFlags = ["-DGLES2_0", "-std=c++11", "-frtti", "-fexceptions"]
 
@@ -28,7 +28,12 @@ android {
                 // abiFilters = ['armeabi-v7a', 'arm64-v8a', 'x86']
 
                 // for pixel only
-                abiFilters = ['arm64-v8a']
+                if (project.build4daydream) {
+                    abiFilters = ['arm64-v8a']
+                }
+                if (project.build4gearvr) {
+                    abiFilters = ['armeabi-v7a']
+                }
             }
         }
     }
@@ -58,40 +63,24 @@ android {
     }
 }
 
-//task clean(type: Delete) {
-//    delete "${rootProject.rootDir}/image360/build"
-//    delete fileTree(dir: 'libs', include: '*.so')
-//}
-
-/*
-task distributeDebugLib (type : Copy) {
-    // trigger build library
-    dependsOn "assembleDebug"
-    from "${image360Module}/build/intermediates/cmake/debug/obj/armeabi-v7a/libImage360.so"
-    into "${distributionDir}/image360/armeabi-v7a/"
-
-}
-
-task(distributeReleaseLib, type : Copy) {
-    // trigger build library
-    dependsOn "assembleRelease"
-    from "${image360Module}/build/intermediates/cmake/release/obj/armeabi-v7a/libImage360.so"
-    into "${distributionDir}/image360/armeabi-v7a/"
-}
-*/
 
 task distributeDebugLib << {
     // trigger build library
-    //dependsOn "assembleRelease"
-//    copy {
-//        from "${image360Module}/build/intermediates/cmake/debug/obj/armeabi-v7a/libImage360.so"
-//        into "${distributionDir}/image360/armeabi-v7a/"
-//    }
 
-    copy {
-        from "${image360Module}/build/intermediates/cmake/debug/obj/arm64-v8a/libImage360.so"
-        into "${distributionDir}/image360/arm64-v8a/"
+    if (project.build4daydream) {
+        copy {
+            from "${image360Module}/build/intermediates/cmake/debug/obj/arm64-v8a/libImage360.so"
+            into "${distributionDir}/image360/arm64-v8a/"
+        }
     }
+
+    if (project.build4gearvr) {
+        copy {
+            from "${image360Module}/build/intermediates/cmake/debug/obj/armeabi-v7a/libImage360.so"
+            into "${distributionDir}/image360/armeabi-v7a/"
+        }
+    }
+
 
 //    copy {
 //        from "${image360Module}/build/intermediates/cmake/debug/obj/x86/libImage360.so"
@@ -101,15 +90,19 @@ task distributeDebugLib << {
 
 task distributeReleaseLib << {
     // trigger build library
-    //dependsOn "assembleRelease"
-//    copy {
-//        from "${image360Module}/build/intermediates/cmake/release/obj/armeabi-v7a/libImage360.so"
-//        into "${distributionDir}/image360/armeabi-v7a/"
-//    }
 
-    copy {
-        from "${image360Module}/build/intermediates/cmake/release/obj/arm64-v8a/libImage360.so"
-        into "${distributionDir}/image360/arm64-v8a/"
+    if (project.build4daydream) {
+        copy {
+            from "${image360Module}/build/intermediates/cmake/release/obj/arm64-v8a/libImage360.so"
+            into "${distributionDir}/image360/arm64-v8a/"
+        }
+    }
+
+    if (project.build4gearvr) {
+        copy {
+            from "${image360Module}/build/intermediates/cmake/release/obj/armeabi-v7a/libImage360.so"
+            into "${distributionDir}/image360/armeabi-v7a/"
+        }
     }
 
 //    copy {
