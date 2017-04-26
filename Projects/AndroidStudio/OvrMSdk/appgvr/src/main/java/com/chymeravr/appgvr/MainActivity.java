@@ -32,6 +32,7 @@ import com.chymeravr.adclient.VrAdRequest;
 import com.chymeravr.gvradclient.ChymeraVrSdk;
 import com.chymeravr.gvradclient.Image360Ad;
 import com.google.vr.ndk.base.AndroidCompat;
+import com.google.vr.ndk.base.DaydreamApi;
 import com.google.vr.ndk.base.GvrLayout;
 
 import java.text.SimpleDateFormat;
@@ -61,6 +62,7 @@ public class MainActivity extends Activity {
                 }
             };
 
+    private DaydreamApi daydreamApi;
     private VrAdRequest vrAdRequest;
     static {
         System.loadLibrary("gvr");
@@ -73,25 +75,28 @@ public class MainActivity extends Activity {
         super.onCreate(savedInstanceState);
         Log.d(TAG, "onCreate");
 
+        this.daydreamApi = DaydreamApi.create(this);
+
         ChymeraVrSdk.initialize(this, "89ec2db1-284e-44af-968e-0618103f89c8");
 
         this.image360TestAd = new Image360Ad(this, new VrAdListener() {
             @Override
-            public void onAdLoaded() {
+            public void onVrAdLoaded() {
             }
 
             @Override
-            public void onAdLoadFailed(VrAdRequest.Error error, String errorReason) {
+            public void onVrAdLoadFailed(VrAdRequest.Error error, String errorReason) {
             }
 
             @Override
-            public void onAdOpened() {
+            public void onVrAdOpened() {
             }
 
             @Override
-            public void onAdClosed() {
+            public void onVrAdClosed() {
             }
         });
+        this.image360TestAd.setDaydreamApi(this.daydreamApi);
         this.image360TestAd.setPlacementId("3efc7f15-33a6-4480-bb71-3bd74aca4f1f");
 
         final String PROVIDER = "flp";
@@ -232,6 +237,8 @@ public class MainActivity extends Activity {
         // native resources from the UI thread.
         gvrLayout.shutdown();
         nativeDestroyRenderer(nativeTreasureHuntRenderer);
+        //image360TestAd.destroy();
+        this.daydreamApi.close();
     }
 
     @Override

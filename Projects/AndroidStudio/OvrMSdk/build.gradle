@@ -15,7 +15,18 @@ buildscript {
     }
 
     ext{
+
         commonCPPFlags = ["-DGLES2_0"]
+        // use the below two variables to switch between daydream and oculus gearvr builds
+        build4daydream = true
+        build4gearvr   = false
+
+        // use this to build all daydream supported architecture - for dev we only use one to shorten build time
+        buildAllDaydreamArch = false
+
+        // use this to build only unity supported architecture [armeabi-v7a & x86]
+        build4Unity = false
+        glesVersion = 2
     }
 
 }
@@ -43,13 +54,13 @@ subprojects {
 // The dependencies for NDK builds live inside the .aar files so they need to
 // be extracted before NDK targets can build.
 task extractAudioSo(type: Copy) {
-    from zipTree("${project.rootDir}/gvr_libraries/sdk-audio-1.30.0.aar")
+    from zipTree("${project.rootDir}/gvr_libraries/sdk-audio-1.20.0.aar")
     into "${project.rootDir}/gvr_libraries/"
     include "jni/**/libgvr_audio.so"
 }
 
 task extractGvrSo(type: Copy) {
-    from zipTree("${project.rootDir}/gvr_libraries/sdk-base-1.30.0.aar")
+    from zipTree("${project.rootDir}/gvr_libraries/sdk-base-1.20.0.aar")
     into "${project.rootDir}/gvr_libraries/"
     include "jni/**/libgvr.so"
 }

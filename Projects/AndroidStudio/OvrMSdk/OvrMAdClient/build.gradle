@@ -5,12 +5,12 @@ def ovrMobileModule = "${rootProject.rootDir}/ovr_sdk_mobile"
 def distributionDir = "${rootProject.rootDir}/distribution"
 
 android {
-    compileSdkVersion 23
-    buildToolsVersion "23.0.3"
+    compileSdkVersion 25
+    buildToolsVersion "25.0.0"
 
     defaultConfig.with {
-        minSdkVersion = 21
-        targetSdkVersion = 23
+        minSdkVersion = 23
+        targetSdkVersion = 25
         versionCode = 1
         versionName = "1.0"
 
@@ -43,7 +43,8 @@ android {
             debuggable true
         }
         release {
-            //minifyEnabled true
+            minifyEnabled false
+            debuggable false
             //proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
         }
     }
@@ -51,14 +52,14 @@ android {
     sourceSets{
         debug {
                 jniLibs.srcDirs = ["${distributionDir}/soil", "${distributionDir}/coreEngine",
-                                   "${distributionDir}/glImplementation", "${distributionDir}/renderer",
+                                   "${distributionDir}/glImplementation", "${distributionDir}/libjpeg",
                                    "${distributionDir}/image360", "${distributionDir}/image360Ovrm",
                                    "${distributionDir}/ovrApi", "${distributionDir}/freetype"]
 
         }
         release {
                 jniLibs.srcDirs = ["${distributionDir}/soil", "${distributionDir}/coreEngine",
-                                   "${distributionDir}/glImplementation", "${distributionDir}/renderer",
+                                   "${distributionDir}/glImplementation", "${distributionDir}/libjpeg",
                                    "${distributionDir}/image360", "${distributionDir}/image360Ovrm",
                                    "${distributionDir}/freetype"]
 
@@ -110,14 +111,14 @@ task copyVrApiLib(type: Copy) {
 tasks.whenTaskAdded { task ->
     if (task.name.contains('compileDebug')) {
         task.dependsOn([':coreEngine:distributeDebugLib', ':glImplementation:distributeDebugLib',
-                        ':renderer:distributeDebugLib', ':image360:distributeDebugLib',
-                        ':soil:distributeDebugLib',
+                        ':image360:distributeDebugLib',
+                        ':soil:distributeReleaseLib', ':libjpeg:distributeReleaseLib',
                         ':image360Ovrm:distributeDebugLib',':freetype:distributeDebugLib',
                         'copyVrApiLib'])
     } else if (task.name.contains('compileRelease')) {
         task.dependsOn([':coreEngine:distributeReleaseLib', ':glImplementation:distributeReleaseLib',
-                        ':renderer:distributeReleaseLib', ':image360:distributeReleaseLib',
-                        ':image360Ovrm:distributeReleaseLib', ':soil:distributeReleaseLib',
+                        ':image360:distributeReleaseLib',
+                        ':image360Ovrm:distributeReleaseLib', ':soil:distributeReleaseLib', ':libjpeg:distributeReleaseLib',
                         ':freetype:distributeReleaseLib' ])
     }
 }

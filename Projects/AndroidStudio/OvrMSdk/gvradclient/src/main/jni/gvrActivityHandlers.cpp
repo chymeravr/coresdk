@@ -175,10 +175,12 @@ JNI_METHOD(jlong, nativeCreateRenderer)
 
 JNI_METHOD(void, nativeDestroyRenderer)
 (JNIEnv *env, jclass clazz, jlong nativeImage360) {
+    logger->log(cl::LOG_DEBUG, "Native Destroy Renderer Start");
     auto image360 = native(nativeImage360);
     image360->stop();
     textureImages.clear();
     delete native(nativeImage360);
+    logger->log(cl::LOG_DEBUG, "Native Destroy Renderer End");
 }
 
 JNI_METHOD(void, nativeOnStart)
@@ -205,13 +207,14 @@ JNI_METHOD(void, nativeOnStart)
 
 JNI_METHOD(void, nativeInitializeGl)
 (JNIEnv *env, jobject obj, jlong nativeImage360) {
-    logger->log(cl::LOG_DEBUG, "Initializing Native GL");
+    logger->log(cl::LOG_DEBUG, "Initializing Native GL Start");
     auto image360 = native(nativeImage360);
     image360->start();
 
     auto mode = cl::EQUIRECTANGULAR_MAP_MODE;
 
     image360->initialize(mode, textureImages);
+    logger->log(cl::LOG_DEBUG, "Initializing Native GL Complete");
 }
 
 JNI_METHOD(void, nativeDrawFrame)

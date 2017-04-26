@@ -203,7 +203,7 @@ public final class Image360Activity extends Activity implements SurfaceHolder.Ca
     @Override
     protected void onStop() {
         Log.d(TAG, "onStop()");
-        this.emitEvent(EventType.AD_CLICK, AnalyticsManager.Priority.HIGH, null);
+        this.emitEvent(EventType.AD_CLOSE, AnalyticsManager.Priority.HIGH, null);
         super.onStop();
         this.onStopNative(this.mNativeHandle);
     }

@@ -228,6 +228,7 @@ void Image360Stereo::initialize(TEXTURE_MAP_MODE mapMode,
     closeMeModel->getComponentList().addComponent(std::move(gazeDetectorCloseMe));
 
     renderer->initialize(scene.get());
+    logger->log(LOG_DEBUG, "Initialization Completed!!");
 }
 
 void Image360Stereo::deinitialize()

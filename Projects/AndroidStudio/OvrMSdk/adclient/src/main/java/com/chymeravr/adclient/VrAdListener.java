@@ -7,11 +7,11 @@ package com.chymeravr.adclient;
 
 public interface VrAdListener {
 
-    void onAdLoaded();
+    void onVrAdLoaded();
 
-    void onAdLoadFailed(VrAdRequest.Error errorReason, String additionalErrorInfo);
+    void onVrAdLoadFailed(VrAdRequest.Error errorReason, String additionalErrorInfo);
 
-    void onAdOpened();
+    void onVrAdOpened();
 
-    void onAdClosed();
+    void onVrAdClosed();
 }
