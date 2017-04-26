@@ -261,6 +261,7 @@ bool RendererGVR::start()
 
 bool RendererGVR::initialize(Scene *scene)
 {
+    logger->log(LOG_DEBUG, "Renderer Intialization Start!!!");
     InitializeGl();
 
     frame = (gvr::Frame *)malloc(sizeof(gvr::Frame));
@@ -314,6 +315,7 @@ bool RendererGVR::initialize(Scene *scene)
     this->renderCamera->setNearPlane(kZNear);
     this->renderCamera->setFarPlane(kZFar);
 
+    logger->log(LOG_DEBUG, "Renderer Intialization Complete!!!");
     return true;
 }
 
@@ -509,6 +511,7 @@ void RendererGVR::PrepareFramebuffer()
 
 void RendererGVR::InitializeGl()
 {
+    logger->log(LOG_DEBUG, "Initializing Gvr Api!!!");
     gvr_api_->InitializeGl();
 
     // Because we are using 2X MSAA, we can render to half as many pixels and
@@ -527,6 +530,7 @@ void RendererGVR::InitializeGl()
 
     viewport_list_.reset(
         new gvr::BufferViewportList(gvr_api_->CreateEmptyBufferViewportList()));
+    logger->log(LOG_DEBUG, "Initializing Gvr Api Complete!!!");
 }
 
 void RendererGVR::drawScene(Scene *scene)

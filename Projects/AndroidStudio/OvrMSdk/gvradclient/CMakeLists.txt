@@ -62,22 +62,12 @@ set_target_properties(
     ${ANDROID_LIBRARIES}/image360Gvr/${ANDROID_ABI}/libImage360Gvr.so
 )
 
-if(CMAKE_BUILD_TYPE MATCHES "Debug")
-    add_library(gvr SHARED IMPORTED)
+add_library(gvr SHARED IMPORTED)
             set_target_properties(
                 gvr
                 PROPERTIES IMPORTED_LOCATION
                 ${GVR_LIBRARIES}/jni/${ANDROID_ABI}/libgvr.so
         )
-    add_library(gvr_audio SHARED IMPORTED)
-            set_target_properties(
-                gvr_audio
-                PROPERTIES IMPORTED_LOCATION
-                ${GVR_LIBRARIES}/jni/${ANDROID_ABI}/libgvr_audio.so
-        )
-    target_link_libraries(${PROJECT_NAME} core_engine gl_implementation image360
-    image360_gvr gvr gvr_audio ${log-lib} ${android-lib} ${egl} ${gles-v3})
-else()
-    target_link_libraries(${PROJECT_NAME} core_engine gl_implementation image360
-    image360_gvr ${log-lib} ${android-lib} ${egl} ${gles-v3})
-endif()
+
+target_link_libraries(${PROJECT_NAME} core_engine gl_implementation image360
+image360_gvr gvr ${log-lib} ${android-lib})

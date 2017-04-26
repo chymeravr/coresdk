@@ -61,13 +61,7 @@ set_target_properties(
     PROPERTIES IMPORTED_LOCATION
     ${gvr_libraries}/jni/${ANDROID_ABI}/libgvr.so
 )
-add_library(gvr_audio SHARED IMPORTED)
-set_target_properties(
-    gvr_audio
-    PROPERTIES IMPORTED_LOCATION
-    ${gvr_libraries}/jni/${ANDROID_ABI}/libgvr_audio.so
-)
 
 target_link_libraries(${PROJECT_NAME} core_engine gl_implementation image360
- ${log-lib} ${android-lib} ${egl} ${gles-v2}  gvr gvr_audio)
+ ${log-lib} ${android-lib} ${egl} ${gles-v2} gvr)
 

@@ -19,11 +19,18 @@ import android.view.MotionEvent;
 import android.view.View;
 import android.view.WindowManager;
 
+import com.chymeravr.analytics.AnalyticsManager;
+import com.chymeravr.schemas.eventreceiver.EventType;
+import com.chymeravr.schemas.eventreceiver.RuntimeAdMeta;
+import com.chymeravr.schemas.eventreceiver.SDKEvent;
 import com.google.vr.ndk.base.AndroidCompat;
 import com.google.vr.ndk.base.DaydreamApi;
 import com.google.vr.ndk.base.GvrLayout;
 import com.google.vr.sdk.controller.Controller;
 import com.google.vr.sdk.controller.ControllerManager;
+
+import java.sql.Timestamp;
+import java.util.HashMap;
 
 import javax.microedition.khronos.egl.EGLConfig;
 import javax.microedition.khronos.opengles.GL10;
@@ -67,7 +74,6 @@ public class Image360Activity extends Activity {
         // gvr libs
         System.loadLibrary("gvr");
         //System.loadLibrary("gvr_audio");
-
         // chymera libs
         System.loadLibrary("image360ad");
     }
@@ -86,6 +92,13 @@ public class Image360Activity extends Activity {
     // we need the class name to go transition back to
     private String returningClassName;
 
+    public void emitEvent(EventType eventType, AnalyticsManager.Priority priority, HashMap<String, String> map){
+        long currTime = new Timestamp(System.currentTimeMillis()).getTime();
+        RuntimeAdMeta adMeta = new RuntimeAdMeta(this.getServingId(), this.getInstanceId());
+        SDKEvent event = new SDKEvent(currTime, eventType, adMeta);
+        event.setParamsMap(map);
+        AnalyticsManager.push(event, priority);
+    }
 
     // This is done on the GL thread because refreshViewerProfile isn't thread-safe.
     private final Runnable refreshViewerProfileRunnable =
@@ -108,7 +121,8 @@ public class Image360Activity extends Activity {
                     case NO_EVENT:
                         break;
                     case NOTIFY_ME:
-                        notifyUser();
+                        //notifyUser();
+                        onDownloadClick();
                         finishAdActivity();
                         break;
                     case CLOSE_AD:
@@ -209,6 +223,7 @@ public class Image360Activity extends Activity {
                 new GLSurfaceView.Renderer() {
                     @Override
                     public void onSurfaceCreated(GL10 gl, EGLConfig config) {
+                        Image360Activity.this.emitEvent(EventType.AD_SHOW, AnalyticsManager.Priority.HIGH, null);
                         nativeInitializeGl(nativeImage360ActivityHandler);
                     }
 
@@ -288,6 +303,7 @@ public class Image360Activity extends Activity {
         // Destruction order is important; shutting down the GvrLayout will detach
         // the GLSurfaceView and stop the GL thread, allowing safe shutdown of
         // native resources from the UI thread.
+        this.emitEvent(EventType.AD_CLICK, AnalyticsManager.Priority.HIGH, null);
         gvrLayout.shutdown();
         nativeDestroyRenderer(nativeImage360ActivityHandler);
         this.ddControllerManager.stop();
@@ -355,6 +371,24 @@ public class Image360Activity extends Activity {
 
         NotificationManager notificationManager2 = (NotificationManager) this.getSystemService(Service.NOTIFICATION_SERVICE);
         notificationManager2.notify(0, notification);
+    }
+
+    private void onDownloadClick(){
+        // send user to vr play store of advertiser for starting download
+        // exit from ad
+
+        Intent launchIntent = new Intent(Intent.ACTION_VIEW);
+
+        launchIntent.addCategory(Intent.CATEGORY_LAUNCHER);
+
+        //launchIntent.setComponent(cp);
+        launchIntent.setData(Uri.parse("https://play.google.com/vr/store/apps/details?id=com.google.android.apps.youtube.vr"));
+        //startActivity(launchIntent);
+
+        ComponentName playStoreComponent = new ComponentName("com.google.android.vr.home", "com.google.android.apps.vr.playstore.PlayStoreActivity");
+        Intent downloadAppIntent = daydreamApi.createVrIntent(playStoreComponent);
+        downloadAppIntent.setData(Uri.parse("https://play.google.com/vr/store/apps/details?id=" + this.clickUrl));
+        daydreamApi.launchInVr(downloadAppIntent);
     }
 
     private native long nativeCreateRenderer(

@@ -35,6 +35,8 @@ import org.json.JSONObject;
 import java.io.File;
 import java.util.HashMap;
 
+import lombok.Setter;
+
 /**
  * Created by robin_chimera on 3/22/2017.
  * Image360Ad class
@@ -49,10 +51,12 @@ public class Image360Ad extends Ad {
 
     static final int IMAGE360_ACTIVIT_REQUEST = 1;
 
+    // TODO: 4/24/2017 test whetehr this is null or not before calling functions
+    @Setter
     private DaydreamApi daydreamApi;
 
     private void adListenerCallbacks() {
-        this.getVrAdListener().onAdClosed();
+        this.getVrAdListener().onVrAdClosed();
     }
 
     class MessageHandler extends BroadcastReceiver {
@@ -152,11 +156,11 @@ public class Image360Ad extends Ad {
             switch (responseCode) {
                 case BAD_REQUEST:
                     Log.v(TAG, "Ad Server responded with BAD_REQUEST");
-                    this.getVrAdListener().onAdLoadFailed(VrAdRequest.Error.ADSERVER_FAILURE, "Ad Server responded with BAD_REQUEST");
+                    this.getVrAdListener().onVrAdLoadFailed(VrAdRequest.Error.ADSERVER_FAILURE, "Ad Server responded with BAD_REQUEST");
                     break;
                 case NO_AD:
                     Log.v(TAG, "Ad Server responded with NO_AD");
-                    this.getVrAdListener().onAdLoadFailed(VrAdRequest.Error.NO_AD_TO_SHOW, "Ad Server Responded with NO_AD");
+                    this.getVrAdListener().onVrAdLoadFailed(VrAdRequest.Error.NO_AD_TO_SHOW, "Ad Server Responded with NO_AD");
                     break;
                 case SERVED:
                     JSONObject responseAdJson = response.getJSONObject("ads").getJSONObject(this.getPlacementId());
@@ -175,7 +179,7 @@ public class Image360Ad extends Ad {
 
         } catch (JSONException e) {
             this.setLoading(false);
-            this.getVrAdListener().onAdLoadFailed(VrAdRequest.Error.UNKNOWN_FAILURE, e.toString());
+            this.getVrAdListener().onVrAdLoadFailed(VrAdRequest.Error.UNKNOWN_FAILURE, e.toString());
 
             HashMap<String, String> errorMap = new HashMap<>();
             errorMap.put("Error", e.toString());
@@ -187,7 +191,7 @@ public class Image360Ad extends Ad {
 
     @Override
     public void onMediaServerResponseSuccess() {
-        this.getVrAdListener().onAdLoaded();
+        this.getVrAdListener().onVrAdLoaded();
         this.setLoaded(true);
         this.setLoading(false);
         Log.i(TAG, "Media Server Response Successful");
@@ -206,7 +210,7 @@ public class Image360Ad extends Ad {
 
         //if(file.exists()) {
 
-        daydreamApi = DaydreamApi.create(this.getContext());
+        //daydreamApi = DaydreamApi.create(this.getContext());
 
         String files[] = {"Witcher-BoatSunset-SmartPhone-360-Stereo",
                 "Witcher-CiriForestSunset-Smartphone-360-Stereo",
@@ -241,7 +245,8 @@ public class Image360Ad extends Ad {
             ComponentName c= new ComponentName(this.getContext(), Image360Activity.class);
             Intent vrIntent = daydreamApi.createVrIntent(c);
 
-            vrIntent.putExtra("clickUrl", this.getClickUrl());
+            //// TODO: 4/26/2017 replace this in launch version
+            vrIntent.putExtra("clickUrl", "com.google.android.apps.youtube.vr");                    //this.getClickUrl());
             vrIntent.putExtra("imageAdFilePath", filePath);
             vrIntent.putExtra("servingId", this.getServingId());
             vrIntent.putExtra("instanceId", this.getInstanceId());
@@ -255,11 +260,11 @@ public class Image360Ad extends Ad {
             //PendingIntent pendingIntent = PendingIntent.getActivity(this.getContext(), IMAGE360_ACTIVIT_REQUEST, vrIntent, PendingIntent.FLAG_ONE_SHOT);
             //daydreamApi.launchInVrForResult((Activity)this.getContext(), pendingIntent, IMAGE360_ACTIVIT_REQUEST);
             daydreamApi.launchInVr(vrIntent);
-            this.getVrAdListener().onAdOpened();
-            daydreamApi.close();
+            this.getVrAdListener().onVrAdOpened();
+            //daydreamApi.close();
         } else {
             Log.i(TAG, "No Ad to Show");
-            this.getVrAdListener().onAdLoadFailed(VrAdRequest.Error.NO_AD_TO_SHOW, "There is no ad Loaded.");
+            this.getVrAdListener().onVrAdLoadFailed(VrAdRequest.Error.NO_AD_TO_SHOW, "There is no ad Loaded.");
         }
 
     }
