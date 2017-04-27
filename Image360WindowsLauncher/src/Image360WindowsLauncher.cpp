@@ -77,6 +77,7 @@ void key_callback(GLFWwindow* window, int key, int scancode, int action, int mod
 {
 	std::cout << "Key Pressed " << std::endl;
 	
+	std::cout << application->getActionButtonText() << std::endl;
 	if (key == GLFW_KEY_ESCAPE && action == GLFW_PRESS)
 	{
 		glfwSetWindowShouldClose(window, GL_TRUE);
@@ -99,11 +100,11 @@ void mouse_button_callback(GLFWwindow* window, int button, int action, int mods)
 	std::cout << "Mouse Clicked " << std::endl;
 	if (button == GLFW_MOUSE_BUTTON_LEFT && action == GLFW_PRESS)
 	{
-		if (application->notifyMeListener->inFocus()){
-			std::cout << "Notification Pressed" << std::endl;
+		if (application->actionButtonListener->inFocus()){
+			std::cout << "Action Button Pressed" << std::endl;
 		}
-		else if (application->closeMeListener->inFocus()){
-			std::cout << "Close Box Pressed" << std::endl;
+		else if (application->closeButtonListener->inFocus()){
+			std::cout << "Close Button Pressed" << std::endl;
 			glfwSetWindowShouldClose(window, GL_TRUE);
 		}
 	}
@@ -225,6 +226,7 @@ int _tmain(int argc, _TCHAR** argv)
 			break;
 		}
 
+		application->setActionButtonText(std::string("Download"));
 		application->initialize(mode, textureImages);
 
 		//// register callbacks
@@ -311,6 +313,9 @@ int _tmain(int argc, _TCHAR** argv)
 		break;
 	}
 
+	std::cout << application->getActionButtonText() << std::endl;
+	application->setActionButtonText(std::string("Download"));
+	std::cout << application->getActionButtonText() << std::endl;
 	application->initialize(mode, textureImages);
 
 	//// register callbacks

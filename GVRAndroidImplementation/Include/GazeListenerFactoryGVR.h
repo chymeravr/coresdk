@@ -2,8 +2,8 @@
 #define ANDROIDIMPLEMENTATION_GAZELISTENERFACTORYGVR_H
 
 #include <coreEngine/factory/IEventGazeListenerFactory.h>
-#include <CloseMeListenerGVR.h>
-#include <NotifyMeListenerGVR.h>
+#include <CloseButtonListenerGVR.h>
+#include <ActionButtonListenerGVR.h>
 
 namespace cl
 {
@@ -15,14 +15,14 @@ class GazeListenerFactoryGVR : public IEventGazeListenerFactory
         assert(loggerFactory != nullptr);
         this->loggerFactory = loggerFactory;
     }
-    std::unique_ptr<EventGazeListener> createNotifyMeListener()
+    std::unique_ptr<EventGazeListener> createActionButtonListener()
     {
-        return std::unique_ptr<EventGazeListener>(new NotifyMeListenerGVR(loggerFactory));
+        return std::unique_ptr<EventGazeListener>(new ActionButtonListenerGVR(loggerFactory));
     }
 
-    std::unique_ptr<EventGazeListener> createCloseMeListener()
+    std::unique_ptr<EventGazeListener> createCloseButtonListener()
     {
-        return std::unique_ptr<EventGazeListener>(new CloseMeListenerGVR(loggerFactory));
+        return std::unique_ptr<EventGazeListener>(new CloseButtonListenerGVR(loggerFactory));
     }
 
   private:

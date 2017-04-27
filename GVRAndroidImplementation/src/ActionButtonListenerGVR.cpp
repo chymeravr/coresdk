@@ -1,25 +1,25 @@
-#include <CloseMeListenerGVR.h>
+#include <ActionButtonListenerGVR.h>
 #include <assert.h>
 
 // a listener on the close button / box in the scene - we may want to animate this in future
 namespace cl
 {
-CloseMeListenerGVR::CloseMeListenerGVR(ILoggerFactory *loggerFactory)
+ActionButtonListenerGVR::ActionButtonListenerGVR(ILoggerFactory *loggerFactory)
 {
     assert(loggerFactory != nullptr);
     this->logger = loggerFactory->createLogger(tag);
 }
-void CloseMeListenerGVR::onGazeStarted()
+void ActionButtonListenerGVR::onGazeStarted()
 {
     this->focus = true;
 }
-void CloseMeListenerGVR::onGazeEnded()
+void ActionButtonListenerGVR::onGazeEnded()
 {
     this->focus = false;
 }
-void CloseMeListenerGVR::onGaze() {}
+void ActionButtonListenerGVR::onGaze() {}
 
-bool CloseMeListenerGVR::inFocus()
+bool ActionButtonListenerGVR::inFocus()
 {
     return this->focus;
 }

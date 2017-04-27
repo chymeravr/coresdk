@@ -209,7 +209,8 @@ JNI_METHOD(void, nativeInitializeGl)
 (JNIEnv *env, jobject obj, jlong nativeImage360) {
     logger->log(cl::LOG_DEBUG, "Initializing Native GL Start");
     auto image360 = native(nativeImage360);
-    image360->start();
+    //image360->start();
+    image360->setActionButtonText(std::string("Download"));
 
     auto mode = cl::EQUIRECTANGULAR_MAP_MODE;
 
@@ -231,11 +232,11 @@ JNI_METHOD(int, nativeOnTriggerEvent)
 (JNIEnv *env, jobject obj, jlong nativeImage360) {
     auto image360 = native(nativeImage360);
     logger->log(cl::LOG_DEBUG, "Trigger Event");
-    if(image360->closeMeListener->inFocus()){
-        logger->log(cl::LOG_DEBUG, "Close Me Event Detected");
+    if(image360->closeButtonListener->inFocus()){
+        logger->log(cl::LOG_DEBUG, "Close Button Clicked");
         return CLOSE_AD;
-    } else if(image360->notifyMeListener->inFocus()){
-        logger->log(cl::LOG_DEBUG, "Notify Me Event Detected");
+    } else if(image360->actionButtonListener->inFocus()){
+        logger->log(cl::LOG_DEBUG, "Download Button Clicked");
         return NOTIFY_ME;
     }else{
         return NO_EVENT;
@@ -246,11 +247,11 @@ JNI_METHOD(int, nativeOnControllerClicked)
 (JNIEnv *env, jobject obj, jlong nativeImage360){
     auto image360 = native(nativeImage360);
     logger->log(cl::LOG_DEBUG, "Trigger Event");
-    if(image360->closeMeListener->inFocus()){
-        logger->log(cl::LOG_DEBUG, "Close Me Event Detected");
+    if(image360->closeButtonListener->inFocus()){
+        logger->log(cl::LOG_DEBUG, "Close Button Clicked");
         return CLOSE_AD;
-    } else if(image360->notifyMeListener->inFocus()){
-        logger->log(cl::LOG_DEBUG, "Notify Me Event Detected");
+    } else if(image360->actionButtonListener->inFocus()){
+        logger->log(cl::LOG_DEBUG, "Download Button Clicked");
         return NOTIFY_ME;
     }else{
         return NO_EVENT;

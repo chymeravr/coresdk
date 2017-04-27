@@ -5,12 +5,14 @@
 #include <coreEngine/components/gazeDetector/EventGazeListener.h>
 #include <coreEngine/util/ILogger.h>
 
-namespace cl{
-	class IEventGazeListenerFactory{
-	public:
-		virtual std::unique_ptr<EventGazeListener> createNotifyMeListener() = 0;
-		virtual std::unique_ptr<EventGazeListener> createCloseMeListener() = 0;
-	};
+namespace cl
+{
+class IEventGazeListenerFactory
+{
+  public:
+    virtual std::unique_ptr<EventGazeListener> createActionButtonListener() = 0;
+    virtual std::unique_ptr<EventGazeListener> createCloseButtonListener() = 0;
+};
 }
 
 #endif //COREENGINE_IEVENTGAZELISTENERFACTORY_H

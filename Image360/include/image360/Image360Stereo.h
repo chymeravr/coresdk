@@ -76,8 +76,8 @@ protected:
   Texture *imageTexture;
   Model *imageContainer;
 
-  std::unique_ptr<PlanarBackground> notifyMeBackground;
-  std::unique_ptr<PlanarBackground> closeBackground;
+  // std::unique_ptr<PlanarBackground> notifyMeBackground;
+  // std::unique_ptr<PlanarBackground> closeBackground;
   std::unique_ptr<Reticle> reticle;
   std::unique_ptr<Reticle> reticleBase;
   std::unique_ptr<GazeDetectorContainer> gazeDetectorContainer;

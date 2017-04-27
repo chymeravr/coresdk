@@ -36,44 +36,44 @@ class Image360 : public EventKeyPressListener, public EventPassiveMouseMotionLis
 {
   public:
     Image360(std::unique_ptr<IRenderer> renderer,
-	     std::unique_ptr<ISceneFactory> sceneFactory,
-	     std::unique_ptr<IModelFactory> modelFactory,
-	     std::unique_ptr<IDiffuseTextureFactory> diffuseTextureFactory,
-	     std::unique_ptr<IDiffuseTextureCubeMapFactory> diffuseTextureCubeMapFactory,
-	     std::unique_ptr<ITransformTreeFactory> transformTreeFactory,
-	     std::unique_ptr<ICameraFactory> cameraFactory,
-	     IEventQueue *eventQueue,
-	     ILoggerFactory *loggerFactory,
-	     std::unique_ptr<UIFactory> uiFactory,
-	     std::unique_ptr<GazeDetectorFactory> gazeDetectorFactory,
-	     std::unique_ptr<IEventGazeListenerFactory> gazeEventListenerFactory,
-	     std::string fontFolderPath)
+             std::unique_ptr<ISceneFactory> sceneFactory,
+             std::unique_ptr<IModelFactory> modelFactory,
+             std::unique_ptr<IDiffuseTextureFactory> diffuseTextureFactory,
+             std::unique_ptr<IDiffuseTextureCubeMapFactory> diffuseTextureCubeMapFactory,
+             std::unique_ptr<ITransformTreeFactory> transformTreeFactory,
+             std::unique_ptr<ICameraFactory> cameraFactory,
+             IEventQueue *eventQueue,
+             ILoggerFactory *loggerFactory,
+             std::unique_ptr<UIFactory> uiFactory,
+             std::unique_ptr<GazeDetectorFactory> gazeDetectorFactory,
+             std::unique_ptr<IEventGazeListenerFactory> gazeEventListenerFactory,
+             std::string fontFolderPath)
     {
-	assert(renderer != nullptr);
-	assert(sceneFactory != nullptr);
-	assert(modelFactory != nullptr);
-	assert(diffuseTextureFactory != nullptr);
-	assert(diffuseTextureCubeMapFactory != nullptr);
-	assert(transformTreeFactory != nullptr);
-	assert(eventQueue != nullptr);
-	assert(cameraFactory != nullptr);
-	assert(uiFactory != nullptr);
-	assert(gazeDetectorFactory != nullptr);
-	assert(gazeEventListenerFactory != nullptr);
+        assert(renderer != nullptr);
+        assert(sceneFactory != nullptr);
+        assert(modelFactory != nullptr);
+        assert(diffuseTextureFactory != nullptr);
+        assert(diffuseTextureCubeMapFactory != nullptr);
+        assert(transformTreeFactory != nullptr);
+        assert(eventQueue != nullptr);
+        assert(cameraFactory != nullptr);
+        assert(uiFactory != nullptr);
+        assert(gazeDetectorFactory != nullptr);
+        assert(gazeEventListenerFactory != nullptr);
 
-	this->renderer = std::move(renderer);
-	this->sceneFactory = std::move(sceneFactory);
-	this->modelFactory = std::move(modelFactory);
-	this->diffuseTextureFactory = std::move(diffuseTextureFactory);
-	this->diffuseTextureCubeMapFactory = std::move(diffuseTextureCubeMapFactory);
-	this->transformTreeFactory = std::move(transformTreeFactory);
-	this->cameraFactory = std::move(cameraFactory);
-	this->eventQueue = eventQueue;
-	this->logger = loggerFactory->createLogger("Image360::");
-	this->uiFactory = std::move(uiFactory);
-	this->gazeDetectorFactory = std::move(gazeDetectorFactory);
-	this->eventGazeListenerFactory = std::move(gazeEventListenerFactory);
-	this->fontFolderPath = fontFolderPath;
+        this->renderer = std::move(renderer);
+        this->sceneFactory = std::move(sceneFactory);
+        this->modelFactory = std::move(modelFactory);
+        this->diffuseTextureFactory = std::move(diffuseTextureFactory);
+        this->diffuseTextureCubeMapFactory = std::move(diffuseTextureCubeMapFactory);
+        this->transformTreeFactory = std::move(transformTreeFactory);
+        this->cameraFactory = std::move(cameraFactory);
+        this->eventQueue = eventQueue;
+        this->logger = loggerFactory->createLogger("Image360::");
+        this->uiFactory = std::move(uiFactory);
+        this->gazeDetectorFactory = std::move(gazeDetectorFactory);
+        this->eventGazeListenerFactory = std::move(gazeEventListenerFactory);
+        this->fontFolderPath = fontFolderPath;
     }
 
     //virtual ~Image360() = 0;
@@ -96,12 +96,29 @@ class Image360 : public EventKeyPressListener, public EventPassiveMouseMotionLis
     virtual void onPassiveMouseMotion(int x, int y) = 0;
     IRenderer *getRenderer();
 
-    std::unique_ptr<EventGazeListener> notifyMeListener;
-    std::unique_ptr<EventGazeListener> closeMeListener;
+    std::unique_ptr<EventGazeListener> actionButtonListener;
+    std::unique_ptr<EventGazeListener> closeButtonListener;
 
-    void setIsControllerPresent(bool isControllerPresent){
+    void setIsControllerPresent(bool isControllerPresent)
+    {
         this->isControllerPresent = true;
     }
+
+    void setCloseButtonText(std::string newCloseButtonText)
+    {
+        this->closeButtonText = newCloseButtonText;
+    }
+
+    void setActionButtonText(std::string newActionButtonText)
+    {
+        this->actionButtonText = newActionButtonText;
+    }
+
+    std::string getActionButtonText()
+    {
+        return this->actionButtonText;
+    }
+
   protected:
     std::unique_ptr<IRenderer> renderer;
     IEventQueue *eventQueue;
@@ -119,7 +136,12 @@ class Image360 : public EventKeyPressListener, public EventPassiveMouseMotionLis
 
     std::string fontFolderPath = "";
 
-	bool isControllerPresent = false;
+    std::string closeButtonText = "Close";
+    std::string actionButtonText = "Notify Me";
+    std::unique_ptr<PlanarBackground> actionButtonBackground;
+    std::unique_ptr<PlanarBackground> closeButtonBackground;
+
+    bool isControllerPresent = false;
 };
 }
 
