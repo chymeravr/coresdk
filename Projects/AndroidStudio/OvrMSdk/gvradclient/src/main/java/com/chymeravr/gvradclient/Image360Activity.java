@@ -1,10 +1,6 @@
 package com.chymeravr.gvradclient;
 
 import android.app.Activity;
-import android.app.Notification;
-import android.app.NotificationManager;
-import android.app.PendingIntent;
-import android.app.Service;
 import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
@@ -12,7 +8,6 @@ import android.net.Uri;
 import android.opengl.GLSurfaceView;
 import android.os.Bundle;
 import android.os.Vibrator;
-import android.support.v4.app.NotificationCompat;
 import android.util.Log;
 import android.view.KeyEvent;
 import android.view.MotionEvent;
@@ -20,6 +15,7 @@ import android.view.View;
 import android.view.WindowManager;
 
 import com.chymeravr.analytics.AnalyticsManager;
+import com.chymeravr.common.Config;
 import com.chymeravr.schemas.eventreceiver.EventType;
 import com.chymeravr.schemas.eventreceiver.RuntimeAdMeta;
 import com.chymeravr.schemas.eventreceiver.SDKEvent;
@@ -31,6 +27,9 @@ import com.google.vr.sdk.controller.ControllerManager;
 
 import java.sql.Timestamp;
 import java.util.HashMap;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.TimeUnit;
 
 import javax.microedition.khronos.egl.EGLConfig;
 import javax.microedition.khronos.opengles.GL10;
@@ -45,7 +44,13 @@ public class Image360Activity extends Activity {
 
     private static final String TAG = "Image360AdGvrActivity";
 
+    // google vr layout for holding the surface
     private GvrLayout gvrLayout;
+
+    // daydream parameters - api object, controller etc.
+    private DaydreamApi daydreamApi;
+    private ControllerManager ddControllerManager;
+    private Controller ddController;
 
     // native C++ handle for image360 application
     private long nativeImage360ActivityHandler;
@@ -53,19 +58,15 @@ public class Image360Activity extends Activity {
     // gl surface on which rendering happens
     private GLSurfaceView surfaceView;
 
-    // daydream parameters - api object, controller etc.
-    private DaydreamApi daydreamApi;
-    private ControllerManager ddControllerManager;
-    private Controller ddController;
-
     // count vars to ensure we only notify once / close once
+    // TODO: 4/27/2017 change this to bools
     private int notifyCount = 1;
     private int closeCount = 1;
 
     // enum representing possible controller click responses
     private enum ControllerClickEventResponse{
         NO_EVENT,
-        NOTIFY_ME,
+        DOWNLOAD,
         CLOSE_AD
     }
 
@@ -74,7 +75,7 @@ public class Image360Activity extends Activity {
         // gvr libs
         System.loadLibrary("gvr");
         //System.loadLibrary("gvr_audio");
-        // chymera libs
+        // chymeravr libs
         System.loadLibrary("image360ad");
     }
 
@@ -82,7 +83,8 @@ public class Image360Activity extends Activity {
     // url to send in notification
     private String clickUrl;
 
-    // ad identficaiton ids
+    // TODO: 4/27/2017 remove getter - clients should not get these from here
+    // ad identfication ids
     @Getter
     private String servingId;
 
@@ -92,6 +94,7 @@ public class Image360Activity extends Activity {
     // we need the class name to go transition back to
     private String returningClassName;
 
+    // the function talks to analytics manager as and when called
     public void emitEvent(EventType eventType, AnalyticsManager.Priority priority, HashMap<String, String> map){
         long currTime = new Timestamp(System.currentTimeMillis()).getTime();
         RuntimeAdMeta adMeta = new RuntimeAdMeta(this.getServingId(), this.getInstanceId());
@@ -120,7 +123,7 @@ public class Image360Activity extends Activity {
                 switch (keyEventResponse){
                     case NO_EVENT:
                         break;
-                    case NOTIFY_ME:
+                    case DOWNLOAD:
                         //notifyUser();
                         onDownloadClick();
                         finishAdActivity();
@@ -143,6 +146,7 @@ public class Image360Activity extends Activity {
         closeCount--;
         Class<?> clientClass;
         try {
+            // return to client activity (class) that called the ad show on closing
             clientClass = Class.forName(Image360Activity.this.returningClassName);
             ComponentName c= new ComponentName(Image360Activity.this, clientClass);
             Intent vrIntent = DaydreamApi.createVrIntent(c);
@@ -151,6 +155,16 @@ public class Image360Activity extends Activity {
             Log.e(TAG, e.toString());
         }
     }
+
+    // scheduler polls the hmd for parameters (quaternion) at regular intervals
+    private ScheduledExecutorService scheduler = Executors.newScheduledThreadPool(1);
+
+    private final Runnable hmdPollRunner = new Runnable() {
+        public void run() {
+            Log.v(TAG, "Running Scheduler");
+            Image360Activity.this.getDaydreamHmdParams();
+        }
+    };
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -223,12 +237,17 @@ public class Image360Activity extends Activity {
                 new GLSurfaceView.Renderer() {
                     @Override
                     public void onSurfaceCreated(GL10 gl, EGLConfig config) {
+                        Log.d(TAG, "GL Surface Created");
                         Image360Activity.this.emitEvent(EventType.AD_SHOW, AnalyticsManager.Priority.HIGH, null);
+
                         nativeInitializeGl(nativeImage360ActivityHandler);
+
+                        scheduler.scheduleAtFixedRate(hmdPollRunner, Config.hmdSamplingDelay, Config.hmdSamplingPeriod, TimeUnit.SECONDS);
                     }
 
                     @Override
-                    public void onSurfaceChanged(GL10 gl, int width, int height) {}
+                    public void onSurfaceChanged(GL10 gl, int width, int height) {
+                    }
 
                     @Override
                     public void onDrawFrame(GL10 gl) {
@@ -255,6 +274,7 @@ public class Image360Activity extends Activity {
                         return false;
                     }
                 });
+
         gvrLayout.setPresentationView(surfaceView);
 
         // Add the GvrLayout to the View hierarchy.
@@ -267,6 +287,7 @@ public class Image360Activity extends Activity {
             // sustained performance mode.
             AndroidCompat.setSustainedPerformanceMode(this, true);
         }
+
 
         // Enable VR Mode.
         AndroidCompat.setVrModeEnabled(this, true);
@@ -294,6 +315,13 @@ public class Image360Activity extends Activity {
         gvrLayout.onResume();
         surfaceView.onResume();
         surfaceView.queueEvent(refreshViewerProfileRunnable);
+
+        // TODO: 4/27/2017 remove hardcoded thread pool size
+        //this.scheduler = Executors.newScheduledThreadPool(1);
+        //this.scheduler.scheduleAtFixedRate(hmdPollRunner, 1, 1, TimeUnit.SECONDS);
+//        final ScheduledFuture<?> beeperHandle =
+//                scheduler.scheduleAtFixedRate(hmdPollRunner, 1, 1, SECONDS);
+
     }
 
     @Override
@@ -308,6 +336,7 @@ public class Image360Activity extends Activity {
         nativeDestroyRenderer(nativeImage360ActivityHandler);
         this.ddControllerManager.stop();
         this.daydreamApi.close();
+        this.scheduler.shutdown();
     }
 
     @Override
@@ -350,27 +379,26 @@ public class Image360Activity extends Activity {
                                 | View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY);
     }
 
-    private void notifyUser() {
-        if(notifyCount <= 0){
-            return;
+    private void getDaydreamHmdParams(){
+        if(this.nativeImage360ActivityHandler != 0){
+            float[] hmdParams = this.nativeGetHmdParams(this.nativeImage360ActivityHandler);
+            HashMap<String, String> hmdEyeMap = new HashMap<>();
+
+            // order in which daydream gives their quaternions - JPL format
+            String[] parameterKeys = {"qx", "qy", "qz", "qw"};
+
+            int i = 0;
+            for (String key : parameterKeys) {
+                hmdEyeMap.put(key, String.valueOf(hmdParams[i++]));
+
+            }
+            Log.d(TAG, "getDaydreamHmdParams: "
+                    + hmdParams[0] + ", "
+                    + hmdParams[1] + ", "
+                    + hmdParams[2] + ", "
+                    + hmdParams[3]);
+            this.emitEvent(EventType.AD_VIEW_METRICS, AnalyticsManager.Priority.LOW, hmdEyeMap);
         }
-        notifyCount--;
-
-        Intent notificationIntent = new Intent(Intent.ACTION_VIEW);
-        notificationIntent.setData(Uri.parse(this.clickUrl));
-        PendingIntent pi = PendingIntent.getActivity(this, 0, notificationIntent, 0);
-
-        // TODO: 2/22/2017 Get these from the server as well. Issue raised in bitbucket serving repo
-        Notification notification = new NotificationCompat.Builder(this)
-                .setSmallIcon(R.drawable.download_icon)
-                .setContentTitle("<YourContentTitle>")
-                .setContentText("<YourContentText>")
-                .setContentIntent(pi)
-                .setAutoCancel(true)
-                .build();
-
-        NotificationManager notificationManager2 = (NotificationManager) this.getSystemService(Service.NOTIFICATION_SERVICE);
-        notificationManager2.notify(0, notification);
     }
 
     private void onDownloadClick(){
@@ -407,5 +435,7 @@ public class Image360Activity extends Activity {
     private native void nativeOnPause(long nativeTreasureHuntRenderer);
 
     private native void nativeOnResume(long nativeTreasureHuntRenderer);
+
+    private native float[] nativeGetHmdParams(long nativeTreasureHuntRenderer);
 }
 

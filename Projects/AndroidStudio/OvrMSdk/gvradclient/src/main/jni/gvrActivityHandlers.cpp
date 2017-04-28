@@ -50,7 +50,7 @@ namespace {
 
     typedef enum{
         NO_EVENT=0,
-        NOTIFY_ME=1,
+        DOWNLOAD=1,
         CLOSE_AD=2
     } keyEventResponse;
 
@@ -237,7 +237,7 @@ JNI_METHOD(int, nativeOnTriggerEvent)
         return CLOSE_AD;
     } else if(image360->actionButtonListener->inFocus()){
         logger->log(cl::LOG_DEBUG, "Download Button Clicked");
-        return NOTIFY_ME;
+        return DOWNLOAD;
     }else{
         return NO_EVENT;
     }
@@ -252,7 +252,7 @@ JNI_METHOD(int, nativeOnControllerClicked)
         return CLOSE_AD;
     } else if(image360->actionButtonListener->inFocus()){
         logger->log(cl::LOG_DEBUG, "Download Button Clicked");
-        return NOTIFY_ME;
+        return DOWNLOAD;
     }else{
         return NO_EVENT;
     }
@@ -269,6 +269,30 @@ JNI_METHOD(void, nativeOnResume)
 (JNIEnv *env, jobject obj, jlong nativeImage360) {
     auto image360 = native(nativeImage360);
     image360->resume();
+}
+
+JNI_METHOD(jfloatArray , nativeGetHmdParams)
+(JNIEnv *env, jobject obj, jlong nativeImage360){
+    // native function that returns quaternion representing current head rotation
+
+    jfloatArray result;
+    result = env->NewFloatArray(4);
+
+    auto image360 = native(nativeImage360);
+
+    //todo  : modify renderer to include hmd parameters fetcher as a virtual function
+    auto renderer = (cl::RendererGVR *)image360->getRenderer();
+
+    auto hmdParams = renderer->getHMDParams();
+
+    float params[4];
+    for (int j = 0; j < 4; j++) {
+        params[j] = hmdParams[j];
+    }
+
+
+    env->SetFloatArrayRegion(result, 0, 4, params);
+    return result;
 }
 
 #ifdef __cplusplus

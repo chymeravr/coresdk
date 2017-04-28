@@ -489,6 +489,17 @@ void RendererGVR::resume()
 
 std::vector<float> RendererGVR::getHMDParams()
 {
+    TransformTreeCamera *transform = (TransformTreeCamera *)this->renderCamera->getComponentList().getComponent(
+        "transformTree");
+    auto quat = transform->getLocalQuaternion();
+    std::vector<float> result;
+
+    result.push_back(quat[0]);
+    result.push_back(quat[1]);
+    result.push_back(quat[2]);
+    result.push_back(quat[3]);
+
+    return result;
 }
 
 /*************************************************************************************************************************

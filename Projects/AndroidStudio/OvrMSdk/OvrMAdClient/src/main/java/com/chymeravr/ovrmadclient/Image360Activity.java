@@ -80,7 +80,7 @@ public final class Image360Activity extends Activity implements SurfaceHolder.Ca
 
     private final Runnable hmdPollRunner = new Runnable() {
         public void run() {
-            Image360Activity.this.getHMDParams();
+            Image360Activity.this.getOvrHmdParams();
         }
     };
 
@@ -225,6 +225,7 @@ public final class Image360Activity extends Activity implements SurfaceHolder.Ca
             this.mSurfaceHolder = holder;
 
             // schedule polling for hmd parameters
+            // TODO: 4/27/2017 remove hardcoded pool size 
             this.scheduler = Executors.newScheduledThreadPool(1);
             scheduler.scheduleAtFixedRate(hmdPollRunner, Config.hmdSamplingDelay,
                     Config.hmdSamplingPeriod, TimeUnit.SECONDS);
@@ -345,7 +346,8 @@ public final class Image360Activity extends Activity implements SurfaceHolder.Ca
         notificationManager2.notify(0, notification);
     }
 
-    public void getHMDParams() {
+    // TODO: 4/27/2017 switch to quaternion representation
+    private void getOvrHmdParams() {
         if(this.mNativeHandle != 0) {
             float[] hmdParams = this.getHMDParamsNative(this.mNativeHandle);
             HashMap<String, String> hmdEyeMap = new HashMap<>();

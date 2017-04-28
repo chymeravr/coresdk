@@ -94,7 +94,7 @@ class Image360 : public EventKeyPressListener, public EventPassiveMouseMotionLis
     virtual void resume() = 0;
     virtual void onKeyPress(char key, int x, int y) = 0;
     virtual void onPassiveMouseMotion(int x, int y) = 0;
-    IRenderer *getRenderer();
+    virtual IRenderer *getRenderer() = 0;
 
     std::unique_ptr<EventGazeListener> actionButtonListener;
     std::unique_ptr<EventGazeListener> closeButtonListener;
