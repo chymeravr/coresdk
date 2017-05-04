@@ -157,17 +157,27 @@ public final class ChymeraVrSdk {
     }
 
     private static void copyAssets(Context context) {
-        AssetManager assetManager = context.getAssets();
+        AssetManager assetManager = context.getApplicationContext().getAssets();
         String[] files = null;
         String[] assets = new String[2];
         assets[0] = "fonts";
         assets[1] = "image360";
 
+        try {
+            String[] contents = assetManager.list("/");
+            for(String content : contents){
+                Log.i(TAG, "Content : " + content);
+            }
+        }catch(IOException e){
+
+        }
         for(String folderName : assets) {
             try {
                 files = assetManager.list(folderName);
+                Log.i(TAG, "Files : " + files.length);
             } catch (IOException e) {
-                Log.e("tag", "Failed to get asset file list.", e);
+                Log.e(TAG, "Failed to get asset file list.", e);
+                break;
             }
             for (String filename : files) {
                 InputStream in = null;
@@ -184,7 +194,7 @@ public final class ChymeraVrSdk {
                     }
 
                     File outFile = new File(dest_dir, filename);
-                    Log.d(TAG, "Absolute font file path : " + outFile.getAbsolutePath());
+                    Log.i(TAG, "Absolute font file path : " + outFile.getAbsolutePath());
 
                     if(!outFile.exists()) {
                         in = assetManager.open(folderName + "/" + filename);
@@ -196,12 +206,15 @@ public final class ChymeraVrSdk {
                         out.flush();
                         out.close();
                     }
+                    Log.i(TAG, "Copied image360 files " + " Successfully to : " + dest_dir + "/" + filename);
                 } catch (IOException e) {
-                    Log.e("tag", "Failed to copy asset file: " + filename, e);
+                    Log.e(TAG, "Failed to copy asset file: " + filename, e);
                 }
             }
+            Log.i(TAG, "copied assets : " + folderName);
         }
-        Log.v(TAG, "Copied Fonts Successfully");
+
+
     }
     private static void copyFile(InputStream in, OutputStream out) throws IOException {
         byte[] buffer = new byte[1024];

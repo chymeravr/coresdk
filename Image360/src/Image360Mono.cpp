@@ -6,6 +6,7 @@
 #include <coreEngine/util/SimpleOBJLoader.h>
 #include <coreEngine/modifier/ImageModifier.h>
 #include <coreEngine/components/transformTree/TransformTreeFactory.h>
+#include <coreEngine/modelBuilder/ModelLoader.h>
 
 namespace cl
 {
@@ -280,6 +281,17 @@ void Image360Mono::initialize(TEXTURE_MAP_MODE mapMode, std::vector<std::unique_
     std::unique_ptr<IComponent> gazeDetectorCloseMe = gazeDetectorFactory->createGazeDetectorBox(boxMessage2, gazeTransformTarget,
 												 transformCloseButton, closeButtonListener.get(), gazeDetectorContainer.get(), vec3_one, vec3_two, 3.0f, 1.0f, 0.00001f);
     closeButtonModel->getComponentList().addComponent(std::move(gazeDetectorCloseMe));
+
+	// controller model load
+    // const char* ddControllerFilename = "ddController.obj";
+    // std::vector<CL_Vec3> vertices;
+    // std::vector<CL_Vec2> uvs;
+    // std::vector<CL_Vec3> normals;
+    // std::vector<CL_GLushort> elements;
+
+    // ModelLoader::load_obj(ddControllerFilename, vertices, uvs, normals, elements);
+    // std::string vertexMsg = "Number of Vertices " + std::to_string(vertices.size());
+    // logger->log(cl::LOG_DEBUG, vertexMsg);
 
     renderer->initialize(scene.get());
 }

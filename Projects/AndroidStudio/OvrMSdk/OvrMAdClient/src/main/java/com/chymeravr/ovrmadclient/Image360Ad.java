@@ -223,7 +223,7 @@ public final class Image360Ad extends Ad {
 
         this.setClickUrl("https://www.chymeravr.com");
         File file = new File(appPath, filePath);
-
+        Log.d(TAG, "show: " + appPath + "/" + filePath);
         if (file.exists()) {
             // send relevant ad data to activity with intent
             Intent intent = new Intent(this.getContext(), Image360Activity.class);

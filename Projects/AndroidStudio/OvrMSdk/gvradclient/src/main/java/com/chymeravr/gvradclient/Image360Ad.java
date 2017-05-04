@@ -35,8 +35,6 @@ import org.json.JSONObject;
 import java.io.File;
 import java.util.HashMap;
 
-import lombok.Setter;
-
 /**
  * Created by robin_chimera on 3/22/2017.
  * Image360Ad class
@@ -52,8 +50,15 @@ public class Image360Ad extends Ad {
     static final int IMAGE360_ACTIVIT_REQUEST = 1;
 
     // TODO: 4/24/2017 test whetehr this is null or not before calling functions
-    @Setter
+    //@Setter
     private DaydreamApi daydreamApi;
+    Runnable initializeDaydream = new Runnable(){
+
+        @Override
+        public void run() {
+            Image360Ad.this.daydreamApi = DaydreamApi.create(Image360Ad.this.getContext());
+        }
+    };
 
     private void adListenerCallbacks() {
         this.getVrAdListener().onVrAdClosed();
@@ -80,6 +85,8 @@ public class Image360Ad extends Ad {
                 new IntentFilter("adClosed"));
 
         this.requestGenerator = new RequestGenerator(this);
+
+        ((Activity)context).runOnUiThread(initializeDaydream);
 
     }
 

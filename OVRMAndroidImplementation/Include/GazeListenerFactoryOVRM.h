@@ -2,8 +2,8 @@
 #define ANDROIDIMPLEMENTATION_GAZELISTENERFACTORYOVRM_H
 
 #include <coreEngine/factory/IEventGazeListenerFactory.h>
-#include <CloseMeListenerOVRM.h>
-#include <NotifyMeListenerOVRM.h>
+#include <CloseButtonListenerOVRM.h>
+#include <ActionButtonListenerOVRM.h>
 
 namespace cl
 {
@@ -12,17 +12,17 @@ class GazeListenerFactoryOVRM : public IEventGazeListenerFactory
   public:
     GazeListenerFactoryOVRM(ILoggerFactory *loggerFactory)
     {
-	assert(loggerFactory != nullptr);
-	this->loggerFactory = loggerFactory;
+        assert(loggerFactory != nullptr);
+        this->loggerFactory = loggerFactory;
     }
-    std::unique_ptr<EventGazeListener> createNotifyMeListener()
+    std::unique_ptr<EventGazeListener> createActionButtonListener()
     {
-	return std::unique_ptr<EventGazeListener>(new NotifyMeListenerOVRM(loggerFactory));
+        return std::unique_ptr<EventGazeListener>(new ActionButtonListenerOVRM(loggerFactory));
     }
 
-    std::unique_ptr<EventGazeListener> createCloseMeListener()
+    std::unique_ptr<EventGazeListener> createCloseButtonListener()
     {
-	return std::unique_ptr<EventGazeListener>(new CloseMeListenerOVRM(loggerFactory));
+        return std::unique_ptr<EventGazeListener>(new CloseButtonListenerOVRM(loggerFactory));
     }
 
   private:

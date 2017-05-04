@@ -179,7 +179,7 @@ int _tmain(int argc, _TCHAR** argv)
 	std::string fontFilePath = "C:\\Users\\robin_chimera\\Documents\\SDK\\Projects\\VisualStudio\\Image360WindowsLauncher\\Debug\\fonts\\arial.ttf";
 	//std::string fontFilePath = "fonts/arial.ttf";
 
-	IMAGE_MODE appMode = STEREO; //MONO;
+	IMAGE_MODE appMode = MONO;
 	
 	if (appMode == STEREO){
 		std::unique_ptr<IRenderer> renderer(new RendererNoHMDStereo());

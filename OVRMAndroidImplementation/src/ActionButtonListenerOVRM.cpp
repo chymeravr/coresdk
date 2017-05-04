@@ -1,25 +1,25 @@
-#include <NotifyMeListenerOVRM.h>
+#include <ActionButtonListenerOVRM.h>
 #include <assert.h>
 
 // a listener on the close button / box in the scene - we may want to animate this in future
 namespace cl
 {
-NotifyMeListenerOVRM::NotifyMeListenerOVRM(ILoggerFactory *loggerFactory)
+ActionButtonListenerOVRM::ActionButtonListenerOVRM(ILoggerFactory *loggerFactory)
 {
     assert(loggerFactory != nullptr);
     this->logger = loggerFactory->createLogger(tag);
 }
-void NotifyMeListenerOVRM::onGazeStarted()
+void ActionButtonListenerOVRM::onGazeStarted()
 {
     this->focus = true;
 }
-void NotifyMeListenerOVRM::onGazeEnded()
+void ActionButtonListenerOVRM::onGazeEnded()
 {
     this->focus = false;
 }
-void NotifyMeListenerOVRM::onGaze() {}
+void ActionButtonListenerOVRM::onGaze() {}
 
-bool NotifyMeListenerOVRM::inFocus()
+bool ActionButtonListenerOVRM::inFocus()
 {
     return this->focus;
 }

@@ -26,8 +26,8 @@ set(SOURCES #${PROJECT_SOURCE_DIR}/src/ImageBMPLoaderAndroid.cpp
             ${PROJECT_SOURCE_DIR}/src/LoggerOVRM.cpp
             #${PROJECT_SOURCE_DIR}/src/OVRMUtils.cpp
             ${PROJECT_SOURCE_DIR}/src/RendererOVRM.cpp
-            ${PROJECT_SOURCE_DIR}/src/CloseMeListenerOVRM.cpp
-            ${PROJECT_SOURCE_DIR}/src/NotifyMeListenerOVRM.cpp
+            ${PROJECT_SOURCE_DIR}/src/CloseButtonListenerOVRM.cpp
+            ${PROJECT_SOURCE_DIR}/src/ActionButtonListenerOVRM.cpp
             ${PROJECT_SOURCE_DIR}/src/RendererOVRMStereo.cpp)
 
 add_library(${PROJECT_NAME} SHARED ${INCLUDE_DIRS} ${SOURCES})

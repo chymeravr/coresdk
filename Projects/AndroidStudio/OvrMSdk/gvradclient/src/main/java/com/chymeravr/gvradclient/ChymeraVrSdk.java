@@ -154,7 +154,7 @@ public final class ChymeraVrSdk {
             try {
                 files = assetManager.list(folderName);
             } catch (IOException e) {
-                Log.e("tag", "Failed to get asset file list.", e);
+                Log.e(TAG, "Failed to get asset file list.", e);
             }
             for (String filename : files) {
                 InputStream in = null;
@@ -184,7 +184,7 @@ public final class ChymeraVrSdk {
                         out.close();
                     }
                 } catch (IOException e) {
-                    Log.e("tag", "Failed to copy asset file: " + filename, e);
+                    Log.e(TAG, "Failed to copy asset file: " + filename, e);
                 }
             }
         }

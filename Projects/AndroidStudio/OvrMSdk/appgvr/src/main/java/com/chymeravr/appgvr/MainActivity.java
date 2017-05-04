@@ -96,7 +96,7 @@ public class MainActivity extends Activity {
             public void onVrAdClosed() {
             }
         });
-        this.image360TestAd.setDaydreamApi(this.daydreamApi);
+        //this.image360TestAd.setDaydreamApi(this.daydreamApi);
         this.image360TestAd.setPlacementId("3efc7f15-33a6-4480-bb71-3bd74aca4f1f");
 
         final String PROVIDER = "flp";

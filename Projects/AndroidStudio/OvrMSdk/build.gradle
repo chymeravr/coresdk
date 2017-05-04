@@ -72,4 +72,16 @@ extractNdk.dependsOn extractGvrSo
 task deleteNdk(type: Delete) {
     delete "${project.rootDir}/gvr_libraries/jni"
 }
+
+task deleteCvr(type: Delete){
+    delete "${project.rootDir}/distribution/coreEngine"
+    delete "${project.rootDir}/distribution/soil"
+    delete "${project.rootDir}/distribution/freetype"
+    delete "${project.rootDir}/distribution/libjpeg"
+    delete "${project.rootDir}/distribution/glImplementation"
+    delete "${project.rootDir}/distribution/image360"
+    delete "${project.rootDir}/distribution/image360gvr"
+    delete "${project.rootDir}/distribution/image360Ovrm"
+}
 clean.dependsOn(deleteNdk)
+clean.dependsOn(deleteCvr)

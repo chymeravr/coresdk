@@ -687,9 +687,9 @@ Java_com_chymeravr_ovrmadclient_Image360Activity_onKeyEventNative(JNIEnv *env, j
     ovrMessage_SetIntegerParm(&message, 1, action);
     ovrMessageQueue_PostMessage(&appThread->MessageQueue, &message);
 
-    if(appThread->Application->closeMeListener->inFocus()){
+    if(appThread->Application->closeButtonListener->inFocus()){
         return CLOSE_AD;
-    } else if(appThread->Application->notifyMeListener->inFocus()){
+    } else if(appThread->Application->actionButtonListener->inFocus()){
         return NOTIFY_ME;
     }else{
         return NO_EVENT;
@@ -711,10 +711,10 @@ Java_com_chymeravr_ovrmadclient_Image360Activity_onTouchEventNative(JNIEnv *env,
     ovrMessage_SetFloatParm(&message, 2, y);
     ovrMessageQueue_PostMessage(&appThread->MessageQueue, &message);
 
-    if(appThread->Application->closeMeListener->inFocus()){
+    if(appThread->Application->closeButtonListener->inFocus()){
         logger->log(cl::LOG_DEBUG, "Close Me Event Detected");
         return CLOSE_AD;
-    } else if(appThread->Application->notifyMeListener->inFocus()){
+    } else if(appThread->Application->actionButtonListener->inFocus()){
         logger->log(cl::LOG_DEBUG, "Notify Me Event Detected");
         return NOTIFY_ME;
     }else{
