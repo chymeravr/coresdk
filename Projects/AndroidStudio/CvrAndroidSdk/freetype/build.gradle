@@ -1,0 +1,83 @@
+apply plugin: 'com.android.library'
+
+def freetypeModule = "${rootProject.rootDir}/freetype"
+def distributionDir = "${rootProject.rootDir}/distribution"
+
+android {
+    // compileSdkVersion 25
+    // buildToolsVersion "25.0.0"
+    compileSdkVersion project.getCompileSdkVersion()
+    buildToolsVersion project.getBuildToolsVersion()
+    
+    defaultConfig {
+        // minSdkVersion 23
+        // targetSdkVersion 25
+        minSdkVersion getMinSdkVersion(project.hmd)
+        targetSdkVersion getTargetSdkVersion()
+        versionCode 1
+        versionName "1.0"
+
+        externalNativeBuild {
+            cmake {
+                // when using arguments, the latest (cmake version 3.6+, android studio
+                // beta2+) must be used to compile
+
+                // I have to use gcc to compile, clang compiled code generate error
+                // at run time for any std::queue etc.
+                targets 'freetype'
+                def androidNdkLevel = getNativeNdkLevel(project.hmd)
+                arguments = ['-DANDROID_STL=gnustl_shared', '-DANDROID_NATIVE_API_LEVEL=android-23']
+
+                cFlags = ["-DANDROID_NDK", "-DFT2_BUILD_LIBRARY=1"]
+
+                abiFilters = getAbiFilters(project.hmdBuild)
+            }
+        }
+
+    }
+    buildTypes {
+        debug {
+            minifyEnabled false
+            jniDebuggable true
+        }
+        release {
+            minifyEnabled false
+            proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
+        }
+    }
+
+    externalNativeBuild {
+        cmake {
+            path 'CMakeLists.txt'
+            //path '../../../../freetype/CMakeLists.txt'
+        }
+    }
+}
+
+task distributeDebugLib << {
+    // trigger build library
+    distributeNativeLib(project.hmdBuild, freetypeModule, distributionDir, "debug", "freetype", "freetype")
+}
+
+task distributeReleaseLib << {
+    // trigger build library
+    distributeNativeLib(project.hmdBuild, freetypeModule, distributionDir, "release", "freetype", "freetype")
+}
+
+task distributeLibs << {
+    // trigger build library
+    distributeNativeLib(project.hmdBuild, freetypeModule, distributionDir, "debug", "freetype", "freetype")
+    distributeNativeLib(project.hmdBuild, freetypeModule, distributionDir, "release", "freetype", "freetype")
+}
+
+task deleteFreetypeBuild << {
+    delete "${freetypeModule}/build"
+}
+
+task deleteFreetypeDist << {
+    delete "${distributionDir}/freetype"
+}
+
+build.finalizedBy(distributeLibs)
+distributeLibs.dependsOn deleteFreetypeDist
+//preBuild.dependsOn deleteFreetypeBuild

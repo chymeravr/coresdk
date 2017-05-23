@@ -1,0 +1,77 @@
+apply plugin: 'com.android.library'
+
+def libjpegModule = "${rootProject.rootDir}/libjpeg"
+def distributionDir = "${rootProject.rootDir}/distribution"
+
+android {
+    // compileSdkVersion 25
+    // buildToolsVersion "25.0.0"
+    compileSdkVersion project.getCompileSdkVersion()
+    buildToolsVersion project.getBuildToolsVersion()
+
+    defaultConfig {
+        // minSdkVersion 23
+        // targetSdkVersion 25
+        minSdkVersion getMinSdkVersion(project.hmd)
+        targetSdkVersion getTargetSdkVersion()
+        versionCode 1
+        versionName "1.0"
+
+        externalNativeBuild {
+            cmake {
+                // when using arguments, the latest (cmake version 3.6+, android studio
+                // beta2+) must be used to compile
+
+                // I have to use gcc to compile, clang compiled code generate error
+                // at run time for any std::queue etc.
+                targets 'jpeg'
+                def androidNdkLevel = getNativeNdkLevel(project.hmd)
+                arguments = ['-DANDROID_STL=gnustl_shared'] //, '-DANDROID_NATIVE_API_LEVEL=android-23']
+                arguments += "-DANDROID_NATIVE_API_LEVEL=android-" + androidNdkLevel
+                abiFilters = getAbiFilters(project.hmdBuild)
+            }
+        }
+
+    }
+    buildTypes {
+        release {
+            minifyEnabled false
+            proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
+        }
+    }
+
+    externalNativeBuild {
+        cmake {
+            path '../../../../libjpeg/CMakeLists.txt'
+        }
+    }
+}
+
+
+task distributeDebugLib << {
+    // trigger build library
+    distributeNativeLib(project.hmdBuild, libjpegModule, distributionDir, "debug", "jpeg", "libjpeg")
+}
+
+task distributeReleaseLib << {
+    // trigger build library
+    distributeNativeLib(project.hmdBuild, libjpegModule, distributionDir, "release", "jpeg", "libjpeg")
+}
+
+task distributeLibs << {
+    // trigger build library
+    distributeNativeLib(project.hmdBuild, libjpegModule, distributionDir, "debug", "jpeg", "libjpeg")
+    distributeNativeLib(project.hmdBuild, libjpegModule, distributionDir, "release", "jpeg", "libjpeg")
+}
+
+task deleteLibJpegBuild << {
+    delete "${libjpegModule}/build"
+}
+
+task deleteLibJpegDist << {
+    delete "${distributionDir}/libjpeg"
+}
+
+build.finalizedBy(distributeLibs)
+distributeLibs.dependsOn deleteLibJpegDist
+//preBuild.dependsOn deleteLibJpegBuild

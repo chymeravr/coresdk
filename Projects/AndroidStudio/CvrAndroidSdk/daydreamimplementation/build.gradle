@@ -1,0 +1,111 @@
+apply plugin: 'com.android.library'
+
+def daydreamImplementationModule = "${rootProject.rootDir}/daydreamimplementation"
+def distributionDir = "${rootProject.rootDir}/distribution"
+def distributionFolderName = "daydreamimplementation"
+android {
+    // compileSdkVersion 24
+    // buildToolsVersion "25.0.0"
+    compileSdkVersion project.getCompileSdkVersion()
+    buildToolsVersion project.getBuildToolsVersion()
+
+    defaultConfig {
+        // minSdkVersion 24
+        // targetSdkVersion 25
+        minSdkVersion getMinSdkVersion(project.hmd)
+        targetSdkVersion getTargetSdkVersion()
+        versionCode 1
+        versionName "1.0"
+
+        externalNativeBuild {
+            cmake {
+                // when using arguments, the latest (cmake version 3.6+, android studio
+                // beta2+) must be used to compile
+
+                // I have to use gcc to compile, clang compiled code generate error
+                // at run time for any std::queue etc.
+                targets 'DaydreamImplementation'
+                // todo: the DANDROID_NATIVE_API_LEVEL varies with minSdkVersion
+                def androidNdkLevel = getNativeNdkLevel(project.hmd)
+                arguments = ['-DANDROID_STL=gnustl_shared'] //, '-DANDROID_NATIVE_API_LEVEL=android-24']
+                arguments += "-DANDROID_NATIVE_API_LEVEL=android-" + androidNdkLevel
+                cppFlags = ["-DGLES2_0", "-std=c++11", "-frtti", "-fexceptions", '-Wall', '-fno-exceptions',
+                            '-Wno-error=format-security', '-Wno-unused-function', '-Wno-unused-variable']
+
+                abiFilters = getAbiFilters(project.hmdBuild)
+            }
+        }
+    }
+    buildTypes {
+        debug{
+            minifyEnabled false
+            jniDebuggable true
+        }
+        release {
+            minifyEnabled false
+            proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
+        }
+    }
+
+    externalNativeBuild {
+        cmake {
+            path '../../../../DaydreamImplementation/CMakeLists.txt'
+        }
+    }
+
+//    sourceSets {
+////        main {
+////            jniLibs.srcDirs = ["${distributionDir}/coreEngine", "${distributionDir}/glImplementation",
+////                               , "${distributionDir}/image360"]
+////        }
+//        debug{
+//            jniLibs.srcDirs = ["${distributionDir}/coreEngine/debug",
+//                               "${distributionDir}/glImplementation/debug",
+//                               "${distributionDir}/image360/debug"]
+//        }
+//        release{
+//            jniLibs.srcDirs = ["${distributionDir}/coreEngine/release",
+//                               "${distributionDir}/glImplementation/release",
+//                               "${distributionDir}/image360/release"]
+//        }
+//    }
+}
+
+tasks.whenTaskAdded { task ->
+    if (task.name.contains('compileDebug')) {
+        task.dependsOn([':coreEngine:distributeDebugLib', ':glImplementation:distributeDebugLib',
+                        ':image360:distributeDebugLib'])
+    }
+    else if(task.name.contains('compileRelease')) {
+        task.dependsOn([':coreEngine:distributeReleaseLib', ':glImplementation:distributeReleaseLib',
+                        ':image360:distributeReleaseLib'])
+    }
+}
+
+
+task distributeDebugLib << {
+
+        distributeNativeLib(project.hmdBuild, daydreamImplementationModule, distributionDir, "debug",
+            "DaydreamImplementation", distributionFolderName)
+}
+
+task distributeReleaseLib << {
+    // trigger build library
+    distributeNativeLib(project.hmdBuild, daydreamImplementationModule, distributionDir, "release",
+            "DaydreamImplementation", distributionFolderName)
+}
+
+task distributeLibs << {
+    distributeNativeLib(project.hmdBuild, daydreamImplementationModule, distributionDir, "debug",
+            "DaydreamImplementation", distributionFolderName)
+    distributeNativeLib(project.hmdBuild, daydreamImplementationModule, distributionDir, "release",
+            "DaydreamImplementation", distributionFolderName)
+}
+
+task deleteDistLibs << {
+    delete "${distributionDir}/${distributionFolderName}"
+}
+
+build.dependsOn(':extractNdk')
+build.finalizedBy(distributeLibs)
+distributeLibs.dependsOn deleteDistLibs

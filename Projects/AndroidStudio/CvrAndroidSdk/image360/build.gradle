@@ -1,0 +1,112 @@
+apply plugin: 'com.android.library'
+
+def image360Module = "${rootProject.rootDir}/image360"
+def distributionDir = "${rootProject.rootDir}/distribution"
+
+android {
+    // compileSdkVersion 25
+    // buildToolsVersion "25.0.0"
+    compileSdkVersion project.getCompileSdkVersion()
+    buildToolsVersion project.getBuildToolsVersion()
+
+    defaultConfig {
+        // minSdkVersion 23
+        // targetSdkVersion 25
+        minSdkVersion getMinSdkVersion(project.hmd)
+        targetSdkVersion getTargetSdkVersion()
+        versionCode 1
+        versionName "1.0"
+
+        externalNativeBuild {
+            cmake {
+                // when using arguments, the latest (cmake version 3.6+, android studio
+                // beta2+) must be used to compile
+
+                // I have to use gcc to compile, clang compiled code generate error
+                // at run time for any std::queue etc.
+                targets 'Image360'
+                def androidNdkLevel = getNativeNdkLevel(project.hmd)
+                arguments = ['-DANDROID_STL=gnustl_shared'] //, '-DANDROID_NATIVE_API_LEVEL=android-23']
+                arguments += "-DANDROID_NATIVE_API_LEVEL=android-" + androidNdkLevel
+                cppFlags = ["-DGLES2_0", "-std=c++11", "-frtti", "-fexceptions"]
+
+                abiFilters = getAbiFilters(project.hmdBuild)
+            }
+        }
+    }
+
+    buildTypes {
+
+        debug{
+            minifyEnabled false
+        }
+        release {
+            minifyEnabled false
+            proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
+        }
+    }
+
+    externalNativeBuild {
+        cmake {
+
+            path '../../../../Image360/CMakeLists.txt'
+        }
+    }
+
+//    sourceSets {
+////        main {
+////            jniLibs.srcDirs = ["${distributionDir}/coreEngine"]
+////        }
+//        debug{
+//            jniLibs.srcDirs = ["${distributionDir}/coreEngine/debug"]
+//        }
+//        release{
+//            jniLibs.srcDirs = ["${distributionDir}/coreEngine/release"]
+//        }
+//    }
+}
+
+
+//def copyNativeLib(source, target, buildType, arch) {
+//    copy {
+//        from "${source}/build/intermediates/cmake/${buildType}/obj/${arch}/libImage360.so"
+//        into "${target}/image360/${arch}/"
+//    }
+//}
+
+task distributeDebugLib << {
+    // trigger build library
+    distributeNativeLib(project.hmdBuild, image360Module, distributionDir, "debug",
+            "Image360", "image360")
+}
+
+task distributeReleaseLib << {
+    // trigger build library
+    distributeNativeLib(project.hmdBuild, image360Module, distributionDir, "release",
+            "Image360", "image360")
+}
+
+task distributeLibs << {
+    // trigger build library
+    distributeNativeLib(project.hmdBuild, image360Module, distributionDir, "debug",
+            "Image360", "image360")
+    distributeNativeLib(project.hmdBuild, image360Module, distributionDir, "release",
+            "Image360", "image360")
+}
+
+tasks.whenTaskAdded { task ->
+    if (task.name.contains('compileDebug')) {
+        task.dependsOn ':coreEngine:distributeDebugLib'
+    }
+    else if(task.name.contains('compileRelease')) {
+        task.dependsOn ':coreEngine:distributeReleaseLib'
+    }
+}
+
+task deleteDistLibs << {
+    delete "${distributionDir}/image360"
+}
+
+// todo : sometimes we will need release libraries - configure that as well
+build.finalizedBy(distributeLibs)
+distributeLibs.dependsOn deleteDistLibs

@@ -1,0 +1,108 @@
+apply plugin: 'com.android.library'
+
+def cardboardImplementationModule = "${rootProject.rootDir}/cardboardimplementation"
+def distributionDir = "${rootProject.rootDir}/distribution"
+def distributionFolderName = "cardboardimplementation"
+
+android {
+    // compileSdkVersion 25
+    // buildToolsVersion "25.0.0"
+    compileSdkVersion project.getCompileSdkVersion()
+    buildToolsVersion project.getBuildToolsVersion()
+
+    // todo : dynamically change the minsdk and targetsdkversion based on hmd
+    defaultConfig {
+        // minSdkVersion 23
+        // targetSdkVersion 25
+        minSdkVersion getMinSdkVersion(project.hmd)
+        targetSdkVersion getTargetSdkVersion()
+        versionCode 1
+        versionName "1.0"
+
+        //testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
+        externalNativeBuild {
+            cmake {
+                // when using arguments, the latest (cmake version 3.6+, android studio
+                // beta2+) must be used to compile
+
+                // I have to use gcc to compile, clang compiled code generate error
+                // at run time for any std::queue etc.
+                targets 'CardboardImplementation'
+                // todo: the DANDROID_NATIVE_API_LEVEL varies with minSdkVersion
+                def androidNdkLevel = getNativeNdkLevel(project.hmd)
+                arguments = ['-DANDROID_STL=gnustl_shared'] //, '-DANDROID_NATIVE_API_LEVEL=android-24']
+                arguments += "-DANDROID_NATIVE_API_LEVEL=android-" + androidNdkLevel
+
+                cppFlags = ["-DGLES2_0", "-std=c++11", "-frtti", "-fexceptions", '-Wall', '-fno-exceptions',
+                            '-Wno-error=format-security', '-Wno-unused-function', '-Wno-unused-variable']
+
+                abiFilters = getAbiFilters(project.hmdBuild)
+            }
+        }
+    }
+
+    buildTypes {
+        debug {
+            minifyEnabled false
+            jniDebuggable true
+        }
+        release {
+            minifyEnabled false
+            proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
+        }
+    }
+
+    externalNativeBuild{
+        cmake {
+            path '../../../../CardboardImplementation/CMakeLists.txt'
+        }
+    }
+}
+
+dependencies {
+    compile fileTree(dir: 'libs', include: ['*.jar'])
+    androidTestCompile('com.android.support.test.espresso:espresso-core:2.2.2', {
+        exclude group: 'com.android.support', module: 'support-annotations'
+    })
+    testCompile 'junit:junit:4.12'
+}
+
+tasks.whenTaskAdded { task ->
+    if (task.name.contains('compileDebug')) {
+        task.dependsOn([':coreEngine:distributeDebugLib', ':glImplementation:distributeDebugLib',
+                        ':image360:distributeDebugLib'])
+    }
+    else if(task.name.contains('compileRelease')) {
+        task.dependsOn([':coreEngine:distributeReleaseLib', ':glImplementation:distributeReleaseLib',
+                        ':image360:distributeReleaseLib'])
+    }
+}
+
+
+task distributeDebugLib << {
+
+    distributeNativeLib(project.hmdBuild, cardboardImplementationModule, distributionDir, "debug",
+            "CardboardImplementation", distributionFolderName)
+}
+
+task distributeReleaseLib << {
+    // trigger build library
+
+    distributeNativeLib(project.hmdBuild, cardboardImplementationModule, distributionDir, "release",
+            "CardboardImplementation", distributionFolderName)
+}
+
+task distributeLibs << {
+    distributeNativeLib(project.hmdBuild, cardboardImplementationModule, distributionDir, "debug",
+            "CardboardImplementation", distributionFolderName)
+    distributeNativeLib(project.hmdBuild, cardboardImplementationModule, distributionDir, "release",
+            "CardboardImplementation", distributionFolderName)
+}
+
+task deleteDistLibs << {
+    delete "${distributionDir}/${distributionFolderName}"
+}
+
+build.dependsOn(':extractNdk')
+build.finalizedBy(distributeLibs)
+distributeLibs.dependsOn deleteDistLibs

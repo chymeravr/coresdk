@@ -1,0 +1,145 @@
+apply plugin: 'com.android.library'
+//apply from: "${rootProject.rootDir}/fat-aar.gradle"
+apply from: "${rootProject.rootDir}/build_release_aar.gradle"
+
+def distributionDir = "${rootProject.rootDir}/distribution"
+
+android {
+    compileSdkVersion 25
+    buildToolsVersion "25.0.0"
+
+    defaultConfig {
+        minSdkVersion 23
+        targetSdkVersion 25
+        versionCode 1
+        versionName "1.0"
+
+        publishNonDefault true
+
+        testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
+        externalNativeBuild {
+            cmake {
+                // when using arguments, the latest (cmake version 3.6+, android studio
+                // beta2+) must be used to compile
+
+                // I have to use gcc to compile, clang compiled code generate error
+                // at run time for any std::queue etc.
+                targets 'DaydreamAdClient'
+                def androidNdkLevel = getNativeNdkLevel(project.hmd)
+                arguments = ['-DANDROID_STL=gnustl_shared'] //, '-DANDROID_NATIVE_API_LEVEL=android-23']
+                arguments += "-DANDROID_NATIVE_API_LEVEL=android-" + androidNdkLevel
+
+                cppFlags = ["-DGLES2_0", "-std=c++11", "-frtti", "-fexceptions", '-Wall',
+                            '-fno-exceptions', '-Wno-unused-variable']
+
+
+                // todo : add an hmd build test to ensure we don't forget to change the build type variable in main gradle
+                // for different hmd's - daydream, cardboard & gearvr
+
+                abiFilters = getAbiFilters(project.hmdBuild)
+            }
+        }
+    }
+    buildTypes {
+        debug {
+            minifyEnabled false
+            jniDebuggable true
+        }
+        release {
+            minifyEnabled false
+            debuggable false
+            //proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
+        }
+    }
+
+    sourceSets{
+        // always use release version for soil, libjpeg &  freetype - they are external code
+        debug {
+            jniLibs.srcDirs = ["${distributionDir}/soil/release", "${distributionDir}/libjpeg/release",
+                               "${distributionDir}/freetype/release",
+                                "${distributionDir}/coreEngine/debug",
+                               "${distributionDir}/glImplementation/debug",
+                               "${distributionDir}/image360/debug",
+                               "${distributionDir}/daydreamimplementation/debug"]
+
+        }
+        release {
+            jniLibs.srcDirs = [ "${distributionDir}/soil/release", "${distributionDir}/libjpeg/release",
+                                "${distributionDir}/freetype/release",
+                                "${distributionDir}/coreEngine/release",
+                                "${distributionDir}/glImplementation/release",
+                                "${distributionDir}/image360/release",
+                                "${distributionDir}/daydreamimplementation/release",
+                               ]
+
+        }
+    }
+
+    externalNativeBuild {
+        cmake {
+            path 'CMakeLists.txt'
+        }
+    }
+}
+
+// to suppress lombok invalid package warning in adclient linter
+android.lintOptions {
+    abortOnError false
+    disable 'InvalidPackage'
+}
+
+dependencies {
+    compile fileTree(dir: 'libs', include: ['*.jar'])
+    androidTestCompile('com.android.support.test.espresso:espresso-core:2.2.2', {
+        exclude group: 'com.android.support', module: 'support-annotations'
+    })
+    testCompile 'junit:junit:4.12'
+    androidTestCompile 'org.mockito:mockito-core:1.10.19'
+    androidTestCompile 'com.google.dexmaker:dexmaker-mockito:1.2'
+    compile 'org.projectlombok:lombok:1.16.12'
+    compile 'javax.annotation:javax.annotation-api:1.2'
+
+//    compile 'com.google.vr:sdk-audio:1.30.0'
+    compile 'com.google.vr:sdk-base:1.30.0'
+    compile 'com.google.vr:sdk-controller:1.30.0'
+
+    embedded project(':common')
+    embedded project(':analytics')
+    embedded project(':adclient')
+//    compile project(':common')
+//    compile project(':analytics')
+//    compile project(':adclient')
+
+//    debugCompile(name:'chymeravr-adclient-debug', ext:'aar')
+//    releaseCompile(name:'chymeravr-adclient-release', ext:'aar')
+//    debugCompile(name:'chymeravr-analytics-debug', ext:'aar')
+//    releaseCompile(name:'chymeravr-analytics-release', ext:'aar')
+//    debugCompile(name:'chymeravr-common-debug', ext:'aar')
+//    releaseCompile(name:'chymeravr-common-release', ext:'aar')
+
+}
+
+
+
+//task clean(type: Delete) {
+//    delete "${rootProject.rootDir}/adclient/build"
+//    delete fileTree(dir: 'libs', include: ['*.a', '*.so'])
+//}
+
+// use release builds in debug for external libraries that we build for android - implicitly assume they have no problems
+// using debug versions of libjpeg and soil cause significant performance issues
+tasks.whenTaskAdded { task ->
+    if (task.name.contains('compileDebug')) {
+        task.dependsOn([':coreEngine:distributeDebugLib', ':glImplementation:distributeDebugLib',
+                        ':image360:distributeDebugLib', ':soil:distributeReleaseLib',
+                        ':libjpeg:distributeReleaseLib',
+                        ':daydreamimplementation:distributeDebugLib',':freetype:distributeReleaseLib'])
+    } else if (task.name.contains('compileRelease')) {
+        task.dependsOn([':coreEngine:distributeReleaseLib', ':glImplementation:distributeReleaseLib',
+                        ':image360:distributeReleaseLib', ':libjpeg:distributeReleaseLib',
+                        ':daydreamimplementation:distributeReleaseLib', ':soil:distributeReleaseLib',
+                        ':freetype:distributeReleaseLib' ])
+    }
+}
+
+build.dependsOn(':extractNdk')

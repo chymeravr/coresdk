@@ -1,0 +1,134 @@
+apply plugin: 'com.android.library'
+//apply from: "${rootProject.rootDir}/fat-aar.gradle"
+apply from: "${rootProject.rootDir}/build_release_aar.gradle"
+
+def ovrMobileModule = "${rootProject.rootDir}/ovr_sdk_mobile"
+def distributionDir = "${rootProject.rootDir}/distribution"
+
+android {
+    // compileSdkVersion 23
+    // buildToolsVersion "23.0.3"
+    compileSdkVersion project.getCompileSdkVersion()
+    buildToolsVersion project.getBuildToolsVersion()
+    
+    defaultConfig.with {
+        // minSdkVersion = 23
+        // targetSdkVersion = 25
+        minSdkVersion getMinSdkVersion(project.hmd)
+        targetSdkVersion getTargetSdkVersion()    
+        versionCode = 1
+        versionName = "1.0"
+
+//            defaultPublishConfig 'debug'
+        publishNonDefault true
+
+        testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
+
+        externalNativeBuild {
+            cmake {
+                // when using arguments, the latest (cmake version 3.6+, android studio
+                // beta2+) must be used to compile
+
+                // I have to use gcc to compile, clang compiled code generate error
+                // at run time for any std::queue etc.
+                targets 'GearVrAdClient'
+                def androidNdkLevel = getNativeNdkLevel(project.hmd)
+                arguments = ['-DANDROID_STL=gnustl_shared'] //, '-DANDROID_NATIVE_API_LEVEL=android-23']
+                arguments += "-DANDROID_NATIVE_API_LEVEL=android-" + androidNdkLevel
+
+                cppFlags = ["-DGLES2_0", "-std=c++11", "-frtti", "-fexceptions", '-Wall',
+                            '-fno-exceptions']
+
+                //abiFilters 'armeabi-v7a'
+                abiFilters = []
+                abiFilters = getAbiFilters(project.hmdBuild)
+            }
+        }
+    }
+
+    buildTypes {
+        debug {
+            minifyEnabled false
+            debuggable true
+        }
+        release {
+            minifyEnabled false
+            debuggable false
+            //proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
+        }
+    }
+
+    sourceSets{
+        debug {
+                jniLibs.srcDirs = ["${distributionDir}/soil/release", "${distributionDir}/coreEngine/debug/",
+                                   "${distributionDir}/glImplementation/debug", "${distributionDir}/libjpeg/release",
+                                   "${distributionDir}/image360/debug", "${distributionDir}/gearvrimplementation/debug",
+                                   "${ovrMobileModule}/VrApi/Libs/Android/armeabi-v7a/Release/", "${distributionDir}/freetype/release"]
+
+        }
+        release {
+                jniLibs.srcDirs = ["${distributionDir}/soil/release", "${distributionDir}/coreEngine/release",
+                                   "${distributionDir}/glImplementation/release", "${distributionDir}/libjpeg/release",
+                                   "${distributionDir}/image360/release", "${distributionDir}/gearvrimplementation/release",
+                                   "${distributionDir}/freetype/release"]
+
+        }
+    }
+
+    externalNativeBuild {
+        cmake {
+            path 'CMakeLists.txt'
+        }
+    }
+}
+
+// to suppress lombok invalid package warning in adclient linter
+android.lintOptions {
+    abortOnError false
+    disable 'InvalidPackage'
+}
+
+
+
+dependencies {
+    compile fileTree(include: ['*.jar'], dir: 'libs')
+    androidTestCompile('com.android.support.test.espresso:espresso-core:2.2.2', {
+        exclude group: 'com.android.support', module: 'support-annotations'
+    })
+    testCompile 'junit:junit:4.12'
+    androidTestCompile 'org.mockito:mockito-core:1.10.19'
+    androidTestCompile 'com.google.dexmaker:dexmaker-mockito:1.2'
+    compile 'org.projectlombok:lombok:1.16.12'
+    compile 'javax.annotation:javax.annotation-api:1.2'
+
+
+    embedded project(':common')
+    embedded project(':analytics')
+    embedded project(':adclient')
+}
+
+//task copyVrApiLib(type: Copy) {
+//    from "${ovrMobileModule}/VrApi/Libs/Android/armeabi-v7a/Release/libvrapi.so"
+//    into "${distributionDir}/ovrApi/armeabi-v7a"
+//}
+
+//task clean(type: Delete) {
+//    delete "${rootProject.rootDir}/adclient/build"
+//    delete fileTree(dir: 'libs', include: ['*.a', '*.so'])
+//}
+
+tasks.whenTaskAdded { task ->
+    if (task.name.contains('compileDebug')) {
+        task.dependsOn([':coreEngine:distributeDebugLib', ':glImplementation:distributeDebugLib',
+                        ':image360:distributeDebugLib',
+                        ':soil:distributeReleaseLib', ':libjpeg:distributeReleaseLib',
+                        ':gearvrimplementation:distributeDebugLib',':freetype:distributeReleaseLib'])
+    } else if (task.name.contains('compileRelease')) {
+        task.dependsOn([':coreEngine:distributeReleaseLib', ':glImplementation:distributeReleaseLib',
+                        ':image360:distributeReleaseLib',
+                        ':gearvrimplementation:distributeReleaseLib',
+                        ':soil:distributeReleaseLib',
+                        ':libjpeg:distributeReleaseLib',
+                        ':freetype:distributeReleaseLib' ])
+    }
+}

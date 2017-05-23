@@ -1,0 +1,255 @@
+// Top-level build file where you can add configuration options common to all sub-projects/modules.
+// we can build our ad client for the following platforms
+//  - Daydream
+//  - GearVR
+//  - Cardboard
+
+buildscript {
+    repositories {
+        jcenter()
+        mavenLocal()
+    }
+    dependencies {
+//        classpath 'com.android.tools.build:gradle:2.3.2'
+        classpath 'com.android.tools.build:gradle:2.3.2'
+        classpath 'com.github.dcendents:android-maven-gradle-plugin:1.5'
+
+        // NOTE: Do not place your application dependencies here; they belong
+        // in the individual module build.gradle files
+    }
+
+    ext{
+        // directory where all built libraries are kept
+        distributionDir = "${rootProject.rootDir}/distribution"
+        // this needs to be 3 for opengles3
+        //glesVersion = 2
+        commonCPPFlags = ["-DGLES2_0"]
+
+        // these boolean vars are now useless - remove ASAP
+        // use the below two variables to switch between google VR and oculus gearvr builds
+        build4daydream = true
+        build4gearvr   = false
+
+        // use this to build all Google VR supported architecture - for dev we only use one to shorten build time
+        buildAllDaydreamArch = false
+
+        // use this to build only unity supported architecture [armeabi-v7a & x86]
+        build4Unity = false
+
+        // hmd enumerates the different platforms we can build our ad client for
+        // possible values
+        //      - daydream
+        //      - cardboard
+        //      - gearvr
+        hmd = "cardboard"
+
+        // hmdBuild acts as an enum type to represent various architectures we are building for
+        // to stop building all architectures during development with pixel, we only use
+        // arm64-v8a similarly for cardboard. Samsung GearVR only needs to be built with
+        // armeabi-v7a.
+        // The following options are used to switch
+        // "googleVrAll" : build all daydream architectures - armeabi-v7a, arm64-v8a, x86
+        // "googleVrPixel" : build only for pixel - arm64-v8a
+        // "googleVrUnity" : build only unity architectures - armeabi-v7a, x86
+        // "googleVrS6" : build only for Samsung S6 - armeabi-v7a - test device for cardboard
+        // "samsungGearVr" : build only for Samsung S6 - armeabi-v7a     - test device for Oculus Samsung GearVr
+
+        hmdBuild = "googleVrS6"
+
+        // google vr architextures for various configurations
+        googleVrAllArch = ["arm64-v8a", "armeabi-v7a", "x86"]
+        googleVrUnityArch = ["armeabi-v7a", "x86"]
+        googleVrPixelArch = ["arm64-v8a"]
+        googleVrS6Arch = ["arm64-v8a"]            // armeabi-v7a does not work - switch to arm64-v8a
+
+        // samsung gear vr architectures
+        samsungGearVrArch = ["armeabi-v7a"]
+    }
+
+}
+
+// function that copies native libraries from each android library project into a distribution dir
+def copyNativeLib(source, target, buildType, arch, libName, libDistName) {
+    copy {
+        from "${source}/build/intermediates/cmake/${buildType}/obj/${arch}/lib${libName}.so"
+        into "${target}/${libDistName}/${buildType}/${arch}/"
+    }
+}
+
+def copyAarLib(source, target, buildType, libName, libDistName){
+    copy{
+        from "${source}/build/outputs/aar/${libName}-${buildType}.aar"
+        into "${target}/${libDistName}/${buildType}/"
+    }
+}
+
+// function that distributes Native libs from each android lib project for various architectures/configs
+def distributeNativeLib(hmdBuildType, moduleDir, distDir, buildType, libName, libDistName){
+    def architectures = []
+    architectures = getAbiFilters(hmdBuildType)
+    architectures.each{
+        copyNativeLib(moduleDir, distDir, buildType, it, libName, libDistName)
+    }
+}
+
+// function that distributes Aar libs from each android lib project for various architectures/configs
+def distributeAarLib(moduleDir, distDir, buildType, libName, libDistName){
+        copyAarLib(moduleDir, distDir, buildType, libName, libDistName)
+}
+
+// this function fetches abiFilters corresponding to different build types
+def getAbiFilters(hmdBuildVal) {
+    def abi = []
+    switch(hmdBuildVal){
+        case "googleVrAll":
+            abi = project.googleVrAllArch
+            break
+        case "googleVrUnity":
+            abi = project.googleVrUnityArch
+            break
+        case "googleVrPixel":
+            abi = project.googleVrPixelArch
+            break
+        case "googleVrS6":
+            abi = project.googleVrS6Arch
+            break
+        case "samsungGearVr":
+            abi = project.samsungGearVrArch
+            break
+    }
+    return abi
+}
+
+def getOpenGLESVersion(hmd){
+    def glesVersion = ""
+
+    // todo : try daydream with opengles3 - it should work ideally
+    switch(hmd){
+        case "daydream":
+            glesVersion = "GLES_V3"
+            break
+        case "cardboard":
+            glesVersion = "GLES_V3"
+            break
+        case "gearvr":
+            glesVersion = "GLES_V3"
+            break
+    }
+    return glesVersion
+}
+
+def getMinSdkVersion(hmd){
+    def minSdkVersion = 24
+    switch(hmd){
+        case "daydream":
+            // todo : switch to gles v3 for daydream
+            minSdkVersion = 24
+            break
+        case "cardboard":
+            minSdkVersion = 23
+            break
+        case "gearvr":
+            minSdkVersion = 23
+            break
+    }
+    return minSdkVersion
+}
+
+def getCompileSdkVersion(){
+    return 25
+}
+
+def getTargetSdkVersion(){
+    return 25
+}
+
+def getBuildToolsVersion(){
+    return "25.0.0"
+}
+
+def getNativeNdkLevel(hmd){
+    def nativeNdkVersion = 23
+    switch(hmd){
+        case "daydream":
+            // todo : switch to gles v3 for daydream
+            nativeNdkVersion = 24
+            break
+        case "cardboard":
+            // todo : extend compatibility to version 19
+            nativeNdkVersion = 23
+            break
+        case "gearvr":
+            nativeNdkVersion = 23
+            break
+    }
+    return nativeNdkVersion
+}
+
+allprojects {
+    repositories {
+        jcenter()
+        mavenCentral()
+        flatDir {
+            dirs '../distribution/adclient/debug',
+                 '../distribution/adclient/release',
+                    '../distribution/analytics/debug',
+                    '../distribution/analytics/release',
+                    '../distribution/common/debug',
+                    '../distribution/common/release'
+                '../distribution'
+        }
+    }
+}
+
+
+task clean(type: Delete) {
+    delete rootProject.buildDir
+}
+
+
+// Recursive clean subprojects - maybe overkill - rebuild takes a couple of minutes
+subprojects {
+    rootProject.clean {
+        dependsOn tasks.matching { it.name == "clean" }
+    }
+}
+
+// The dependencies for NDK builds live inside the .aar files so they need to
+// be extracted before NDK targets can build.
+task extractAudioSo(type: Copy) {
+    from zipTree("${project.rootDir}/gvr_libraries/sdk-audio-1.20.0.aar")
+    into "${project.rootDir}/gvr_libraries/"
+    include "jni/**/libgvr_audio.so"
+}
+
+task extractGvrSo(type: Copy) {
+    from zipTree("${project.rootDir}/gvr_libraries/sdk-base-1.20.0.aar")
+    into "${project.rootDir}/gvr_libraries/"
+    include "jni/**/libgvr.so"
+}
+
+task extractNdk { }
+extractNdk.dependsOn extractAudioSo
+extractNdk.dependsOn extractGvrSo
+
+task deleteNdk(type: Delete) {
+    delete "${project.rootDir}/gvr_libraries/jni"
+}
+
+task deleteCvr(type: Delete){
+    delete "${project.rootDir}/distribution/coreEngine"
+    delete "${project.rootDir}/distribution/SOIL"
+    delete "${project.rootDir}/distribution/freetype"
+    delete "${project.rootDir}/distribution/libjpeg"
+    delete "${project.rootDir}/distribution/glImplementation"
+    delete "${project.rootDir}/distribution/image360"
+    delete "${project.rootDir}/distribution/daydreamimplementation"
+    delete "${project.rootDir}/distribution/cardboardimplementation"
+    delete "${project.rootDir}/distribution/gearvrimplementation"
+
+    delete "${project.rootDir}/distribution/adclient"
+    delete "${project.rootDir}/distribution/analytics"
+    delete "${project.rootDir}/distribution/common"
+}
+clean.dependsOn(deleteNdk)
+clean.dependsOn(deleteCvr)

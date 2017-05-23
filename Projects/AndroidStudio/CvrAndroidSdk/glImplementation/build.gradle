@@ -1,0 +1,113 @@
+apply plugin: 'com.android.library'
+
+def glImplementationModule = "${rootProject.rootDir}/glImplementation"
+def distributionDir = "${rootProject.rootDir}/distribution"
+
+android {
+    // compileSdkVersion 25
+    // buildToolsVersion "25.0.0"
+    compileSdkVersion project.getCompileSdkVersion()
+    buildToolsVersion project.getBuildToolsVersion()
+    
+    defaultConfig {
+        // minSdkVersion 23
+        // targetSdkVersion 25
+        minSdkVersion getMinSdkVersion(project.hmd)
+        targetSdkVersion getTargetSdkVersion()
+        versionCode 1
+        versionName "1.0"
+
+        externalNativeBuild {
+            cmake {
+                // when using arguments, the latest (cmake version 3.6+, android studio
+                // beta2+) must be used to compile
+
+                // I have to use gcc to compile, clang compiled code generate error
+                // at run time for any std::queue etc.
+                targets 'GLImplementation'
+                def androidNdkLevel = getNativeNdkLevel(project.hmd)
+                arguments = ['-DANDROID_STL=gnustl_shared'] //, '-DANDROID_NATIVE_API_LEVEL=android-23']
+                arguments += "-DANDROID_NATIVE_API_LEVEL=android-" + androidNdkLevel
+                // we have different versions of libraries (gles2 vs gles3) to build for glimplementation
+                // in android
+                def openglesVersion = getOpenGLESVersion(project.hmd)
+                arguments += "-D" + openglesVersion + "=TRUE"
+
+                cppFlags = ["-DGLES2_0", "-std=c++11", "-frtti", "-fexceptions"]
+
+                //abiFilters = []
+                abiFilters = getAbiFilters(project.hmdBuild)
+            }
+        }
+    }
+    buildTypes {
+        debug {
+            minifyEnabled false
+            jniDebuggable true
+        }
+        release {
+            minifyEnabled false
+            proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
+        }
+    }
+
+    externalNativeBuild {
+        cmake {
+            path '../../../../GLImplementation/CMakeLists.txt'
+        }
+    }
+
+//    sourceSets {
+////        main {
+////            jniLibs.srcDirs = ["${distributionDir}/coreEngine"]
+////        }
+//        debug{
+//            jniLibs.srcDirs = ["${distributionDir}/coreEngine/debug"]
+//        }
+//        release{
+//            jniLibs.srcDirs = ["${distributionDir}/coreEngine/release"]
+//        }
+//    }
+
+}
+
+task distributeDebugLib << {
+    // trigger build library
+    distributeNativeLib(project.hmdBuild, glImplementationModule, distributionDir, "debug",
+            "GLImplementation", "glImplementation")
+}
+
+task distributeReleaseLib << {
+    // trigger build library
+    distributeNativeLib(project.hmdBuild, glImplementationModule, distributionDir, "release",
+            "GLImplementation", "glImplementation")
+}
+
+task distributeLibs << {
+    // trigger build library
+    distributeNativeLib(project.hmdBuild, glImplementationModule, distributionDir, "debug",
+            "GLImplementation", "glImplementation")
+    distributeNativeLib(project.hmdBuild, glImplementationModule, distributionDir, "release",
+            "GLImplementation", "glImplementation")
+}
+
+tasks.whenTaskAdded { task ->
+    if (task.name.contains('compileDebug')) {
+        task.dependsOn ':coreEngine:distributeDebugLib'
+    }
+    else if(task.name.contains('compileRelease')) {
+        task.dependsOn ':coreEngine:distributeReleaseLib'
+    }
+}
+
+task deleteGLImplementationBuild << {
+    delete "${glImplementationModule}/build"
+}
+
+task deleteGLImplementationDist << {
+    delete "${distributionDir}/glImplementation"
+}
+
+build.finalizedBy(distributeLibs)
+distributeLibs.dependsOn deleteGLImplementationDist
+//preBuild.dependsOn deleteGLImplementationBuild
