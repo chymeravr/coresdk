@@ -21,9 +21,9 @@ include ':common', ':analytics', ':adclient'
 include ':appgvr'
 
 // daydream client
-//include ':daydreamimplementation'
-//include ':daydreamadclient'
+include ':daydreamimplementation'
+include ':daydreamadclient'
 
 // cardboardadclient
-include ':cardboardimplementation'
-include ':cardboardadclient'
+//include ':cardboardimplementation'
+//include ':cardboardadclient'

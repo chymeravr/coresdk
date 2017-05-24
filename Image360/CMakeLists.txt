@@ -28,7 +28,7 @@ if(WINDOWS)
 	target_link_libraries(${PROJECT_NAME} CoreEngine GLImplementation Renderer)
 else()
 
-	set(ANDROID_LIBRARIES ${CMAKE_SOURCE_DIR}/../Projects/AndroidStudio/OvrMSdk/distribution)
+	set(ANDROID_LIBRARIES ${CMAKE_SOURCE_DIR}/../Projects/AndroidStudio/CvrAndroidSdk/distribution)
 
 	find_library(log-lib log)
 	find_library(android-lib android)
@@ -38,7 +38,7 @@ else()
 	set_target_properties(
 		core_engine
 		PROPERTIES IMPORTED_LOCATION
-		${ANDROID_LIBRARIES}/coreEngine/${ANDROID_ABI}/libCoreEngine.so
+		${ANDROID_LIBRARIES}/coreEngine/${CMAKE_BUILD_TYPE}/${ANDROID_ABI}/libCoreEngine.so
 	)
 	target_link_libraries(${PROJECT_NAME} core_engine ${log-lib} ${android-lib})
 

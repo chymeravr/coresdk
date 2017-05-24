@@ -6,7 +6,7 @@ project(CoreEngine)
 set(REPO_PATH ../Repository)
 set(Conf_INCLUDE_DIRS ../Conf/include)
 set(SOIL_INCLUDE_DIRS ../SOIL/include)
-set(LIBJPEG_INCLUDE_DIRS ../libjpeg9/include)
+set(LIBJPEG_INCLUDE_DIRS ../libjpeg/include)
 set (GLM_VERSION 0.9.7.6)
 set (GLEW_VERSION 2.0.0)
 
@@ -58,27 +58,27 @@ else()
 	set(FREETYPE_DIRS ../freetype)
 	include_directories("${FREETYPE_DIRS}/include")
 	add_library(${PROJECT_NAME} SHARED ${INCLUDE_HEADERS} ${SOURCES})
-	set(ANDROID_LIBRARIES ${CMAKE_SOURCE_DIR}/../Projects/AndroidStudio/OvrMSdk/distribution)
+	set(ANDROID_LIBRARIES ${CMAKE_SOURCE_DIR}/../Projects/AndroidStudio/CvrAndroidSdk/distribution)
 	
 	add_library(freetype_lib SHARED IMPORTED)
 	set_target_properties(
 		freetype_lib
 		PROPERTIES IMPORTED_LOCATION
-		${ANDROID_LIBRARIES}/freetype/${ANDROID_ABI}/libfreetype.so
+		${ANDROID_LIBRARIES}/freetype/${CMAKE_BUILD_TYPE}/${ANDROID_ABI}/libfreetype.so
 	)
 
 	add_library(soil_lib SHARED IMPORTED)
 	set_target_properties(
 		soil_lib
 		PROPERTIES IMPORTED_LOCATION
-		${ANDROID_LIBRARIES}/soil/${ANDROID_ABI}/libSOIL.so
+		${ANDROID_LIBRARIES}/soil/${CMAKE_BUILD_TYPE}/${ANDROID_ABI}/libSOIL.so
 	)
 
 	add_library(libjpeg SHARED IMPORTED)
 	set_target_properties(
 		libjpeg
 		PROPERTIES IMPORTED_LOCATION
-		${ANDROID_LIBRARIES}/libjpeg/${ANDROID_ABI}/libjpeg.so
+		${ANDROID_LIBRARIES}/libjpeg/${CMAKE_BUILD_TYPE}/${ANDROID_ABI}/libjpeg.so
 	)
 	target_link_libraries(${PROJECT_NAME} freetype_lib soil_lib libjpeg)
 endif()

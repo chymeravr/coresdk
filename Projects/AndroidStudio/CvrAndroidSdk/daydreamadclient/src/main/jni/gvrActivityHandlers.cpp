@@ -24,10 +24,10 @@
 // GLImplementation Modules
 #include <glImplementation/factory/SceneGLFactory.h>
 #include <glImplementation/factory/ModelGLFactory.h>
-#include <glImplementation/factory/opengles2/DiffuseTextureGLES2Factory.h>
-#include <glImplementation/factory/opengles2/DiffuseTextureCubeMapGLES2Factory.h>
-#include <glImplementation/factory/opengles2/UniformColorFactoryGLES2.h>
-#include <glImplementation/factory/opengles2/TextMaterialFactoryGLES2.h>
+#include <glImplementation/factory/DiffuseTextureGLFactory.h>
+#include <glImplementation/factory/DiffuseTextureCubeMapGLFactory.h>
+#include <glImplementation/factory/UniformColorFactoryGL.h>
+#include <glImplementation/factory/TextMaterialFactoryGL.h>
 #include <glImplementation/factory/CameraGLFactory.h>
 
 // Image360 Application
@@ -55,7 +55,7 @@ namespace {
     } keyEventResponse;
 
     // Logger, Event Queue and Application
-    std::unique_ptr<cl::LoggerFactoryDaydream> loggerFactory = nullptr;
+    std::unique_ptr<cl::LoggerDaydreamFactory> loggerFactory = nullptr;
     std::unique_ptr<cl::ILogger> logger = nullptr;
     std::unique_ptr<cl::IEventQueue> eventQueue = nullptr;
     std::vector<std::unique_ptr<cl::Image> > textureImages;
@@ -84,7 +84,7 @@ JNI_METHOD(jlong, nativeCreateRenderer)
 (JNIEnv *env, jclass clazz, jobject class_loader, jobject android_context,
  jlong native_gvr_api, jstring appDirectory, jstring image360AdFileName) {
 
-    loggerFactory = std::unique_ptr<cl::LoggerFactoryDaydream>(new cl::LoggerFactoryDaydream());
+    loggerFactory = std::unique_ptr<cl::LoggerDaydreamFactory>(new cl::LoggerDaydreamFactory());
     logger = loggerFactory->createLogger("Image360AdGvrActivityNative");
     logger->log(cl::LOG_DEBUG, "Native Logger Created Successfully");
 
@@ -104,10 +104,10 @@ JNI_METHOD(jlong, nativeCreateRenderer)
     /*
      * Separate Texture Factories for OpenGLES - shader language is separate
      */
-    std::unique_ptr<cl::DiffuseTextureGLES2Factory> diffuseTextureFactory(
-            new cl::DiffuseTextureGLES2Factory(loggerFactory.get()));
-    std::unique_ptr<cl::DiffuseTextureCubeMapGLES2Factory> diffuseTextureCubeMapFactory(
-            new cl::DiffuseTextureCubeMapGLES2Factory(loggerFactory.get()));
+    std::unique_ptr<cl::DiffuseTextureGLFactory> diffuseTextureFactory(
+            new cl::DiffuseTextureGLFactory(loggerFactory.get()));
+    std::unique_ptr<cl::DiffuseTextureCubeMapGLFactory> diffuseTextureCubeMapFactory(
+            new cl::DiffuseTextureCubeMapGLFactory(loggerFactory.get()));
 
     std::unique_ptr<cl::RendererDaydream> renderer(
             new cl::RendererDaydream(reinterpret_cast<gvr_context *>(native_gvr_api), loggerFactory.get()));
@@ -124,10 +124,10 @@ JNI_METHOD(jlong, nativeCreateRenderer)
     std::unique_ptr<cl::GazeDetectorFactory> gazeDetectorFactory(new cl::GazeDetectorFactory);
     std::unique_ptr<cl::IModelFactory> uiModelFactory(new cl::ModelGLFactory(loggerFactory.get()));
     std::unique_ptr<cl::IUniformColorFactory> uiUniformColorFactory(
-            new cl::UniformColorFactoryGLES2(loggerFactory.get()));
+            new cl::UniformColorFactoryGL(loggerFactory.get()));
 
     std::unique_ptr<cl::ITextMaterialFactory> textMaterialFactory(
-            new cl::TextMaterialFactoryGLES2(loggerFactory.get()));
+            new cl::TextMaterialFactoryGL(loggerFactory.get()));
     std::unique_ptr<cl::UIFactory> uiFactory(
             new cl::UIFactory(loggerFactory.get(), std::move(uiModelFactory),
                               std::move(uiUniformColorFactory),

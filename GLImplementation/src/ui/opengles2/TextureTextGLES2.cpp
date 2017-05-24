@@ -1,18 +1,18 @@
-#include <glImplementation/ui/opengles2/TextureTextGLES2.h>
+#include <glImplementation/ui/TextureTextGL.h>
 
 namespace cl
 {
-TextureTextGLES2::TextureTextGLES2(const std::string &sceneId, ILoggerFactory *loggerFactory, const unsigned int &width,
+TextureTextGL::TextureTextGL(const std::string &sceneId, ILoggerFactory *loggerFactory, const unsigned int &width,
                                    const unsigned int &height, std::unique_ptr<unsigned char> data) : TextureText(sceneId, loggerFactory, width, height,
                                                                                                                   std::move(data))
 {
     logger = loggerFactory->createLogger("glImplementation::TextureTextGL: ");
 }
-IRenderable *TextureTextGLES2::getRenderable()
+IRenderable *TextureTextGL::getRenderable()
 {
     return this;
 }
-bool TextureTextGLES2::initialize()
+bool TextureTextGL::initialize()
 {
     glPixelStorei(GL_UNPACK_ALIGNMENT, unpackAlignmentValue);
     glGenTextures(1, &textureId);
@@ -43,11 +43,11 @@ bool TextureTextGLES2::initialize()
     logger->log(LOG_INFO, "texture:" + sceneId + " initialized");
     return true;
 }
-void TextureTextGLES2::draw()
+void TextureTextGL::draw()
 {
     glBindTexture(GL_TEXTURE_2D, textureId);
 }
-void TextureTextGLES2::deinitialize()
+void TextureTextGL::deinitialize()
 {
     glDeleteTextures(1, &textureId);
 }

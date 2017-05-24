@@ -4,7 +4,7 @@ namespace cl
 {
 SceneGL::SceneGL(ILoggerFactory *loggerFactory, std::string id) : Scene(loggerFactory, id)
 {
-    logger = loggerFactory->createLogger("glImplementation::SceneGL: ");
+    logger = loggerFactory->createLogger("glImplementation::SceneGLES2: ");
 }
 IRenderable *SceneGL::getRenderable()
 {
@@ -27,27 +27,26 @@ bool SceneGL::initialize()
     glClearColor(color[0], color[1], color[2], color[3]);
     if (depthTest)
     {
-	glEnable(GL_DEPTH_TEST);
-	glDepthFunc(GL_LEQUAL);
+        glEnable(GL_DEPTH_TEST);
+        glDepthFunc(GL_LEQUAL);
     }
     else
     {
-	glDisable(GL_DEPTH_TEST);
+        glDisable(GL_DEPTH_TEST);
     }
     if (blending)
     {
-	glEnable(GL_BLEND);
-	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+        glEnable(GL_BLEND);
+        glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
     }
     else
     {
-	glDisable(GL_BLEND);
+        glDisable(GL_BLEND);
     }
     //glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
     // opengles 2 does not support vertex arrays
     // glGenVertexArrays(1, &vertexArrayId);
     // glBindVertexArray(vertexArrayId);
-
 
     logger->log(LOG_INFO, "scene initialized");
     return true;
@@ -55,6 +54,8 @@ bool SceneGL::initialize()
 void SceneGL::draw()
 {
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+    glEnable(GL_BLEND);
+    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 }
 void SceneGL::deinitialize()
 {

@@ -4,7 +4,7 @@ namespace cl
 {
 SceneGL::SceneGL(ILoggerFactory *loggerFactory, std::string id) : Scene(loggerFactory, id)
 {
-    logger = loggerFactory->createLogger("glImplementation::SceneGL: ");
+    logger = loggerFactory->createLogger("glImplementation::SceneGLES3: ");
 }
 IRenderable *SceneGL::getRenderable()
 {
@@ -20,28 +20,30 @@ void SceneGL::setDepthTest(bool enable)
 }
 void SceneGL::setBlending(bool enable)
 {
-    blending = enable;
+    this->blending = enable;
 }
 bool SceneGL::initialize()
 {
     glClearColor(color[0], color[1], color[2], color[3]);
-    if (depthTest)
+    if (this->depthTest)
     {
-	glEnable(GL_DEPTH_TEST);
-	glDepthFunc(GL_LEQUAL);
+        glEnable(GL_DEPTH_TEST);
+        glDepthFunc(GL_LEQUAL);
     }
     else
     {
-	glDisable(GL_DEPTH_TEST);
+        glDisable(GL_DEPTH_TEST);
     }
-    if (blending)
+    if (this->blending)
     {
-	glEnable(GL_BLEND);
-	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+        logger->log(LOG_DEBUG, "Blending Enabled");
+        glEnable(GL_BLEND);
+        glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
     }
     else
     {
-	glDisable(GL_BLEND);
+        logger->log(LOG_DEBUG, "Blending Disabled");
+        glDisable(GL_BLEND);
     }
     //glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
     // glGenVertexArrays(1, &vertexArrayId);
@@ -53,9 +55,12 @@ bool SceneGL::initialize()
 void SceneGL::draw()
 {
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+    glEnable(GL_BLEND);
+    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 }
 void SceneGL::deinitialize()
 {
+    // glBindVertexArray(0);
     // glDeleteVertexArrays(1, &vertexArrayId);
     // glBindBuffer(GL_ARRAY_BUFFER, 0);
 }

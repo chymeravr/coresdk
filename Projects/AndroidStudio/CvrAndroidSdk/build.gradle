@@ -23,25 +23,15 @@ buildscript {
         distributionDir = "${rootProject.rootDir}/distribution"
         // this needs to be 3 for opengles3
         //glesVersion = 2
-        commonCPPFlags = ["-DGLES2_0"]
-
-        // these boolean vars are now useless - remove ASAP
-        // use the below two variables to switch between google VR and oculus gearvr builds
-        build4daydream = true
-        build4gearvr   = false
-
-        // use this to build all Google VR supported architecture - for dev we only use one to shorten build time
-        buildAllDaydreamArch = false
-
-        // use this to build only unity supported architecture [armeabi-v7a & x86]
-        build4Unity = false
+        // probably not used TPTP
+//        commonCPPFlags = ["-DGLES2_0"]
 
         // hmd enumerates the different platforms we can build our ad client for
         // possible values
         //      - daydream
         //      - cardboard
         //      - gearvr
-        hmd = "cardboard"
+        hmd = "daydream"
 
         // hmdBuild acts as an enum type to represent various architectures we are building for
         // to stop building all architectures during development with pixel, we only use
@@ -54,7 +44,7 @@ buildscript {
         // "googleVrS6" : build only for Samsung S6 - armeabi-v7a - test device for cardboard
         // "samsungGearVr" : build only for Samsung S6 - armeabi-v7a     - test device for Oculus Samsung GearVr
 
-        hmdBuild = "googleVrS6"
+        hmdBuild = "googleVrPixel"
 
         // google vr architextures for various configurations
         googleVrAllArch = ["arm64-v8a", "armeabi-v7a", "x86"]
@@ -126,13 +116,13 @@ def getOpenGLESVersion(hmd){
     // todo : try daydream with opengles3 - it should work ideally
     switch(hmd){
         case "daydream":
-            glesVersion = "GLES_V3"
+            glesVersion = "GLES3_0"
             break
         case "cardboard":
-            glesVersion = "GLES_V3"
+            glesVersion = "GLES3_0"
             break
         case "gearvr":
-            glesVersion = "GLES_V3"
+            glesVersion = "GLES3_0"
             break
     }
     return glesVersion

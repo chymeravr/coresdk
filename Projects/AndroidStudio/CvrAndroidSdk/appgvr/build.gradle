@@ -28,7 +28,7 @@ android {
 
     defaultConfig {
         applicationId "com.chymeravr.appgvr"
-        minSdkVersion 23
+        minSdkVersion 24
         targetSdkVersion 25
         versionCode 1
         versionName "1.0"
@@ -43,11 +43,17 @@ android {
                 // I have to use gcc to compile, clang compiled code generate error
                 // at run time for any std::queue etc.
                 targets 'appgvr'
-                arguments = ['-DANDROID_STL=gnustl_shared', '-DANDROID_NATIVE_API_LEVEL=android-24']
 
-                cppFlags = ["-DGLES2_0", "-std=c++11", "-frtti", "-fexceptions", '-Wall',
+                def androidNdkLevel = getNativeNdkLevel(project.hmd)
+                def openglesVersion = getOpenGLESVersion(project.hmd)
+
+                arguments = ['-DANDROID_STL=gnustl_shared'] //, '-DANDROID_NATIVE_API_LEVEL=android-23']
+                arguments += "-DANDROID_NATIVE_API_LEVEL=android-" + androidNdkLevel
+                arguments += "-D" + openglesVersion + "=TRUE"
+
+                cppFlags = ["-std=c++11", "-frtti", "-fexceptions", '-Wall',
                             '-fno-exceptions', '-Wno-unused-variable']
-
+                cppFlags += "-D" + openglesVersion
                 // for all GVR platforms
                 //abiFilters = ['armeabi-v7a', 'arm64-v8a', 'x86']
 
@@ -78,14 +84,10 @@ android {
 }
 
 dependencies {
-    //     project(path: ':daydreamadclient', configuration: 'debug')
-//    project(path: ':cardboardadclient', configuration: 'debug')
-    debugCompile project(path: ':cardboardadclient', configuration: 'debug')
-    //releaseCompile project(path: ':daydreamadclient', configuration: 'release')
-    //releaseCompile project(':daydreamadclient')
     compile 'com.google.vr:sdk-audio:1.30.0'
     compile 'com.google.vr:sdk-base:1.30.0'
     compile 'com.android.support.constraint:constraint-layout:1.0.2'
+    debugCompile project(path: ':daydreamadclient', configuration: 'debug')
 }
 
 //build.dependsOn(':extractNdk')

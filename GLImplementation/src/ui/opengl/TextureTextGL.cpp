@@ -1,4 +1,4 @@
-#include <glImplementation/ui/opengl/TextureTextGL.h>
+#include <glImplementation/ui/TextureTextGL.h>
 
 namespace cl
 {
@@ -14,7 +14,7 @@ IRenderable *TextureTextGL::getRenderable()
 }
 bool TextureTextGL::initialize()
 {
-    glPixelStorei(GL_UNPACK_ALIGNMENT, unpackAlignmentValue);
+    glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
     glGenTextures(1, &textureId);
     // "Bind" the newly created texture : all future texture functions will modify this texture
     glBindTexture(GL_TEXTURE_2D, textureId);

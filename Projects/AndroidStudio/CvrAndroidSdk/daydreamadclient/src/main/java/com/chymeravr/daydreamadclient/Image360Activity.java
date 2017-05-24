@@ -76,7 +76,7 @@ public final class Image360Activity extends Activity {
         System.loadLibrary("gvr");
         //System.loadLibrary("gvr_audio");
         // chymeravr libs
-        System.loadLibrary("image360ad");
+        System.loadLibrary("DaydreamAdClient");
     }
 
     // below params are passed from Image360Ad class which in turn fetched it from server and passed to activity

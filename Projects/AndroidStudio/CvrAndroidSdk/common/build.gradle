@@ -17,7 +17,7 @@ def libName = "chymeravr-common"
             versionCode = 0
             versionName = "0.1"
 
-            archivesBaseName = libName
+            //archivesBaseName = libName
 
             testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
 
@@ -53,18 +53,3 @@ dependencies {
     compile 'javax.annotation:javax.annotation-api:1.2'
     compile 'com.android.volley:volley:1.0.0'
 }
-
-task distributeLibs << {
-    // trigger build library
-    distributeAarLib(commonModule, project.distributionDir, "debug",
-            libName, "common")
-    distributeAarLib(commonModule, project.distributionDir, "release",
-            libName, "common")
-}
-
-task deleteDistLibs << {
-    delete "${project.distributionDir}/common"
-}
-
-build.finalizedBy(distributeLibs)
-distributeLibs.dependsOn deleteDistLibs

@@ -29,8 +29,8 @@ import android.view.WindowManager;
 
 import com.chymeravr.adclient.VrAdListener;
 import com.chymeravr.adclient.VrAdRequest;
-import com.chymeravr.cardboardadclient.ChymeraVrSdk;
-import com.chymeravr.cardboardadclient.Image360Ad;
+import com.chymeravr.daydreamadclient.ChymeraVrSdk;
+import com.chymeravr.daydreamadclient.Image360Ad;
 import com.google.vr.ndk.base.AndroidCompat;
 import com.google.vr.ndk.base.GvrLayout;
 

@@ -22,7 +22,7 @@ function buildAndroidLibs(){
 }
 
 if [ "$libName" = "all" ]; then
-    buildAndroidLibs &
+    # buildAndroidLibs &
     echo "Building All Native Libraries. . . this may take a few minutes!!"
     buildNativeLib "soil" &
     buildNativeLib "libjpeg" &
@@ -33,6 +33,11 @@ if [ "$libName" = "all" ]; then
     buildNativeLib "glImplementation" &
     buildNativeLib "image360" &
     wait;
+
+    buildNativeLib "common"
+    buildNativeLib "analytics"
+    buildNativeLib "adclient"
+
     if [ "$hmdName" = "daydream" ]; then
         buildNativeLib "daydreamimplementation"
         buildNativeLib "daydreamadclient"
@@ -43,7 +48,6 @@ if [ "$libName" = "all" ]; then
         buildNativeLib "gearvrimplementation"
         buildNativeLib "gearvradclient"
     fi
-
 else
     buildNativeLib "$libName"
 fi

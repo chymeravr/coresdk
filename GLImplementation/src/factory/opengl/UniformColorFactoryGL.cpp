@@ -1,5 +1,6 @@
-#include <glImplementation/factory/opengl/UniformColorFactoryGL.h>
+#include <glImplementation/factory/UniformColorFactoryGL.h>
 
+// to_string is not implemented in android - hence different implementations
 namespace cl{
 	
 	UniformColorFactoryGL::UniformColorFactoryGL(ILoggerFactory *loggerFactory){

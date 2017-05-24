@@ -187,7 +187,7 @@ void Image360Stereo::initialize(TEXTURE_MAP_MODE mapMode,
     gazeDetectorContainer = gazeDetectorFactory->createGazeDetectorContainer();
 
     Model *actionButtonModel = (Model *)scene->getFromScene("actionButton");
-	TransformTreeModel *transformActionButton = (TransformTreeModel *)actionButtonModel->getComponentList().getComponent("transformTree");
+    TransformTreeModel *transformActionButton = (TransformTreeModel *)actionButtonModel->getComponentList().getComponent("transformTree");
     this->actionButtonListener = eventGazeListenerFactory->createActionButtonListener();
 
     Model *closeButtonModel = (Model *)scene->getFromScene("closeButton");
@@ -213,19 +213,19 @@ void Image360Stereo::initialize(TEXTURE_MAP_MODE mapMode,
     vec3_one = CL_Vec3(0.0f, 0.0f, 0.0f);
     vec3_two = CL_Vec3(0.0f, 0.0f, -1.0f);
     std::unique_ptr<IComponent> gazeDetectorActionButton = gazeDetectorFactory->createGazeDetectorBox(boxMessage, gazeTransformTarget,
-																								  transformActionButton, this->actionButtonListener.get(),
-                                                                                                  gazeDetectorContainer.get(), vec3_one,
-                                                                                                  vec3_two, 3.0f, 1.0f, 0.00001f);
-	actionButtonModel->getComponentList().addComponent(std::move(gazeDetectorActionButton));
+                                                                                                      transformActionButton, this->actionButtonListener.get(),
+                                                                                                      gazeDetectorContainer.get(), vec3_one,
+                                                                                                      vec3_two, 3.0f, 1.0f, 0.00001f);
+    actionButtonModel->getComponentList().addComponent(std::move(gazeDetectorActionButton));
 
     auto boxMessage2 = this->closeButtonText; //std::string("closeMe");
     vec3_one = CL_Vec3(0.0f, 0.0f, 0.0f);
     vec3_two = CL_Vec3(0.0f, 0.0f, -1.0f);
     std::unique_ptr<IComponent> gazeDetectorCloseButton = gazeDetectorFactory->createGazeDetectorBox(boxMessage2, gazeTransformTarget,
-                                                                                                 transformCloseButton, this->closeButtonListener.get(),
-                                                                                                 gazeDetectorContainer.get(), vec3_one,
-                                                                                                 vec3_two, 3.0f, 1.0f, 0.00001f);
-	closeButtonModel->getComponentList().addComponent(std::move(gazeDetectorCloseButton));
+                                                                                                     transformCloseButton, this->closeButtonListener.get(),
+                                                                                                     gazeDetectorContainer.get(), vec3_one,
+                                                                                                     vec3_two, 3.0f, 1.0f, 0.00001f);
+    closeButtonModel->getComponentList().addComponent(std::move(gazeDetectorCloseButton));
 
     renderer->initialize(scene.get());
     logger->log(LOG_DEBUG, "Initialization Completed!!");

@@ -31,11 +31,11 @@
 // GLImplementation Dependencies
 #include <glImplementation/factory/SceneGLFactory.h>
 #include <glImplementation/factory/ModelGLFactory.h>
-#include <glImplementation/factory/opengl/DiffuseTextureCubeMapGLFactory.h>
-#include <glImplementation/factory/opengl/DiffuseTextureGLFactory.h>
+#include <glImplementation/factory/DiffuseTextureCubeMapGLFactory.h>
+#include <glImplementation/factory/DiffuseTextureGLFactory.h>
 #include <glImplementation/factory/CameraGLFactory.h>
-#include <glImplementation/factory/opengl/UniformColorFactoryGL.h>
-#include <glImplementation/factory/opengl/TextMaterialFactoryGL.h>
+#include <glImplementation/factory/UniformColorFactoryGL.h>
+#include <glImplementation/factory/TextMaterialFactoryGL.h>
 
 // WindowsImplementation Dependencies
 #include <windowsImplementation/LoggerFactoryWindows.h>

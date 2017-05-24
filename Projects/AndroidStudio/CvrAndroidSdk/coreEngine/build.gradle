@@ -29,11 +29,11 @@ android {
                 arguments = ['-DANDROID_STL=gnustl_shared'] //, "-DANDROID_NATIVE_API_LEVEL=android-23"]
                 arguments += "-DANDROID_NATIVE_API_LEVEL=android-" + androidNdkLevel
 
-                cppFlags = ["-DGLES2_0", "-std=c++11", "-frtti", "-fexceptions"]
+                cppFlags = ["-std=c++11", "-frtti", "-fexceptions"]
 
                 def openglesVersion = getOpenGLESVersion(project.hmd)
                 arguments += "-D" + openglesVersion + "=TRUE"
-
+                cppFlags += "-D" + openglesVersion
                 abiFilters = getAbiFilters(project.hmdBuild)
             }
         }

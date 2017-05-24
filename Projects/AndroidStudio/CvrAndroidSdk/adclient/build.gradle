@@ -16,7 +16,7 @@ android {
         versionCode 0
         versionName "0.1"
 
-        archivesBaseName = libName
+        //archivesBaseName = libName
 
         testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
 
@@ -59,18 +59,3 @@ dependencies {
     compile project(':common')
     compile project(':analytics')
 }
-
-task distributeLibs << {
-    // trigger build library
-    distributeAarLib(adclientModule, project.distributionDir, "debug",
-            libName, "adclient")
-    distributeAarLib(adclientModule, project.distributionDir, "release",
-            libName, "adclient")
-}
-
-task deleteDistLibs << {
-    delete "${distributionDir}/adclient"
-}
-
-build.finalizedBy(distributeLibs)
-distributeLibs.dependsOn deleteDistLibs

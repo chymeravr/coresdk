@@ -1,21 +1,23 @@
-#include <glImplementation/ui/opengles3/TextureTextGLES3.h>
+#include <glImplementation/ui/TextureTextGL.h>
 
 namespace cl
 {
-TextureTextGLES3::TextureTextGLES3(const std::string &sceneId, ILoggerFactory *loggerFactory, const unsigned int &width,
-                                   const unsigned int &height, std::unique_ptr<unsigned char> data) : TextureText(sceneId, loggerFactory, width, height,
-                                                                                                                  std::move(data))
+TextureTextGL::TextureTextGL(const std::string &sceneId, ILoggerFactory *loggerFactory, const unsigned int &width,
+                             const unsigned int &height, std::unique_ptr<unsigned char> data)
+    : TextureText(sceneId, loggerFactory, width, height, std::move(data))
 {
-    logger = loggerFactory->createLogger("glImplementation::TextureTextGL: ");
+    logger = loggerFactory->createLogger("glImplementation::TextureTextGLES3: ");
 }
-IRenderable *TextureTextGLES3::getRenderable()
+IRenderable *TextureTextGL::getRenderable()
 {
     return this;
 }
-bool TextureTextGLES3::initialize()
+bool TextureTextGL::initialize()
 {
-    glPixelStorei(GL_UNPACK_ALIGNMENT, unpackAlignmentValue);
+
+    glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
     glGenTextures(1, &textureId);
+
     // "Bind" the newly created texture : all future texture functions will modify this texture
     glBindTexture(GL_TEXTURE_2D, textureId);
 
@@ -41,13 +43,15 @@ bool TextureTextGLES3::initialize()
     this->clearTextureData();
     glPixelStorei(GL_UNPACK_ALIGNMENT, 4); //setting back to default value
     logger->log(LOG_INFO, "texture:" + sceneId + " initialized");
+
     return true;
 }
-void TextureTextGLES3::draw()
+void TextureTextGL::draw()
 {
+    // todo: change all related gl states for rendering here
     glBindTexture(GL_TEXTURE_2D, textureId);
 }
-void TextureTextGLES3::deinitialize()
+void TextureTextGL::deinitialize()
 {
     glDeleteTextures(1, &textureId);
 }

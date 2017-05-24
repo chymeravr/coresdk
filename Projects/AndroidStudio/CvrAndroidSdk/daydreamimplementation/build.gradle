@@ -27,11 +27,15 @@ android {
                 targets 'DaydreamImplementation'
                 // todo: the DANDROID_NATIVE_API_LEVEL varies with minSdkVersion
                 def androidNdkLevel = getNativeNdkLevel(project.hmd)
+                def openglesVersion = getOpenGLESVersion(project.hmd)
+
                 arguments = ['-DANDROID_STL=gnustl_shared'] //, '-DANDROID_NATIVE_API_LEVEL=android-24']
                 arguments += "-DANDROID_NATIVE_API_LEVEL=android-" + androidNdkLevel
-                cppFlags = ["-DGLES2_0", "-std=c++11", "-frtti", "-fexceptions", '-Wall', '-fno-exceptions',
-                            '-Wno-error=format-security', '-Wno-unused-function', '-Wno-unused-variable']
+                arguments += "-D" + openglesVersion + "=TRUE"
 
+                cppFlags = ["-std=c++11", "-frtti", "-fexceptions", '-Wall', '-fno-exceptions',
+                            '-Wno-error=format-security', '-Wno-unused-function', '-Wno-unused-variable']
+                cppFlags += "-D" + openglesVersion
                 abiFilters = getAbiFilters(project.hmdBuild)
             }
         }

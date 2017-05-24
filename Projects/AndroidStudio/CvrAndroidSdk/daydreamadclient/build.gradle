@@ -5,12 +5,12 @@ apply from: "${rootProject.rootDir}/build_release_aar.gradle"
 def distributionDir = "${rootProject.rootDir}/distribution"
 
 android {
-    compileSdkVersion 25
-    buildToolsVersion "25.0.0"
+    compileSdkVersion project.getCompileSdkVersion()
+    buildToolsVersion project.getBuildToolsVersion()
 
     defaultConfig {
-        minSdkVersion 23
-        targetSdkVersion 25
+        minSdkVersion getMinSdkVersion(project.hmd)
+        targetSdkVersion getTargetSdkVersion()
         versionCode 1
         versionName "1.0"
 
@@ -26,12 +26,15 @@ android {
                 // at run time for any std::queue etc.
                 targets 'DaydreamAdClient'
                 def androidNdkLevel = getNativeNdkLevel(project.hmd)
+                def openglesVersion = getOpenGLESVersion(project.hmd)
+
                 arguments = ['-DANDROID_STL=gnustl_shared'] //, '-DANDROID_NATIVE_API_LEVEL=android-23']
                 arguments += "-DANDROID_NATIVE_API_LEVEL=android-" + androidNdkLevel
+                arguments += "-D" + openglesVersion + "=TRUE"
 
-                cppFlags = ["-DGLES2_0", "-std=c++11", "-frtti", "-fexceptions", '-Wall',
+                cppFlags = ["-std=c++11", "-frtti", "-fexceptions", '-Wall',
                             '-fno-exceptions', '-Wno-unused-variable']
-
+                cppFlags += "-D" + openglesVersion
 
                 // todo : add an hmd build test to ensure we don't forget to change the build type variable in main gradle
                 // for different hmd's - daydream, cardboard & gearvr
@@ -106,16 +109,6 @@ dependencies {
     embedded project(':common')
     embedded project(':analytics')
     embedded project(':adclient')
-//    compile project(':common')
-//    compile project(':analytics')
-//    compile project(':adclient')
-
-//    debugCompile(name:'chymeravr-adclient-debug', ext:'aar')
-//    releaseCompile(name:'chymeravr-adclient-release', ext:'aar')
-//    debugCompile(name:'chymeravr-analytics-debug', ext:'aar')
-//    releaseCompile(name:'chymeravr-analytics-release', ext:'aar')
-//    debugCompile(name:'chymeravr-common-debug', ext:'aar')
-//    releaseCompile(name:'chymeravr-common-release', ext:'aar')
 
 }
 

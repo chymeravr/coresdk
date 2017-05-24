@@ -10,7 +10,9 @@ option (WINDOWS "Whether on Windows operating system" ON)
 option (Win32 "Use Win32 Libraries" ON)
 option (x64 "Use x64 Libraries" OFF)
 
-##GL options
+##GL options - you must define one of these to tell compiler which implementation
+##  you are building
+## as of now only gl implementations - opengl, opengles2, opengles3 are being built. 
 option (WINDOWS_GL "Use GL in Windows" ON)
 option (GLES2_0 "Use GLES 2 in Mobile" OFF)
 option (GLES3_0 "Use GLES 3 in Mobile" OFF)
@@ -41,7 +43,7 @@ add_subdirectory(GLImplementation)
 add_subdirectory(Renderer)
 add_subdirectory(Image360)
 add_subdirectory(SOIL)
-add_subdirectory(libjpeg9)
+add_subdirectory(libjpeg)
 if(WINDOWS AND WINDOWS_GL)
 	add_subdirectory(GLFW C)
 	add_subdirectory(WindowsImplementation)

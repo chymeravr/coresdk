@@ -17,7 +17,7 @@ def analyticsModule = "${rootProject.rootDir}/analytics"
             versionCode = 0
             versionName = "0.1"
 
-            archivesBaseName = libName
+            //archivesBaseName = libName
 
             testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
         }
@@ -59,19 +59,3 @@ dependencies {
     compile 'com.google.code.gson:gson:2.8.0'
 
 }
-
-
-task distributeLibs << {
-    // trigger build library
-    distributeAarLib(analyticsModule, project.distributionDir, "debug",
-            libName, "analytics")
-    distributeAarLib(analyticsModule, project.distributionDir, "release",
-            libName, "analytics")
-}
-
-task deleteDistLibs << {
-    delete "${project.distributionDir}/analytics"
-}
-
-build.finalizedBy(distributeLibs)
-distributeLibs.dependsOn deleteDistLibs

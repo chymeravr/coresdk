@@ -27,27 +27,27 @@ bool SceneGL::initialize()
     glClearColor(color[0], color[1], color[2], color[3]);
     if (depthTest)
     {
-	glEnable(GL_DEPTH_TEST);
-	glDepthFunc(GL_LEQUAL);
+        glEnable(GL_DEPTH_TEST);
+        glDepthFunc(GL_LEQUAL);
     }
     else
     {
-	glDisable(GL_DEPTH_TEST);
+        glDisable(GL_DEPTH_TEST);
     }
     if (blending)
     {
-	glEnable(GL_BLEND);
-	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+        glEnable(GL_BLEND);
+        glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
     }
     else
     {
-	glDisable(GL_BLEND);
+        glDisable(GL_BLEND);
     }
     //glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
     // opengl must have a bound vertex array object to render (even if it is empty)
+    // this requirement is not there in gles implementations - superbible 7 edition pg 20..
     glGenVertexArrays(1, &vertexArrayId);
     glBindVertexArray(vertexArrayId);
-
 
     logger->log(LOG_INFO, "scene initialized");
     return true;
@@ -58,7 +58,8 @@ void SceneGL::draw()
 }
 void SceneGL::deinitialize()
 {
-    // glDeleteVertexArrays(1, &vertexArrayId);
+    glBindVertexArray(0);
+    glDeleteVertexArrays(1, &vertexArrayId);
     // glBindBuffer(GL_ARRAY_BUFFER, 0);
 }
 }
