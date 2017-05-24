@@ -31,7 +31,7 @@ buildscript {
         //      - daydream
         //      - cardboard
         //      - gearvr
-        hmd = "daydream"
+        hmd = "cardboard"
 
         // hmdBuild acts as an enum type to represent various architectures we are building for
         // to stop building all architectures during development with pixel, we only use
@@ -119,7 +119,7 @@ def getOpenGLESVersion(hmd){
             glesVersion = "GLES3_0"
             break
         case "cardboard":
-            glesVersion = "GLES3_0"
+            glesVersion = "GLES2_0"
             break
         case "gearvr":
             glesVersion = "GLES3_0"
@@ -136,7 +136,7 @@ def getMinSdkVersion(hmd){
             minSdkVersion = 24
             break
         case "cardboard":
-            minSdkVersion = 23
+            minSdkVersion = 19
             break
         case "gearvr":
             minSdkVersion = 23
@@ -166,7 +166,7 @@ def getNativeNdkLevel(hmd){
             break
         case "cardboard":
             // todo : extend compatibility to version 19
-            nativeNdkVersion = 23
+            nativeNdkVersion = 19
             break
         case "gearvr":
             nativeNdkVersion = 23

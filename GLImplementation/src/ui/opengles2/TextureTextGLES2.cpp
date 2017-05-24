@@ -3,8 +3,8 @@
 namespace cl
 {
 TextureTextGL::TextureTextGL(const std::string &sceneId, ILoggerFactory *loggerFactory, const unsigned int &width,
-                                   const unsigned int &height, std::unique_ptr<unsigned char> data) : TextureText(sceneId, loggerFactory, width, height,
-                                                                                                                  std::move(data))
+                             const unsigned int &height, std::unique_ptr<unsigned char> data) : TextureText(sceneId, loggerFactory, width, height,
+                                                                                                            std::move(data))
 {
     logger = loggerFactory->createLogger("glImplementation::TextureTextGL: ");
 }
@@ -14,7 +14,7 @@ IRenderable *TextureTextGL::getRenderable()
 }
 bool TextureTextGL::initialize()
 {
-    glPixelStorei(GL_UNPACK_ALIGNMENT, unpackAlignmentValue);
+    glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
     glGenTextures(1, &textureId);
     // "Bind" the newly created texture : all future texture functions will modify this texture
     glBindTexture(GL_TEXTURE_2D, textureId);
