@@ -1,6 +1,11 @@
 apply plugin: 'com.android.library'
 //apply from: "${rootProject.rootDir}/fat-aar.gradle"
 apply from: "${rootProject.rootDir}/build_release_aar.gradle"
+apply plugin: 'maven'
+
+group = "com.chymeravr.sdk"
+// to release build remove "-SNAPSHOT" ~ this is IRREVERSIBLE
+version = "0.0.1-SNAPSHOT"
 
 def distributionDir = "${rootProject.rootDir}/distribution"
 
@@ -109,4 +114,22 @@ dependencies {
     embedded project(':common')
     embedded project(':analytics')
     embedded project(':adclient')
+}
+
+
+uploadArchives {
+    repositories {
+        mavenDeployer {
+            repository(url: "${nexusUrl}/repository/maven-releases") {
+                authentication(userName: nexusUsername, password: nexusPassword)
+                // for custom name instead of cardboardadclient
+                // pom.artifactId = "testApp"
+                // pom.groupId = "com.cadsfsf.asdfsd"
+                // pom.version = "1.3.2"
+            }
+            snapshotRepository(url: "${nexusUrl}/repository/maven-snapshots") {
+                authentication(userName: nexusUsername, password: nexusPassword)
+            }
+        }
+    }
 }

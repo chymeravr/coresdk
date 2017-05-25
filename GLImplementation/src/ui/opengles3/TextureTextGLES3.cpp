@@ -23,7 +23,8 @@ bool TextureTextGL::initialize()
 
     // Give the image to OpenGL
     assert(data != nullptr);
-
+    // GL_RED tho supported on opengles3 it does not render text - use GL_LUMINANCE instead that works - 
+    // does this work cross platform
     glTexImage2D(
         GL_TEXTURE_2D,
         0,

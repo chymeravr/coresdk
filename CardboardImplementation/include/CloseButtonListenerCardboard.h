@@ -16,10 +16,14 @@ public:
   void onGaze();
   bool inFocus();
 
+  bool isLongGaze();
+
 private:
   std::unique_ptr<ILogger> logger;
   std::string tag = "CloseButtonListenerCardboard";
   bool focus = false;
+
+  int closeCountDown = 150;
 };
 }
 

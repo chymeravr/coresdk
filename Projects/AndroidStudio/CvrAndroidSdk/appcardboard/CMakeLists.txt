@@ -1,6 +1,6 @@
 cmake_minimum_required (VERSION 3.4.1)
 
-project(appgvr)
+project(appcardboard)
 
 set(GVR_LIBRARIES ${CMAKE_SOURCE_DIR}/../gvr_libraries)
 

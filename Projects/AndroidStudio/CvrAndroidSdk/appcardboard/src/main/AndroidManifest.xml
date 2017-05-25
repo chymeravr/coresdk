@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
-    package="com.chymeravr.appgvr"
+    package="com.chymeravr.appcardboard"
     android:versionCode="170215033"
     android:versionName="1.30.0"> <!-- The GVR SDK requires API 19+ and OpenGL ES 2+. -->
     <uses-sdk
@@ -58,17 +58,6 @@
             <meta-data
                 android:name="com.google.android.vr.icon_background"
                 android:resource="@drawable/vr_icon_background" />
-
-            <!--
-                 Intent filter that enables this app to be launched from the
-                 Daydream Home menu.
-            -->
-            <intent-filter>
-                <action android:name="android.intent.action.MAIN" />
-
-                <category android:name="android.intent.category.LAUNCHER" />
-                <category android:name="com.google.intent.category.DAYDREAM" />
-            </intent-filter>
 
             <!--
                  Intent filter that enables this app to be launched from the

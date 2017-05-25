@@ -13,7 +13,7 @@
  * limitations under the License.
  */
 
-package com.chymeravr.appgvr;
+package com.chymeravr.appdaydream;
 
 import android.app.Activity;
 import android.content.Context;
@@ -56,7 +56,7 @@ public class MainActivity extends Activity {
     Image360Ad image360TestAd;
     public boolean isShowing = false;
 
-    private static final String TAG = "CVRAppGvr";
+    private static final String TAG = "CvrAppDaydream";
     // This is done on the GL thread because refreshViewerProfile isn't thread-safe.
     private final Runnable refreshViewerProfileRunnable =
             new Runnable() {
@@ -71,7 +71,7 @@ public class MainActivity extends Activity {
     static {
         System.loadLibrary("gvr");
         System.loadLibrary("gvr_audio");
-        System.loadLibrary("appgvr");
+        System.loadLibrary("appdaydream");
     }
 
     @Override

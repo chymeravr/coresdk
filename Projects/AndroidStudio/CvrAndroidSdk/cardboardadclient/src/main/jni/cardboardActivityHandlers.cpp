@@ -39,6 +39,7 @@
 #include <LoggerCardboardFactory.h>
 #include <MutexLockCardboard.h>
 #include <RendererCardboard.h>
+#include <CloseButtonListenerCardboard.h>
 #include <GazeListenerFactoryCardboard.h>
 
 
@@ -226,6 +227,7 @@ JNI_METHOD(void, nativeDrawFrame)
     image360->draw(cl::LEFT);
     image360->draw(cl::RIGHT);
     image360->drawComplete();
+
 }
 
 JNI_METHOD(int, nativeOnTriggerEvent)
@@ -269,6 +271,14 @@ JNI_METHOD(void, nativeOnResume)
 (JNIEnv *env, jobject obj, jlong nativeImage360) {
     auto image360 = native(nativeImage360);
     image360->resume();
+}
+
+JNI_METHOD(jboolean , nativeCloseAd)
+(JNIEnv *env, jobject obj, jlong nativeImage360) {
+    auto image360 = native(nativeImage360);
+    auto closeButtonListener = (cl::CloseButtonListenerCardboard*) image360->closeButtonListener.get();
+
+    return closeButtonListener->isLongGaze();
 }
 
 JNI_METHOD(jfloatArray , nativeGetHmdParams)

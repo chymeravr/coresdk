@@ -14,16 +14,17 @@ include ':common', ':analytics', ':adclient'
 //include ':gearvrimplementation'
 //include ':gearvradclient'
 //// sample oculus vr app to test library
-//include ':appovrm'
+//include ':appgearvr'
 
 // Google VR Libraries
 // sample google vr app to test library
-include ':appgvr'
 
 // daydream client
+//include ':appdaydream'
 //include ':daydreamimplementation'
 //include ':daydreamadclient'
 
 // cardboardadclient
+include ':appcardboard'
 include ':cardboardimplementation'
 include ':cardboardadclient'

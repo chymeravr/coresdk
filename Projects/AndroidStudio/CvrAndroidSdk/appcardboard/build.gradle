@@ -27,7 +27,7 @@ android {
     }
 
     defaultConfig {
-        applicationId "com.chymeravr.appgvr"
+        applicationId "com.chymeravr.appcardboard"
         minSdkVersion 24
         targetSdkVersion 25
         versionCode 1
@@ -42,7 +42,7 @@ android {
 
                 // I have to use gcc to compile, clang compiled code generate error
                 // at run time for any std::queue etc.
-                targets 'appgvr'
+                targets 'appcardboard'
 
                 def androidNdkLevel = getNativeNdkLevel(project.hmd)
                 def openglesVersion = getOpenGLESVersion(project.hmd)

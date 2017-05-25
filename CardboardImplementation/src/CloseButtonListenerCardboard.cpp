@@ -15,12 +15,21 @@ void CloseButtonListenerCardboard::onGazeStarted()
 }
 void CloseButtonListenerCardboard::onGazeEnded()
 {
+    this->closeCountDown = 150;
     this->focus = false;
 }
-void CloseButtonListenerCardboard::onGaze() {}
+void CloseButtonListenerCardboard::onGaze()
+{
+    this->closeCountDown--;
+}
 
 bool CloseButtonListenerCardboard::inFocus()
 {
     return this->focus;
+}
+
+bool CloseButtonListenerCardboard::isLongGaze()
+{
+    return this->closeCountDown < 0;
 }
 }

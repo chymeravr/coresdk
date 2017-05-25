@@ -1,8 +1,23 @@
-package com.chymeravr.cardboardadclient;
+/* Copyright 2017 Google Inc. All rights reserved.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *   http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+package com.chymeravr.appcardboard;
 
 import android.app.Activity;
 import android.content.Context;
-import android.content.Intent;
+import android.location.Location;
 import android.opengl.GLSurfaceView;
 import android.os.Bundle;
 import android.os.Vibrator;
@@ -11,74 +26,42 @@ import android.view.KeyEvent;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.WindowManager;
+import android.view.animation.Animation;
+import android.widget.ImageView;
 
-import com.chymeravr.analytics.AnalyticsManager;
-import com.chymeravr.common.Config;
-import com.chymeravr.schemas.eventreceiver.EventType;
-import com.chymeravr.schemas.eventreceiver.RuntimeAdMeta;
-import com.chymeravr.schemas.eventreceiver.SDKEvent;
+import com.chymeravr.adclient.VrAdListener;
+import com.chymeravr.adclient.VrAdRequest;
+import com.chymeravr.cardboardadclient.ChymeraVrSdk;
+import com.chymeravr.cardboardadclient.Image360Ad;
+import com.google.vr.ndk.base.AndroidCompat;
 import com.google.vr.ndk.base.GvrLayout;
-import com.google.vr.sdk.base.AndroidCompat;
 
-import java.sql.Timestamp;
-import java.util.HashMap;
-import java.util.concurrent.Executors;
-import java.util.concurrent.ScheduledExecutorService;
-import java.util.concurrent.TimeUnit;
+import java.text.SimpleDateFormat;
+import java.util.Date;
 
 import javax.microedition.khronos.egl.EGLConfig;
 import javax.microedition.khronos.opengles.GL10;
 
-import lombok.Getter;
+//import com.chymeravr.daydreamadclient.ChymeraVrSdk;
+//import com.chymeravr.daydreamadclient.Image360Ad;
+
+// cannot use daydreamapi in cardboard
+//import com.google.vr.ndk.base.DaydreamApi;
 
 /**
- * Created by robin_chimera on 5/10/2017.
+ * A Gvr API sample application.
  */
-
-public final class Image360Activity extends Activity {
-    private static final String TAG = "Image360CardbrdActivity";
-
-    // google vr layout for holding the surface
+public class MainActivity extends Activity {
     private GvrLayout gvrLayout;
-
-    // native C++ handle for image360 application
-    private long nativeImage360ActivityHandle;
-
-    // gl surface on which the rendering happens
+    private long nativeTreasureHuntRenderer;
     private GLSurfaceView surfaceView;
 
-    // load native libraries
-    static{
-        // gvr libs
-        System.loadLibrary("gvr");
+    private Animation anim;
+    private ImageView fadeImage;
+    Image360Ad image360TestAd;
+    public boolean isShowing = false;
 
-        // ChymeraVr Libs
-        System.loadLibrary("CardboardAdClient");
-    }
-
-    private String clickUrl;
-
-    // TODO: 4/27/2017 remove getter - clients should not get these from here
-    // ad identfication ids
-    @Getter
-    private String servingId;
-
-    @Getter
-    private int instanceId;
-
-    // we need the class name to go transition back to
-    private String returningClassName;
-
-    // the function talks to analytics manager as and when called
-    // TODO: 5/10/2017 the analytics manager should own this piece of code to avoid duplication
-    public void emitEvent(EventType eventType, AnalyticsManager.Priority priority, HashMap<String, String> map){
-        long currTime = new Timestamp(System.currentTimeMillis()).getTime();
-        RuntimeAdMeta adMeta = new RuntimeAdMeta(this.getServingId(), this.getInstanceId());
-        SDKEvent event = new SDKEvent(currTime, eventType, adMeta);
-        event.setParamsMap(map);
-        AnalyticsManager.push(event, priority);
-    }
-
+    private static final String TAG = "CVRAppGvr";
     // This is done on the GL thread because refreshViewerProfile isn't thread-safe.
     private final Runnable refreshViewerProfileRunnable =
             new Runnable() {
@@ -88,20 +71,74 @@ public final class Image360Activity extends Activity {
                 }
             };
 
-    // scheduler polls the hmd for parameters (quaternion) at regular intervals
-    private ScheduledExecutorService scheduler = Executors.newScheduledThreadPool(1);
-
-    private final Runnable hmdPollRunner = new Runnable() {
-        public void run() {
-            Log.v(TAG, "Running Scheduler");
-            Image360Activity.this.getCardboardHmdParams();
-        }
-    };
+//    private DaydreamApi daydreamApi;
+    private VrAdRequest vrAdRequest;
+    static {
+        System.loadLibrary("gvr");
+        System.loadLibrary("gvr_audio");
+        System.loadLibrary("appcardboard");
+    }
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         Log.d(TAG, "onCreate");
+
+//        this.daydreamApi = DaydreamApi.create(this);
+
+        ChymeraVrSdk.initialize(this, "89ec2db1-284e-44af-968e-0618103f89c8");
+
+        this.image360TestAd = new Image360Ad(this, new VrAdListener() {
+            @Override
+            public void onVrAdLoaded() {
+            }
+
+            @Override
+            public void onVrAdLoadFailed(VrAdRequest.Error error, String errorReason) {
+            }
+
+            @Override
+            public void onVrAdOpened() {
+            }
+
+            @Override
+            public void onVrAdClosed() {
+            }
+        });
+        //this.image360TestAd.setDaydreamApi(this.daydreamApi);
+        this.image360TestAd.setPlacementId("3efc7f15-33a6-4480-bb71-3bd74aca4f1f");
+
+        final String PROVIDER = "flp";
+        final double lat = 37.377166;
+        final double lng = -122.086966;
+        final float accuracy = 3.0f;
+
+         /* From input arguments, create a single Location with provider set to
+         * "flp"*/
+
+        // Create a new Location
+        Location newLocation = new Location(PROVIDER);
+        newLocation.setLatitude(lat);
+        newLocation.setLongitude(lng);
+        newLocation.setAccuracy(accuracy);
+
+        Location location = newLocation;
+
+        String date = 1989 + "/" + 7 + "/" + 15;
+        SimpleDateFormat formatter = new SimpleDateFormat("yyyy/MM/dd");
+        Date dob = new Date();
+        try {
+            dob = formatter.parse(date);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        vrAdRequest = VrAdRequest.builder()
+                .location(location)
+                .birthday(dob)
+                .gender(VrAdRequest.Gender.MALE).build();
+
+
+        this.image360TestAd.loadAd(vrAdRequest);
 
         // Ensure fullscreen immersion.
         setImmersiveSticky();
@@ -117,29 +154,13 @@ public final class Image360Activity extends Activity {
                             }
                         });
 
-        // get app file path
-        String basePath = this.getFilesDir().getAbsolutePath();
-
-        // Fetch url to show when user clicks
-        Intent intent = getIntent();
-        this.clickUrl = intent.getStringExtra("clickUrl");
-
-        String imageAdFilePath = intent.getStringExtra("imageAdFilePath");
-
-        this.instanceId = intent.getIntExtra("instanceId", -1);
-        this.servingId = intent.getStringExtra("servingId");
-        this.returningClassName = intent.getStringExtra("returningClass");
-
         // Initialize GvrLayout and the native renderer.
         gvrLayout = new GvrLayout(this);
-        nativeImage360ActivityHandle =
+        nativeTreasureHuntRenderer =
                 nativeCreateRenderer(
                         getClass().getClassLoader(),
                         this.getApplicationContext(),
-                        gvrLayout.getGvrApi().getNativeGvrContext(), basePath, imageAdFilePath);
-
-
-        nativeOnStart(nativeImage360ActivityHandle);
+                        gvrLayout.getGvrApi().getNativeGvrContext());
 
         // Add the GLSurfaceView to the GvrLayout.
         surfaceView = new GLSurfaceView(this);
@@ -150,12 +171,7 @@ public final class Image360Activity extends Activity {
                 new GLSurfaceView.Renderer() {
                     @Override
                     public void onSurfaceCreated(GL10 gl, EGLConfig config) {
-                        Log.d(TAG, "GL Surface Created");
-                        Image360Activity.this.emitEvent(EventType.AD_SHOW, AnalyticsManager.Priority.HIGH, null);
-
-                        nativeInitializeGl(nativeImage360ActivityHandle);
-
-                        scheduler.scheduleAtFixedRate(hmdPollRunner, Config.hmdSamplingDelay, Config.hmdSamplingPeriod, TimeUnit.SECONDS);
+                        nativeInitializeGl(nativeTreasureHuntRenderer);
                     }
 
                     @Override
@@ -164,13 +180,14 @@ public final class Image360Activity extends Activity {
 
                     @Override
                     public void onDrawFrame(GL10 gl) {
-                        // call native draw function
-                        nativeDrawFrame(nativeImage360ActivityHandle);
 
-                        if(nativeCloseAd(nativeImage360ActivityHandle)){
-//                            Log.d(TAG, "Gazing at the close button");
-                            Image360Activity.this.finish();
+                        if(nativeStartAd(nativeTreasureHuntRenderer) && !isShowing){
+                            image360TestAd.show();
+                            image360TestAd.loadAd(vrAdRequest);
+                            isShowing = true;
                         }
+                        nativeDrawFrame(nativeTreasureHuntRenderer);
+
                     }
                 });
         surfaceView.setOnTouchListener(
@@ -180,14 +197,14 @@ public final class Image360Activity extends Activity {
                         if (event.getAction() == MotionEvent.ACTION_DOWN) {
                             // Give user feedback and signal a trigger event.
                             ((Vibrator) getSystemService(Context.VIBRATOR_SERVICE)).vibrate(50);
-                            // int keyEventResult = nativeOnTriggerEvent(nativeImage360ActivityHandler);
+                            nativeOnTriggerEvent(nativeTreasureHuntRenderer);
                             return true;
                         }
                         return false;
                     }
                 });
-
         gvrLayout.setPresentationView(surfaceView);
+        this.fadeImage = new ImageView(this);
 
         // Add the GvrLayout to the View hierarchy.
         setContentView(gvrLayout);
@@ -200,7 +217,6 @@ public final class Image360Activity extends Activity {
             AndroidCompat.setSustainedPerformanceMode(this, true);
         }
 
-
         // Enable VR Mode.
         AndroidCompat.setVrModeEnabled(this, true);
 
@@ -212,7 +228,7 @@ public final class Image360Activity extends Activity {
     protected void onPause() {
         super.onPause();
         Log.d(TAG, "onPause");
-        nativeOnPause(nativeImage360ActivityHandle);
+        nativeOnPause(nativeTreasureHuntRenderer);
         gvrLayout.onPause();
         surfaceView.onPause();
     }
@@ -221,17 +237,11 @@ public final class Image360Activity extends Activity {
     protected void onResume() {
         super.onResume();
         Log.d(TAG, "onResume");
-        nativeOnResume(nativeImage360ActivityHandle);
+        nativeOnResume(nativeTreasureHuntRenderer);
         gvrLayout.onResume();
         surfaceView.onResume();
         surfaceView.queueEvent(refreshViewerProfileRunnable);
-
-        // TODO: 4/27/2017 remove hardcoded thread pool size
-        //this.scheduler = Executors.newScheduledThreadPool(1);
-        //this.scheduler.scheduleAtFixedRate(hmdPollRunner, 1, 1, TimeUnit.SECONDS);
-//        final ScheduledFuture<?> beeperHandle =
-//                scheduler.scheduleAtFixedRate(hmdPollRunner, 1, 1, SECONDS);
-
+        this.isShowing = false;
     }
 
     @Override
@@ -241,10 +251,11 @@ public final class Image360Activity extends Activity {
         // Destruction order is important; shutting down the GvrLayout will detach
         // the GLSurfaceView and stop the GL thread, allowing safe shutdown of
         // native resources from the UI thread.
-        this.emitEvent(EventType.AD_CLICK, AnalyticsManager.Priority.HIGH, null);
         gvrLayout.shutdown();
-        nativeDestroyRenderer(nativeImage360ActivityHandle);
-        this.scheduler.shutdown();
+        nativeDestroyRenderer(nativeTreasureHuntRenderer);
+//        image360TestAd.destroy();
+//        this.daydreamApi.close();
+        ChymeraVrSdk.shutdown();
     }
 
     @Override
@@ -259,17 +270,21 @@ public final class Image360Activity extends Activity {
     @Override
     public boolean dispatchKeyEvent(KeyEvent event) {
         Log.d(TAG, "dispatchKeyEvent");
-        // Avoid accidental volume key presses while the phone is in the VR headset.
+
+        Log.d(TAG, "Going to show u an ad now . . . .");
+        //this.isShowing = true;
+
         if(event.getAction() == KeyEvent.ACTION_UP){
-            return true;
+            return false;
         }
+
+//        this.image360TestAd.show();
+//        this.image360TestAd.loadAd(vrAdRequest);
+        // Avoid accidental volume key presses while the phone is in the VR headset.
         if (event.getKeyCode() == KeyEvent.KEYCODE_VOLUME_UP
                 || event.getKeyCode() == KeyEvent.KEYCODE_VOLUME_DOWN) {
             return true;
         }
-
-
-
 
         return super.dispatchKeyEvent(event);
     }
@@ -287,36 +302,8 @@ public final class Image360Activity extends Activity {
                                 | View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY);
     }
 
-    private void getCardboardHmdParams(){
-        if(this.nativeImage360ActivityHandle != 0){
-            float[] hmdParams = this.nativeGetHmdParams(this.nativeImage360ActivityHandle);
-            HashMap<String, String> hmdEyeMap = new HashMap<>();
-
-            // order in which gvr gives their quaternions - JPL format
-            String[] parameterKeys = {"qx", "qy", "qz", "qw"};
-
-            int i = 0;
-            for (String key : parameterKeys) {
-                hmdEyeMap.put(key, String.valueOf(hmdParams[i++]));
-
-            }
-            Log.d(TAG, "getCardboardHmdParams: "
-                    + hmdParams[0] + ", "
-                    + hmdParams[1] + ", "
-                    + hmdParams[2] + ", "
-                    + hmdParams[3]);
-            this.emitEvent(EventType.AD_VIEW_METRICS, AnalyticsManager.Priority.LOW, hmdEyeMap);
-        }
-    }
-
-    private void onDownloadClick(){
-        // handle what happens when user clicks on notification button
-    }
-
     private native long nativeCreateRenderer(
-            ClassLoader appClassLoader, Context context, long nativeGvrContext, String appDir, String Image360AdFileName);
-
-    private native void nativeOnStart(long nativeImage360ActivityHandler);
+            ClassLoader appClassLoader, Context context, long nativeGvrContext);
 
     private native void nativeDestroyRenderer(long nativeTreasureHuntRenderer);
 
@@ -324,11 +311,11 @@ public final class Image360Activity extends Activity {
 
     private native long nativeDrawFrame(long nativeTreasureHuntRenderer);
 
+    private native void nativeOnTriggerEvent(long nativeTreasureHuntRenderer);
+
     private native void nativeOnPause(long nativeTreasureHuntRenderer);
 
     private native void nativeOnResume(long nativeTreasureHuntRenderer);
 
-    private native float[] nativeGetHmdParams(long nativeTreasureHuntRenderer);
-
-    private native boolean nativeCloseAd(long nativeImage360ActivityHandle);
+    private native boolean nativeStartAd(long nativeTreasureHuntRenderer);
 }

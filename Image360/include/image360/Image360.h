@@ -101,7 +101,7 @@ class Image360 : public EventKeyPressListener, public EventPassiveMouseMotionLis
 
     void setIsControllerPresent(bool isControllerPresent)
     {
-        this->isControllerPresent = true;
+        this->isControllerPresent = isControllerPresent;
     }
 
     void setCloseButtonText(std::string newCloseButtonText)
