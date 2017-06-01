@@ -2,11 +2,13 @@ package com.chymeravr.adclient;
 
 import android.content.Context;
 
-import com.chymeravr.analytics.AnalyticsManager;
-import com.chymeravr.common.WebRequestQueue;
+import com.chymeravr.analytics.EventPriority;
+import com.chymeravr.schemas.eventreceiver.EventType;
 import com.chymeravr.schemas.serving.AdFormat;
 
 import org.json.JSONObject;
+
+import java.util.Map;
 
 /**
  * Created by robin_chimera on 12/6/2016.
@@ -14,9 +16,13 @@ import org.json.JSONObject;
 
 /* A fake ad class implementation for testing. this doesnt do anything*/
 public class FakeAd extends Ad {
-    public FakeAd(Context context, VrAdListener vrAdListener, AnalyticsManager analyticsManager,
-                  WebRequestQueue webRequestQueue) {
-        super(AdFormat.IMG_360, "test", context, vrAdListener, analyticsManager, webRequestQueue);
+    public FakeAd(Context context, VrAdListener vrAdListener) {
+        super(AdFormat.IMG_360, context, vrAdListener);
+    }
+
+    @Override
+    protected void emitEvent(EventType eventType, EventPriority priority, Map<String, String> map) {
+        return;
     }
 
     @Override
@@ -26,17 +32,17 @@ public class FakeAd extends Ad {
 
     @Override
     public void show() {
-
+        return;
     }
 
     @Override
-    void onAdServerResponseSuccess(JSONObject response) {
-
+    public void onAdServerResponseSuccess(JSONObject response) {
+        return;
     }
 
     @Override
-    void onMediaServerResponseSuccess() {
-
+    public void onMediaServerResponseSuccess() {
+        return;
     }
 
 

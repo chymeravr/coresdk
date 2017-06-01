@@ -27,7 +27,7 @@ import android.view.animation.AlphaAnimation;
 import android.view.animation.Animation;
 import android.widget.ImageView;
 
-import com.chymeravr.analytics.AnalyticsManager;
+import com.chymeravr.analytics.EventPriority;
 import com.chymeravr.common.Config;
 import com.chymeravr.schemas.eventreceiver.EventType;
 import com.chymeravr.schemas.eventreceiver.RuntimeAdMeta;
@@ -126,12 +126,12 @@ public final class Image360Activity extends Activity implements SurfaceHolder.Ca
         }
     }
 
-    public void emitEvent(EventType eventType, AnalyticsManager.Priority priority, HashMap<String, String> map){
+    public void emitEvent(EventType eventType, EventPriority priority, HashMap<String, String> map){
         long currTime = new Timestamp(System.currentTimeMillis()).getTime();
         RuntimeAdMeta adMeta = new RuntimeAdMeta(this.getServingId(), this.getInstanceId());
         SDKEvent event = new SDKEvent(currTime, eventType, adMeta);
         event.setParamsMap(map);
-        AnalyticsManager.push(event, priority);
+        ChymeraVrSdk.getAnalyticsManager().push(event, priority);
     }
 
     @Override
@@ -203,7 +203,7 @@ public final class Image360Activity extends Activity implements SurfaceHolder.Ca
     @Override
     protected void onStop() {
         Log.d(TAG, "onStop()");
-        this.emitEvent(EventType.AD_CLOSE, AnalyticsManager.Priority.HIGH, null);
+        this.emitEvent(EventType.AD_CLOSE, EventPriority.HIGH, null);
         super.onStop();
         this.onStopNative(this.mNativeHandle);
     }
@@ -219,7 +219,7 @@ public final class Image360Activity extends Activity implements SurfaceHolder.Ca
     public void surfaceCreated(SurfaceHolder holder) {
         Log.d(TAG, "ActivityGearVR::onSurfaceCreated()");
 
-        this.emitEvent(EventType.AD_SHOW, AnalyticsManager.Priority.HIGH, null);
+        this.emitEvent(EventType.AD_SHOW, EventPriority.HIGH, null);
         if (this.mNativeHandle != 0) {
             onSurfaceCreatedNative(this.mNativeHandle, holder.getSurface());
             this.mSurfaceHolder = holder;
@@ -227,8 +227,8 @@ public final class Image360Activity extends Activity implements SurfaceHolder.Ca
             // schedule polling for hmd parameters
             // TODO: 4/27/2017 remove hardcoded pool size 
             this.scheduler = Executors.newScheduledThreadPool(1);
-            scheduler.scheduleAtFixedRate(hmdPollRunner, Config.hmdSamplingDelay,
-                    Config.hmdSamplingPeriod, TimeUnit.SECONDS);
+            scheduler.scheduleAtFixedRate(hmdPollRunner, Config.getHmdSamplingDelay(),
+                    Config.getHmdSamplingDelay(), TimeUnit.SECONDS);
         }
     }
 
@@ -368,7 +368,7 @@ public final class Image360Activity extends Activity implements SurfaceHolder.Ca
                 hmdEyeMap.put(key, String.valueOf(hmdParams[i++]));
             }
 
-            this.emitEvent(EventType.AD_VIEW_METRICS, AnalyticsManager.Priority.LOW, hmdEyeMap);
+            this.emitEvent(EventType.AD_VIEW_METRICS, EventPriority.LOW, hmdEyeMap);
         }
     }
 

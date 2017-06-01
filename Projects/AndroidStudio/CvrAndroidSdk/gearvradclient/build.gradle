@@ -1,6 +1,9 @@
 apply plugin: 'com.android.library'
-//apply from: "${rootProject.rootDir}/fat-aar.gradle"
 apply from: "${rootProject.rootDir}/build_release_aar.gradle"
+apply from: "${rootProject.rootDir}/build_releaseDemo_aar.gradle"
+
+apply plugin: 'maven-publish'
+apply from: "${rootProject.rootDir}/gradle-mvn-push.gradle"
 
 def ovrMobileModule = "${rootProject.rootDir}/ovr_sdk_mobile"
 def distributionDir = "${rootProject.rootDir}/distribution"
@@ -11,15 +14,15 @@ android {
     compileSdkVersion project.getCompileSdkVersion()
     buildToolsVersion project.getBuildToolsVersion()
     
-    defaultConfig.with {
+    defaultConfig {
         // minSdkVersion = 23
         // targetSdkVersion = 25
         minSdkVersion getMinSdkVersion(project.hmd)
         targetSdkVersion getTargetSdkVersion()    
-        versionCode = 1
-        versionName = "1.0"
+        versionCode 1
+        versionName "1.0"
 
-//            defaultPublishConfig 'debug'
+        // defaultPublishConfig 'debug'
         publishNonDefault true
 
         testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
@@ -47,31 +50,71 @@ android {
     }
 
     buildTypes {
-        debug {
+        def BOOLEAN = "boolean"
+        def TRUE = "true"
+        def FALSE = "false"
+        def NETWORK_ENABLED = "NETWORK_ENABLED"
+
+        debugDemo {
+            buildConfigField BOOLEAN, NETWORK_ENABLED, FALSE
             minifyEnabled false
-            debuggable true
+            jniDebuggable true
+            // minifyEnabled true
+            // debuggable false
+            // proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
         }
-        release {
+
+        debug {
+            buildConfigField BOOLEAN, NETWORK_ENABLED, TRUE
             minifyEnabled false
+            jniDebuggable true
+            // minifyEnabled true
+            // debuggable false
+            // proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
+        }
+
+        releaseDemo {
+            buildConfigField BOOLEAN, NETWORK_ENABLED, FALSE
+            minifyEnabled true
             debuggable false
-            //proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
+            proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
+        }
+
+        release {
+            buildConfigField BOOLEAN, NETWORK_ENABLED, TRUE
+            minifyEnabled true
+            debuggable false
+            proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
         }
     }
 
     sourceSets{
-        debug {
-                jniLibs.srcDirs = ["${distributionDir}/soil/release", "${distributionDir}/coreEngine/debug/",
+        def debugLibs = ["${distributionDir}/soil/release", "${distributionDir}/coreEngine/debug/",
                                    "${distributionDir}/glImplementation/debug", "${distributionDir}/libjpeg/release",
                                    "${distributionDir}/image360/debug", "${distributionDir}/gearvrimplementation/debug",
                                    "${ovrMobileModule}/VrApi/Libs/Android/armeabi-v7a/Release/", "${distributionDir}/freetype/release"]
 
-        }
-        release {
-                jniLibs.srcDirs = ["${distributionDir}/soil/release", "${distributionDir}/coreEngine/release",
+        def releaseLibs = ["${distributionDir}/soil/release", "${distributionDir}/coreEngine/release",
                                    "${distributionDir}/glImplementation/release", "${distributionDir}/libjpeg/release",
                                    "${distributionDir}/image360/release", "${distributionDir}/gearvrimplementation/release",
                                    "${distributionDir}/freetype/release"]
 
+
+        debug {
+            jniLibs.srcDirs = debugLibs
+            assets.srcDirs = ['src/main/assets']
+        }
+        debugDemo {
+            jniLibs.srcDirs = debugLibs
+            assets.srcDirs = ['src/main/assets', 'src/main/demo/assets/']
+        }
+        release {
+            jniLibs.srcDirs = releaseLibs
+            assets.srcDirs = ['src/main/assets']
+        }
+        releaseDemo {
+            jniLibs.srcDirs = releaseLibs
+            assets.srcDirs = ['src/main/assets', 'src/main/demo/assets/']
         }
     }
 
@@ -101,34 +144,65 @@ dependencies {
     compile 'org.projectlombok:lombok:1.16.12'
     compile 'javax.annotation:javax.annotation-api:1.2'
 
+    embeddedDemo project(':common')
+    embeddedDemo project(':analytics')
+    embeddedDemo project(':adclient')
 
     embedded project(':common')
     embedded project(':analytics')
     embedded project(':adclient')
 }
 
-//task copyVrApiLib(type: Copy) {
-//    from "${ovrMobileModule}/VrApi/Libs/Android/armeabi-v7a/Release/libvrapi.so"
-//    into "${distributionDir}/ovrApi/armeabi-v7a"
-//}
-
-//task clean(type: Delete) {
-//    delete "${rootProject.rootDir}/adclient/build"
-//    delete fileTree(dir: 'libs', include: ['*.a', '*.so'])
-//}
 
 tasks.whenTaskAdded { task ->
     if (task.name.contains('compileDebug')) {
-        task.dependsOn([':coreEngine:distributeDebugLib', ':glImplementation:distributeDebugLib',
+        task.dependsOn([':coreEngine:distributeDebugLib',
+                        ':glImplementation:distributeDebugLib',
                         ':image360:distributeDebugLib',
-                        ':soil:distributeReleaseLib', ':libjpeg:distributeReleaseLib',
-                        ':gearvrimplementation:distributeDebugLib',':freetype:distributeReleaseLib'])
+                        ':soil:distributeReleaseLib',
+                        ':libjpeg:distributeReleaseLib',
+                        ':gearvrimplementation:distributeDebugLib',
+                        ':freetype:distributeReleaseLib'])
     } else if (task.name.contains('compileRelease')) {
-        task.dependsOn([':coreEngine:distributeReleaseLib', ':glImplementation:distributeReleaseLib',
+        task.dependsOn([':coreEngine:distributeReleaseLib',
+                        ':glImplementation:distributeReleaseLib',
                         ':image360:distributeReleaseLib',
                         ':gearvrimplementation:distributeReleaseLib',
                         ':soil:distributeReleaseLib',
                         ':libjpeg:distributeReleaseLib',
                         ':freetype:distributeReleaseLib' ])
+    }
+}
+
+
+
+// To publish to maven local execute "gradle clean build publishToMavenLocal"
+// To publish to nexus execute "gradle clean build publish"
+android.libraryVariants
+publishing {
+    publications {
+        maven(MavenPublication) {
+            artifact "${project.buildDir}/outputs/aar/${project.name}-release.aar"
+            artifactId = POM_ARTIFACT_ID
+            groupId = GROUP
+            version = VERSION_NAME
+        }
+        mavenDemo(MavenPublication) {
+            artifact "${project.buildDir}/outputs/aar/${project.name}-releaseDemo.aar"
+            artifactId = POM_ARTIFACTDEMO_ID
+            groupId = GROUP
+            version = VERSION_NAME
+        }
+    }
+
+    repositories {
+        maven {
+            credentials {
+                username NEXUS_USERNAME
+                password NEXUS_PASSWORD
+            }
+            // hack to switch between release and snapshots ~ gradle does not explicitly support this
+            url "${NEXUS_URL}/repository/gearvr-ad-client-android-${project.VERSION_NAME.endsWith('-SNAPSHOT') ? 'snapshot' : 'release'}"
+        }
     }
 }

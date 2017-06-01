@@ -3,18 +3,17 @@ include ':freetype', ':libjpeg'
 include ':coreEngine'
 include ':glImplementation'
 include ':image360'
-include ':soil' //- we moved on to libjpeg
-// include ':renderer' - don't think renderer is required anywhere in android
+include ':soil' //- we moved on to libjpeg ~ may not need this for release versions
 
 // common android sdk libraries
 include ':common', ':analytics', ':adclient'
 
 // Oculus VR Libraries
-//include ':ovr_sdk_mobile'
-//include ':gearvrimplementation'
-//include ':gearvradclient'
-//// sample oculus vr app to test library
-//include ':appgearvr'
+////include ':ovr_sdk_mobile' ~ this is not required
+include ':gearvrimplementation'
+include ':gearvradclient'
+// sample oculus vr app to test library
+include ':appgearvr'
 
 // Google VR Libraries
 // sample google vr app to test library
@@ -25,6 +24,6 @@ include ':common', ':analytics', ':adclient'
 //include ':daydreamadclient'
 
 // cardboardadclient
-include ':appcardboard'
-include ':cardboardimplementation'
-include ':cardboardadclient'
+//include ':appcardboard'
+//include ':cardboardimplementation'
+//include ':cardboardadclient'

@@ -3,6 +3,7 @@ package com.chymeravr.common;
 import android.Manifest;
 import android.content.Context;
 import android.content.pm.PackageManager;
+
 import android.support.v4.content.ContextCompat;
 import android.util.Log;
 
@@ -28,7 +29,7 @@ public class Util {
                     Manifest.permission.ACCESS_NETWORK_STATE));
 
     /* a generic boolean test for whether system resource is available to the SDK */
-    private static boolean isResourceAccessPermitted(@NonNull Context context, String permission) {
+    static boolean isResourceAccessPermitted(@NonNull Context context, String permission) {
         int accessResource = ContextCompat.checkSelfPermission(context, permission);
         return PackageManager.PERMISSION_GRANTED == accessResource;
     }

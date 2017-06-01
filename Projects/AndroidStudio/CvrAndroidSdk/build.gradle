@@ -31,7 +31,7 @@ buildscript {
         //      - daydream
         //      - cardboard
         //      - gearvr
-        hmd = "cardboard"
+        hmd = "gearvr"
 
         // hmdBuild acts as an enum type to represent various architectures we are building for
         // to stop building all architectures during development with pixel, we only use
@@ -44,7 +44,7 @@ buildscript {
         // "googleVrS6" : build only for Samsung S6 - armeabi-v7a - test device for cardboard
         // "samsungGearVr" : build only for Samsung S6 - armeabi-v7a     - test device for Oculus Samsung GearVr
 
-        hmdBuild = "googleVrPixel"
+        hmdBuild = "samsungGearVr"
 
         // google vr architextures for various configurations
         googleVrAllArch = ["arm64-v8a", "armeabi-v7a", "x86"]

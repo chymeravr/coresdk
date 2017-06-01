@@ -1,5 +1,5 @@
 
-package com.chymeravr.appovrm;
+package com.chymeravr.appgearvr;
 
 import android.app.Activity;
 import android.view.Surface;

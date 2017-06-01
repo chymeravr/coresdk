@@ -2,16 +2,10 @@ package com.chymeravr.adclient;
 
 import android.content.Context;
 
-import com.chymeravr.analytics.AnalyticsManager;
-import com.chymeravr.common.WebRequestQueue;
+import com.chymeravr.analytics.EventPriority;
 import com.chymeravr.schemas.eventreceiver.EventType;
-import com.chymeravr.schemas.eventreceiver.RuntimeAdMeta;
-import com.chymeravr.schemas.eventreceiver.SDKEvent;
 import com.chymeravr.schemas.serving.AdFormat;
 
-import org.json.JSONObject;
-
-import java.sql.Timestamp;
 import java.util.Map;
 
 import lombok.Getter;
@@ -30,6 +24,10 @@ public abstract class Ad {
     @Getter
     @NonNull
     private final AdFormat adFormat;
+
+    @Getter
+    @Setter
+    private String advertisingId;
 
     @Getter
     @Setter
@@ -53,12 +51,9 @@ public abstract class Ad {
 
     @Getter
     @Setter
-    private String mediaUrl;
-
-    @Getter
-    @Setter
     private String clickUrl;
 
+    // these variables needed to be guarded by a lock & synchronized at all times
     @Getter
     @Setter
     private volatile boolean isLoading = false;
@@ -67,26 +62,12 @@ public abstract class Ad {
     @Setter
     private volatile boolean isLoaded = false;
 
-    @Getter
-    private final AnalyticsManager analyticsManager;
-
-    @Getter
-    private final WebRequestQueue webRequestQueue;
-
-
-    protected void emitEvent(EventType eventType, AnalyticsManager.Priority priority, Map<String, String> map){
-        long currTime = new Timestamp(System.currentTimeMillis()).getTime();
-        RuntimeAdMeta adMeta = new RuntimeAdMeta(this.getServingId(), this.getInstanceId());
-        SDKEvent event = new SDKEvent(currTime, eventType, adMeta);
-        event.setParamsMap(map);
-        this.getAnalyticsManager().push(event, priority);
-    }
+    // below member functions have to be implemented by other derived classes
+    protected abstract void emitEvent(EventType eventType, EventPriority priority,
+                                      Map<String, String> map);
 
     public abstract void loadAd(VrAdRequest vrAdRequest);
 
     public abstract void show();
 
-    public abstract void onAdServerResponseSuccess(JSONObject response);
-
-    public abstract void onMediaServerResponseSuccess();
 }

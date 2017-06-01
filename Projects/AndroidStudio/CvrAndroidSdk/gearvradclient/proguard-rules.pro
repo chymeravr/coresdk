@@ -15,47 +15,61 @@
 #-keepclassmembers class fqcn.of.javascript.interface.for.webview {
 #   public *;
 #}
+#-keep public class com.chymeravr.adclient.* {
+#    public <methods>;
+#}
 
--keep class com.chymeravr.adclient.VrAdRequest{*;}
+##### THIS IS NOW DEPRECATED ~ DELETE NEXT ITER #####
+#-keep public class com.chymeravr.adclient.Ad {
+#    public <methods>;
+#    protected <methods>;
+#}
+#
+#-keepclassmembers class * extends java.lang.Enum {
+#    <fields>;
+#    public static **[] values();
+#    public static ** valueOf(java.lang.String);
+#}
+#
+#-keep public class com.chymeravr.analytics.* {
+#    public <methods>;
+#}
+#-keep public class com.chymeravr.common.* {
+#    public <methods>;
+#}
+#-keep public class com.chymeravr.gearvradclient.* {
+#    public <methods>;
+#}
+#
+## schemas.jar is already minified
+#-keep class com.chymeravr.schemas.** {*;}
+
+#####################################################################
+
+-keep public class com.chymeravr.gearvradclient.* {
+    public <methods>;
+}
+
+-keep public interface com.chymeravr.adclient.VrAdListener{
+    public <methods>;
+}
+
+-keep public class com.chymeravr.adclient.VrAdRequest{
+    public <methods>;
+}
+
 -keep public enum com.chymeravr.adclient.VrAdRequest$** {
     **[] $VALUES;
     public *;
 }
--keep class com.chymeravr.adclient.VrAdRequest$AdRequestBuilder{*;}
--keep class com.chymeravr.adclient.Image360Ad{*;}
--keep class com.chymeravr.adclient.ChymeraVrSdk{*;}
--keep interface com.chymeravr.adclient.AdListener{*;}
 
-# Activity classes are automatically kept
+-keepattributes InnerClasses
 
-#-keep class     android.** {*;}
-#-keep interface android.** {*;}
-#-keep enum      android.** {*;}
+-keep public class com.chymeravr.adclient.VrAdRequest$VrAdRequestBuilder {
+    public <methods>;
+}
 
-#-keep class     java.** {*;}
-#-keep interface java.** {*;}
-#-keep enum      java.** {*;}
+# schemas.jar is already minified
+-keep class com.chymeravr.schemas.** {*;}
 
-#-keep class     com.android.** {*;}
-#-keep interface com.android.** {*;}
-#-keep enum      com.android.** {*;}
-
-#-keep class     org.mockito.** {*;}
-#-keep interface org.mockito.** {*;}
-#-keep enum      org.mockito.** {*;}
-
-#-keep class     com.google.** {*;}
-#-keep interface com.google.** {*;}
-#-keep enum      com.google.** {*;}
-
-#-keep class     org.projectlombok.** {*;}
-#-keep interface org.projectlombok.** {*;}
-#-keep enum      org.projectlombok.** {*;}
-
-#-keep class     org.apache.** {*;}
-#-keep interface org.apache.** {*;}
-#-keep enum      org.apache.** {*;}
-
-#-keep class     javax.annotation.** {*;}
-#-keep interface javax.annotation.** {*;}
-#-keep enum      javax.annotation.** {*;}
+-keep class com.chymeravr.gearvradclient.BuildConfig { *; }

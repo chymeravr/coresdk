@@ -10,13 +10,11 @@ import android.support.test.runner.AndroidJUnit4;
 
 import com.android.volley.Request;
 import com.chymeravr.common.WebRequestQueue;
+import com.chymeravr.schemas.eventreceiver.SDKEvent;
 
 import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-
-import java.sql.Timestamp;
-import java.util.HashMap;
 
 import static junit.framework.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
@@ -44,16 +42,16 @@ public class ArrayEventQueueTest {
         WebRequestQueue requestQueue = mock(WebRequestQueue.class);
         doNothing().when(requestQueue).addToRequestQueue(any(Request.class));
 
-        ArrayEventQueue eventQueue = new ArrayEventQueue(4, requestQueue);
+        ArrayEventQueue eventQueue = new ArrayEventQueue(requestQueue, 4, "test");
 
         assertEquals(eventQueue.getCurrentSize(), 0);
-        Event m1 = eventGenerator(1);
+        SDKEvent m1 = new SDKEvent();
         eventQueue.enqueue(m1);
-        Event m2 = eventGenerator(2);
+        SDKEvent m2 = new SDKEvent();
         eventQueue.enqueue(m2);
-        Event m3 = eventGenerator(3);
+        SDKEvent m3 = new SDKEvent();
         eventQueue.enqueue(m3);
-        Event m4 = eventGenerator(4);
+        SDKEvent m4 = new SDKEvent();
         eventQueue.enqueue(m4);
         assertEquals(eventQueue.getCurrentSize(), 4);
     }
@@ -63,12 +61,12 @@ public class ArrayEventQueueTest {
         WebRequestQueue requestQueue = mock(WebRequestQueue.class);
         doNothing().when(requestQueue).addToRequestQueue(any(Request.class));
 
-        ArrayEventQueue eventQueue = new ArrayEventQueue(4, requestQueue);
+        ArrayEventQueue eventQueue = new ArrayEventQueue(requestQueue, 4, "Test");
 
         Assert.assertEquals(eventQueue.getSize(), 4);
-        Event m1 = eventGenerator(1);
+        SDKEvent m1 = new SDKEvent();
         eventQueue.enqueue(m1);
-        Event m2 = eventGenerator(2);
+        SDKEvent m2 = new SDKEvent();
         eventQueue.enqueue(m2);
         eventQueue.reSize(10);
         Assert.assertEquals(eventQueue.getCurrentSize(), 0);
@@ -81,15 +79,15 @@ public class ArrayEventQueueTest {
         doNothing().when(requestQueue).addToRequestQueue(any(Request.class));
 
 
-        ArrayEventQueue messageQueue = new ArrayEventQueue(4, requestQueue);
+        ArrayEventQueue messageQueue = new ArrayEventQueue(requestQueue, 4, "Test");
 
-        Event m1 = eventGenerator(1);
+        SDKEvent m1 = new SDKEvent();
         messageQueue.enqueue(m1);
-        Event m2 = eventGenerator(2);
-        messageQueue.enqueue(m1);
-        Event m3 = eventGenerator(3);
+        SDKEvent m2 = new SDKEvent();
+        messageQueue.enqueue(m2);
+        SDKEvent m3 = new SDKEvent();
         messageQueue.enqueue(m3);
-        Event m4 = eventGenerator(4);
+        SDKEvent m4 = new SDKEvent();
         messageQueue.enqueue(m4);
 
         messageQueue.flush();
@@ -97,12 +95,4 @@ public class ArrayEventQueueTest {
         assertEquals(messageQueue.getCurrentSize(), 0);
     }
 
-    private Event eventGenerator(int var){
-        Timestamp timestamp = new Timestamp(System.currentTimeMillis());
-        HashMap<String, Object> params = new HashMap<>();
-        params.put("dummy", "dummy" + var);
-        Event dummyEvent = new Event(timestamp.getTime(), Event.EventType.AD_REQUEST, Event.Priority.HIGH, "test-serving-id");
-        dummyEvent.setParams(params);
-        return dummyEvent;
-    }
 }

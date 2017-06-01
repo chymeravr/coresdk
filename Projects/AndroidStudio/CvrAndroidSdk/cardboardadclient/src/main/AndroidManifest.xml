@@ -20,6 +20,7 @@
 
             <!-- Intent filter that enables this app to be launched from the
                  Cardboard app and from the traditional launcher. -->
+            <!--TODO : maybe we dont need this for a library activity-->
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
                 <category android:name="android.intent.category.LAUNCHER" />

@@ -1,5 +1,5 @@
 
-package com.chymeravr.appovrm;
+package com.chymeravr.appgearvr;
 
 import android.app.Activity;
 import android.content.Context;
@@ -30,7 +30,7 @@ public class GLES3JNIActivity extends Activity implements SurfaceHolder.Callback
 	// Load the gles3jni library right away to make sure JNI_OnLoad() gets called as the very first thing.
 	static
 	{
-		System.loadLibrary( "appovrm" );
+		System.loadLibrary( "appgearvr" );
 
 	}
 
@@ -57,7 +57,7 @@ public class GLES3JNIActivity extends Activity implements SurfaceHolder.Callback
 		Log.v( TAG, "----------------------------------------------------------------" );
 		Log.v( TAG, "GLES3JNIActivity::onCreate()" );
 		super.onCreate( icicle );
-        setContentView(com.chymeravr.appovrm.R.layout.gl_context);
+        setContentView(com.chymeravr.appgearvr.R.layout.gl_context);
 
         ChymeraVrSdk.initialize(this, "89ec2db1-284e-44af-968e-0618103f89c8");
 
@@ -113,9 +113,9 @@ public class GLES3JNIActivity extends Activity implements SurfaceHolder.Callback
         this.image360TestAd.loadAd(vrAdRequest);
 
 
-		mView = (SurfaceView) findViewById(com.chymeravr.appovrm.R.id.mView);//new SurfaceView( this );
+		mView = (SurfaceView) findViewById(com.chymeravr.appgearvr.R.id.mView);//new SurfaceView( this );
 
-        fadeImage = (ImageView)findViewById(com.chymeravr.appovrm.R.id.fadeview);
+        fadeImage = (ImageView)findViewById(com.chymeravr.appgearvr.R.id.fadeview);
 
         //setContentView( mView );
 		mView.getHolder().addCallback( this );

@@ -10,9 +10,11 @@ import com.android.volley.Response;
 import com.android.volley.VolleyError;
 import com.android.volley.toolbox.JsonObjectRequest;
 import com.chymeravr.analytics.AnalyticsManager;
+import com.chymeravr.analytics.AnalyticsManagerFactory;
 import com.chymeravr.common.Config;
 import com.chymeravr.common.Util;
 import com.chymeravr.common.WebRequestQueue;
+import com.chymeravr.common.WebRequestQueueFactory;
 
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -34,7 +36,7 @@ import static com.chymeravr.common.Util.createDir;
 /**
  * Created by robin_chimera on 11/28/2016.
 
- * Sets up the SDK for sending and receiving Ad Requests & Response.
+ * Sets up the SDK for sending and receiving Ad Requests and Response.
  * Client Activity must initialize this class by calling the initialize
  * method before creating ads; Failure to do so will result in inability to
  * monetize their application
@@ -62,13 +64,15 @@ public final class ChymeraVrSdk {
     @Setter(AccessLevel.PACKAGE)
     private static String advertisingId;
 
-    @Getter
-    private AnalyticsManager analyticsManager;
+    @Getter(AccessLevel.MODULE)
+    private static AnalyticsManager analyticsManager;
 
-    @Getter
-    private WebRequestQueue webRequestQueue;
+    @Getter(AccessLevel.MODULE)
+    private static WebRequestQueue webRequestQueue;
 
-    @Getter
+    private static boolean isInitialized = false;
+
+    //@Getter
     private static final ChymeraVrSdk sdkInstance = new ChymeraVrSdk();
 
     private ChymeraVrSdk() {
@@ -76,10 +80,16 @@ public final class ChymeraVrSdk {
 
     /* Correctly set up Context, verify appCode, check for required permissions*/
     public static void initialize(final Context context, final String applicationId) {
-
+        if(isInitialized){
+            Log.i(TAG, "SDK already initialized. Ignore request.");
+            return;
+        }
         setApplicationId(applicationId);
 
-        copyAssets(context);
+        copyAssets(context, Config.getFontDir());
+        if(!BuildConfig.NETWORK_ENABLED) {
+            copyAssets(context, Config.getImage360Dir());
+        }
         /* Check whether client has granted the mandatory permissions for this SDK to function
             We need internet and network state
         */
@@ -91,22 +101,27 @@ public final class ChymeraVrSdk {
         }
 
 
-        if (VERSION.SDK_INT < Config.androidVersionNo) {
+        if (VERSION.SDK_INT < Config.getGearVrAndroidVersionNo()) {
             Log.e(TAG, "ChymeraVR Ad Client SDK is only available with Android Version "
-                    + Config.androidVersionNo + " or higher. " + "SDK initialization failed!");
+                    + Config.getGearVrAndroidVersionNo() + " or higher. "
+                    + "SDK initialization failed!");
             return;
         } else {
             Log.i(TAG, "Version Check Succeeded! " + VERSION.SDK_INT);
         }
 
         // initialize volley asynchronous request queue
-        sdkInstance.webRequestQueue = WebRequestQueue.setInstance(context);
+        WebRequestQueueFactory webFactory = new WebRequestQueueFactory(context);
+        webRequestQueue = webFactory.getDefaultWebRequestQueue();
 
         // Get configuration options from server
-        fetchSdkConfig(sdkInstance.webRequestQueue);
+        fetchSdkConfig(webRequestQueue);
 
-        sdkInstance.analyticsManager = AnalyticsManager.getInstance(sdkInstance.webRequestQueue, applicationId);
-        AnalyticsManager.initialize();
+        AnalyticsManagerFactory analyticsManagerFactory =
+                new AnalyticsManagerFactory(webRequestQueue, applicationId);
+        analyticsManager = analyticsManagerFactory.getArrayQAnalyticsManager();
+
+        analyticsManager.initialize();
 
         Log.i(TAG, "SDK successfully initialized");
 
@@ -114,13 +129,18 @@ public final class ChymeraVrSdk {
 
     public static void shutdown(){
         // Shutdown must be called after intialize to release any allocated resources
+        if(!isInitialized){
+            Log.i(TAG, "SDK not initialized");
+            return;
+        }
         Log.i(TAG, "Shutting down ChymerVrSdk. Goodbye!");
-        AnalyticsManager.shutdown();
+        analyticsManager.shutdown();
+        isInitialized = false;
     }
 
     private static void fetchSdkConfig(WebRequestQueue requestQueue){
         JsonObjectRequest jsonRequest = new JsonObjectRequest(Request.Method.GET,
-                Config.configServer, null,
+                Config.getConfigServer(), null,
                 new Response.Listener<JSONObject>() {
                     @Override
                     public void onResponse(final JSONObject response) {
@@ -138,7 +158,7 @@ public final class ChymeraVrSdk {
                             Log.e(TAG, "Error parsing Server Config response : ", e);
                         }
 
-                        AnalyticsManager.reConfigure();
+                        analyticsManager.reConfigure();
                     }
                 },
                 new Response.ErrorListener() {
@@ -156,66 +176,56 @@ public final class ChymeraVrSdk {
         requestQueue.addToRequestQueue(jsonRequest);
     }
 
-    private static void copyAssets(Context context) {
-        AssetManager assetManager = context.getApplicationContext().getAssets();
-        String[] files = null;
-        String[] assets = new String[2];
-        assets[0] = "fonts";
-        assets[1] = "image360";
+    // this should probably be util functions
+    private static boolean copyAssets(Context context, String assetDir) {
+        AssetManager assetManager = context.getAssets();
+        String[] files;
 
         try {
-            String[] contents = assetManager.list("/");
-            for(String content : contents){
-                Log.i(TAG, "Content : " + content);
-            }
-        }catch(IOException e){
-
+            files = assetManager.list(assetDir);
+        } catch (IOException e) {
+            Log.e(TAG, "Failed to get asset file list.", e);
+            return false;
         }
-        for(String folderName : assets) {
+        Log.i(TAG, "File String Lenght : " + String.valueOf(files.length));
+        for (String filename : files) {
+            Log.i(TAG, "Processing file : " + filename);
+            InputStream in;
+            OutputStream out;
             try {
-                files = assetManager.list(folderName);
-                Log.i(TAG, "Files : " + files.length);
-            } catch (IOException e) {
-                Log.e(TAG, "Failed to get asset file list.", e);
-                break;
-            }
-            for (String filename : files) {
-                InputStream in = null;
-                OutputStream out = null;
-                try {
 
-                    File appPath = context.getFilesDir();
-                    String appSdkPath = appPath + Util.addLeadingSlash(Config.getChymeraFolder())
-                            + Util.addLeadingSlash(folderName);
-                    File dest_dir = new File(appSdkPath);
+                File appPath = context.getFilesDir();
+                String appSdkPath = appPath + Util.addLeadingSlash(Config.getChymeraFolder())
+                        + Util.addLeadingSlash(assetDir);
+                File dest_dir = new File(appSdkPath);
 
-                    if(!dest_dir.exists()) {
-                        createDir(dest_dir);
-                    }
-
-                    File outFile = new File(dest_dir, filename);
-                    Log.i(TAG, "Absolute font file path : " + outFile.getAbsolutePath());
-
-                    if(!outFile.exists()) {
-                        in = assetManager.open(folderName + "/" + filename);
-                        out = new FileOutputStream(outFile);
-                        copyFile(in, out);
-
-                        in.close();
-
-                        out.flush();
-                        out.close();
-                    }
-                    Log.i(TAG, "Copied image360 files " + " Successfully to : " + dest_dir + "/" + filename);
-                } catch (IOException e) {
-                    Log.e(TAG, "Failed to copy asset file: " + filename, e);
+                if(!dest_dir.exists()) {
+                    createDir(dest_dir);
                 }
+
+                File outFile = new File(dest_dir, filename);
+                Log.i(TAG, "Absolute file path : " + outFile.getAbsolutePath());
+
+                if(!outFile.exists()) {
+                    in = assetManager.open(assetDir + "/" + filename);
+                    out = new FileOutputStream(outFile);
+                    copyFile(in, out);
+
+                    in.close();
+
+                    out.flush();
+                    out.close();
+                }
+            } catch (IOException e) {
+                Log.e(TAG, "Failed to copy asset file: " + filename, e);
+                return false;
             }
-            Log.i(TAG, "copied assets : " + folderName);
         }
 
-
+        Log.i(TAG, "Copied " + assetDir + " Successfully");
+        return true;
     }
+
     private static void copyFile(InputStream in, OutputStream out) throws IOException {
         byte[] buffer = new byte[1024];
         int read;

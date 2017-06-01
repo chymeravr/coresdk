@@ -29,10 +29,8 @@ import android.view.WindowManager;
 
 import com.chymeravr.adclient.VrAdListener;
 import com.chymeravr.adclient.VrAdRequest;
-//import com.chymeravr.daydreamadclient.ChymeraVrSdk;
-//import com.chymeravr.daydreamadclient.Image360Ad;
-import com.chymeravr.cardboardadclient.ChymeraVrSdk;
-import com.chymeravr.cardboardadclient.Image360Ad;
+import com.chymeravr.daydreamadclient.ChymeraVrSdk;
+import com.chymeravr.daydreamadclient.Image360Ad;
 import com.google.vr.ndk.base.AndroidCompat;
 import com.google.vr.ndk.base.GvrLayout;
 
@@ -42,8 +40,9 @@ import java.util.Date;
 import javax.microedition.khronos.egl.EGLConfig;
 import javax.microedition.khronos.opengles.GL10;
 
+//import com.chymeravr.daydreamadclient.ChymeraVrSdk;
+//import com.chymeravr.daydreamadclient.Image360Ad;
 // cannot use daydreamapi in cardboard
-//import com.google.vr.ndk.base.DaydreamApi;
 
 /**
  * A Gvr API sample application.

@@ -1,6 +1,10 @@
 apply plugin: 'com.android.library'
 //apply from: "${rootProject.rootDir}/fat-aar.gradle"
 apply from: "${rootProject.rootDir}/build_release_aar.gradle"
+apply from: "${rootProject.rootDir}/build_releaseDemo_aar.gradle"
+
+apply plugin: 'maven-publish'
+apply from: 'https://raw.github.com/chrisbanes/gradle-mvn-push/master/gradle-mvn-push.gradle'
 
 def distributionDir = "${rootProject.rootDir}/distribution"
 
@@ -44,37 +48,77 @@ android {
         }
     }
     buildTypes {
-        debug {
+        def BOOLEAN = "boolean"
+        def TRUE = "true"
+        def FALSE = "false"
+        def NETWORK_ENABLED = "NETWORK_ENABLED"
+
+        // we minify and test
+        debugDemo {
+            buildConfigField BOOLEAN, NETWORK_ENABLED, FALSE
             minifyEnabled false
             jniDebuggable true
+//             minifyEnabled true
+//             debuggable false
+//             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
         }
-        release {
+
+        debug {
+            buildConfigField BOOLEAN, NETWORK_ENABLED, TRUE
             minifyEnabled false
+            jniDebuggable true
+//             minifyEnabled true
+//             debuggable false
+//             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
+        }
+
+        releaseDemo {
+            buildConfigField BOOLEAN, NETWORK_ENABLED, FALSE
+            minifyEnabled true
             debuggable false
-            //proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
+            proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
+        }
+
+        release {
+            buildConfigField BOOLEAN, NETWORK_ENABLED, TRUE
+            minifyEnabled true
+            debuggable false
+            proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
         }
     }
 
     sourceSets{
         // always use release version for soil, libjpeg &  freetype - they are external code
-        debug {
-            jniLibs.srcDirs = ["${distributionDir}/soil/release", "${distributionDir}/libjpeg/release",
+        def debugLibs = ["${distributionDir}/soil/release", "${distributionDir}/libjpeg/release",
                                "${distributionDir}/freetype/release",
                                 "${distributionDir}/coreEngine/debug",
                                "${distributionDir}/glImplementation/debug",
                                "${distributionDir}/image360/debug",
                                "${distributionDir}/daydreamimplementation/debug"]
 
-        }
-        release {
-            jniLibs.srcDirs = [ "${distributionDir}/soil/release", "${distributionDir}/libjpeg/release",
+
+        def releaseLibs = [ "${distributionDir}/soil/release", "${distributionDir}/libjpeg/release",
                                 "${distributionDir}/freetype/release",
                                 "${distributionDir}/coreEngine/release",
                                 "${distributionDir}/glImplementation/release",
                                 "${distributionDir}/image360/release",
-                                "${distributionDir}/daydreamimplementation/release",
-                               ]
+                                "${distributionDir}/daydreamimplementation/release"]
 
+        debug {
+            jniLibs.srcDirs = debugLibs
+            assets.srcDirs = ['src/main/assets']
+        }
+        debugDemo {
+            jniLibs.srcDirs = debugLibs
+            assets.srcDirs = ['src/main/assets', 'src/main/demo/assets/']
+        }
+        release {
+            jniLibs.srcDirs = releaseLibs
+            assets.srcDirs = ['src/main/assets']
+        }
+        releaseDemo {
+            jniLibs.srcDirs = releaseLibs
+            assets.srcDirs = ['src/main/assets', 'src/main/demo/assets/']
         }
     }
 
@@ -106,6 +150,10 @@ dependencies {
     compile 'com.google.vr:sdk-base:1.30.0'
     compile 'com.google.vr:sdk-controller:1.30.0'
 
+    embeddedDemo project(':common')
+    embeddedDemo project(':analytics')
+    embeddedDemo project(':adclient')
+
     embedded project(':common')
     embedded project(':analytics')
     embedded project(':adclient')
@@ -123,16 +171,53 @@ dependencies {
 // using debug versions of libjpeg and soil cause significant performance issues
 tasks.whenTaskAdded { task ->
     if (task.name.contains('compileDebug')) {
-        task.dependsOn([':coreEngine:distributeDebugLib', ':glImplementation:distributeDebugLib',
-                        ':image360:distributeDebugLib', ':soil:distributeReleaseLib',
+        task.dependsOn([':coreEngine:distributeDebugLib',
+                        ':glImplementation:distributeDebugLib',
+                        ':image360:distributeDebugLib',
+                        ':soil:distributeReleaseLib',
                         ':libjpeg:distributeReleaseLib',
-                        ':daydreamimplementation:distributeDebugLib',':freetype:distributeReleaseLib'])
+                        ':daydreamimplementation:distributeDebugLib',
+                        ':freetype:distributeReleaseLib'])
     } else if (task.name.contains('compileRelease')) {
-        task.dependsOn([':coreEngine:distributeReleaseLib', ':glImplementation:distributeReleaseLib',
-                        ':image360:distributeReleaseLib', ':libjpeg:distributeReleaseLib',
-                        ':daydreamimplementation:distributeReleaseLib', ':soil:distributeReleaseLib',
+        task.dependsOn([':coreEngine:distributeReleaseLib',
+                        ':glImplementation:distributeReleaseLib',
+                        ':image360:distributeReleaseLib',
+                        ':libjpeg:distributeReleaseLib',
+                        ':daydreamimplementation:distributeReleaseLib',
+                        ':soil:distributeReleaseLib',
                         ':freetype:distributeReleaseLib' ])
     }
 }
 
 build.dependsOn(':extractNdk')
+
+// To publish to maven local execute "gradle clean build publishToMavenLocal"
+// To publish to nexus execute "gradle clean build publish"
+android.libraryVariants
+publishing {
+    publications {
+        maven(MavenPublication) {
+            artifact "${project.buildDir}/outputs/aar/${project.name}-release.aar"
+            artifactId = POM_ARTIFACT_ID
+            groupId = GROUP
+            version = VERSION_NAME
+        }
+        mavenDemo(MavenPublication) {
+            artifact "${project.buildDir}/outputs/aar/${project.name}-releaseDemo.aar"
+            artifactId = POM_ARTIFACTDEMO_ID
+            groupId = GROUP
+            version = VERSION_NAME
+        }
+    }
+
+    repositories {
+        maven {
+            credentials {
+                username NEXUS_USERNAME
+                password NEXUS_PASSWORD
+            }
+            // hack to switch between release and snapshots ~ gradle does not explicitly support this
+            url "${NEXUS_URL}/repository/daydream-ad-client-android-${project.VERSION_NAME.endsWith('-SNAPSHOT') ? 'snapshot' : 'release'}"
+        }
+    }
+}

@@ -1,56 +1,14 @@
 package com.chymeravr.common;
 
-/*
- * Created by robin_chimera on 12/1/2016.
- * A singleton class to hold the request queue for Android's Volley Request Queue
- * This results in reuse of the request queue for requests - efficiency gains
+import com.android.volley.Request;
+
+/**
+ * Created by robin_chimera on 5/27/2017.
+ * a simple interface that wraps a method to add request to queue
+ * we are forcing an interface for better testing - there will only
+ * ever be one implementation of this
  */
 
-import android.content.Context;
-
-import com.android.volley.Request;
-import com.android.volley.RequestQueue;
-import com.android.volley.toolbox.Volley;
-
-import lombok.NonNull;
-
-public class WebRequestQueue {
-    private static WebRequestQueue mInstance;
-    private RequestQueue mRequestQueue;
-
-    private WebRequestQueue(@NonNull Context context) {
-        mRequestQueue = getRequestQueue(context);
-    }
-
-    public static synchronized WebRequestQueue setInstance(Context context) {
-        if (mInstance == null) {
-            mInstance = new WebRequestQueue(context);
-        }
-        return mInstance;
-    }
-
-    public static synchronized WebRequestQueue getInstance() {
-        if (mInstance == null) {
-            throw new NullPointerException("WebRequestQueue has not been initialized");
-        }
-        return mInstance;
-    }
-
-    private RequestQueue getRequestQueue(Context context) {
-        if (mRequestQueue == null) {
-            // getApplicationContext() is key, it keeps you from leaking the
-            // Activity or BroadcastReceiver if someone passes one in.
-            mRequestQueue = Volley.newRequestQueue(context.getApplicationContext());
-        }
-        return mRequestQueue;
-    }
-
-
-    public <T> void addToRequestQueue(Request<T> req) {
-        if (mRequestQueue == null){
-            throw new NullPointerException("WebRequestQueue has not been initialized");
-        }
-        mRequestQueue.add(req);
-    }
-
+public interface WebRequestQueue {
+    public <T> void addToRequestQueue(Request<T> req);
 }

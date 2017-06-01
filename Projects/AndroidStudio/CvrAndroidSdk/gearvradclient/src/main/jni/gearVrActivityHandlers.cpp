@@ -19,10 +19,10 @@
 // GLImplementation Modules
 #include <glImplementation/factory/SceneGLFactory.h>
 #include <glImplementation/factory/ModelGLFactory.h>
-#include <glImplementation/factory/opengles3/DiffuseTextureGLES3Factory.h>
-#include <glImplementation/factory/opengles3/DiffuseTextureCubeMapGLES3Factory.h>
-#include <glImplementation/factory/opengles3/UniformColorFactoryGLES3.h>
-#include <glImplementation/factory/opengles3/TextMaterialFactoryGLES3.h>
+#include <glImplementation/factory/DiffuseTextureGLFactory.h>
+#include <glImplementation/factory/DiffuseTextureCubeMapGLFactory.h>
+#include <glImplementation/factory/UniformColorFactoryGL.h>
+#include <glImplementation/factory/TextMaterialFactoryGL.h>
 #include <glImplementation/factory/CameraGLFactory.h>
 
 // Image360 Application
@@ -426,10 +426,10 @@ static void ovrAppThread_Create(ovrAppThread *appThread, JNIEnv *env, jobject ac
     /*
      * Separate Texture Factories for OpenGLES - shader language is separate
      */
-    std::unique_ptr<cl::DiffuseTextureGLES3Factory> diffuseTextureFactory(
-            new cl::DiffuseTextureGLES3Factory(loggerFactory.get()));
-    std::unique_ptr<cl::DiffuseTextureCubeMapGLES3Factory> diffuseTextureCubeMapFactory(
-            new cl::DiffuseTextureCubeMapGLES3Factory(loggerFactory.get()));
+    std::unique_ptr<cl::DiffuseTextureGLFactory> diffuseTextureFactory(
+            new cl::DiffuseTextureGLFactory(loggerFactory.get()));
+    std::unique_ptr<cl::DiffuseTextureCubeMapGLFactory> diffuseTextureCubeMapFactory(
+            new cl::DiffuseTextureCubeMapGLFactory(loggerFactory.get()));
 
 //    std::unique_ptr<cl::RendererGearVR> renderer(
 //            new cl::RendererGearVR(env, activity, loggerFactory.get()));
@@ -446,10 +446,10 @@ static void ovrAppThread_Create(ovrAppThread *appThread, JNIEnv *env, jobject ac
     std::unique_ptr<cl::GazeDetectorFactory> gazeDetectorFactory(new cl::GazeDetectorFactory);
     std::unique_ptr<cl::IModelFactory> uiModelFactory(new cl::ModelGLFactory(loggerFactory.get()));
     std::unique_ptr<cl::IUniformColorFactory> uiUniformColorFactory(
-            new cl::UniformColorFactoryGLES3(loggerFactory.get()));
+            new cl::UniformColorFactoryGL(loggerFactory.get()));
 
     std::unique_ptr<cl::ITextMaterialFactory> textMaterialFactory(
-            new cl::TextMaterialFactoryGLES3(loggerFactory.get()));
+            new cl::TextMaterialFactoryGL(loggerFactory.get()));
     std::unique_ptr<cl::UIFactory> uiFactory(
             new cl::UIFactory(loggerFactory.get(), std::move(uiModelFactory),
                               std::move(uiUniformColorFactory),

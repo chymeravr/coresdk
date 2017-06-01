@@ -1,5 +1,5 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
-    package="com.chymeravr.appovrm">
+    package="com.chymeravr.appgearvr">
 
     <uses-sdk android:minSdkVersion="23" android:targetSdkVersion="23" />
     <!-- Tell the system this app requires OpenGL ES 3.1. -->
@@ -19,7 +19,7 @@
         <!-- launchMode is set to singleTask because there should never be multiple copies of the app running -->
         <!-- Theme.Black.NoTitleBar.Fullscreen gives solid black instead of a (bad stereoscopic) gradient on app transition -->
         <activity
-            android:name="com.chymeravr.appovrm.GLES3JNIActivity"
+            android:name="com.chymeravr.appgearvr.GLES3JNIActivity"
             android:theme="@android:style/Theme.Black.NoTitleBar.Fullscreen"
             android:launchMode="singleTask"
             android:screenOrientation="landscape"

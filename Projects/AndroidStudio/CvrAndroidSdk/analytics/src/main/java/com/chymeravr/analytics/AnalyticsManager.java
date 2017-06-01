@@ -1,120 +1,25 @@
 package com.chymeravr.analytics;
 
-import android.util.Log;
-
-import com.chymeravr.common.Config;
-import com.chymeravr.common.WebRequestQueue;
 import com.chymeravr.schemas.eventreceiver.SDKEvent;
 
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.concurrent.locks.Lock;
-import java.util.concurrent.locks.ReentrantLock;
-
-import lombok.Getter;
-
 /**
- * Created by robin_chimera on 2/1/2017.
- * Manages calls to Event Server for sending analytics info
- * Buffers requests based on priority for better network performance
+ * Created by robin_chimera on 5/27/2017.
+ * This interface defines a blueprint for AnalyticsManagers.
+ * We should be able to reconfigure analytics managers from the server and hence the reconfigure func.
+ * Also, they should support pushing events into a collection type data store for holding till the
+ * next scheduled server call to send the events.
+ * We need to initialize any resources (scheduler services) for our use and shutdown - flush any
+ * pending events, release expensive resources etc.
  */
 
-public final class AnalyticsManager {
-    public static final String TAG = "ChymeraVR:AnalyticsMgr";
 
-    public enum Priority {HIGH, LOW, MEDIUM}
+public interface AnalyticsManager {
 
-    private static boolean initialized = false;
+    public void push(SDKEvent event, EventPriority priority);
 
-    private static ExecutorService executorService;
+    public boolean initialize();
 
-    private static Lock resourceLock = new ReentrantLock();
+    public boolean shutdown();
 
-    @Getter
-    private static String applicationId;
-
-    private static AnalyticsManager manager;
-
-    private static EventQueue highPriorityQueue;
-    private static EventQueue medPriorityQueue;
-    private static EventQueue lowPriorityQueue;
-
-    private AnalyticsManager(WebRequestQueue webRequestQueue, String appId) {
-        highPriorityQueue = new ArrayEventQueue(Config.highPriorityQueueSize, webRequestQueue);
-        medPriorityQueue = new ArrayEventQueue(Config.medPriorityQueueSize, webRequestQueue);
-        lowPriorityQueue = new ArrayEventQueue(Config.lowPriorityQueueSize, webRequestQueue);
-
-        applicationId = appId;
-    }
-
-    public static AnalyticsManager getInstance(WebRequestQueue webRequestQueue, String appId){
-        if (manager == null) {
-            manager = new AnalyticsManager(webRequestQueue, appId);
-        }
-        return manager;
-    }
-
-    public static boolean initialize(){
-        if(initialized) {
-            return false;
-        }
-        executorService = Executors.newFixedThreadPool(Config.analyticsManagerThreadPoolSize);
-        return true;
-    }
-
-    public static void push(final SDKEvent event, final Priority priority){
-        executorService.execute(new Runnable(){
-            @Override
-            public void run() {
-                resourceLock.lock();
-                switch(priority){
-                    case HIGH:
-                        highPriorityQueue.enqueue(event);
-                        break;
-                    case MEDIUM:
-                        medPriorityQueue.enqueue(event);
-                        break;
-                    case LOW:
-                        lowPriorityQueue.enqueue(event);
-                        break;
-                }
-                resourceLock.unlock();
-            }
-        });
-    }
-
-    public static void reConfigure(){
-        Log.d(TAG, "Re Configuring Analytics Manager based on new parameters from server");
-        executorService.execute(new Runnable(){
-            @Override
-            public void run(){
-                resourceLock.lock();
-                highPriorityQueue.reSize(Config.highPriorityQueueSize);
-                medPriorityQueue.reSize(Config.medPriorityQueueSize);
-                lowPriorityQueue.reSize(Config.lowPriorityQueueSize);
-                resourceLock.unlock();
-            }
-        });
-    }
-
-    public static boolean shutdown(){
-        if(!initialized){
-            return false;
-        }
-        Log.d(TAG, "Initiation Analytics Manager Shutdown");
-        executorService.execute(new Runnable(){
-            @Override
-            public void run() {
-                resourceLock.lock();
-                highPriorityQueue.flush();
-                medPriorityQueue.flush();
-                lowPriorityQueue.flush();
-                resourceLock.unlock();
-            }
-        });
-
-        executorService.shutdown();
-        initialized = false;
-        return true;
-    }
+    public void reConfigure();
 }

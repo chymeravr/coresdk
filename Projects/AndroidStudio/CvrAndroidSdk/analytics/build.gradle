@@ -26,9 +26,14 @@ def analyticsModule = "${rootProject.rootDir}/analytics"
             debug {
                 minifyEnabled false
                 debuggable true
+
+                // to test proguard we are going to replicate release with debug - remove this later
+//                minifyEnabled true
+//                proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
             }
             release {
-                minifyEnabled false
+                minifyEnabled true
+                proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
             }
         }
 

@@ -1,0 +1,314 @@
+
+/**********************************ChymeraVr**********************************
+ * we made some changes from fat-aar to exclude inclusion of resources, and manifest file
+ * adclient, common & analytics don't have a useful manifest file.
+ */
+
+import com.android.annotations.NonNull
+import com.android.manifmerger.XmlDocument
+import com.android.utils.ILogger
+import com.google.common.base.Charsets
+import com.google.common.io.Files
+
+buildscript {
+    repositories {
+        jcenter()
+    }
+    dependencies {
+        // don't need manifest merger
+        classpath 'com.android.tools.build:manifest-merger:25.2.0'
+    }
+}
+
+configurations {
+    embeddedDemo
+}
+
+dependencies {
+    compile configurations.embeddedDemo
+}
+
+// Paths to embedded jar files
+ext.embeddedDemoJars = new ArrayList<String>()
+// Paths to embedded aar projects
+ext.embeddedDemoAarDirs = new ArrayList<String>()
+// List of embedded R classes
+ext.embeddedDemoRClasses = new ArrayList<String>()
+
+// Change backslash to forward slash on windows
+ext.build_dir = buildDir.path.replace(File.separator, '/');
+
+ext.exploded_aar_dir = "$build_dir/intermediates/exploded-aar";
+ext.classs_releaseDemo_dir = "$build_dir/intermediates/classes/releaseDemo";
+ext.bundle_default_dir = "$build_dir/intermediates/bundles/default";
+ext.manifest_aaaptDemo_dir = "$build_dir/intermediates/manifests/aapt/releaseDemo";
+ext.generated_rsrcDemo_dir = "$build_dir/generated/source/r/releaseDemo";
+
+ext.base_r2xDemo_dir = "$build_dir/fat-aar/releaseDemo/";
+
+afterEvaluate {
+    // the list of dependency must be reversed to use the right overlay order.
+    def dependencies = new ArrayList(configurations.embeddedDemo.resolvedConfiguration.firstLevelModuleDependencies)
+    //println "Dependencies ${dependencies}"
+    dependencies.reverseEach {
+        //def aarPath = "${exploded_aar_dir}/${it.moduleGroup}/${it.moduleName}/${it.moduleVersion}"
+        //println "${it.moduleGroup} - ${it.moduleName} - ${it.moduleVersion}"
+        def aarPath = "${rootProject.rootDir}/${it.moduleName}/build/intermediates/bundles/default"
+        it.moduleArtifacts.each {
+            artifact ->
+                if (artifact.type == 'aar') {
+                    if (!embeddedDemoAarDirs.contains(aarPath)) {
+                        embeddedDemoAarDirs.add(aarPath)
+                    }
+                } else if (artifact.type == 'jar') {
+                    def artifactPath = artifact.file
+                    if (!embeddedDemoJars.contains(artifactPath))
+                        embeddedDemoJars.add(artifactPath)
+                } else {
+                    throw new Exception("Unhandled Artifact of type ${artifact.type}")
+                }
+        }
+    }
+
+    if (dependencies.size() > 0) {
+        // Merge Assets
+        generateReleaseDemoAssets.dependsOn embedDemoAssets
+        embedDemoAssets.dependsOn prepareReleaseDemoDependencies
+
+        // Embed Resources by overwriting the inputResourceSets
+        packageReleaseDemoResources.dependsOn embedDemoLibraryResources
+        embedDemoLibraryResources.dependsOn prepareReleaseDemoDependencies
+
+        // Embed JNI Libraries
+        bundleReleaseDemo.dependsOn embedDemoJniLibs
+        embedDemoJniLibs.dependsOn transformNativeLibsWithSyncJniLibsForReleaseDemo
+
+        // Merge Embedded Manifests
+        // we don't need to merge manifests
+
+        // Merge proguard files
+        embedDemoLibraryResources.dependsOn embedDemoProguard
+        embedDemoProguard.dependsOn prepareReleaseDemoDependencies
+
+        // Generate R.java files
+        compileReleaseDemoJavaWithJavac.dependsOn generateDemoRJava
+        generateDemoRJava.dependsOn processReleaseDemoResources
+
+        // Bundle the java classes
+        bundleReleaseDemo.dependsOn embedDemoJavaJars
+        embedDemoJavaJars.dependsOn compileReleaseDemoJavaWithJavac
+
+        // If proguard is enabled, run the tasks that bundleRelease should depend on before proguard
+        if (tasks.findByPath('proguardReleaseDemo') != null) {
+            proguardReleaseDeni.dependsOn embedDemoJavaJars
+        } else if (tasks.findByPath('transformClassesAndResourcesWithProguardForReleaseDemo') != null) {
+            transformClassesAndResourcesWithProguardForReleaseDemo.dependsOn embedDemoJavaJars
+        }
+    }
+}
+
+// we probably don't need this either
+task embedDemoLibraryResources {
+    doLast {
+        println "Running FAT-AAR Task :embedDemoLibraryResources"
+
+        def oldInputResourceSet = packageReleaseDemoResources.inputResourceSets
+//        packageReleaseResources.conventionMapping.map("inputResourceSets") {
+        // we don't need merged resources either
+//            getMergedInputResourceSets(oldInputResourceSet)
+//        }
+    }
+}
+
+
+/**
+ * Assets are simple files, so just adding them to source set seems to work.
+ */
+task embedDemoAssets {
+    doLast {
+        println "Running FAT-AAR Task :embedDemoAssets"
+        embeddedDemoAarDirs.each { aarPath ->
+            // Merge Assets
+            android.sourceSets.main.assets.srcDirs += file("$aarPath/assets")
+        }
+    }
+}
+
+/**
+ * Merge proguard.txt files from all library modules
+ * @author Marian Klühspies
+ */
+task embedDemoProguard {
+    doLast {
+        println "Running FAT-AAR Task :embedDemoProguard"
+
+        def proguardReleaseDemo = file("$bundle_default_dir/proguard.txt")
+        embeddedDemoAarDirs.each { aarPath ->
+            try {
+                def proguardLibFile = file("$aarPath/proguard.txt")
+                if (proguardLibFile.exists())
+                    proguardReleaseDemo.append(proguardLibFile.text)
+            } catch (Exception e) {
+                e.printStackTrace();
+                throw e;
+            }
+        }
+    }
+}
+
+
+task generateDemoRJava {
+    doLast {
+        println "Running FAT-AAR Task :generateRDemoJava"
+
+        // Now generate the R.java file for each embedded dependency
+        def libPackageName = new XmlParser().parse(android.sourceSets.main.manifest.srcFile).@package
+
+        embeddedDemoAarDirs.each { aarPath ->
+
+            def aarManifest = new XmlParser().parse(file("$aarPath/AndroidManifest.xml"));
+            def aarPackageName = aarManifest.@package
+            String packagePath = aarPackageName.replace('.', '/')
+
+            // Generate the R.java file and map to current project's R.java
+            // This will recreate the class file
+            def rTxt = file("$aarPath/R.txt")
+            def rMap = new ConfigObject()
+
+            if (rTxt.exists()) {
+                rTxt.eachLine {
+                    line ->
+                        //noinspection GroovyUnusedAssignment
+                        def (type, subclass, name, value) = line.tokenize(' ')
+                        rMap[subclass].putAt(name, type)
+                }
+            }
+
+            def sb = "package $aarPackageName;" << '\n' << '\n'
+            sb << 'public final class R {' << '\n'
+
+            rMap.each {
+                subclass, values ->
+                    sb << "  public static final class $subclass {" << '\n'
+                    values.each {
+                        name, type ->
+                            sb << "    public static $type $name = ${libPackageName}.R.${subclass}.${name};" << '\n'
+                    }
+                    sb << "    }" << '\n'
+            }
+
+            sb << '}' << '\n'
+
+            mkdir("$generated_rsrcDemo_dir/$packagePath")
+            file("$generated_rsrcDemo_dir/$packagePath/R.java").write(sb.toString())
+
+            embeddedDemoRClasses += "$packagePath/R.class"
+            embeddedDemoRClasses += "$packagePath/R\$*.class"
+        }
+    }
+}
+
+task collectDemoRClass {
+    doLast {
+        delete base_r2xDemo_dir
+        mkdir base_r2xDemo_dir
+
+        copy {
+            from classs_releaseDemo_dir
+            include embeddedDemoRClasses
+            into base_r2xDemo_dir
+        }
+    }
+}
+
+task embedDemoRClass(type: org.gradle.jvm.tasks.Jar, dependsOn: collectDemoRClass) {
+    destinationDir file("$bundle_default_dir/libs/")
+    from base_r2xDemo_dir
+}
+
+/**
+ * To embed the class files, we need to change the R.class to X.class, so we explode it in another
+ * location, proguard it to modify R to X, and then finally copy it to build location
+ */
+task embedDemoJavaJars(dependsOn: embedDemoRClass) {
+    doLast {
+        println "Running FAT-AAR Task :embedDemoJavaJars"
+
+        embeddedDemoAarDirs.each { aarPath ->
+            // Explode all classes.jar files to classes so that they can be proguarded
+            copy {
+//                from zipTree("$aarPath/jars/classes.jar")
+                from zipTree("$aarPath/classes.jar")
+                into classs_releaseDemo_dir
+            }
+
+            // Copy all additional jar files to bundle lib
+            FileTree jars = fileTree(dir: "$aarPath/jars", include: '*.jar', exclude: 'classes.jar')
+            jars += fileTree(dir: "$aarPath/jars/libs", include: '*.jar')
+            jars += fileTree(dir: "$aarPath/libs", include: '*.jar')
+
+            copy {
+                from jars
+                into file("$bundle_default_dir/libs")
+            }
+
+            // Copy all embedded jar files to bundle lib
+            copy {
+                from embeddedDemoJars
+                into file("$bundle_default_dir/libs")
+            }
+        }
+    }
+}
+
+/**
+ * For some reason, adding to the jniLibs source set does not work. So we simply copy all files.
+ */
+task embedDemoJniLibs {
+    doLast {
+        println "Running FAT-AAR Task :embedDemoJniLibs"
+
+        embeddedDemoAarDirs.each { aarPath ->
+            println "======= Copying JNI from $aarPath/jni"
+            // Copy JNI Folders
+            copy {
+                from fileTree(dir: "$aarPath/jni")
+                into file("$bundle_default_dir/jni")
+            }
+        }
+    }
+}
+
+private void save(XmlDocument xmlDocument, File out) {
+    try {
+        Files.write(xmlDocument.prettyPrint(), out, Charsets.UTF_8);
+    } catch (IOException e) {
+        throw new RuntimeException(e);
+    }
+}
+
+class MiLogger implements ILogger {
+
+    @Override
+    void error(
+            @com.android.annotations.Nullable Throwable t,
+            @com.android.annotations.Nullable String msgFormat, Object... args) {
+        System.err.println(String.format("========== ERROR : " + msgFormat, args))
+        if (t) t.printStackTrace(System.err)
+    }
+
+    @Override
+    void warning(@NonNull String msgFormat, Object... args) {
+        System.err.println(String.format("========== WARNING : " + msgFormat, args))
+    }
+
+    @Override
+    void info(@NonNull String msgFormat, Object... args) {
+        System.out.println(String.format("========== INFO : " + msgFormat, args))
+    }
+
+    @Override
+    void verbose(@NonNull String msgFormat, Object... args) {
+        // System.out.println(String.format("========== DEBUG : " + msgFormat, args))
+    }
+}

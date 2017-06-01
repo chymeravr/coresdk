@@ -10,58 +10,89 @@ import lombok.Setter;
 
 // TODO: 2/3/2017 Get Configuration Parameters from Server
 // TODO: 5/10/2017 How to have different default configurations for different headsets? 
-public class Config {
-    public static final String TAG = "Config";
+public final class Config {
 
-    public static final int SdkVersion = 1;
+    // TODO: 5/26/2017 use maven to do automatic versioning - we are not using int but int.int.int
+    @Getter
+    private static final int SdkVersion = 1;
 
-    public static final int hmdId = 1;
-
-    public static final String osId = "Android";
+    // TODO: 5/26/2017 use enums to encapsulate hmd ids
+    @Getter
+    private static final int hmdId = 1;
 
     @Getter
-    static final String fontPath =                        "chymeraSDKAssets/fonts/";
+    private static final String osId = "Android";
 
     @Getter
-    static final String chymeraFolder =                   "chymeraSDKAssets/";
+    private static int daydreamAndroidVersionNo = 24;       // daydream works only with Android 7 +
 
-    public static final String Image360AdAssetDirectory = "chymeraSDKAssets/image360/";
+    @Getter
+    private static int cardboardAndroidVersionNo = 19;
 
-    public static final String configServer = "http://13.64.245.176:8080/api/v1/getConfig/";//"http://amock.io/api/v1/robin/sdkConfigOptions";
+    @Getter
+    private static int gearVrAndroidVersionNo = 23;
 
-    @Setter
-    public static String adServer = "http://serving.chymeravr.com:8080/api/v1/ads/";
-    @Setter
-    public static String analyticsServer = "http://www.serving.chymeravr.com:8081/api/v1/events/"; //"http://www.amock.io/api/v1/robin/analyticsServer/";
-    @Setter
-    public static int androidVersionNo = 23;
+    // directory structure deployed on client apps
+    @Getter
+    private static final String chymeraFolder = "chymeraSDKAssets/";
+    @Getter
+    private static final String fontAssetPath = chymeraFolder + "fonts/";
+    @Getter
+    private static final String image360AdAssetDirectory = chymeraFolder + "image360/";
 
+    // asset directory from adclient - for copying into client
+    @Getter
+    private static final String fontDir = "fonts";
+    // test image360 jpeg images
+    @Getter
+    private static final String image360Dir = "image360";
+
+    // server addresses
+    @Getter
+    private static final String configServer = "http://13.64.245.176:8080/api/v1/getConfig/";//"http://amock.io/api/v1/robin/sdkConfigOptions";
+
+    @Getter
     @Setter
-    public static int highPriorityQueueSize = 1;
+    private static String adServer = "http://serving.chymeravr.com:8080/api/v1/ads/";
+
+    @Getter
     @Setter
-    public static int medPriorityQueueSize = 5;
+    private static String analyticsServer = "http://www.serving.chymeravr.com:8081/api/v1/events/"; //"http://www.amock.io/api/v1/robin/analyticsServer/";
+
+    @Getter
     @Setter
-    public static int lowPriorityQueueSize = 10;
+    private static int highPriorityQueueSize = 1;
+
+    @Getter
+    @Setter
+    private static int medPriorityQueueSize = 5;
+
+    @Getter
+    @Setter
+    private static int lowPriorityQueueSize = 10;
 
     // no of threads to allocate for analytics manager
+    @Getter
     @Setter
-    public static int analyticsManagerThreadPoolSize = 1;
+    private static int analyticsManagerThreadPoolSize = 5;
 
     // period between calls for HMD parameters, initial delay for sampling
+    @Getter
     @Setter
-    public static long hmdSamplingPeriod = 1;
+    private static long hmdSamplingPeriod = 1;
 
+    @Getter
     @Setter
-    public static long hmdSamplingDelay = 1;
+    private static long hmdSamplingDelay = 1;
 
     // todo - fix this private public
-    public static void setParam(String key, String value){
+    // TODO: 5/26/2017 this is probably not the right way to update configurations
+    // todo - i don't think we need to change thread pool sizes too often
+    public synchronized static void setParam(String key, String value){
         switch(key) {
             case "adServer": setAdServer(value);
                 break;
             case "analyticsServer": setAnalyticsServer(value);
-                break;
-            case "androidVersionNo": setAndroidVersionNo(Integer.parseInt(value));
                 break;
             case "highPriorityQueue": setHighPriorityQueueSize(Integer.parseInt(value));
                 break;

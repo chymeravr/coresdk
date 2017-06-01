@@ -87,8 +87,18 @@ dependencies {
     compile 'com.google.vr:sdk-audio:1.30.0'
     compile 'com.google.vr:sdk-base:1.30.0'
     compile 'com.android.support.constraint:constraint-layout:1.0.2'
-//    debugCompile project(path: ':daydreamadclient', configuration: 'debug')
-    debugCompile project(path: ':daydreamadclient', configuration: 'debug')
+    debugCompile project(path: ':daydreamadclient', configuration: 'debugDemo')
+//    debugCompile(project(path: ':daydreamadclient', configuration: 'release')){
+//        exclude module: 'adclient'
+//        exclude module: 'analytics'
+//        exclude module: 'common'
+//    }
+
+    // for release tests - comment for debugging
+//    compile 'com.android.volley:volley:1.0.0'
+//    compile 'com.google.code.gson:gson:2.8.0'
+//    compile 'com.google.android.gms:play-services-ads:10.0.1'
+//    compile 'org.apache.thrift:libthrift:0.9.3'
 }
 
 //build.dependsOn(':extractNdk')

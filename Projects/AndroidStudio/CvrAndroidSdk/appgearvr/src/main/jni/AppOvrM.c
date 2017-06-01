@@ -2315,7 +2315,7 @@ Activity lifecycle
 ================================================================================
 */
 
-JNIEXPORT jlong JNICALL Java_com_chymeravr_appovrm_GLES3JNILib_onCreate(JNIEnv *env, jobject obj,
+JNIEXPORT jlong JNICALL Java_com_chymeravr_appgearvr_GLES3JNILib_onCreate(JNIEnv *env, jobject obj,
                                                                         jobject activity) {
     ALOGV("    GLES3JNILib::onCreate()");
 
@@ -2330,7 +2330,7 @@ JNIEXPORT jlong JNICALL Java_com_chymeravr_appovrm_GLES3JNILib_onCreate(JNIEnv *
     return (jlong) ((size_t) appThread);
 }
 
-JNIEXPORT void JNICALL Java_com_chymeravr_appovrm_GLES3JNILib_onStart(JNIEnv *env, jobject obj,
+JNIEXPORT void JNICALL Java_com_chymeravr_appgearvr_GLES3JNILib_onStart(JNIEnv *env, jobject obj,
                                                                       jlong handle) {
     ALOGV("    GLES3JNILib::onStart()");
     ovrAppThread *appThread = (ovrAppThread *) ((size_t) handle);
@@ -2339,7 +2339,7 @@ JNIEXPORT void JNICALL Java_com_chymeravr_appovrm_GLES3JNILib_onStart(JNIEnv *en
     ovrMessageQueue_PostMessage(&appThread->MessageQueue, &message);
 }
 
-JNIEXPORT void JNICALL Java_com_chymeravr_appovrm_GLES3JNILib_onResume(JNIEnv *env, jobject obj,
+JNIEXPORT void JNICALL Java_com_chymeravr_appgearvr_GLES3JNILib_onResume(JNIEnv *env, jobject obj,
                                                                        jlong handle) {
     ALOGV("    GLES3JNILib::onResume()");
     ovrAppThread *appThread = (ovrAppThread *) ((size_t) handle);
@@ -2348,7 +2348,7 @@ JNIEXPORT void JNICALL Java_com_chymeravr_appovrm_GLES3JNILib_onResume(JNIEnv *e
     ovrMessageQueue_PostMessage(&appThread->MessageQueue, &message);
 }
 
-JNIEXPORT void JNICALL Java_com_chymeravr_appovrm_GLES3JNILib_onPause(JNIEnv *env, jobject obj,
+JNIEXPORT void JNICALL Java_com_chymeravr_appgearvr_GLES3JNILib_onPause(JNIEnv *env, jobject obj,
                                                                       jlong handle) {
     ALOGV("    GLES3JNILib::onPause()");
     ovrAppThread *appThread = (ovrAppThread *) ((size_t) handle);
@@ -2357,7 +2357,7 @@ JNIEXPORT void JNICALL Java_com_chymeravr_appovrm_GLES3JNILib_onPause(JNIEnv *en
     ovrMessageQueue_PostMessage(&appThread->MessageQueue, &message);
 }
 
-JNIEXPORT void JNICALL Java_com_chymeravr_appovrm_GLES3JNILib_onStop(JNIEnv *env, jobject obj,
+JNIEXPORT void JNICALL Java_com_chymeravr_appgearvr_GLES3JNILib_onStop(JNIEnv *env, jobject obj,
                                                                      jlong handle) {
     ALOGV("    GLES3JNILib::onStop()");
     ovrAppThread *appThread = (ovrAppThread *) ((size_t) handle);
@@ -2366,7 +2366,7 @@ JNIEXPORT void JNICALL Java_com_chymeravr_appovrm_GLES3JNILib_onStop(JNIEnv *env
     ovrMessageQueue_PostMessage(&appThread->MessageQueue, &message);
 }
 
-JNIEXPORT void JNICALL Java_com_chymeravr_appovrm_GLES3JNILib_onDestroy(JNIEnv *env, jobject obj,
+JNIEXPORT void JNICALL Java_com_chymeravr_appgearvr_GLES3JNILib_onDestroy(JNIEnv *env, jobject obj,
                                                                         jlong handle) {
     ALOGV("    GLES3JNILib::onDestroy()");
     ovrAppThread *appThread = (ovrAppThread *) ((size_t) handle);
@@ -2387,7 +2387,7 @@ Surface lifecycle
 ================================================================================
 */
 
-JNIEXPORT void JNICALL Java_com_chymeravr_appovrm_GLES3JNILib_onSurfaceCreated(JNIEnv *env,
+JNIEXPORT void JNICALL Java_com_chymeravr_appgearvr_GLES3JNILib_onSurfaceCreated(JNIEnv *env,
                                                                                jobject obj,
                                                                                jlong handle,
                                                                                jobject surface) {
@@ -2411,7 +2411,7 @@ JNIEXPORT void JNICALL Java_com_chymeravr_appovrm_GLES3JNILib_onSurfaceCreated(J
     ovrMessageQueue_PostMessage(&appThread->MessageQueue, &message);
 }
 
-JNIEXPORT void JNICALL Java_com_chymeravr_appovrm_GLES3JNILib_onSurfaceChanged(JNIEnv *env,
+JNIEXPORT void JNICALL Java_com_chymeravr_appgearvr_GLES3JNILib_onSurfaceChanged(JNIEnv *env,
                                                                                jobject obj,
                                                                                jlong handle,
                                                                                jobject surface) {
@@ -2450,7 +2450,7 @@ JNIEXPORT void JNICALL Java_com_chymeravr_appovrm_GLES3JNILib_onSurfaceChanged(J
     }
 }
 
-JNIEXPORT void JNICALL Java_com_chymeravr_appovrm_GLES3JNILib_onSurfaceDestroyed(JNIEnv *env,
+JNIEXPORT void JNICALL Java_com_chymeravr_appgearvr_GLES3JNILib_onSurfaceDestroyed(JNIEnv *env,
                                                                                  jobject obj,
                                                                                  jlong handle) {
     ALOGV("    GLES3JNILib::onSurfaceDestroyed()");
@@ -2471,7 +2471,7 @@ Input
 ================================================================================
 */
 
-JNIEXPORT void JNICALL Java_com_chymeravr_appovrm_GLES3JNILib_onKeyEvent(JNIEnv *env, jobject obj,
+JNIEXPORT void JNICALL Java_com_chymeravr_appgearvr_GLES3JNILib_onKeyEvent(JNIEnv *env, jobject obj,
                                                                          jlong handle, int keyCode,
                                                                          int action) {
     if (action == AKEY_EVENT_ACTION_UP) {
@@ -2485,7 +2485,7 @@ JNIEXPORT void JNICALL Java_com_chymeravr_appovrm_GLES3JNILib_onKeyEvent(JNIEnv 
     ovrMessageQueue_PostMessage(&appThread->MessageQueue, &message);
 }
 
-JNIEXPORT void JNICALL Java_com_chymeravr_appovrm_GLES3JNILib_onTouchEvent(JNIEnv *env, jobject obj,
+JNIEXPORT void JNICALL Java_com_chymeravr_appgearvr_GLES3JNILib_onTouchEvent(JNIEnv *env, jobject obj,
                                                                            jlong handle, int action,
                                                                            float x, float y) {
     if (action == AMOTION_EVENT_ACTION_UP) {

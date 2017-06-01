@@ -24,11 +24,15 @@ android {
     buildTypes {
         debug{
             minifyEnabled false
-            jniDebuggable true
+            debuggable true
+
+            // to test proguard we are going to replicate release with debug - remove this later
+//            minifyEnabled true
+//            proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
         }
         release {
-            minifyEnabled false
-            //proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
+            minifyEnabled true
+            proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
         }
     }
 }
@@ -54,7 +58,7 @@ dependencies {
     compile 'com.android.volley:volley:1.0.0'
     compile 'com.google.code.gson:gson:2.8.0'
     compile 'com.google.android.gms:play-services-ads:10.0.1'
-    compile 'org.apache.thrift:libthrift:0.9.3'
+//    compile 'org.apache.thrift:libthrift:0.9.3'
 
     compile project(':common')
     compile project(':analytics')

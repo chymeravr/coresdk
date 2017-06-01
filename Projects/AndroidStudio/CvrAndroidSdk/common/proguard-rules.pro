@@ -15,3 +15,9 @@
 #-keepclassmembers class fqcn.of.javascript.interface.for.webview {
 #   public *;
 #}
+-keep public class com.chymeravr.common.* {
+    public <methods>;
+}
+
+# schemas.jar is already minified
+-keep class com.chymeravr.schemas.** {*;}

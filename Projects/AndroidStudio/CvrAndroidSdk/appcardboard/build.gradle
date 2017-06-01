@@ -4,6 +4,8 @@ android {
     compileSdkVersion 25
     buildToolsVersion "25.0.0"
 
+    publishNonDefault true
+
     splits {
 
         // Configures multiple APKs based on ABI.
@@ -87,8 +89,15 @@ dependencies {
     compile 'com.google.vr:sdk-audio:1.30.0'
     compile 'com.google.vr:sdk-base:1.30.0'
     compile 'com.android.support.constraint:constraint-layout:1.0.2'
-//    debugCompile project(path: ':daydreamadclient', configuration: 'debug')
+    //    debugCompile project(path: ':daydreamadclient', configuration: 'debug')
+    //    debugCompile project(path: ':cardboardadclient', configuration: 'debug')
+//    releaseCompile project(path: ':cardboardadclient', configuration: 'release')
+//     debugCompile project(path: ':cardboardadclient', configuration: 'debugDemo')
+//     releaseCompile project(path: ':cardboardadclient', configuration:'release')
     debugCompile project(path: ':cardboardadclient', configuration: 'debug')
+//    releaseCompile project(path: ':cardboardadclient', configuration: 'releaseDemo')
+
+
 }
 
 //build.dependsOn(':extractNdk')

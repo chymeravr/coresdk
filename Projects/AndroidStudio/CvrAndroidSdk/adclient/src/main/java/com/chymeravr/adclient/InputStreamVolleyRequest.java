@@ -14,15 +14,15 @@ import java.util.Map;
  * jpeg file to app internal directory
  */
 
-public final class InputStreamVolleyRequest extends Request<byte[]>{
+final class InputStreamVolleyRequest extends Request<byte[]>{
 
     private final Response.Listener<byte[]> mListener;
     private Map<String, String> mParams;
 
     // Create a static map for directly accessing headers
-    public Map<String, String> responseHeaders;
+    //public Map<String, String> responseHeaders;
 
-    public InputStreamVolleyRequest(int method, String mUrl, Response.Listener<byte[]> listener,
+    InputStreamVolleyRequest(int method, String mUrl, Response.Listener<byte[]> listener,
                                     Response.ErrorListener errorListener, HashMap<String, String> params)
     {
         super(method, mUrl, errorListener);
@@ -42,7 +42,8 @@ public final class InputStreamVolleyRequest extends Request<byte[]>{
     @Override
     protected Response<byte[]> parseNetworkResponse(NetworkResponse response) {
         //Initialise local responseHeaders map with response headers received
-        responseHeaders = response.headers;
+        // i guess these are never used
+        // responseHeaders = response.headers;
 
         //Pass the response data here
         return Response.success( response.data, HttpHeaderParser.parseCacheHeaders(response));

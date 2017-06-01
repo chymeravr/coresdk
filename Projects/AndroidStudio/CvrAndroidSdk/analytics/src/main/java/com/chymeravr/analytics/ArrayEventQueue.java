@@ -26,9 +26,11 @@ import lombok.Getter;
 
 /**
  * Created by robin_chimera on 1/31/2017.
+ * this is an implementation for event queue - the analytics manager uses
+ * this to to maintain a queue of requests to flush and send to server
  */
 
-public class ArrayEventQueue implements EventQueue {
+final class ArrayEventQueue implements EventQueue {
 
     private static final String TAG = "AnalyticsSDK";
 
@@ -38,16 +40,19 @@ public class ArrayEventQueue implements EventQueue {
     @Getter
     private int currentSize;
 
+    private String appId;
+
     private SDKEvent eventArray[];
 
     private Lock queueLock = new ReentrantLock();
 
     private WebRequestQueue requestQueue;
 
-    public ArrayEventQueue(int size, WebRequestQueue requestQueue) {
+    ArrayEventQueue(WebRequestQueue requestQueue, int size, String appId) {
         assert (size > 0);
         this.size = size;
         this.currentSize = 0;
+        this.appId = appId;
 
         this.requestQueue = requestQueue;
 
@@ -95,7 +100,7 @@ public class ArrayEventQueue implements EventQueue {
         }
         List<SDKEvent> test = Arrays.asList(eventArray);
         EventPing ping = new EventPing( new Timestamp(System.currentTimeMillis()).getTime(),
-                (short)Config.SdkVersion, AnalyticsManager.getApplicationId(), test);
+                (short)Config.getSdkVersion(), this.appId, test);
 
         String eventRequestJson = new Gson().toJson(ping);
 
@@ -106,7 +111,7 @@ public class ArrayEventQueue implements EventQueue {
             Log.e(TAG, "Error converting event list to Json Object", e);
         }finally {
             JsonObjectRequest jsonRequest = new JsonObjectRequest(Request.Method.POST,
-                    Config.analyticsServer, jsonEventObjects,
+                    Config.getAnalyticsServer(), jsonEventObjects,
                     new Response.Listener<JSONObject>() {
 
                         @Override

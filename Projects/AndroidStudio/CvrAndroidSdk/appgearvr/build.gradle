@@ -7,7 +7,7 @@ android {
     buildToolsVersion "25.0.0"
 
     defaultConfig {
-        applicationId "com.chymeravr.appovrm"
+        applicationId "com.chymeravr.appgearvr"
         minSdkVersion 23
         targetSdkVersion 25
         versionCode 1
@@ -22,7 +22,7 @@ android {
 
                 // I have to use gcc to compile, clang compiled code generate error
                 // at run time for any std::queue etc.
-                targets 'appovrm'
+                targets 'appgearvr'
                 arguments = ['-DANDROID_STL=gnustl_shared', '-DANDROID_NATIVE_API_LEVEL=android-23']
 
                 cppFlags = ["-DGLES2_0", "-std=c++11", "-frtti", "-fexceptions", '-Wall',
@@ -61,6 +61,16 @@ dependencies {
     compile 'com.android.support:appcompat-v7:25.0.1'
     testCompile 'junit:junit:4.12'
 
-    debugCompile project(path: ':gearvradclient', configuration: 'debug')
-    //compile project(path: ':adclient', configuration: 'release')
+//    debugCompile project(path: ':gearvradclient', configuration: 'debugDemo')
+    debugCompile(project(path: ':gearvradclient', configuration: 'releaseDemo')){
+        exclude module: 'adclient'
+        exclude module: 'analytics'
+        exclude module: 'common'
+    }
+
+    // for release tests - comment for debugging
+    compile 'com.android.volley:volley:1.0.0'
+    compile 'com.google.code.gson:gson:2.8.0'
+    compile 'com.google.android.gms:play-services-ads:10.0.1'
+    compile 'org.apache.thrift:libthrift:0.9.3'
 }

@@ -1,9 +1,10 @@
 apply plugin: 'com.android.library'
 //apply from: "${rootProject.rootDir}/fat-aar.gradle"
 apply from: "${rootProject.rootDir}/build_release_aar.gradle"
-apply plugin: 'maven'
-
-group = "com.chymeravr.sdk"
+apply from: "${rootProject.rootDir}/build_releaseDemo_aar.gradle"
+//apply plugin: 'maven'
+//
+//group = "com.chymeravr.sdk"
 // to release build remove "-SNAPSHOT" ~ this is IRREVERSIBLE
 version = "0.0.1-SNAPSHOT"
 
@@ -38,7 +39,8 @@ android {
                 def androidNdkLevel = getNativeNdkLevel(project.hmd)
                 def openglesVersion = getOpenGLESVersion(project.hmd)
 
-                arguments = ['-DANDROID_STL=gnustl_shared'] //, '-DANDROID_NATIVE_API_LEVEL=android-19']
+                arguments = ['-DANDROID_STL=gnustl_shared']
+                //, '-DANDROID_NATIVE_API_LEVEL=android-19']
                 arguments += "-DANDROID_NATIVE_API_LEVEL=android-" + androidNdkLevel
                 arguments += "-D" + openglesVersion + "=TRUE"
 
@@ -56,31 +58,69 @@ android {
 //            minifyEnabled false
 //            proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
 //        }
-        debug {
+        def BOOLEAN = "boolean"
+        def TRUE = "true"
+        def FALSE = "false"
+        def NETWORK_ENABLED = "NETWORK_ENABLED"
+
+        debugDemo {
+            buildConfigField BOOLEAN, NETWORK_ENABLED, FALSE
             minifyEnabled false
             jniDebuggable true
+//            minifyEnabled true
+//            debuggable false
+//            proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
         }
-        release {
+
+        debug {
+            buildConfigField BOOLEAN, NETWORK_ENABLED, TRUE
             minifyEnabled false
+            jniDebuggable true
+//            minifyEnabled true
+//            debuggable false
+//            proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
+        }
+
+        releaseDemo {
+            buildConfigField BOOLEAN, NETWORK_ENABLED, FALSE
+            minifyEnabled true
             debuggable false
-            //proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
+            proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
+        }
+
+        release {
+            buildConfigField BOOLEAN, NETWORK_ENABLED, TRUE
+            minifyEnabled true
+            debuggable false
+            proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
         }
     }
 
-    sourceSets{
-        debug {
-            jniLibs.srcDirs = ["${distributionDir}/coreEngine/debug", "${distributionDir}/soil/release",
-                               "${distributionDir}/glImplementation/debug", "${distributionDir}/libjpeg/release",
-                               "${distributionDir}/image360/debug", "${distributionDir}/cardboardimplementation/debug",
-                               "${distributionDir}/freetype/release"]
+    sourceSets {
+        def debugLibs = ["${distributionDir}/coreEngine/debug", "${distributionDir}/soil/release",
+                         "${distributionDir}/glImplementation/debug", "${distributionDir}/libjpeg/release",
+                         "${distributionDir}/image360/debug", "${distributionDir}/cardboardimplementation/debug",
+                         "${distributionDir}/freetype/release"]
 
+        def releaseLibs = ["${distributionDir}/coreEngine/release", "${distributionDir}/soil/release",
+                           "${distributionDir}/glImplementation/release", "${distributionDir}/libjpeg/release",
+                           "${distributionDir}/image360/release", "${distributionDir}/cardboardimplementation/release",
+                           "${distributionDir}/freetype/release"]
+        debug {
+            jniLibs.srcDirs = debugLibs
+            assets.srcDirs = ['src/main/assets']
+        }
+        debugDemo {
+            jniLibs.srcDirs = debugLibs
+            assets.srcDirs = ['src/main/assets', 'src/main/demo/assets/']
         }
         release {
-            jniLibs.srcDirs = ["${distributionDir}/coreEngine/release", "${distributionDir}/soil/release",
-                               "${distributionDir}/glImplementation/release","${distributionDir}/libjpeg/release",
-                               "${distributionDir}/image360/release", "${distributionDir}/cardboardimplementation/release",
-                               "${distributionDir}/freetype/release"]
-
+            jniLibs.srcDirs = releaseLibs
+            assets.srcDirs = ['src/main/assets']
+        }
+        releaseDemo {
+            jniLibs.srcDirs = releaseLibs
+            assets.srcDirs = ['src/main/assets', 'src/main/demo/assets/']
         }
     }
 
@@ -111,25 +151,29 @@ dependencies {
     //    compile 'com.google.vr:sdk-audio:1.30.0'
     compile 'com.google.vr:sdk-base:1.30.0'
 
-    embedded project(':common')
-    embedded project(':analytics')
-    embedded project(':adclient')
+    embeddedDemo project(':common')
+    embeddedDemo project(':analytics')
+    embeddedDemo project(':adclient')
+
+//    embedded project(':common')
+//    embedded project(':analytics')
+//    embedded project(':adclient')
 }
 
-
-uploadArchives {
-    repositories {
-        mavenDeployer {
-            repository(url: "${nexusUrl}/repository/maven-releases") {
-                authentication(userName: nexusUsername, password: nexusPassword)
-                // for custom name instead of cardboardadclient
-                // pom.artifactId = "testApp"
-                // pom.groupId = "com.cadsfsf.asdfsd"
-                // pom.version = "1.3.2"
-            }
-            snapshotRepository(url: "${nexusUrl}/repository/maven-snapshots") {
-                authentication(userName: nexusUsername, password: nexusPassword)
-            }
-        }
-    }
-}
+//
+//uploadArchives {
+//    repositories {
+//        mavenDeployer {
+//            repository(url: "${nexusUrl}/repository/maven-releases") {
+//                authentication(userName: nexusUsername, password: nexusPassword)
+//                // for custom name instead of cardboardadclient
+//                // pom.artifactId = "testApp"
+//                // pom.groupId = "com.cadsfsf.asdfsd"
+//                // pom.version = "1.3.2"
+//            }
+//            snapshotRepository(url: "${nexusUrl}/repository/maven-snapshots") {
+//                authentication(userName: nexusUsername, password: nexusPassword)
+//            }
+//        }
+//    }
+//}

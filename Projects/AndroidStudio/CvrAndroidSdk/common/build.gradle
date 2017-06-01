@@ -27,10 +27,14 @@ def libName = "chymeravr-common"
             debug {
                 minifyEnabled false
                 debuggable true
+
+                // to test proguard we are going to replicate release with debug - remove this later
+//                minifyEnabled true
+//                proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
             }
             release {
-                minifyEnabled false
-                //proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
+                minifyEnabled true
+                proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
             }
         }
 
@@ -46,10 +50,11 @@ dependencies {
     androidTestCompile('com.android.support.test.espresso:espresso-core:2.2.2', {
         exclude group: 'com.android.support', module: 'support-annotations'
     })
-    compile 'com.android.support:appcompat-v7:25.0.1'
+    compile 'com.android.support:support-v4:25.0.1'
     testCompile 'junit:junit:4.12'
 
     compile 'org.projectlombok:lombok:1.16.12'
     compile 'javax.annotation:javax.annotation-api:1.2'
     compile 'com.android.volley:volley:1.0.0'
+    compile 'org.apache.thrift:libthrift:0.9.3'
 }

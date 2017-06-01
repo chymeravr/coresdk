@@ -48,6 +48,8 @@ if [ "$libName" = "all" ]; then
         buildNativeLib "gearvrimplementation"
         buildNativeLib "gearvradclient"
     fi
+elif [ "$libName" = "allandroid" ]; then
+    buildAndroidLibs
 else
     buildNativeLib "$libName"
 fi

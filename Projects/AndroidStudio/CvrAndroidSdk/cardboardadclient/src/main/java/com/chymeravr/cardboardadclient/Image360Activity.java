@@ -12,7 +12,7 @@ import android.view.MotionEvent;
 import android.view.View;
 import android.view.WindowManager;
 
-import com.chymeravr.analytics.AnalyticsManager;
+import com.chymeravr.analytics.EventPriority;
 import com.chymeravr.common.Config;
 import com.chymeravr.schemas.eventreceiver.EventType;
 import com.chymeravr.schemas.eventreceiver.RuntimeAdMeta;
@@ -70,13 +70,12 @@ public final class Image360Activity extends Activity {
     private String returningClassName;
 
     // the function talks to analytics manager as and when called
-    // TODO: 5/10/2017 the analytics manager should own this piece of code to avoid duplication
-    public void emitEvent(EventType eventType, AnalyticsManager.Priority priority, HashMap<String, String> map){
+    public void emitEvent(EventType eventType, EventPriority priority, HashMap<String, String> map){
         long currTime = new Timestamp(System.currentTimeMillis()).getTime();
         RuntimeAdMeta adMeta = new RuntimeAdMeta(this.getServingId(), this.getInstanceId());
         SDKEvent event = new SDKEvent(currTime, eventType, adMeta);
         event.setParamsMap(map);
-        AnalyticsManager.push(event, priority);
+        ChymeraVrSdk.getSdkInstance().getAnalyticsManager().push(event, priority);
     }
 
     // This is done on the GL thread because refreshViewerProfile isn't thread-safe.
@@ -93,7 +92,6 @@ public final class Image360Activity extends Activity {
 
     private final Runnable hmdPollRunner = new Runnable() {
         public void run() {
-            Log.v(TAG, "Running Scheduler");
             Image360Activity.this.getCardboardHmdParams();
         }
     };
@@ -151,11 +149,12 @@ public final class Image360Activity extends Activity {
                     @Override
                     public void onSurfaceCreated(GL10 gl, EGLConfig config) {
                         Log.d(TAG, "GL Surface Created");
-                        Image360Activity.this.emitEvent(EventType.AD_SHOW, AnalyticsManager.Priority.HIGH, null);
+                        Image360Activity.this.emitEvent(EventType.AD_SHOW, EventPriority.HIGH, null);
 
                         nativeInitializeGl(nativeImage360ActivityHandle);
 
-                        scheduler.scheduleAtFixedRate(hmdPollRunner, Config.hmdSamplingDelay, Config.hmdSamplingPeriod, TimeUnit.SECONDS);
+                        scheduler.scheduleAtFixedRate(hmdPollRunner, Config.getHmdSamplingDelay(),
+                                Config.getHmdSamplingPeriod(), TimeUnit.SECONDS);
                     }
 
                     @Override
@@ -168,7 +167,6 @@ public final class Image360Activity extends Activity {
                         nativeDrawFrame(nativeImage360ActivityHandle);
 
                         if(nativeCloseAd(nativeImage360ActivityHandle)){
-//                            Log.d(TAG, "Gazing at the close button");
                             Image360Activity.this.finish();
                         }
                     }
@@ -200,7 +198,6 @@ public final class Image360Activity extends Activity {
             AndroidCompat.setSustainedPerformanceMode(this, true);
         }
 
-
         // Enable VR Mode.
         AndroidCompat.setVrModeEnabled(this, true);
 
@@ -225,13 +222,6 @@ public final class Image360Activity extends Activity {
         gvrLayout.onResume();
         surfaceView.onResume();
         surfaceView.queueEvent(refreshViewerProfileRunnable);
-
-        // TODO: 4/27/2017 remove hardcoded thread pool size
-        //this.scheduler = Executors.newScheduledThreadPool(1);
-        //this.scheduler.scheduleAtFixedRate(hmdPollRunner, 1, 1, TimeUnit.SECONDS);
-//        final ScheduledFuture<?> beeperHandle =
-//                scheduler.scheduleAtFixedRate(hmdPollRunner, 1, 1, SECONDS);
-
     }
 
     @Override
@@ -241,7 +231,7 @@ public final class Image360Activity extends Activity {
         // Destruction order is important; shutting down the GvrLayout will detach
         // the GLSurfaceView and stop the GL thread, allowing safe shutdown of
         // native resources from the UI thread.
-        this.emitEvent(EventType.AD_CLICK, AnalyticsManager.Priority.HIGH, null);
+        this.emitEvent(EventType.AD_CLICK, EventPriority.HIGH, null);
         gvrLayout.shutdown();
         nativeDestroyRenderer(nativeImage360ActivityHandle);
         this.scheduler.shutdown();
@@ -300,12 +290,7 @@ public final class Image360Activity extends Activity {
                 hmdEyeMap.put(key, String.valueOf(hmdParams[i++]));
 
             }
-            Log.d(TAG, "getCardboardHmdParams: "
-                    + hmdParams[0] + ", "
-                    + hmdParams[1] + ", "
-                    + hmdParams[2] + ", "
-                    + hmdParams[3]);
-            this.emitEvent(EventType.AD_VIEW_METRICS, AnalyticsManager.Priority.LOW, hmdEyeMap);
+            this.emitEvent(EventType.AD_VIEW_METRICS, EventPriority.LOW, hmdEyeMap);
         }
     }
 
