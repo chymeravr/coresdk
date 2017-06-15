@@ -4,6 +4,7 @@
 
     <uses-permission android:name="android.permission.INTERNET" />
     <uses-permission android:name="android.permission.ACCESS_WIFI_STATE" />
+    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
 
     <!--android:label="@string/app_name"-->
     <application
@@ -21,11 +22,11 @@
             <!-- Intent filter that enables this app to be launched from the
                  Cardboard app and from the traditional launcher. -->
             <!--TODO : maybe we dont need this for a library activity-->
-            <intent-filter>
-                <action android:name="android.intent.action.MAIN" />
-                <category android:name="android.intent.category.LAUNCHER" />
-                <category android:name="com.google.intent.category.CARDBOARD" />
-            </intent-filter>
+            <!--<intent-filter>-->
+                <!--<action android:name="android.intent.action.MAIN" />-->
+                <!--<category android:name="android.intent.category.LAUNCHER" />-->
+                <!--<category android:name="com.google.intent.category.CARDBOARD" />-->
+            <!--</intent-filter>-->
         </activity>
     </application>
 

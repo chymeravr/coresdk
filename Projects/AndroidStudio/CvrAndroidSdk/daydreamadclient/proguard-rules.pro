@@ -49,3 +49,5 @@
 
 # schemas.jar is already minified
 -keep class com.chymeravr.schemas.** {*;}
+
+-keep class com.chymeravr.daydreamadclient.BuildConfig { *; }

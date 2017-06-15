@@ -18,7 +18,7 @@ import com.chymeravr.schemas.eventreceiver.EventType;
 import com.chymeravr.schemas.eventreceiver.RuntimeAdMeta;
 import com.chymeravr.schemas.eventreceiver.SDKEvent;
 import com.google.vr.ndk.base.GvrLayout;
-import com.google.vr.sdk.base.AndroidCompat;
+import com.google.vr.ndk.base.AndroidCompat;
 
 import java.sql.Timestamp;
 import java.util.HashMap;

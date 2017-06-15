@@ -94,7 +94,7 @@ dependencies {
 //    releaseCompile project(path: ':cardboardadclient', configuration: 'release')
 //     debugCompile project(path: ':cardboardadclient', configuration: 'debugDemo')
 //     releaseCompile project(path: ':cardboardadclient', configuration:'release')
-    debugCompile project(path: ':cardboardadclient', configuration: 'debug')
+    debugCompile project(path: ':cardboardadclient', configuration: 'debugDemo')
 //    releaseCompile project(path: ':cardboardadclient', configuration: 'releaseDemo')
 
 

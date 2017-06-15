@@ -10,10 +10,10 @@ include ':common', ':analytics', ':adclient'
 
 // Oculus VR Libraries
 ////include ':ovr_sdk_mobile' ~ this is not required
-include ':gearvrimplementation'
-include ':gearvradclient'
-// sample oculus vr app to test library
-include ':appgearvr'
+//include ':gearvrimplementation'
+//include ':gearvradclient'
+//// sample oculus vr app to test library
+//include ':appgearvr'
 
 // Google VR Libraries
 // sample google vr app to test library
@@ -27,3 +27,21 @@ include ':appgearvr'
 //include ':appcardboard'
 //include ':cardboardimplementation'
 //include ':cardboardadclient'
+
+switch(HMD){
+    case "daydream":
+        include ':appdaydream'
+        include ':daydreamimplementation'
+        include ':daydreamadclient'
+        break
+    case "cardboard":
+        include ':appcardboard'
+        include ':cardboardimplementation'
+        include ':cardboardadclient'
+        break
+    case "gearvr":
+        include ':gearvrimplementation'
+        include ':gearvradclient'
+        include ':appgearvr'
+        break
+}

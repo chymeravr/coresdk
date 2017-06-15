@@ -23,29 +23,31 @@
 # If you keep the line number information, uncomment this to
 # hide the original source file name.
 #-renamesourcefileattribute SourceFile
--keep public class com.chymeravr.adclient.* {
-    public <methods>;
-}
--keep public class com.chymeravr.adclient.Ad {
-    public <methods>;
-    protected <methods>;
-}
 
--keepclassmembers class * extends java.lang.Enum {
-    <fields>;
-    public static **[] values();
-    public static ** valueOf(java.lang.String);
-}
-
--keep public class com.chymeravr.analytics.* {
-    public <methods>;
-}
--keep public class com.chymeravr.common.* {
-    public <methods>;
-}
 -keep public class com.chymeravr.cardboardadclient.* {
+    public <methods>;
+}
+
+-keep public interface com.chymeravr.adclient.VrAdListener{
+    public <methods>;
+}
+
+-keep public class com.chymeravr.adclient.VrAdRequest{
+    public <methods>;
+}
+
+-keep public enum com.chymeravr.adclient.VrAdRequest$** {
+    **[] $VALUES;
+    public *;
+}
+
+-keepattributes InnerClasses
+
+-keep public class com.chymeravr.adclient.VrAdRequest$VrAdRequestBuilder {
     public <methods>;
 }
 
 # schemas.jar is already minified
 -keep class com.chymeravr.schemas.** {*;}
+
+-keep class com.chymeravr.cardboardadclient.BuildConfig { *; }

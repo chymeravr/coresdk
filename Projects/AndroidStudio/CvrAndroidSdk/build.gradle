@@ -27,11 +27,8 @@ buildscript {
 //        commonCPPFlags = ["-DGLES2_0"]
 
         // hmd enumerates the different platforms we can build our ad client for
-        // possible values
-        //      - daydream
-        //      - cardboard
-        //      - gearvr
-        hmd = "gearvr"
+        // possible value - daydream- cardboard - gearvr
+        hmd = HMD//"gearvr"
 
         // hmdBuild acts as an enum type to represent various architectures we are building for
         // to stop building all architectures during development with pixel, we only use
@@ -44,7 +41,7 @@ buildscript {
         // "googleVrS6" : build only for Samsung S6 - armeabi-v7a - test device for cardboard
         // "samsungGearVr" : build only for Samsung S6 - armeabi-v7a     - test device for Oculus Samsung GearVr
 
-        hmdBuild = "samsungGearVr"
+        hmdBuild = HMD_BUILD //"samsungGearVr"
 
         // google vr architextures for various configurations
         googleVrAllArch = ["arm64-v8a", "armeabi-v7a", "x86"]
@@ -132,8 +129,8 @@ def getMinSdkVersion(hmd){
     def minSdkVersion = 24
     switch(hmd){
         case "daydream":
-            // todo : switch to gles v3 for daydream
-            minSdkVersion = 24
+            // unity wants this to be 23 ~ no idea why - daydream apps run on 24 and above
+            minSdkVersion = 23
             break
         case "cardboard":
             minSdkVersion = 19
