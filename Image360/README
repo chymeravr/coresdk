@@ -1,0 +1,13 @@
+Image360 module implements a 360 Image viewer using the CoreEngine Module. 
+Image360 Supports the following image formats
+    - Equirectangular Map
+    - Cube Map
+
+Equirectangular format is more popular though John Cormak (Oculus Big Daddy)
+recommends Cube Map format. 
+
+Image360 also supports two viewing modes
+    - Stereo
+    - Mono
+
+Stereo Images give depth perception and are preferable for VR Environments

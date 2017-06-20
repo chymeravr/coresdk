@@ -1,0 +1,23 @@
+0-INTRODUCTION
+=================================
+GLImplementation Module contains an implementation of CoreEngine objects
+for Opengl, OpenGLES2 and OpenGLES3 APIs.
+OpenGL and OpenGLES are mostly similar. However, there are significant 
+difference exists in Shader languages (GLSL). We have tried our best to 
+use same implementation across the 3 APIs. 
+There are very subtle differences between OpenGLES2 and OpenGLES3. The
+function calls are identical. However, the accepted parameters of 
+identical functions are not identical. Read the API documentation carefully
+and compare. Prior experience suggests this could resolve prickly bugs. 
+
+
+The choice of GL vs GLES is resolved by CMakeList which is passed a parameter
+by the build system (CMake for Windows and Gradle for Android). Only the relavent
+files are included during build. 
+
+Major Classes that have different implementations for GL, GLES2 & GLES3 are
+    - Scene
+    - TextureText
+
+Additionally, Shader Headers are different. 
+Please see the relevant files for more details. 

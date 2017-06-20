@@ -1,0 +1,75 @@
+0-INTRODUCTION
+=================================
+CoreEngine Module contains a definitions of a basic rendering engine. It is 
+designed to be implemented using various rendering libraries like OpenGL, 
+DirectX, Vulkan etc. 
+
+
+1-CONTENTS
+=================================
+Components
+--------------------
+Core Engine contains numerous submodules. It is modelled after Unity. 
+Components contain an interface for gaze detectors. Gaze detectors are useful 
+to bind callbacks for events when the reticle (head tracked or controller tracked)
+moves over a specific gaze detector. 
+Transform tree helps us to do hierarchical modeling of Graphics Objects.  
+
+Conf
+--------------------
+Contains definitions from main Conf Module
+
+Events
+--------------------
+Defines an interface for an event. Events are callbacks for things like key press, 
+mouse clicks, etc. These are put in a Queue which is emptied and each of its event
+objects called before rendering each frame. 
+
+Factory
+--------------------
+Contains abstract factories for core engine objects. It is expected that their
+concrete implementations will be provided in implementations for different rendering
+libraries (OpenGL, DirectX, Vulkan etc.) These factories help instantiation of 
+different Graphics objects. 
+Information about Factory Design pattern can be found online or in GoF book.
+
+ModelBuilder
+--------------------
+We need a few standard objects for our Image360 & Video360 applications. These are
+    - Sphere
+    - Cube
+    - Concentric Circles (reticle)
+These models are generated using the objects of this class. 
+
+Modifier
+--------------------
+These contain helper classes for Image loading and manipulation. 
+Images are loaded using SOIL & libjpeg libraries. 
+These images are then used as textures in our Rendering Engine
+
+RenderObjects
+--------------------
+This module contains the bulk of our abstractions for Graphics Objects. The following
+are the major objects defined
+    - Camera
+    - Model
+    - Scene
+    - Textures
+    - Materials
+    - Shaders
+Each of these must be given a concrete implementation in the corresponding rendering library
+implementation. See GLImplementation for details. 
+It also contains some interfaces that help in definition a Scene graph for rendering:
+    - IComponent
+    - IScenable
+    - IRenderable
+    - Relation
+
+UI
+--------------------
+UI module contains classes defining user interface objects like fonts, text, buttons, 
+reticle etc. Typically these are built on top of existing CoreEngine objects.
+
+Util
+--------------------
+Utilities class include logger, mutex lock. 

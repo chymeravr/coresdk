@@ -1,0 +1,15 @@
+Conf
+--------------------
+Rendering libraries like to define their own data types for optimization purposes.
+This makes writing cross platform libraries harder. We solve this by creating
+an abstraction over most data types. The compiler binds our abstraction to the 
+relavent data types of these rendering libraries at compile time. For example
+in OpenGL, floats are represented as GLfloat. We map our own type to this by 
+aliasing (typedef) GLfloat to CL_GLfloat. GLfloat type definition changes b/w
+OpenGL and OpenGLES. Our aliasing prevents us from writing repeated code. 
+
+It currently contains aliasing definitions for the following 
+    - OpenGL
+    - OpenGLES2
+    - OpenGLES3
+    - NonGL

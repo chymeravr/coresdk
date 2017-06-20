@@ -1,4 +1,0 @@
-To generate MSVC2013 project files
-cmake -G "Visual Studio 12 2013" ../../ (to the root CMakeLists.txt)
-
-Change options in root/CMakeLists.txt to generate desired config

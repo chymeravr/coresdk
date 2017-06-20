@@ -1,0 +1,148 @@
+0-INTRODUCTION
+=================================
+This is the README file for the Chymera VR SDK 
+The code base can be found at https://bitbucket.org/chymeravr/coresdk
+
+This SDK allows clients to show ads in their VR application. It currently 
+supports the following platforms
+    - Samsung's GearVR (which uses Oculus Eco System)
+    - Google's Daydream
+    - Google's Cardboard (for Android Only)
+
+All the above platforms allow are Android based. We DO NOT yet support Cardboard
+ios development. 
+
+Our SDK is imported as an aar library in Android Applications for native
+application development.
+One of our major targets audience for native advertisement are mobile game
+developers. 
+As mobile game developers use Unity for development, these aar libraries
+are wrapped inside a Unity package and distributed. See above bitbucket
+team repository for the code base for Unity. 
+
+
+1-Design & Development
+=================================
+Design & Implementation
+--------------------
+The SDK is written in C++ and is portable to different OS and Graphics Libraries. 
+It is designed in a layered cake pattern. 
+Basic abstractions of our Rendering Engine are presented in CoreEngine module.
+Different implementations of the CoreEngine are possible on different Graphics
+libraries (i.e OpenGL, DirectX, Vulkan). Currently only OpenGL and OpenGLES 
+implementations are given. 
+Applications are written using the basic abstractions from the CoreEngine module.
+These are independent of graphics library implementation. For e.g - Image360
+Different HMD implementations contain Renderers which are written specifically 
+for different OS / HMD combinations. For example, 
+Daydream and GearVR implementations have their own renderers specifically written
+to handle respective VR environments (these could be on different OS as well). These
+renderers will "wire" together our application with correct graphics implementation
+and finally render within VR. This is technically known as dependency injection.
+These HMD implementations also contain other platform dependent classes (Mutex, 
+Logger etc.) A default Renderer (folder with same name at root) is given for
+rendering without an HMD. This is for use within Visual Studio. 
+
+Development Prerequisites
+--------------------
+Proficiency in the following Programming Languages / APIs / tools are necessary to begin 
+development on this SDK.
+    - C++ (Standard 11)
+    - Java (Basic)
+    - Android Application Development (Basic)
+    - OpenGL v4 (Understanding of Computer Graphics Principles)
+    - CMake
+    - Gradle
+    - Maven 
+
+Developers are expected to understand Software Engineering Principles such as interfaces, 
+Polymorphism, Dependency injection. Look up SOLID principles. The talks by Uncle Bob
+are especially useful. 
+    
+If you are new to Computer Graphics, we recommend trying to understand Unity first. 
+Build a sample game following this tutorial on youtube by Jimmy Vegas
+https://www.youtube.com/playlist?list=PLZ1b66Z1KFKik2g8D4wrmYj4yein4rCk8
+
+Followed it up by implementing the examples given by Unity themselves.
+https://unity3d.com/learn/tutorials
+
+Our SDK rendering engine follows unity concepts. 
+
+
+
+2-CONTENTS
+=================================
+Main C++ Libraries
+--------------------
+Conf                    - data type configurations for different graphics libraries
+CoreEngine
+GLImplementation
+Image360
+Renderer
+WindowsImplementation
+CardboardImplementation
+DaydreamImplementation
+GearVrImplementation
+
+Support Libraries
+-------------------
+These are external libraries dependencies of our SDK. They have to be 
+compiled for use with different OS/Compilers (except glfw which we use with
+windows)
+Consists of : 
+    +freetype
+    +libjpeg
+    +SOIL
+    +glfw
+
+Repositories
+----------------------
+Can be found under Repository directory in the root dir. Contains third party libraries
+for direct use (we don't have to compile them separately for Windows/Android etc.)
+Consists of freeglut, glew & glm - these are support libraries for use with opengl
+
+Projects
+---------------------
+Contains different implementations of our project. 
+
+Visual Studio project is used to build and test new features native to our ad formats in 
+windows. This is build by default using CMake files. See CMakeLists file in the root 
+directory.
+
+Android Studio project is used to build and test our library for android based HMDs 
+namely:
+    - GearVR
+    - Daydream
+    - Cardboard
+
+
+3-INSTALLATION
+=================================
+Visual Studio
+---------------------
+To generate MSVC2013 project files
+cmake -G "Visual Studio 12 2013" ../../ (to the root CMakeLists.txt)
+
+Change options in root/CMakeLists.txt to generate desired config
+
+Android Studio
+---------------------
+This project is automatically built by Android Studio using Gradle along with CMake
+It contains JNI wrappers to call our library in Java for use within Activities in 
+Android. 
+Finally exported libraries are present in GearVrAdClient, DaydreamAdClient & CardboardAdClient
+folders insider CvrAndroidSdk. These are .aar files (similar to jar)
+
+Since each platform (GearVR, Daydream & Cardboard) has its own dependency tree, we
+can switch between builds by choosing hmd & build config variables in gradle.properties
+files. 
+See gradle files inside CvrAndroidSdk for more info. 
+
+
+4-AUTHORS
+=================================
+1. Sushil Kumar - CoreSdk, GLImplementation (opengl), Image360, WindowsImplementation, Renderer
+    Email - sushil@chymeravr.com
+2. Robin Philip - GLImplementation (opengl, opengles2, opengles3), GearVRImplementation,
+                  DaydreamImplementation, CardboardImplementation
+    Email - robin@chymeravr.com
