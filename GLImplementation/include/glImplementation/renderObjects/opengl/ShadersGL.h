@@ -3,6 +3,7 @@
 
 // we used global variable for representing shaders here within our own scope (cl)
 // we do this to avoid handling file reading across platforms (win, android etc.)
+// TODO : Change thes constant variable names to entirely upper case
 namespace cl{
 	const std::string uniformColorGlVertexShader = "#version 330 core\n"
 		"// Input vertex data, different for all executions of this shader.\n"

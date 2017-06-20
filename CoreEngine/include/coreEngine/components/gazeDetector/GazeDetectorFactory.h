@@ -18,7 +18,9 @@ namespace cl{
 			float lengthY,
 			float lengthZ){
 
-			return std::unique_ptr<IComponent>(new GazeDetectorBox(idOfObjectComponentAttachedTo, shooterTransform, gazeObjectTransform, gazeListener, gazeDetectorContainer, shooterLocalOrigin, shooterLocalLookAt, lengthX, lengthY, lengthZ));
+			return std::unique_ptr<IComponent>(new GazeDetectorBox(idOfObjectComponentAttachedTo, shooterTransform,
+																   gazeObjectTransform, gazeListener, gazeDetectorContainer, 
+																   shooterLocalOrigin, shooterLocalLookAt, lengthX, lengthY, lengthZ));
 		}
 
 		std::unique_ptr<GazeDetectorContainer> createGazeDetectorContainer(){

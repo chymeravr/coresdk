@@ -16,7 +16,7 @@ namespace cl{
 		Model *model = nullptr;
 
 		ShaderUniformColor *shader = uniformColorFactory->getShader(scene);
-		MaterialUniformColor *material = uniformColorFactory->getMaterial(shader, color);
+		this->material = uniformColorFactory->getMaterial(shader, color);
 		
 		modelId = id;
 		
@@ -51,4 +51,9 @@ namespace cl{
 		ComponentList &componentList = model->getComponentList();
 		componentList.addComponent(std::move(transformTreeModel));
 	}
+
+	void PlanarBackground::setColor(CL_Vec4 color){
+		this->material->setColor(color);
+	}
+
 }

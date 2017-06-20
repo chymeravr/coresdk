@@ -22,6 +22,10 @@ namespace cl{
 						 float width,
 						 float height,
 						 ILoggerFactory *loggerFactory);
+		void setColor(CL_Vec4 color);
+	
+	private:
+		MaterialUniformColor *material;
 	};
 }
 
