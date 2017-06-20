@@ -327,7 +327,6 @@ void Image360Mono::initialize(
     gazeTransformTarget = transformTreeCamera;
   }
 
-  // auto boxMessage = this->actionButtonText; //std::string("notifyMe");
   auto actionButtonGazeDetectorOrigin = CL_Vec3(0.0f, 0.0f, 0.0f);
   auto actionButtonGazeDetectorLookAt = CL_Vec3(0.0f, 0.0f, -1.0f);
   auto actionButtonGazeDetectorLengthX = 3.0f;
@@ -343,7 +342,6 @@ void Image360Mono::initialize(
   actionButtonModel->getComponentList().addComponent(
       std::move(gazeDetectorNotifyMe));
 
-  // auto boxMessage2 = this->closeButtonText; //std::string("closeMe");
   auto closeButtonGazeDetectorOrigin = CL_Vec3(0.0f, 0.0f, 0.0f);
   auto closeButtonGazeDetectorLookAt = CL_Vec3(0.0f, 0.0f, -1.0f);
   auto closeButtonGazeDetectorLengthX = 3.0f;
@@ -387,15 +385,6 @@ void Image360Mono::initialize(
 
 void Image360Mono::update() { renderer->update(); }
 
-void Image360Mono::draw(EYE eye) {
-  /*while (!eventQueue->empty()){
-                          std::unique_ptr<IEvent> event = eventQueue->pop();
-                          event->callListener();
-                  }
-                  */
-
-  renderer->draw(scene.get(), eye);
-}
 void Image360Mono::drawInit() {
   if (this->fadeStarted) {
     this->fadeScreen->setColor(CL_Vec4(0.0, 0.0, 0.0, this->alphaFade));
@@ -411,6 +400,8 @@ void Image360Mono::drawInit() {
   }
   renderer->drawInit(scene.get());
 }
+
+void Image360Mono::draw(EYE eye) { renderer->draw(scene.get(), eye); }
 
 void Image360Mono::drawComplete() { renderer->drawComplete(); }
 

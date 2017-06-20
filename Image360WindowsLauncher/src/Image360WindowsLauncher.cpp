@@ -197,7 +197,7 @@ int _tmain(int argc, _TCHAR** argv) {
       "\\Debug\\fonts\\arial.ttf";
   // std::string fontFilePath = "fonts/arial.ttf";
 
-  IMAGE_MODE appMode = MONO;
+  IMAGE_MODE appMode = STEREO;
 
   if (appMode == STEREO) {
     std::unique_ptr<IRenderer> renderer(new RendererNoHMDStereo());
@@ -257,6 +257,9 @@ int _tmain(int argc, _TCHAR** argv) {
     while (!glfwWindowShouldClose(window)) {
       // Check if any events have been activiated (key pressed, mouse moved
       // etc.) and call corresponding response functions
+	if (application->isFadeComplete()) {
+		glfwSetWindowShouldClose(window, GL_TRUE);
+	}
       glfwPollEvents();
 
       glViewport(0, 0, width, height);

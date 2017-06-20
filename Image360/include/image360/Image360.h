@@ -74,13 +74,13 @@ class Image360 : public EventKeyPressListener,
   // IApplication implementation
   virtual void start() = 0;
   /**
-              * @arg mode: One of the values of enum TEXTURE_MAP_MODE -
-   * CUBE_MAP_MODE_SIX_IMAGES, CUBE_MAP_MODE_SINGLE_IMAGE,
-   * EQUIRECTANGULAR_MAP_MODE
-              * @arg textureImages: Images required to generate textures. In
-   * case of CUBE_MAP_MODE_SIX_IMAGES order of images should be FRONT, LEFT,
-   * BACK, RIGHT, TOP AND BOTTOM. In other cases just one image is required.
-              */
+  * @arg mode: One of the values of enum TEXTURE_MAP_MODE -
+  * CUBE_MAP_MODE_SIX_IMAGES, CUBE_MAP_MODE_SINGLE_IMAGE,
+  * EQUIRECTANGULAR_MAP_MODE
+  * @arg textureImages: Images required to generate textures. In
+  * case of CUBE_MAP_MODE_SIX_IMAGES order of images should be FRONT, LEFT,
+  * BACK, RIGHT, TOP AND BOTTOM. In other cases just one image is required.
+  */
   virtual void initialize(
       TEXTURE_MAP_MODE mode,
       std::vector<std::unique_ptr<Image>> &textureImages) = 0;
