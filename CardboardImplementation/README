@@ -1,0 +1,10 @@
+Supports a Carboard Ad Client by implementing the following interfaces :
+    - Renderer
+    - Logger
+    - Action Gaze Event
+    - Close Gaze Event
+    - Mutex Lock
+
+Google VR (GVR) libraries support both daydream and cardboard implementations. 
+They have many commonalities. However, GVR only provides fade out for Daydream 
+and not cardboard. Also, controller is supported only for Daydream.
