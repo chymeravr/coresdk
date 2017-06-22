@@ -51,7 +51,7 @@
 // Application Dependency
 #include <image360/Image360.h>
 #include <image360/Image360Mono.h>
-#include <image360/Image360Stereo.h>
+//#include <image360/Image360Stereo.h>
 
 //  Windowing Library
 #include <GLFW/glfw3.h>
@@ -201,7 +201,7 @@ int _tmain(int argc, _TCHAR** argv) {
 
   if (appMode == STEREO) {
     std::unique_ptr<IRenderer> renderer(new RendererNoHMDStereo());
-    application = std::unique_ptr<Image360Stereo>(new Image360Stereo(
+    application = std::unique_ptr<Image360>(new Image360(
         std::move(renderer), std::move(sceneFactory), std::move(modelFactory),
         std::move(diffuseTextureFactory),
         std::move(diffuseTextureCubeMapFactory),
@@ -215,38 +215,26 @@ int _tmain(int argc, _TCHAR** argv) {
     ImageJPEGLoader imageJPEGLoader(logger.get());
 
     std::vector<std::unique_ptr<Image> > textureImages;
-    TEXTURE_MAP_MODE mode =
-        EQUIRECTANGULAR_MAP_MODE;  // CUBE_MAP_MODE_SINGLE_IMAGE; // image mode
+    
+    textureImages.push_back(imageJPEGLoader.loadImage(
+        "C:\\Users\\robin_"
+        "chimera\\Documents\\SDK\\Projects\\VisualStudio\\Image360WindowsLa"
+        "uncher\\Debug\\360images\\Witcher-BoatSunset-SmartPhone-360-"
+        "Stereo-2016-05-03-22-13-08.jpg"));
+    
 
-    switch (mode) {
-      case CUBE_MAP_MODE_SINGLE_IMAGE:
-        // textureImages.push_back(imagePNGLoader.loadImage("cubemap_current.png"));
-        textureImages.push_back(
-            imageJPEGLoader.loadImage("cubemap_desert.jpg"));
-        // textureImages.push_back(imagePNGLoader.loadImage("C:\\Users\\robin_chimera\\Documents\\SDK\\Projects\\VisualStudio\\Image360WindowsLauncher\\Debug\\cubemap_current2.jpg"));
-        break;
-      case CUBE_MAP_MODE_SIX_IMAGES:
-        /*textureImages.push_back(imageBMPLoader.loadImage("cubemap_geo_front.bmp"));
-        textureImages.push_back(imageBMPLoader.loadImage("cubemap_geo_left.bmp"));
-        textureImages.push_back(imageBMPLoader.loadImage("cubemap_geo_back.bmp"));
-        textureImages.push_back(imageBMPLoader.loadImage("cubemap_geo_right.bmp"));
-        textureImages.push_back(imageBMPLoader.loadImage("cubemap_geo_top.bmp"));
-        textureImages.push_back(imageBMPLoader.loadImage("cubemap_geo_bottom.bmp"));*/
-        break;
-      case EQUIRECTANGULAR_MAP_MODE:
-        // textureImages.push_back(imageBMPLoader.loadImage("tex_current.bmp"));
-        // textureImages.push_back(imageJPEGLoader.loadImage("equirectangular_desert2.jpg"));
-        // textureImages.push_back(imageJPEGLoader.loadImage("360images\\WitnessSquare-Smartphone-360-Stereo-2016-05-04-00-11-48.jpg"));
-        textureImages.push_back(imageJPEGLoader.loadImage(
-            "C:\\Users\\robin_"
-            "chimera\\Documents\\SDK\\Projects\\VisualStudio\\Image360WindowsLa"
-            "uncher\\Debug\\360images\\Witcher-BoatSunset-SmartPhone-360-"
-            "Stereo-2016-05-03-22-13-08.jpg"));
-        break;
-    }
+	std::cout << application->getActionButtonText() << std::endl;
+	application->setActionButtonText(std::string("Download"));
+	std::cout << application->getActionButtonText() << std::endl;
+	application->initialize();
+	
+	application->initStereoView();
+	application->initStereoEquirectangularView(std::move(textureImages[0]));
 
-    application->setActionButtonText(std::string("Download"));
-    application->initialize(mode, textureImages);
+	application->initCameraReticle();
+	application->initUIButtons();
+	application->initFadeScreen();
+
 
     //// register callbacks
     glfwSetKeyCallback(window, key_callback);
@@ -269,11 +257,11 @@ int _tmain(int argc, _TCHAR** argv) {
 
       glViewport(0, 0, width / 2, height);
       // glScissor(0, 0, width , height);
-      application->draw(LEFT);
+      application->drawStereoLeft();
 
       glViewport(width / 2, 0, width / 2, height);
       // glScissor(0, 0, width , height);
-      application->draw(RIGHT);
+      application->drawStereoRight();
 
       application->drawComplete();
 
@@ -291,7 +279,8 @@ int _tmain(int argc, _TCHAR** argv) {
 
   } else {
     std::unique_ptr<IRenderer> renderer(new RendererNoHMD());
-    application = std::unique_ptr<Image360Mono>(new Image360Mono(
+	
+    application = std::unique_ptr<Image360>(new Image360(
         std::move(renderer), std::move(sceneFactory), std::move(modelFactory),
         std::move(diffuseTextureFactory),
         std::move(diffuseTextureCubeMapFactory),
@@ -305,38 +294,41 @@ int _tmain(int argc, _TCHAR** argv) {
     ImageJPEGLoader imageJPEGLoader(logger.get());
 
     std::vector<std::unique_ptr<Image> > textureImages;
-    TEXTURE_MAP_MODE mode =
-        EQUIRECTANGULAR_MAP_MODE;  // CUBE_MAP_MODE_SINGLE_IMAGE; // image mode
+	TEXTURE_MAP_MODE mode = EQUIRECTANGULAR_MAP_MODE;
+        //EQUIRECTANGULAR_MAP_MODE;  // CUBE_MAP_MODE_SINGLE_IMAGE; // image mode
 
     switch (mode) {
       case CUBE_MAP_MODE_SINGLE_IMAGE:
         // textureImages.push_back(imagePNGLoader.loadImage("cubemap_current.png"));
         textureImages.push_back(
-            imageJPEGLoader.loadImage("cubemap_desert.jpg"));
+            imageJPEGLoader.loadImage("C:\\Users\\robin_"
+            "chimera\\SDK\\Projects\\VisualStudio\\Image360WindowsLa"
+			"uncher\\Debug\\360images\\cubemap_desert.jpg"));
         // textureImages.push_back(imagePNGLoader.loadImage("C:\\Users\\robin_chimera\\Documents\\SDK\\Projects\\VisualStudio\\Image360WindowsLauncher\\Debug\\cubemap_current2.jpg"));
-        break;
-      case CUBE_MAP_MODE_SIX_IMAGES:
-        /*textureImages.push_back(imageBMPLoader.loadImage("cubemap_geo_front.bmp"));
-        textureImages.push_back(imageBMPLoader.loadImage("cubemap_geo_left.bmp"));
-        textureImages.push_back(imageBMPLoader.loadImage("cubemap_geo_back.bmp"));
-        textureImages.push_back(imageBMPLoader.loadImage("cubemap_geo_right.bmp"));
-        textureImages.push_back(imageBMPLoader.loadImage("cubemap_geo_top.bmp"));
-        textureImages.push_back(imageBMPLoader.loadImage("cubemap_geo_bottom.bmp"));*/
         break;
       case EQUIRECTANGULAR_MAP_MODE:
         // textureImages.push_back(imageBMPLoader.loadImage("tex_current.bmp"));
         // textureImages.push_back(imageJPEGLoader.loadImage("equirectangular_desert2.jpg"));
         textureImages.push_back(imageJPEGLoader.loadImage(
             "C:\\Users\\robin_"
-            "chimera\\Documents\\SDK\\Projects\\VisualStudio\\Image360WindowsLa"
-            "uncher\\Debug\\equirectangular_desert2.jpg"));
+            "chimera\\SDK\\Projects\\VisualStudio\\Image360WindowsLa"
+            "uncher\\Debug\\360images\\equirectangular_desert.jpg"));
         break;
+	  default:
+		  break;
     }
 
     std::cout << application->getActionButtonText() << std::endl;
     application->setActionButtonText(std::string("Download"));
     std::cout << application->getActionButtonText() << std::endl;
-    application->initialize(mode, textureImages);
+    application->initialize();
+	application->initMonoView();
+	//application->initMonoEquirectangularView(std::move (textureImages[0]));
+	application->initMonoCubeMapSingleTextureView(std::move(textureImages[0]));
+
+	application->initCameraReticle();
+	application->initUIButtons();
+	application->initFadeScreen();
 
     //// register callbacks
     glfwSetKeyCallback(window, key_callback);

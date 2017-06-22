@@ -19,6 +19,7 @@
 #include <coreEngine/factory/IEventGazeListenerFactory.h>
 
 namespace cl {
+// todo : remove this
 enum TEXTURE_MAP_MODE {
   CUBE_MAP_MODE_SIX_IMAGES,
   CUBE_MAP_MODE_SINGLE_IMAGE,
@@ -72,7 +73,7 @@ class Image360 : public EventKeyPressListener,
 
   // virtual ~Image360() = 0;
   // IApplication implementation
-  virtual void start() = 0;
+  void start();
   /**
   * @arg mode: One of the values of enum TEXTURE_MAP_MODE -
   * CUBE_MAP_MODE_SIX_IMAGES, CUBE_MAP_MODE_SINGLE_IMAGE,
@@ -81,22 +82,46 @@ class Image360 : public EventKeyPressListener,
   * case of CUBE_MAP_MODE_SIX_IMAGES order of images should be FRONT, LEFT,
   * BACK, RIGHT, TOP AND BOTTOM. In other cases just one image is required.
   */
-  virtual void initialize(
-      TEXTURE_MAP_MODE mode,
-      std::vector<std::unique_ptr<Image>> &textureImages) = 0;
-  virtual void update() = 0;
-  virtual void drawInit() = 0;  // draw common stuff
-  virtual void draw(
-      EYE eye) = 0;  // draw eye specific stuff - camera, models etc.
-  virtual void drawComplete() = 0;
-  virtual void
-  deinitialize() = 0;  // todo - this has to be a virtual function as well
-  virtual void stop() = 0;
-  virtual void pause() = 0;
-  virtual void resume() = 0;
-  virtual void onKeyPress(char key, int x, int y) = 0;
-  virtual void onPassiveMouseMotion(int x, int y) = 0;
-  virtual IRenderer *getRenderer() = 0;
+  void initialize();
+  void initMonoView();
+  void initMonoEquirectangularView(std::unique_ptr<Image> textureImage);
+  void initMonoCubeMapSingleTextureView(std::unique_ptr<Image> textureImage);
+  void initMonoCubeMapSixTextureView(
+      std::vector<std::unique_ptr<Image>> textureImage);
+
+  void initStereoView();
+  void initStereoEquirectangularView(std::unique_ptr<Image> textureImage);
+  // note - implement stereo cubemaps if they catch on popularity
+
+  void initUIButtons();
+  void initCameraReticle();
+  void initControllerReticle();
+  void initFadeScreen();
+
+  // TODO : review update functions
+  void update();
+
+  // draw is split into 4 steps - init, left eye, right eye, complete
+
+  // draw init common stuff
+  void drawInit();
+
+  // void draw(EYE eye);
+
+  // draw mono - no distinction between rendering for left and right eye
+  void drawMono();
+  // draw eye specific stuff - camera, models etc.
+  void drawStereoRight();
+  void drawStereoLeft();
+
+  void drawComplete();
+  void deinitialize();
+  void stop();
+  void pause();
+  void resume();
+  void onKeyPress(char key, int x, int y);
+  void onPassiveMouseMotion(int x, int y);
+  IRenderer *getRenderer();
 
   std::unique_ptr<EventGazeListener> actionButtonListener;
   std::unique_ptr<EventGazeListener> closeButtonListener;
@@ -119,7 +144,23 @@ class Image360 : public EventKeyPressListener,
 
   bool isFadeComplete() { return this->fadeComplete; }
 
- protected:
+ private:
+  std::unique_ptr<Scene> scene;
+
+  Camera *camera;
+
+  // mono rendering
+  Shader *shader;
+  Material *material;
+  Texture *imageTexture;
+  Model *imageContainer;
+
+  // stereo rendering
+  Shader *stereoShader;
+  Material *stereoMaterial;
+  Texture *stereoImageTexture;
+  Model *stereoImageContainer[2];  // 0->left, 1->right
+
   std::unique_ptr<IRenderer> renderer;
   IEventQueue *eventQueue;
   std::unique_ptr<ILogger> logger;
@@ -146,6 +187,21 @@ class Image360 : public EventKeyPressListener,
   CL_GLfloat alphaFade = 0.0f;
   CL_GLfloat fadeSpeed = 0.01f;
   bool isControllerPresent = false;
+
+  std::unique_ptr<FadeScreen> fadeScreen;
+  std::unique_ptr<Reticle> reticle;
+  std::unique_ptr<Reticle> reticleBase;
+  std::unique_ptr<GazeDetectorContainer> gazeDetectorContainer;
+
+  int lastPassiveMousePositionX = -1;
+  int lastPassiveMousePositionY = -1;
+  float passiveMouseMotionSensitivity = 0.35f;
+  std::unique_ptr<FontStore> fontStore;
+  TransformTree *gazeTransformTarget;
+
+  void initCubeMapTexture(Image *rightImage, Image *leftImage, Image *topImage,
+                          Image *bottomImage, Image *frontImage,
+                          Image *backImage);
 };
 }
 
