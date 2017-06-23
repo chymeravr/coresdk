@@ -27,13 +27,12 @@
 #include <glImplementation/factory/DiffuseTextureGLFactory.h>
 #include <glImplementation/factory/DiffuseTextureCubeMapGLFactory.h>
 #include <glImplementation/factory/UniformColorFactoryGL.h>
+#include <glImplementation/factory/UniformFadeColorFactoryGL.h>
 #include <glImplementation/factory/TextMaterialFactoryGL.h>
 #include <glImplementation/factory/CameraGLFactory.h>
 
 // Image360 Application
 #include <image360/Image360.h>
-#include <image360/Image360Mono.h>
-#include <image360/Image360Stereo.h>
 
 // Android Modules
 #include <LoggerCardboardFactory.h>
@@ -69,7 +68,7 @@ namespace {
     }
 
     inline cl::Image360 *native(jlong ptr) {
-        return reinterpret_cast<cl::Image360Stereo *>(ptr);
+        return reinterpret_cast<cl::Image360 *>(ptr);
     }
 
 
@@ -126,12 +125,14 @@ JNI_METHOD(jlong, nativeCreateRenderer)
     std::unique_ptr<cl::IModelFactory> uiModelFactory(new cl::ModelGLFactory(loggerFactory.get()));
     std::unique_ptr<cl::IUniformColorFactory> uiUniformColorFactory(
             new cl::UniformColorFactoryGL(loggerFactory.get()));
+    std::unique_ptr<cl::IUniformFadeColorFactory> uiUniformFadeColorFactory(
+            new cl::UniformFadeColorFactoryGL(loggerFactory.get()));
 
     std::unique_ptr<cl::ITextMaterialFactory> textMaterialFactory(
             new cl::TextMaterialFactoryGL(loggerFactory.get()));
     std::unique_ptr<cl::UIFactory> uiFactory(
             new cl::UIFactory(loggerFactory.get(), std::move(uiModelFactory),
-                              std::move(uiUniformColorFactory),
+                              std::move(uiUniformColorFactory), std::move(uiUniformFadeColorFactory),
                               std::move(uiTransformTreeFactory), std::move(textMaterialFactory)));
 
     std::unique_ptr<cl::IEventGazeListenerFactory> eventGazeListenerFactory(
@@ -158,7 +159,7 @@ JNI_METHOD(jlong, nativeCreateRenderer)
 //                                   absoluteFontFilePath)
 //    );
     return jptr(
-            new cl::Image360Stereo(std::move(renderer),
+            new cl::Image360(std::move(renderer),
                                    std::move(sceneFactory),
                                    std::move(modelFactory),
                                    std::move(diffuseTextureFactory),
@@ -178,10 +179,17 @@ JNI_METHOD(void, nativeDestroyRenderer)
 (JNIEnv *env, jclass clazz, jlong nativeImage360) {
     logger->log(cl::LOG_DEBUG, "Native Destroy Renderer Start");
     auto image360 = native(nativeImage360);
-    image360->stop();
+    image360->deinitialize();
     textureImages.clear();
     delete native(nativeImage360);
     logger->log(cl::LOG_DEBUG, "Native Destroy Renderer End");
+}
+
+JNI_METHOD(void, nativeOnStop)
+(JNIEnv *env, jclass clazz, jlong nativeImage360) {
+    logger->log(cl::LOG_DEBUG, "Native On Image360 Application Stop");
+    auto image360 = native(nativeImage360);
+    image360->stop();
 }
 
 JNI_METHOD(void, nativeOnStart)
@@ -215,7 +223,15 @@ JNI_METHOD(void, nativeInitializeGl)
 
     auto mode = cl::EQUIRECTANGULAR_MAP_MODE;
 
-    image360->initialize(mode, textureImages);
+    //image360->initialize(mode, textureImages);
+    image360->initialize();
+    image360->initStereoView();
+    image360->initStereoEquirectangularView(std::move(textureImages[0]));
+
+    image360->initCameraReticle();
+    image360->initUIButtons();
+    image360->initFadeScreen();     // fade screen is required in cardboard
+
     logger->log(cl::LOG_DEBUG, "Initializing Native GL Complete");
 }
 
@@ -224,8 +240,8 @@ JNI_METHOD(void, nativeDrawFrame)
     auto image360 = native(nativeImage360);
 
     image360->drawInit();
-    image360->draw(cl::LEFT);
-    image360->draw(cl::RIGHT);
+    image360->drawStereoLeft();
+    image360->drawStereoRight();
     image360->drawComplete();
 
 }
@@ -263,8 +279,6 @@ JNI_METHOD(int, nativeOnControllerClicked)
 JNI_METHOD(void, nativeOnPause)
 (JNIEnv *env, jobject obj, jlong nativeImage360) {
     native(nativeImage360)->pause();
-
-    //isRendering = false;
 }
 
 JNI_METHOD(void, nativeOnResume)
@@ -277,8 +291,10 @@ JNI_METHOD(jboolean , nativeCloseAd)
 (JNIEnv *env, jobject obj, jlong nativeImage360) {
     auto image360 = native(nativeImage360);
     auto closeButtonListener = (cl::CloseButtonListenerCardboard*) image360->closeButtonListener.get();
-
-    return closeButtonListener->isLongGaze();
+    if(closeButtonListener->isLongGaze()){
+        image360->beginFade();
+    }
+    return image360->isFadeComplete();
 }
 
 JNI_METHOD(jfloatArray , nativeGetHmdParams)

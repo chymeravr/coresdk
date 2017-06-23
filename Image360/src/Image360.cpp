@@ -21,8 +21,6 @@ void Image360::initialize() {
   scene = sceneFactory->create("testScene");
   assert(scene != nullptr);
   scene->setBackgroundColor(CL_Vec4(0.0f, 0.0f, 0.4f, 0.0f));
-  scene->setDepthTest(true);
-  scene->setBlending(true);
   camera = cameraFactory->create("camera", scene.get());
   assert(camera != nullptr);
   camera->setAspect(1.5f);
@@ -299,6 +297,11 @@ void Image360::initStereoEquirectangularView(
   UVSphereBuilder uvSphereBuilderRight(modelModifierRight.get());
   uvSphereBuilderRight.setVMin(0.5f);
   uvSphereBuilderRight.buildUnitSphere(this->stereoImageContainer[RIGHT], 5);
+
+  this->stereoImageContainer[0]->setDepthTest(true);
+  this->stereoImageContainer[1]->setDepthTest(true);
+  this->stereoImageContainer[0]->setBlending(true);
+  this->stereoImageContainer[1]->setBlending(true);
 }
 
 void Image360::initUIButtons() {
@@ -437,21 +440,26 @@ void Image360::initFadeScreen() {
       (TransformTreeCamera *)this->camera->getComponentList().getComponent(
           "transformTree");
   transformTreeCamera->addChild(this->fadeScreen->getTransformTree());
-
-  this->renderer->initialize(scene.get());
 }
+
+void Image360::initComplete() { this->renderer->initialize(scene.get()); }
 
 void Image360::update() { renderer->update(); }
 
 void Image360::drawInit() {
   if (this->fadeStarted) {
-    this->fadeScreen->setColor(CL_Vec4(0.0, 0.0, 0.0, this->alphaFade));
-    if (this->alphaFade < 1.0) {
-      this->alphaFade += this->fadeSpeed;
+    if (this->fadeScreen != nullptr) {
+      this->fadeScreen->setColor(CL_Vec4(0.0, 0.0, 0.0, this->alphaFade));
+      if (this->alphaFade < 1.0) {
+        this->alphaFade += this->fadeSpeed;
+      } else {
+        this->fadeComplete = true;
+      }
     } else {
       this->fadeComplete = true;
     }
   }
+
   while (!eventQueue->empty()) {
     std::unique_ptr<IEvent> event = eventQueue->pop();
     event->callListener();

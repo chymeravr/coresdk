@@ -98,6 +98,8 @@ class Image360 : public EventKeyPressListener,
   void initControllerReticle();
   void initFadeScreen();
 
+  void initComplete();
+
   // TODO : review update functions
   void update();
 

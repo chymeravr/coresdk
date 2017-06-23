@@ -167,6 +167,7 @@ public final class Image360Activity extends Activity {
                         nativeDrawFrame(nativeImage360ActivityHandle);
 
                         if(nativeCloseAd(nativeImage360ActivityHandle)){
+
                             Image360Activity.this.finish();
                         }
                     }
@@ -225,12 +226,21 @@ public final class Image360Activity extends Activity {
     }
 
     @Override
+    protected void onStop() {
+        super.onStop();
+        Log.d(TAG, "onStop");
+        nativeOnStop(nativeImage360ActivityHandle);
+    }
+
+    @Override
     protected void onDestroy() {
         super.onDestroy();
         Log.d(TAG, "onDestroy");
         // Destruction order is important; shutting down the GvrLayout will detach
         // the GLSurfaceView and stop the GL thread, allowing safe shutdown of
         // native resources from the UI thread.
+
+        // is this event right?
         this.emitEvent(EventType.AD_CLICK, EventPriority.HIGH, null);
         gvrLayout.shutdown();
         nativeDestroyRenderer(nativeImage360ActivityHandle);
@@ -312,6 +322,8 @@ public final class Image360Activity extends Activity {
     private native void nativeOnPause(long nativeTreasureHuntRenderer);
 
     private native void nativeOnResume(long nativeTreasureHuntRenderer);
+
+    private native void nativeOnStop(long nativeTreasureHuntRenderer);
 
     private native float[] nativeGetHmdParams(long nativeTreasureHuntRenderer);
 

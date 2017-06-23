@@ -23,6 +23,10 @@ FadeScreen::FadeScreen(std::string id, IModelFactory *modelFactory,
   assert(!scene->exists(modelId));
   scene->addToScene(std::move(modelUptr));
 
+  // fade screen needs blending enabled and depth test enabled
+  model->setDepthTest(true);
+  model->setBlending(true);
+
   // Creating a rectangle model for ui
   std::vector<CL_Vec3> &vertices = model->getVertices();
   vertices.push_back(CL_Vec3(-width / 2, -height / 2, 0.0));  // left bottom

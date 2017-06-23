@@ -50,8 +50,6 @@
 
 // Application Dependency
 #include <image360/Image360.h>
-#include <image360/Image360Mono.h>
-//#include <image360/Image360Stereo.h>
 
 //  Windowing Library
 #include <GLFW/glfw3.h>
@@ -234,7 +232,7 @@ int _tmain(int argc, _TCHAR** argv) {
 	application->initCameraReticle();
 	application->initUIButtons();
 	application->initFadeScreen();
-
+	application->initComplete();
 
     //// register callbacks
     glfwSetKeyCallback(window, key_callback);
