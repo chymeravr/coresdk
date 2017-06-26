@@ -48,7 +48,7 @@ public final class Image360Ad extends Ad {
     @Getter(AccessLevel.MODULE)
     private final WebRequestQueue webRequestQueue;
 
-    static final int IMAGE360_ACTIVIT_REQUEST = 1;
+    static final int IMAGE360_ACTIVITY_REQUEST = 1;
 
     private void adListenerCallbacks() {
         this.getVrAdListener().onVrAdClosed();
@@ -57,10 +57,10 @@ public final class Image360Ad extends Ad {
     class MessageHandler extends BroadcastReceiver {
         @Override
         public void onReceive(Context context, Intent intent) {
-            Log.d(TAG, "Received broadcast signal to close ad activity");
-            ((Activity) Image360Ad.this.getContext()).finishActivity(IMAGE360_ACTIVIT_REQUEST);
+            Log.d(TAG, "Received broadcast signal to close Image360 Ad Activity");
+            ((Activity) Image360Ad.this.getContext()).finishActivity(IMAGE360_ACTIVITY_REQUEST);
 
-            adListenerCallbacks();
+            Image360Ad.this.adListenerCallbacks();
         }
     }
 
@@ -91,62 +91,6 @@ public final class Image360Ad extends Ad {
         this.setLoaded(true);
     }
 
-//    @Override
-//    public void onAdServerResponseSuccess(JSONObject response) {
-//        try {
-//            String responseCodeString = response.getString("responseCode");
-//            ResponseCode responseCode = ResponseCode.BAD_REQUEST;
-//
-//            if (responseCodeString.equals("NO_AD")) {
-//                responseCode = ResponseCode.NO_AD;
-//            } else if (responseCodeString.equals("SERVED")) {
-//                responseCode = ResponseCode.SERVED;
-//            }
-//
-//            switch (responseCode) {
-//                case BAD_REQUEST:
-//                    Log.v(TAG, "Ad Server responded with BAD_REQUEST");
-//                    this.getVrAdListener().onVrAdLoadFailed(VrAdRequest.Error.ADSERVER_FAILURE, "Ad Server responded with BAD_REQUEST");
-//                    break;
-//                case NO_AD:
-//                    Log.v(TAG, "Ad Server responded with NO_AD");
-//                    this.getVrAdListener().onVrAdLoadFailed(VrAdRequest.Error.NO_AD_TO_SHOW, "Ad Server Responded with NO_AD");
-//                    break;
-//                case SERVED:
-//                    JSONObject responseAdJson = response.getJSONObject("ads").getJSONObject(this.getPlacementId());
-//                    this.setServingId(responseAdJson.getString("servingId"));
-//                    this.setMediaUrl(responseAdJson.getString("mediaUrl"));
-//                    this.setClickUrl(responseAdJson.getString("clickUrl"));
-//
-//                    // download media from url and save in internal memory
-//                    InputStreamVolleyRequest mediaDownloadRequest = this.image360AdServices
-//                            .getMediaDownloadRequest(this.getMediaUrl());
-//                    this.getWebRequestQueue().addToRequestQueue(mediaDownloadRequest);
-//
-//                    Log.i(TAG, "Ad Server response successfully processed. Proceeding to query Media Server");
-//                    break;
-//            }
-//
-//        } catch (JSONException e) {
-//            this.setLoading(false);
-//            this.getVrAdListener().onVrAdLoadFailed(VrAdRequest.Error.UNKNOWN_FAILURE, e.toString());
-//
-//            HashMap<String, String> errorMap = new HashMap<>();
-//            errorMap.put("Error", e.toString());
-//            this.emitEvent(EventType.ERROR, EventPriority.LOW, errorMap);
-//
-//            Log.e(TAG, "Adserver Success Response Handler encountered Exception : ", e);
-//        }
-//    }
-//
-//    @Override
-//    public void onMediaServerResponseSuccess() {
-//        this.getVrAdListener().onVrAdLoaded();
-//        this.setLoaded(true);
-//        this.setLoading(false);
-//        Log.i(TAG, "Media Server Response Successful");
-//    }
-
     /* Display ad by calling the native graphics library (or 3rd party API if that is the case)*/
     @Override
     public void show() {
@@ -159,10 +103,6 @@ public final class Image360Ad extends Ad {
             filePath = Util.addLeadingSlash(Config.getImage360AdAssetDirectory()) + this.getPlacementId() + ".jpg";
         }else{
             // demo mode ~ choose any of the 9 images at random
-
-            //        String files[] = {"equirectangular_desert2",
-            //                };
-            //        int fileIndex = (int)(Math.random() * 0);
 
             String files[] = {"Witcher-BoatSunset-SmartPhone-360-Stereo",
                     "Witcher-CiriForestSunset-Smartphone-360-Stereo",
@@ -191,7 +131,7 @@ public final class Image360Ad extends Ad {
             intent.putExtra("returningClass", this.getContext().getClass().getName());
 
             // start activity for showing ad
-            ((Activity) this.getContext()).startActivityForResult(intent, IMAGE360_ACTIVIT_REQUEST);
+            ((Activity) this.getContext()).startActivityForResult(intent, IMAGE360_ACTIVITY_REQUEST);
             this.setLoaded(false);
             this.getVrAdListener().onVrAdOpened();
 

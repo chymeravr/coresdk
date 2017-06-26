@@ -229,7 +229,7 @@ public final class Image360Activity extends Activity {
     protected void onStop() {
         super.onStop();
         Log.d(TAG, "onStop");
-        nativeOnStop(nativeImage360ActivityHandle);
+        //nativeOnStop(nativeImage360ActivityHandle);
     }
 
     @Override
@@ -241,9 +241,10 @@ public final class Image360Activity extends Activity {
         // native resources from the UI thread.
 
         // is this event right?
-        this.emitEvent(EventType.AD_CLICK, EventPriority.HIGH, null);
-        gvrLayout.shutdown();
+        this.emitEvent(EventType.AD_CLOSE, EventPriority.HIGH, null);
         nativeDestroyRenderer(nativeImage360ActivityHandle);
+
+        gvrLayout.shutdown();
         this.scheduler.shutdown();
     }
 
@@ -323,7 +324,7 @@ public final class Image360Activity extends Activity {
 
     private native void nativeOnResume(long nativeTreasureHuntRenderer);
 
-    private native void nativeOnStop(long nativeTreasureHuntRenderer);
+    //private native void nativeOnStop(long nativeTreasureHuntRenderer);
 
     private native float[] nativeGetHmdParams(long nativeTreasureHuntRenderer);
 

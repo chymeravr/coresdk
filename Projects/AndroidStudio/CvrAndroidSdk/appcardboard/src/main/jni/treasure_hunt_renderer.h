@@ -73,9 +73,7 @@ class TreasureHuntRenderer {
    */
   void OnResume();
 
-    bool IsFadedAway();
-
-private:
+ private:
   int CreateTexture(int width, int height, int textureFormat, int textureType);
 
   /*
@@ -191,7 +189,7 @@ private:
    */
   void ResumeControllerApiAsNeeded();
 
-    std::unique_ptr<gvr::GvrApi> gvr_api_;
+  std::unique_ptr<gvr::GvrApi> gvr_api_;
   std::unique_ptr<gvr::AudioApi> gvr_audio_api_;
   std::unique_ptr<gvr::BufferViewportList> viewport_list_;
   std::unique_ptr<gvr::SwapChain> swapchain_;

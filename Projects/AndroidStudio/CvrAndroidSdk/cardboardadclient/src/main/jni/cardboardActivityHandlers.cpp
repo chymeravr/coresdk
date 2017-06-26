@@ -185,12 +185,12 @@ JNI_METHOD(void, nativeDestroyRenderer)
     logger->log(cl::LOG_DEBUG, "Native Destroy Renderer End");
 }
 
-JNI_METHOD(void, nativeOnStop)
-(JNIEnv *env, jclass clazz, jlong nativeImage360) {
-    logger->log(cl::LOG_DEBUG, "Native On Image360 Application Stop");
-    auto image360 = native(nativeImage360);
-    image360->stop();
-}
+//JNI_METHOD(void, nativeOnStop)
+//(JNIEnv *env, jclass clazz, jlong nativeImage360) {
+//    logger->log(cl::LOG_DEBUG, "Native On Image360 Application Stop");
+//    auto image360 = native(nativeImage360);
+//    image360->stop();
+//}
 
 JNI_METHOD(void, nativeOnStart)
 (JNIEnv *env, jobject obj, jlong nativeImage360) {
@@ -231,6 +231,7 @@ JNI_METHOD(void, nativeInitializeGl)
     image360->initCameraReticle();
     image360->initUIButtons();
     image360->initFadeScreen();     // fade screen is required in cardboard
+    image360->initComplete();
 
     logger->log(cl::LOG_DEBUG, "Initializing Native GL Complete");
 }

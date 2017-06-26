@@ -91,10 +91,4 @@ JNI_METHOD(void, nativeOnResume)
   native(native_treasure_hunt)->OnResume();
 }
 
-JNI_METHOD(jboolean, nativeStartAd)
-(JNIEnv *env, jobject obj, jlong native_treasure_hunt)
-{
-  return native(native_treasure_hunt)->IsFadedAway();
-}
-
 } // extern "C"

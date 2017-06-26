@@ -91,21 +91,25 @@ public class MainActivity extends Activity {
         this.image360TestAd = new Image360Ad(this, new VrAdListener() {
             @Override
             public void onVrAdLoaded() {
+                Log.i(TAG, "onVrAdLoaded");
             }
 
             @Override
             public void onVrAdLoadFailed(VrAdRequest.Error error, String errorReason) {
+                Log.i(TAG, "onVrAdLoadFailed : " + error.toString() + " " + errorReason);
             }
 
             @Override
             public void onVrAdOpened() {
+                Log.i(TAG, "onVrAdOpened");
             }
 
             @Override
             public void onVrAdClosed() {
+                Log.i(TAG, "onVrAdClosed");
             }
         });
-        //this.image360TestAd.setDaydreamApi(this.daydreamApi);
+
         this.image360TestAd.setPlacementId("3efc7f15-33a6-4480-bb71-3bd74aca4f1f");
 
         final String PROVIDER = "flp";
@@ -181,11 +185,11 @@ public class MainActivity extends Activity {
                     @Override
                     public void onDrawFrame(GL10 gl) {
 
-                        if(nativeStartAd(nativeTreasureHuntRenderer) && !isShowing){
-                            image360TestAd.show();
-                            image360TestAd.loadAd(vrAdRequest);
-                            isShowing = true;
-                        }
+//                        if(nativeStartAd(nativeTreasureHuntRenderer) && !isShowing){
+//                            image360TestAd.show();
+//                            image360TestAd.loadAd(vrAdRequest);
+//                            isShowing = true;
+//                        }
                         nativeDrawFrame(nativeTreasureHuntRenderer);
 
                     }
@@ -278,8 +282,10 @@ public class MainActivity extends Activity {
             return false;
         }
 
-//        this.image360TestAd.show();
-//        this.image360TestAd.loadAd(vrAdRequest);
+        if(this.image360TestAd.isLoaded()) {
+            this.image360TestAd.show();
+            this.image360TestAd.loadAd(vrAdRequest);
+        }
         // Avoid accidental volume key presses while the phone is in the VR headset.
         if (event.getKeyCode() == KeyEvent.KEYCODE_VOLUME_UP
                 || event.getKeyCode() == KeyEvent.KEYCODE_VOLUME_DOWN) {
@@ -317,5 +323,5 @@ public class MainActivity extends Activity {
 
     private native void nativeOnResume(long nativeTreasureHuntRenderer);
 
-    private native boolean nativeStartAd(long nativeTreasureHuntRenderer);
+    //private native boolean nativeStartAd(long nativeTreasureHuntRenderer);
 }

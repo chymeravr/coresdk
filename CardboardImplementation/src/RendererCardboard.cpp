@@ -280,6 +280,8 @@ void RendererCardboard::drawComplete() {
 }
 
 void RendererCardboard::deinitialize(Scene *scene) {
+  free(this->frame);
+
   IRenderable *sceneRenderer = scene->getRenderable();
   sceneRenderer->deinitialize();
 
@@ -309,7 +311,8 @@ void RendererCardboard::deinitialize(Scene *scene) {
   }
 }
 
-void RendererCardboard::stop() { free(frame); }
+void RendererCardboard::stop() {  // free(frame);
+}
 
 void RendererCardboard::pause() { gvr_api_->PauseTracking(); }
 
