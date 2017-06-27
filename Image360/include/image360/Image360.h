@@ -96,6 +96,8 @@ class Image360 : public EventKeyPressListener,
   void initUIButtons();
   void initCameraReticle();
   void initControllerReticle();
+
+  // void initFadeInScreen();
   void initFadeScreen();
 
   void initComplete();
@@ -186,11 +188,12 @@ class Image360 : public EventKeyPressListener,
 
   bool fadeStarted = false;
   bool fadeComplete = false;
-  CL_GLfloat alphaFade = 0.0f;
+  CL_GLfloat alphaFade = 1.0f;
   CL_GLfloat fadeSpeed = 0.01f;
   bool isControllerPresent = false;
 
   std::unique_ptr<FadeScreen> fadeScreen;
+  // std::unique_ptr<FadeScreen> fadeInScreen;
   std::unique_ptr<Reticle> reticle;
   std::unique_ptr<Reticle> reticleBase;
   std::unique_ptr<GazeDetectorContainer> gazeDetectorContainer;

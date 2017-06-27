@@ -431,7 +431,8 @@ void Image360::initFadeScreen() {
   // fade screen initialization
   auto fadeScreenPosition = CL_Vec3(0.0, 0.0, -2.0);
   auto fadeScreenRotation = CL_Vec3(0.0, 0.0, 0.0);
-  auto fadeScreenColor = CL_Vec4(0.0, 0.0, 0.0, 0.0);
+  auto fadeScreenColor =
+      CL_Vec4(0.0, 0.0, 0.0, 0.0);  // change to 1.0 for start
 
   this->fadeScreen = uiFactory->createFadeScreen(
       "fadeScreen", scene.get(), fadeScreenColor, fadeScreenPosition,
@@ -458,6 +459,11 @@ void Image360::drawInit() {
     } else {
       this->fadeComplete = true;
     }
+  } else if (this->alphaFade > 0.0f && this->alphaFade <= 1.0f) {
+    if (this->fadeScreen != nullptr) {
+      this->fadeScreen->setColor(CL_Vec4(0.0, 0.0, 0.0, this->alphaFade));
+    }
+    this->alphaFade -= this->fadeSpeed / 1.5;
   }
 
   while (!eventQueue->empty()) {
