@@ -10,6 +10,7 @@ namespace cl{
 		MOCK_METHOD0(onGazeStarted, void(void));
 		MOCK_METHOD0(onGaze, void(void));
 		MOCK_METHOD0(onGazeEnded, void(void));
+		MOCK_METHOD0(inFocus, bool(void));
 	protected:
 		void SetUp(){
 			loggerFactory = std::unique_ptr<ILoggerFactory>(new LoggerFactoryMock);

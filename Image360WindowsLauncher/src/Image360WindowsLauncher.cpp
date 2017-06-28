@@ -199,39 +199,52 @@ int _tmain(int argc, _TCHAR** argv) {
 
   if (appMode == STEREO) {
     std::unique_ptr<IRenderer> renderer(new RendererNoHMDStereo());
-    application = std::unique_ptr<Image360>(new Image360(
-        std::move(renderer), std::move(sceneFactory), std::move(modelFactory),
-        std::move(diffuseTextureFactory),
-        std::move(diffuseTextureCubeMapFactory),
-        std::move(transformTreeFactory), std::move(cameraFactory),
-        eventQueue.get(), loggerFactory.get(), std::move(uiFactory),
-        std::move(gazeDetectorFactory), std::move(eventGazeListenerFactory),
-        fontFilePath));
+    application = std::unique_ptr<Image360>(
+        new Image360(std::move(renderer), std::move(sceneFactory),
+                     std::move(modelFactory), std::move(diffuseTextureFactory),
+                     std::move(diffuseTextureCubeMapFactory),
+                     std::move(transformTreeFactory), std::move(cameraFactory),
+                     eventQueue.get(), loggerFactory.get(),
+                     std::move(uiFactory), std::move(gazeDetectorFactory),
+                     std::move(eventGazeListenerFactory), fontFilePath));
 
     application->start();
 
     ImageJPEGLoader imageJPEGLoader(logger.get());
+    ImagePNGLoader imagePNGLoader(logger.get());
 
     std::vector<std::unique_ptr<Image> > textureImages;
-    
+
     textureImages.push_back(imageJPEGLoader.loadImage(
-        "C:\\Users\\robin_"
-        "chimera\\Documents\\SDK\\Projects\\VisualStudio\\Image360WindowsLa"
-        "uncher\\Debug\\360images\\Witcher-BoatSunset-SmartPhone-360-"
-        "Stereo-2016-05-03-22-13-08.jpg"));
-    
+        "C:\\Users\\robin_chimera\\SDK\\Projects\\VisualStudio\\Image360WindowsLauncher\\Debug\\360images\\Witcher-BoatSunset-SmartPhone-360-Stereo.jpg"));
+	/*std::unique_ptr<Image> controllerTexture =
+		imagePNGLoader.loadImage(
+		"C:\\Users\\robin_"
+		"chimera\\SDK\\Projects\\VisualStudio\\Image360WindowsLa"
+		"uncher\\Debug\\ddcontroller_idle.png");*/
+	std::unique_ptr<Image> controllerTexture =
+		imageJPEGLoader.loadImage(
+		"C:\\Users\\robin_"
+		"chimera\\SDK\\Projects\\VisualStudio\\Image360WindowsLa"
+		"uncher\\Debug\\ddcontroller_idle.jpg");
 
-	std::cout << application->getActionButtonText() << std::endl;
-	application->setActionButtonText(std::string("Download"));
-	std::cout << application->getActionButtonText() << std::endl;
-	application->initialize();
-	
-	application->initStereoView();
-	application->initStereoEquirectangularView(std::move(textureImages[0]));
+    std::cout<< application->getActionButtonText() << std::endl;
+    application->setActionButtonText(std::string("Download"));
+    std::cout << application->getActionButtonText() << std::endl;
+    application->initialize();
 
-	application->initCameraReticle();
-	application->initUIButtons();
-	application->initFadeScreen();
+    application->initStereoView();
+    application->initStereoEquirectangularView(std::move(textureImages[0]));
+
+    application->initCameraReticle();
+    application->initUIButtons();
+    //application->initFadeScreen();
+	application
+		->initController(
+		std::move(controllerTexture),
+		"C:\\Users\\robin_"
+		"chimera\\Documents\\SDK\\Projects\\VisualStudio\\Image360WindowsLa"
+		"uncher\\Debug\\ddController.obj");
 	application->initComplete();
 
     //// register callbacks
@@ -243,9 +256,9 @@ int _tmain(int argc, _TCHAR** argv) {
     while (!glfwWindowShouldClose(window)) {
       // Check if any events have been activiated (key pressed, mouse moved
       // etc.) and call corresponding response functions
-	if (application->isFadeComplete()) {
-		glfwSetWindowShouldClose(window, GL_TRUE);
-	}
+      if (application->isFadeComplete()) {
+        glfwSetWindowShouldClose(window, GL_TRUE);
+      }
       glfwPollEvents();
 
       glViewport(0, 0, width, height);
@@ -277,31 +290,31 @@ int _tmain(int argc, _TCHAR** argv) {
 
   } else {
     std::unique_ptr<IRenderer> renderer(new RendererNoHMD());
-	
-    application = std::unique_ptr<Image360>(new Image360(
-        std::move(renderer), std::move(sceneFactory), std::move(modelFactory),
-        std::move(diffuseTextureFactory),
-        std::move(diffuseTextureCubeMapFactory),
-        std::move(transformTreeFactory), std::move(cameraFactory),
-        eventQueue.get(), loggerFactory.get(), std::move(uiFactory),
-        std::move(gazeDetectorFactory), std::move(eventGazeListenerFactory),
-        fontFilePath));
+
+    application = std::unique_ptr<Image360>(
+        new Image360(std::move(renderer), std::move(sceneFactory),
+                     std::move(modelFactory), std::move(diffuseTextureFactory),
+                     std::move(diffuseTextureCubeMapFactory),
+                     std::move(transformTreeFactory), std::move(cameraFactory),
+                     eventQueue.get(), loggerFactory.get(),
+                     std::move(uiFactory), std::move(gazeDetectorFactory),
+                     std::move(eventGazeListenerFactory), fontFilePath));
 
     application->start();
 
     ImageJPEGLoader imageJPEGLoader(logger.get());
 
     std::vector<std::unique_ptr<Image> > textureImages;
-	TEXTURE_MAP_MODE mode = EQUIRECTANGULAR_MAP_MODE;
-        //EQUIRECTANGULAR_MAP_MODE;  // CUBE_MAP_MODE_SINGLE_IMAGE; // image mode
+    TEXTURE_MAP_MODE mode = EQUIRECTANGULAR_MAP_MODE;
+    // EQUIRECTANGULAR_MAP_MODE;  // CUBE_MAP_MODE_SINGLE_IMAGE; // image mode
 
     switch (mode) {
       case CUBE_MAP_MODE_SINGLE_IMAGE:
         // textureImages.push_back(imagePNGLoader.loadImage("cubemap_current.png"));
-        textureImages.push_back(
-            imageJPEGLoader.loadImage("C:\\Users\\robin_"
+        textureImages.push_back(imageJPEGLoader.loadImage(
+            "C:\\Users\\robin_"
             "chimera\\SDK\\Projects\\VisualStudio\\Image360WindowsLa"
-			"uncher\\Debug\\360images\\cubemap_desert.jpg"));
+            "uncher\\Debug\\360images\\cubemap_desert.jpg"));
         // textureImages.push_back(imagePNGLoader.loadImage("C:\\Users\\robin_chimera\\Documents\\SDK\\Projects\\VisualStudio\\Image360WindowsLauncher\\Debug\\cubemap_current2.jpg"));
         break;
       case EQUIRECTANGULAR_MAP_MODE:
@@ -312,21 +325,21 @@ int _tmain(int argc, _TCHAR** argv) {
             "chimera\\SDK\\Projects\\VisualStudio\\Image360WindowsLa"
             "uncher\\Debug\\360images\\equirectangular_desert.jpg"));
         break;
-	  default:
-		  break;
+      default:
+        break;
     }
 
     std::cout << application->getActionButtonText() << std::endl;
     application->setActionButtonText(std::string("Download"));
     std::cout << application->getActionButtonText() << std::endl;
     application->initialize();
-	application->initMonoView();
-	//application->initMonoEquirectangularView(std::move (textureImages[0]));
-	application->initMonoCubeMapSingleTextureView(std::move(textureImages[0]));
+    application->initMonoView();
+    // application->initMonoEquirectangularView(std::move (textureImages[0]));
+    application->initMonoCubeMapSingleTextureView(std::move(textureImages[0]));
 
-	application->initCameraReticle();
-	application->initUIButtons();
-	application->initFadeScreen();
+    application->initCameraReticle();
+    application->initUIButtons();
+    application->initFadeScreen();
 
     //// register callbacks
     glfwSetKeyCallback(window, key_callback);

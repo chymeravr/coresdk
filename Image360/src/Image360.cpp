@@ -427,6 +427,69 @@ void Image360::initControllerReticle() {
       uiFactory->createReticle("reticle", scene.get(), transform, reticleColor);
   this->gazeTransformTarget = transform;
 }
+
+void Image360::initController(std::unique_ptr<Image> controllerImage,
+                              std::string controllerModelPath) {
+  // todo :
+  // 1. create object model
+  // 2. initialize diffuse shader
+  // 3. map shader to model texture
+  std::unique_ptr<Model> controllerModelContainer =
+      modelFactory->create("controllerModel");
+  assert(controllerModelContainer != nullptr);
+  this->controllerModel = controllerModelContainer.get();
+  this->scene->addToScene(std::move(controllerModelContainer));
+  ModelLoader::load_obj(controllerModelPath, this->controllerModel);
+  this->controllerModel->setDepthTest(true);
+  this->controllerModel->setBlending(false);
+
+  std::unique_ptr<TransformTreeModel> controllerTransformUptr =
+      this->transformTreeFactory->createTransformTreeModel(
+          this->controllerModel);
+  this->controllerModel->getComponentList().addComponent(
+      std::move(controllerTransformUptr));
+
+  TransformTreeModel *transformController =
+      (TransformTreeModel *)this->controllerModel->getComponentList()
+          .getComponent("transformTree");
+  transformController->setLocalPosition(CL_Vec3(0.0f, 0.0f, -5.0f));
+  transformController->setLocalScale(CL_Vec3(100.0f, 100.0f, 100.0f));
+  transformController->setLocalRotation(CL_Vec3(90.0f, 00.0f, 90.0f));
+
+  std::unique_ptr<ShaderDiffuseTexture> controllerShaderUptr;
+  std::unique_ptr<MaterialDiffuseTexture> controllerMaterialUptr;
+  std::unique_ptr<Texture> controllerTextureUptr;
+
+  // doubt ~ why is this named shader for 360 degree spheres
+  controllerShaderUptr = this->diffuseTextureFactory->createShader(
+      "controllerShader", scene.get());
+  assert(controllerShaderUptr != nullptr);
+  this->controllerShader = controllerShaderUptr.get();
+  this->scene->addToScene(std::move(controllerShaderUptr));
+
+  controllerMaterialUptr = this->diffuseTextureFactory->createMaterial(
+      "controllerMaterial", (ShaderDiffuseTexture *)this->controllerShader);
+  assert(controllerMaterialUptr != nullptr);
+  this->controllerMaterial = controllerMaterialUptr.get();
+  this->scene->addToScene(std::move(controllerMaterialUptr));
+
+  controllerTextureUptr =
+      this->diffuseTextureFactory->createTexture("controllerTexture");
+
+  std::unique_ptr<Image> controllerImageUptr = std::move(controllerImage);
+  controllerTextureUptr->setTextureData(std::move(controllerImageUptr->data));
+  controllerTextureUptr->setHeight(controllerImageUptr->height);
+  controllerTextureUptr->setWidth(controllerImageUptr->width);
+  controllerTextureUptr->setTextureDataSize(controllerImageUptr->dataSize);
+  this->controllerTexture = controllerTextureUptr.get();
+  this->scene->addToScene(std::move(controllerTextureUptr));
+  ((MaterialDiffuseTexture *)this->controllerMaterial)
+      ->setDiffuseTexture(this->controllerTexture);
+
+  this->controllerModel->createBiRelation(this->controllerMaterial);
+  return;
+}
+
 void Image360::initFadeScreen() {
   // fade screen initialization
   auto fadeScreenPosition = CL_Vec3(0.0, 0.0, -2.0);
@@ -504,20 +567,20 @@ void Image360::onKeyPress(char key, int x, int y) {
   // logger->log(LOG_DEBUG, "Key pressed:" + std::string(1, key));
   logger->log(LOG_DEBUG, "Key pressed:" + std::string(1, key));
   TransformTreeModel *transform = reticle->getTransformTreeModel();
-  CL_Vec3 rot = transform->getParent()->getLocalRotation();
+  CL_Vec3 loc = transform->getParent()->getLocalPosition();
 
   if (key == 'W') {
-    rot[1] -= 0.6f;
+	  loc[2] -= 0.2f;
   } else if (key == 'S') {
-    rot[1] += 0.6f;
+	  loc[2] += 0.2f;
   } else if (key == 'A') {
-    rot[0] -= 0.6f;
+	  loc[0] -= 0.2f;
   } else if (key == 'D') {
-    rot[0] += 0.6f;
+	  loc[0] += 0.2f;
   } else {
     return;
   }
-  transform->getParent()->setLocalRotation(rot);
+  transform->getParent()->setLocalPosition(loc);
 }
 
 void Image360::onPassiveMouseMotion(int x, int y) {

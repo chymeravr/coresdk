@@ -10,7 +10,7 @@ namespace cl{
 	std::unique_ptr<Image> ImagePNGLoader::loadImage(std::string imagePath){
 		// Data read from the header of the BMP file
 		int width, height, channels;
-		std::unique_ptr<unsigned char> data(SOIL_load_image(imagePath.c_str(), &width, &height, &channels, SOIL_LOAD_RGB));
+		std::unique_ptr<unsigned char> data(SOIL_load_image(imagePath.c_str(), &width, &height, &channels, SOIL_LOAD_RGBA));
 		
 //		logger->log(LOG_DEBUG, "Image Width: " + std::to_string(width));
 //		logger->log(LOG_DEBUG, "Image Height: " + std::to_string(height));

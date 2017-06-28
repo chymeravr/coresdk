@@ -2,32 +2,29 @@
 #define WINDOWSIMPLEMENTATION_GAZELISTENERFACTORYWINDOWS_H
 
 #include <coreEngine/factory/IEventGazeListenerFactory.h>
-#include <windowsImplementation/CloseButtonListenerWindows.h>
 #include <windowsImplementation/ActionButtonListenerWindows.h>
+#include <windowsImplementation/CloseButtonListenerWindows.h>
 
-namespace cl
-{
-class GazeListenerFactoryWindows : public IEventGazeListenerFactory
-{
-  public:
-    GazeListenerFactoryWindows(ILoggerFactory *loggerFactory)
-    {
-	assert(loggerFactory != nullptr);
-	this->loggerFactory = loggerFactory;
-    }
-    std::unique_ptr<EventGazeListener> createCloseButtonListener()
-    {
-	return std::unique_ptr<EventGazeListener>(new CloseButtonListenerWindows(loggerFactory));
-    }
+namespace cl {
+class GazeListenerFactoryWindows : public IEventGazeListenerFactory {
+ public:
+  GazeListenerFactoryWindows(ILoggerFactory *loggerFactory) {
+    assert(loggerFactory != nullptr);
+    this->loggerFactory = loggerFactory;
+  }
+  std::unique_ptr<EventGazeListener> createCloseButtonListener() {
+    return std::unique_ptr<EventGazeListener>(
+        new CloseButtonListenerWindows(loggerFactory));
+  }
 
-    std::unique_ptr<EventGazeListener> createActionButtonListener()
-    {
-	return std::unique_ptr<EventGazeListener>(new ActionButtonListenerWindows(loggerFactory));
-    }
+  std::unique_ptr<EventGazeListener> createActionButtonListener() {
+    return std::unique_ptr<EventGazeListener>(
+        new ActionButtonListenerWindows(loggerFactory));
+  }
 
-  private:
-    ILoggerFactory *loggerFactory = nullptr;
+ private:
+  ILoggerFactory *loggerFactory = nullptr;
 };
 }
 
-#endif //WINDOWSIMPLEMENTATION_GAZELISTENERFACTORYWINDOWS_H
+#endif  // WINDOWSIMPLEMENTATION_GAZELISTENERFACTORYWINDOWS_H

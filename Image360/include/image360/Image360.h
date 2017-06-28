@@ -97,6 +97,9 @@ class Image360 : public EventKeyPressListener,
   void initCameraReticle();
   void initControllerReticle();
 
+  void initController(std::unique_ptr<Image> controllerImage,
+                      std::string controllerModelPath);
+
   // void initFadeInScreen();
   void initFadeScreen();
 
@@ -152,6 +155,11 @@ class Image360 : public EventKeyPressListener,
   std::unique_ptr<Scene> scene;
 
   Camera *camera;
+
+  Shader *controllerShader;
+  Material *controllerMaterial;
+  Texture *controllerTexture;
+  Model *controllerModel;
 
   // mono rendering
   Shader *shader;

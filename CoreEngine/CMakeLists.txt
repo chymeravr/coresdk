@@ -137,6 +137,7 @@ if(WINDOWS)
 						${PROJECT_SOURCE_DIR}/test/src/ImageModifierTest.cpp
 						${PROJECT_SOURCE_DIR}/test/src/MaterialTest.cpp
 						${PROJECT_SOURCE_DIR}/test/src/ModelModifierTest.cpp
+						${PROJECT_SOURCE_DIR}/test/src/ModelLoaderTest.cpp
 						${PROJECT_SOURCE_DIR}/test/src/ModelTest.cpp
 						${PROJECT_SOURCE_DIR}/test/src/RelationTest.cpp
 						${PROJECT_SOURCE_DIR}/test/src/SceneTest.cpp
