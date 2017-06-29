@@ -7,6 +7,7 @@ set(REPO_PATH ../Repository)
 set(Conf_INCLUDE_DIRS ../Conf/include)
 set(SOIL_INCLUDE_DIRS ../SOIL/include)
 set(LIBJPEG_INCLUDE_DIRS ../libjpeg/include)
+set(ASSIMP_DIRS ../assimp)
 set (GLM_VERSION 0.9.7.6)
 set (GLEW_VERSION 2.0.0)
 
@@ -14,6 +15,7 @@ include_directories (${REPO_PATH}/thirdParty/glm/glm-${GLM_VERSION}/glm
 					 ${Conf_INCLUDE_DIRS} 
 					 ${SOIL_INCLUDE_DIRS}
 					 ${LIBJPEG_INCLUDE_DIRS}
+					 ${ASSIMP_DIRS}/include
 					 ${PROJECT_SOURCE_DIR}/include)
 
 
@@ -25,7 +27,13 @@ FILE(GLOB_RECURSE INCLUDE_HEADERS "include/*.h")
 
 # Android cannot download files using cmake - only do this on WINDOWS
 
+set (ASSIMP_LINK_DIRS ${ASSIMP_DIRS}/lib/Debug)
+
+link_directories(${ASSIMP_LINK_DIRS})
+
+
 if(WINDOWS)
+
 	#######################################################
 	# Creating FreeType integration
 	#######################################################
@@ -52,7 +60,7 @@ if(WINDOWS)
 	########################################################
 
 	add_library(${PROJECT_NAME} STATIC ${INCLUDE_HEADERS}  ${SOURCES})
-	target_link_libraries(${PROJECT_NAME} freetype SOIL jpeg)
+	target_link_libraries(${PROJECT_NAME} freetype SOIL jpeg assimp-vc120-mt)
 	#target_link_libraries(${PROJECT_NAME} SOIL)
 else()
 	set(FREETYPE_DIRS ../freetype)
@@ -152,7 +160,7 @@ if(WINDOWS)
 
 	# Building test executable
 	add_executable(CoreEngineTest ${INCLUDE_TEST_HEADERS} ${TEST_SOURCES})
-	target_link_libraries(CoreEngineTest gtest gmock_main CoreEngine)
+	target_link_libraries(CoreEngineTest gtest gmock_main CoreEngine assimp-vc120-mt)
 	enable_testing()
 	add_test(NAME CoreEngineTest_ COMMAND CoreEngineTest)
 endif()

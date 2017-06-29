@@ -156,6 +156,7 @@ void ModelGL::useNormalBuffer() {
 
 void ModelGL::destroyNormalBuffer() { glDeleteBuffers(1, &normalBufferId); }
 
+// vertex indices
 void ModelGL::createIndexBuffer() {
   glGenBuffers(1, &indexBufferId);
   glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, indexBufferId);

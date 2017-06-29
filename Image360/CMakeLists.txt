@@ -8,10 +8,12 @@ set (GLM_VERSION 0.9.7.6)
 set(Conf_INCLUDE_DIRS ../Conf/include)
 set(CoreEngine_INCLUDE_DIRS ../CoreEngine/include)
 set(Renderer_PATH ../Renderer)
+set(ASSIMP_DIRS ../assimp)
 
 include_directories(${Conf_INCLUDE_DIRS}
 					${REPO_PATH}/thirdParty/glm/glm-${GLM_VERSION}/glm 
 					${CoreEngine_INCLUDE_DIRS}
+					${ASSIMP_DIRS}/include
 					${PROJECT_SOURCE_DIR}/include)
 
 set (INCLUDE_DIRS ${PROJECT_SOURCE_DIR}/include)
@@ -19,12 +21,16 @@ set (INCLUDE_DIRS ${PROJECT_SOURCE_DIR}/include)
 FILE(GLOB_RECURSE INCLUDE_HEADERS "include/*.h")
 set(SOURCES ${PROJECT_SOURCE_DIR}/src/Image360.cpp)
 			
+set (ASSIMP_LINK_DIRS ${ASSIMP_DIRS}/lib/Debug)
+
+link_directories(${ASSIMP_LINK_DIRS})
+
 if(WINDOWS)
 	link_directories(${Conf_GL_LINK_DIRECTORIES})
 	include_directories(${REPO_PATH}/thirdParty/glew/glew-${GLEW_VERSION}/include)
 	
 	add_library(${PROJECT_NAME} STATIC ${INCLUDE_HEADERS} ${SOURCES})
-	target_link_libraries(${PROJECT_NAME} CoreEngine GLImplementation Renderer)
+	target_link_libraries(${PROJECT_NAME} CoreEngine GLImplementation Renderer assimp-vc120-mt)
 else()
 
 	set(ANDROID_LIBRARIES ${CMAKE_SOURCE_DIR}/../Projects/AndroidStudio/CvrAndroidSdk/distribution)

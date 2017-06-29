@@ -345,7 +345,7 @@ void Image360::initUIButtons() {
 
   // close button text position & orientation is relative to the actionButton
   // planar background
-  auto closeTextPosition = CL_Vec3(-1.0, -0.2, 1.0);
+  auto closeTextPosition = CL_Vec3(-0.5, -0.2, 0.001);
   auto closeTextRotation = CL_Vec3(0.0, 0.0, 0.0);
   std::unique_ptr<TextElement> closeButtonElement =
       uiFactory->createTextElement("closeButtonElement", fontStore.get(),
@@ -452,7 +452,7 @@ void Image360::initController(std::unique_ptr<Image> controllerImage,
   TransformTreeModel *transformController =
       (TransformTreeModel *)this->controllerModel->getComponentList()
           .getComponent("transformTree");
-  transformController->setLocalPosition(CL_Vec3(0.0f, 0.0f, -5.0f));
+  transformController->setLocalPosition(CL_Vec3(0.0f, 0.0f, -15.0f));
   transformController->setLocalScale(CL_Vec3(100.0f, 100.0f, 100.0f));
   transformController->setLocalRotation(CL_Vec3(90.0f, 00.0f, 90.0f));
 
@@ -570,13 +570,13 @@ void Image360::onKeyPress(char key, int x, int y) {
   CL_Vec3 loc = transform->getParent()->getLocalPosition();
 
   if (key == 'W') {
-	  loc[2] -= 0.2f;
+    loc[2] -= 0.2f;
   } else if (key == 'S') {
-	  loc[2] += 0.2f;
+    loc[2] += 0.2f;
   } else if (key == 'A') {
-	  loc[0] -= 0.2f;
+    loc[0] -= 0.2f;
   } else if (key == 'D') {
-	  loc[0] += 0.2f;
+    loc[0] += 0.2f;
   } else {
     return;
   }

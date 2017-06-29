@@ -28,6 +28,8 @@ class ModelGL : public Model, public IRenderable {
   void createNormalBuffer();
   void useNormalBuffer();
   void destroyNormalBuffer();
+
+  // indices
   void createIndexBuffer();
   void useIndexBuffer();
   void destroyIndexBuffer();

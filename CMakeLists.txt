@@ -48,5 +48,6 @@ if(WINDOWS AND WINDOWS_GL)
 	add_subdirectory(GLFW C)
 	add_subdirectory(WindowsImplementation)
 	add_subdirectory(Image360WindowsLauncher)
+	# add_subdirectory(assimp)		# todo : move out from windows once migrating to android
 #	add_subdirectory(FreeTypeTest)
 endif()
