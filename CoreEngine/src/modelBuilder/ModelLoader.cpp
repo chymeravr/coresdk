@@ -1,12 +1,14 @@
 #include <coreEngine/conf/MathType.h>
 #include <coreEngine/modelBuilder/ModelLoader.h>
 #include <coreEngine/renderObjects/Model.h>
-#include <stdlib.h>
-#include <iostream>
 #include <map>
 #include <vector>
 
 namespace cl {
+ModelLoader::ModelLoader(ILoggerFactory *loggerFactory) {
+  assert(loggerFactory != nullptr);
+  this->logger = loggerFactory->createLogger("CoreEngine::Relation: ");
+}
 void ModelLoader::load_obj(std::string filename, Model *model) {
   std::vector<CL_Vec3> &vertices = model->getVertices();
   std::vector<CL_Vec2> &uvs = model->getUvs();
@@ -21,8 +23,9 @@ void ModelLoader::load_obj(std::string filename, Model *model) {
 
   FILE *file = fopen(filename.c_str(), "r");
   if (file == NULL) {
-    // todo ~ logger print
-    printf("Impossible to open the file !\n");
+    // invalid file ~ irrecoverable error ~ maybe we should throw an exception
+    // here
+    logger->log(LOG_ERROR, "Impossible to open the file !\n");
     return;
   }
 
@@ -59,7 +62,8 @@ void ModelLoader::load_obj(std::string filename, Model *model) {
                            &vertexIndex[1], &uvIndex[1], &normalIndex[1],
                            &vertexIndex[2], &uvIndex[2], &normalIndex[2]);
       if (matches != 9) {
-        printf(
+        logger->log(
+            LOG_ERROR,
             "File can't be read by our simple parser : ( Try exporting with "
             "other options\n");
         return;

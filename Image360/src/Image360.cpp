@@ -5,8 +5,6 @@
 #include <coreEngine/modelBuilder/UVSphereBuilder.h>
 #include <coreEngine/modifier/ImageModifier.h>
 #include <coreEngine/modifier/ModelModifier.h>
-#include <coreEngine/util/SimpleOBJLoader.h>
-// #include <image360/Image360.h>
 #include <image360/Image360.h>
 
 namespace cl {
@@ -439,7 +437,9 @@ void Image360::initController(std::unique_ptr<Image> controllerImage,
   assert(controllerModelContainer != nullptr);
   this->controllerModel = controllerModelContainer.get();
   this->scene->addToScene(std::move(controllerModelContainer));
-  ModelLoader::load_obj(controllerModelPath, this->controllerModel);
+  std::unique_ptr<ModelLoader> modelLoader =
+      std::unique_ptr<ModelLoader>(new ModelLoader(this->loggerFactory));
+  modelLoader->load_obj(controllerModelPath, this->controllerModel);
   this->controllerModel->setDepthTest(true);
   this->controllerModel->setBlending(false);
 

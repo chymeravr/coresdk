@@ -2,6 +2,7 @@
 #define COREENGINE_MODELLOADER
 
 #include <coreEngine/renderObjects/Model.h>
+#include <coreEngine/util/ILogger.h>
 #include <map>
 
 namespace cl {
@@ -17,20 +18,23 @@ struct PackedVertex {
 
 class ModelLoader {
  public:
-  static void load_obj(std::string filename, Model *model);
+  ModelLoader(ILoggerFactory *loggerFactory);
+  ~ModelLoader(){};
+  void load_obj(std::string filename, Model *model);
 
  private:
-  static bool getSimilarVertexIndex_fast(
+  bool getSimilarVertexIndex_fast(
       PackedVertex &packed, std::map<PackedVertex, CL_GLuint> &VertexToOutIndex,
       CL_GLuint &result);
-  static void indexVBO(std::vector<CL_Vec3> &in_vertices,
-                       std::vector<CL_Vec2> &in_uvs,
-                       std::vector<CL_Vec3> &in_normals,
+  void indexVBO(std::vector<CL_Vec3> &in_vertices, std::vector<CL_Vec2> &in_uvs,
+                std::vector<CL_Vec3> &in_normals,
 
-                       std::vector<CL_GLuint> &out_indices,
-                       std::vector<CL_Vec3> &out_vertices,
-                       std::vector<CL_Vec2> &out_uvs,
-                       std::vector<CL_Vec3> &out_normals);
+                std::vector<CL_GLuint> &out_indices,
+                std::vector<CL_Vec3> &out_vertices,
+                std::vector<CL_Vec2> &out_uvs,
+                std::vector<CL_Vec3> &out_normals);
+
+  std::unique_ptr<ILogger> logger;
 };
 }
 #endif  // COREENGINE_MODELLOADER

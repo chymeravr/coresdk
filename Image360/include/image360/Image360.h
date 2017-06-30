@@ -69,6 +69,8 @@ class Image360 : public EventKeyPressListener,
     this->gazeDetectorFactory = std::move(gazeDetectorFactory);
     this->eventGazeListenerFactory = std::move(gazeEventListenerFactory);
     this->fontFolderPath = fontFolderPath;
+
+    this->loggerFactory = loggerFactory;
   }
 
   // virtual ~Image360() = 0;
@@ -172,6 +174,8 @@ class Image360 : public EventKeyPressListener,
   Material *stereoMaterial;
   Texture *stereoImageTexture;
   Model *stereoImageContainer[2];  // 0->left, 1->right
+
+  ILoggerFactory *loggerFactory;
 
   std::unique_ptr<IRenderer> renderer;
   IEventQueue *eventQueue;
