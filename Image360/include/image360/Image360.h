@@ -198,6 +198,8 @@ class Image360 : public EventKeyPressListener,
   std::unique_ptr<PlanarBackground> actionButtonBackground;
   std::unique_ptr<PlanarBackground> closeButtonBackground;
 
+  std::unique_ptr<PlanarBackground> laserBox;
+
   bool fadeStarted = false;
   bool fadeComplete = false;
   CL_GLfloat alphaFade = 1.0f;

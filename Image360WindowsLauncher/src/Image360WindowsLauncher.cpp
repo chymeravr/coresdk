@@ -216,19 +216,20 @@ int _tmain(int argc, _TCHAR** argv) {
     std::vector<std::unique_ptr<Image> > textureImages;
 
     textureImages.push_back(imageJPEGLoader.loadImage(
-        "C:\\Users\\robin_chimera\\SDK\\Projects\\VisualStudio\\Image360WindowsLauncher\\Debug\\360images\\Witcher-BoatSunset-SmartPhone-360-Stereo.jpg"));
-	/*std::unique_ptr<Image> controllerTexture =
-		imagePNGLoader.loadImage(
-		"C:\\Users\\robin_"
-		"chimera\\SDK\\Projects\\VisualStudio\\Image360WindowsLa"
-		"uncher\\Debug\\ddcontroller_idle.png");*/
-	std::unique_ptr<Image> controllerTexture =
-		imageJPEGLoader.loadImage(
-		"C:\\Users\\robin_"
-		"chimera\\SDK\\Projects\\VisualStudio\\Image360WindowsLa"
-		"uncher\\Debug\\ddcontroller_idle.jpg");
+        "C:\\Users\\robin_"
+        "chimera\\SDK\\Projects\\VisualStudio\\Image360WindowsLauncher\\Debug\\"
+        "360images\\Witcher-BoatSunset-SmartPhone-360-Stereo.jpg"));
+    std::unique_ptr<Image> controllerTexture =
+            imagePNGLoader.loadImage(
+            "C:\\Users\\robin_"
+            "chimera\\SDK\\Projects\\VisualStudio\\Image360WindowsLa"
+            "uncher\\Debug\\ddcontroller_idle.png");
+    /*std::unique_ptr<Image> controllerTexture = imageJPEGLoader.loadImage(
+        "C:\\Users\\robin_"
+        "chimera\\SDK\\Projects\\VisualStudio\\Image360WindowsLa"
+        "uncher\\Debug\\ddcontroller_idle.jpg");*/
 
-    std::cout<< application->getActionButtonText() << std::endl;
+    std::cout << application->getActionButtonText() << std::endl;
     application->setActionButtonText(std::string("Download"));
     std::cout << application->getActionButtonText() << std::endl;
     application->initialize();
@@ -238,14 +239,13 @@ int _tmain(int argc, _TCHAR** argv) {
 
     application->initCameraReticle();
     application->initUIButtons();
-    //application->initFadeScreen();
-	application
-		->initController(
-		std::move(controllerTexture),
-		"C:\\Users\\robin_"
-		"chimera\\Documents\\SDK\\Projects\\VisualStudio\\Image360WindowsLa"
-		"uncher\\Debug\\ddController.obj");
-	application->initComplete();
+    // application->initFadeScreen();
+    application->initController(
+        std::move(controllerTexture),
+        "C:\\Users\\robin_"
+        "chimera\\Documents\\SDK\\Projects\\VisualStudio\\Image360WindowsLa"
+        "uncher\\Debug\\ddController.obj");
+    application->initComplete();
 
     //// register callbacks
     glfwSetKeyCallback(window, key_callback);

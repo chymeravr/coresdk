@@ -309,6 +309,16 @@ void Image360::initUIButtons() {
   textStyle.scale = 0.025f;
   textStyle.color = CL_Vec4(1.0, 1.0, 1.0, 1.0);
 
+  // Laser Box Initialization
+  auto laserPosition = CL_Vec3(-5.1, 5.0, -15.5);
+  auto laserRotation = CL_Vec3(0.0, 0.0, 0.0);
+  auto laserColor = CL_Vec4(1.0, 1.0, 1.0, 0.7);
+  auto laserWidth = 0.1f;
+  auto laserHeight = 10.0f;
+  this->laserBox = uiFactory->createPlanarBackground(
+      "laserBox", scene.get(), laserColor, laserPosition, laserRotation,
+      laserWidth, laserHeight);
+
   // Action Button Initialization
   auto actionButtonPosition = CL_Vec3(-5.1, 0.0, -15.5);
   auto actionButtonRotation = CL_Vec3(0.0, 0.0, 0.0);
@@ -441,7 +451,7 @@ void Image360::initController(std::unique_ptr<Image> controllerImage,
       std::unique_ptr<ModelLoader>(new ModelLoader(this->loggerFactory));
   modelLoader->load_obj(controllerModelPath, this->controllerModel);
   this->controllerModel->setDepthTest(true);
-  this->controllerModel->setBlending(false);
+  this->controllerModel->setBlending(true);
 
   std::unique_ptr<TransformTreeModel> controllerTransformUptr =
       this->transformTreeFactory->createTransformTreeModel(
@@ -452,9 +462,9 @@ void Image360::initController(std::unique_ptr<Image> controllerImage,
   TransformTreeModel *transformController =
       (TransformTreeModel *)this->controllerModel->getComponentList()
           .getComponent("transformTree");
-  transformController->setLocalPosition(CL_Vec3(0.0f, 0.0f, -15.0f));
+  transformController->setLocalPosition(CL_Vec3(0.0f, 0.0f, -5.0f));
   transformController->setLocalScale(CL_Vec3(100.0f, 100.0f, 100.0f));
-  transformController->setLocalRotation(CL_Vec3(90.0f, 00.0f, 90.0f));
+  transformController->setLocalRotation(CL_Vec3(90.0f, 90.0f, 90.0f));
 
   std::unique_ptr<ShaderDiffuseTexture> controllerShaderUptr;
   std::unique_ptr<MaterialDiffuseTexture> controllerMaterialUptr;
@@ -465,6 +475,7 @@ void Image360::initController(std::unique_ptr<Image> controllerImage,
       "controllerShader", scene.get());
   assert(controllerShaderUptr != nullptr);
   this->controllerShader = controllerShaderUptr.get();
+  controllerShaderUptr->enableAlphaChannel();
   this->scene->addToScene(std::move(controllerShaderUptr));
 
   controllerMaterialUptr = this->diffuseTextureFactory->createMaterial(
@@ -481,6 +492,8 @@ void Image360::initController(std::unique_ptr<Image> controllerImage,
   controllerTextureUptr->setHeight(controllerImageUptr->height);
   controllerTextureUptr->setWidth(controllerImageUptr->width);
   controllerTextureUptr->setTextureDataSize(controllerImageUptr->dataSize);
+  controllerTextureUptr->setColorFormat(Texture::ColorFormat::RGBA);
+
   this->controllerTexture = controllerTextureUptr.get();
   this->scene->addToScene(std::move(controllerTextureUptr));
   ((MaterialDiffuseTexture *)this->controllerMaterial)
