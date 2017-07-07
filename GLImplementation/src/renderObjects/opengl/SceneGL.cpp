@@ -26,6 +26,7 @@ bool SceneGL::initialize() {
   } else {
     glDisable(GL_BLEND);
   }
+
   // glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
   // opengl must have a bound vertex array object to render (even if it is
   // empty)

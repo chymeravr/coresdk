@@ -215,6 +215,10 @@ public final class Image360Activity extends Activity {
 
         String imageAdFilePath = intent.getStringExtra("imageAdFilePath");
 
+        String controllerTextureFilePath = "chymeraSDKAssets/textures/ddcontroller_idle.png";
+        String laserBeamTextureFilePath = "chymeraSDKAssets/textures/laserTexture.png";
+        String controllerModelFilePath = "chymeraSDKAssets/models/ddController.obj";
+
         this.instanceId = intent.getIntExtra("instanceId", -1);
         this.servingId = intent.getStringExtra("servingId");
         this.returningClassName = intent.getStringExtra("returningClass");
@@ -225,7 +229,8 @@ public final class Image360Activity extends Activity {
                 nativeCreateRenderer(
                         getClass().getClassLoader(),
                         this.getApplicationContext(),
-                        gvrLayout.getGvrApi().getNativeGvrContext(), basePath, imageAdFilePath);
+                        gvrLayout.getGvrApi().getNativeGvrContext(), basePath, imageAdFilePath,
+                        controllerModelFilePath, controllerTextureFilePath, laserBeamTextureFilePath);
 
 
         nativeOnStart(nativeImage360ActivityHandler);
@@ -261,7 +266,7 @@ public final class Image360Activity extends Activity {
                         ddController.update();
 
                         // daydream functions are not thread safe - run them on UI thread
-                        Image360Activity.this.runOnUiThread(r);
+                        //Image360Activity.this.runOnUiThread(r);
                     }
                 });
         surfaceView.setOnTouchListener(
@@ -416,7 +421,9 @@ public final class Image360Activity extends Activity {
     }
 
     private native long nativeCreateRenderer(
-            ClassLoader appClassLoader, Context context, long nativeGvrContext, String appDir, String Image360AdFileName);
+            ClassLoader appClassLoader, Context context, long nativeGvrContext, String appDir,
+            String Image360AdFileName, String controllerModelFilename,
+            String controllerTextureFilename, String laserBeamTextureFilename );
 
     private native void nativeOnStart(long nativeImage360ActivityHandler);
 

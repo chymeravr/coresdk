@@ -19,6 +19,9 @@ IRenderable *ShaderDiffuseTextureGL::getRenderable() { return this; }
  * (Model, Material etc.)
         */
 bool ShaderDiffuseTextureGL::initialize() {
+  if (this->isAlphaChannelEnabled()) {
+    this->switchToAlphaShader();
+  }
   this->programId = ShaderProgramUtil::createShaderProgram(
       vertexShaderSrc, fragmentShaderSrc, logger.get());
 
@@ -46,11 +49,6 @@ bool ShaderDiffuseTextureGL::initialize() {
   CL_GLuint viewMatrixId = glGetUniformLocation(programId, "v");
   CL_GLuint projectionMatrixId = glGetUniformLocation(programId, "p");
 
-  CL_GLuint isAlphaChannelEnabledId =
-      glGetUniformLocation(programId, "isAlphaChannelEnabled");
-
-  glUniform1i(isAlphaChannelEnabledId,
-              this->isAlphaChannelEnabled() ? (GLint)1 : (GLint)0);
   cameraGLContainer = std::unique_ptr<CameraGLContainer>(new CameraGLContainer(
       viewMatrixId, projectionMatrixId, camera, logger.get()));
   cameraGLContainer->initialize();

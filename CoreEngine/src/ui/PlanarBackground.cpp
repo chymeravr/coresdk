@@ -30,6 +30,7 @@ PlanarBackground::PlanarBackground(std::string id, IModelFactory *modelFactory,
   model->setDepthTest(true);
 
   // Creating a rectangle model for ui
+  // TODO : use rectangle model builder to do this work in the future
   std::vector<CL_Vec3> &vertices = model->getVertices();
   vertices.push_back(CL_Vec3(-width / 2, -height / 2, 0.0));  // left bottom
   vertices.push_back(CL_Vec3(width / 2, -height / 2, 0.0));   // right bottom

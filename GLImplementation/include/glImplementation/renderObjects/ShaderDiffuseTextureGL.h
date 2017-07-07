@@ -28,6 +28,12 @@ class ShaderDiffuseTextureGL : public ShaderDiffuseTexture, public IRenderable {
   // glsl vertex and fragment shaders
   std::string vertexShaderSrc = diffuseTextureGlVertexShader;
   std::string fragmentShaderSrc = diffuseTextureGlFragmentShader;
+
+  // using a different shader is better than branching using a uniform
+  // variable (which did not work anyways) for performance reasons
+  void switchToAlphaShader() {
+    this->fragmentShaderSrc = diffuseTextureAlphaGlFragmentShader;
+  }
 };
 }
 

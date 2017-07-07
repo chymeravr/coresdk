@@ -97,6 +97,7 @@ void UVSphereBuilder::buildUnitSphere(Model *model,
   }
   modelModifier->convertQuadIndicesToTriangleIndices(model);
 }
+
 CL_Vec2 UVSphereBuilder::getUVMap(float longitude, float latitude) {
   return CL_Vec2(longitude / (2 * CL_PI), (latitude + CL_PI / 2) / CL_PI);
 }

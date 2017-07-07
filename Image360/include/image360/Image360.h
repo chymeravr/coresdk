@@ -101,7 +101,7 @@ class Image360 : public EventKeyPressListener,
 
   void initController(std::unique_ptr<Image> controllerImage,
                       std::string controllerModelPath);
-
+  void initControllerLaser(std::unique_ptr<Image> laserBeamImage);
   // void initFadeInScreen();
   void initFadeScreen();
 
@@ -155,6 +155,7 @@ class Image360 : public EventKeyPressListener,
 
  private:
   std::unique_ptr<Scene> scene;
+  enum EYE { LEFT, RIGHT };
 
   Camera *camera;
 
@@ -162,6 +163,11 @@ class Image360 : public EventKeyPressListener,
   Material *controllerMaterial;
   Texture *controllerTexture;
   Model *controllerModel;
+
+  Shader *laserBeamShader;
+  Material *laserBeamMaterial;
+  Texture *laserBeamTexture;
+  Model *laserBeamModel;
 
   // mono rendering
   Shader *shader;

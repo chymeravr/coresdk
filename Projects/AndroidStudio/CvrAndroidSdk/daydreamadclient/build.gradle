@@ -60,7 +60,7 @@ android {
             jniDebuggable true
 //             minifyEnabled true
 //             debuggable false
-             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
+//             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
         }
 
         debug {
@@ -69,7 +69,7 @@ android {
             jniDebuggable true
 //             minifyEnabled true
 //             debuggable false
-             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
+//             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
         }
 
         releaseDemo {
@@ -170,7 +170,7 @@ dependencies {
 // use release builds in debug for external libraries that we build for android - implicitly assume they have no problems
 // using debug versions of libjpeg and soil cause significant performance issues
 tasks.whenTaskAdded { task ->
-    if (task.name.contains('compileDebug')) {
+    if (task.name.contains('compileDebug') || task.name.contains('compileDebugDemo')) {
         task.dependsOn([':coreEngine:distributeDebugLib',
                         ':glImplementation:distributeDebugLib',
                         ':image360:distributeDebugLib',
@@ -178,7 +178,7 @@ tasks.whenTaskAdded { task ->
                         ':libjpeg:distributeReleaseLib',
                         ':daydreamimplementation:distributeDebugLib',
                         ':freetype:distributeReleaseLib'])
-    } else if (task.name.contains('compileRelease')) {
+    } else if (task.name.contains('compileRelease') || task.name.contains('compileReleaseDemo')) {
         task.dependsOn([':coreEngine:distributeReleaseLib',
                         ':glImplementation:distributeReleaseLib',
                         ':image360:distributeReleaseLib',

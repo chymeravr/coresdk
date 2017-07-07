@@ -2,6 +2,7 @@
 #include <coreEngine/components/transformTree/TransformTreeFactory.h>
 #include <coreEngine/modelBuilder/CubeBuilder.h>
 #include <coreEngine/modelBuilder/ModelLoader.h>
+#include <coreEngine/modelBuilder/RectangleBuilder.h>
 #include <coreEngine/modelBuilder/UVSphereBuilder.h>
 #include <coreEngine/modifier/ImageModifier.h>
 #include <coreEngine/modifier/ModelModifier.h>
@@ -252,15 +253,17 @@ void Image360::initStereoEquirectangularView(
 
   std::unique_ptr<TransformTreeModel> leftTransformSphereUptr =
       transformTreeFactory->createTransformTreeModel(
-          this->stereoImageContainer[LEFT]);
-  this->stereoImageContainer[LEFT]->getComponentList().addComponent(
-      std::move(leftTransformSphereUptr));
+          this->stereoImageContainer[Image360::EYE::LEFT]);
+  this->stereoImageContainer[Image360::EYE::LEFT]
+      ->getComponentList()
+      .addComponent(std::move(leftTransformSphereUptr));
 
   std::unique_ptr<TransformTreeModel> rightTransformSphereUptr =
       transformTreeFactory->createTransformTreeModel(
-          this->stereoImageContainer[RIGHT]);
-  this->stereoImageContainer[RIGHT]->getComponentList().addComponent(
-      std::move(rightTransformSphereUptr));
+          this->stereoImageContainer[Image360::EYE::RIGHT]);
+  this->stereoImageContainer[Image360::EYE::RIGHT]
+      ->getComponentList()
+      .addComponent(std::move(rightTransformSphereUptr));
 
   TransformTreeCamera *transformTreeCamera =
       (TransformTreeCamera *)this->camera->getComponentList().getComponent(
@@ -269,32 +272,36 @@ void Image360::initStereoEquirectangularView(
   transformTreeCamera->setLocalRotation(CL_Vec3(0.0f, 0.0f, 0.0f));
 
   TransformTreeModel *transformSphereLeft =
-      (TransformTreeModel *)this->stereoImageContainer[LEFT]
+      (TransformTreeModel *)this->stereoImageContainer[Image360::EYE::LEFT]
           ->getComponentList()
           .getComponent("transformTree");
   transformSphereLeft->setLocalPosition(CL_Vec3(0.0f, 0.0f, 0.0f));
   transformSphereLeft->setLocalScale(CL_Vec3(100.0f, 100.0f, 100.0f));
 
-  this->stereoImageContainer[LEFT]->createBiRelation(this->stereoMaterial);
+  this->stereoImageContainer[Image360::EYE::LEFT]->createBiRelation(
+      this->stereoMaterial);
 
   TransformTreeModel *transformSphereRight =
-      (TransformTreeModel *)this->stereoImageContainer[RIGHT]
+      (TransformTreeModel *)this->stereoImageContainer[Image360::EYE::RIGHT]
           ->getComponentList()
           .getComponent("transformTree");
   transformSphereRight->setLocalPosition(CL_Vec3(0.0f, 0.0f, 0.0f));
   transformSphereRight->setLocalScale(CL_Vec3(100.0f, 100.0f, 100.0f));
 
-  this->stereoImageContainer[RIGHT]->createBiRelation(this->stereoMaterial);
+  this->stereoImageContainer[Image360::EYE::RIGHT]->createBiRelation(
+      this->stereoMaterial);
 
   std::unique_ptr<ModelModifier> modelModifierLeft(new ModelModifier);
   UVSphereBuilder uvSphereBuilderLeft(modelModifierLeft.get());
   uvSphereBuilderLeft.setVMax(0.5f);
-  uvSphereBuilderLeft.buildUnitSphere(this->stereoImageContainer[LEFT], 5);
+  uvSphereBuilderLeft.buildUnitSphere(
+      this->stereoImageContainer[Image360::EYE::LEFT], 5);
 
   std::unique_ptr<ModelModifier> modelModifierRight(new ModelModifier);
   UVSphereBuilder uvSphereBuilderRight(modelModifierRight.get());
   uvSphereBuilderRight.setVMin(0.5f);
-  uvSphereBuilderRight.buildUnitSphere(this->stereoImageContainer[RIGHT], 5);
+  uvSphereBuilderRight.buildUnitSphere(
+      this->stereoImageContainer[Image360::EYE::RIGHT], 5);
 
   this->stereoImageContainer[0]->setDepthTest(true);
   this->stereoImageContainer[1]->setDepthTest(true);
@@ -308,16 +315,6 @@ void Image360::initUIButtons() {
   textStyle.fontSize = 20;
   textStyle.scale = 0.025f;
   textStyle.color = CL_Vec4(1.0, 1.0, 1.0, 1.0);
-
-  // Laser Box Initialization
-  auto laserPosition = CL_Vec3(-5.1, 5.0, -15.5);
-  auto laserRotation = CL_Vec3(0.0, 0.0, 0.0);
-  auto laserColor = CL_Vec4(1.0, 1.0, 1.0, 0.7);
-  auto laserWidth = 0.1f;
-  auto laserHeight = 10.0f;
-  this->laserBox = uiFactory->createPlanarBackground(
-      "laserBox", scene.get(), laserColor, laserPosition, laserRotation,
-      laserWidth, laserHeight);
 
   // Action Button Initialization
   auto actionButtonPosition = CL_Vec3(-5.1, 0.0, -15.5);
@@ -462,8 +459,8 @@ void Image360::initController(std::unique_ptr<Image> controllerImage,
   TransformTreeModel *transformController =
       (TransformTreeModel *)this->controllerModel->getComponentList()
           .getComponent("transformTree");
-  transformController->setLocalPosition(CL_Vec3(0.0f, 0.0f, -5.0f));
-  transformController->setLocalScale(CL_Vec3(100.0f, 100.0f, 100.0f));
+  transformController->setLocalPosition(CL_Vec3(0.0f, 0.0f, -2.0f));
+  transformController->setLocalScale(CL_Vec3(25.0f, 25.0f, 25.0f));
   transformController->setLocalRotation(CL_Vec3(90.0f, 90.0f, 90.0f));
 
   std::unique_ptr<ShaderDiffuseTexture> controllerShaderUptr;
@@ -501,6 +498,73 @@ void Image360::initController(std::unique_ptr<Image> controllerImage,
 
   this->controllerModel->createBiRelation(this->controllerMaterial);
   return;
+}
+
+void Image360::initControllerLaser(std::unique_ptr<Image> laserBeamImage) {
+  std::unique_ptr<Model> laserBeamModelUptr = modelFactory->create("laserBeam");
+  assert(laserBeamModelUptr != nullptr);
+  this->laserBeamModel = laserBeamModelUptr.get();
+  this->scene->addToScene(std::move(laserBeamModelUptr));
+  std::unique_ptr<RectangleBuilder> rectangleBuilder =
+      std::unique_ptr<RectangleBuilder>(
+          new RectangleBuilder(this->loggerFactory));
+  rectangleBuilder->buildRectangle(this->laserBeamModel, 0.01f, 2.5f);
+  this->laserBeamModel->setDepthTest(true);
+  this->laserBeamModel->setBlending(true);
+
+  std::unique_ptr<TransformTreeModel> laserBeamTransformUptr =
+      this->transformTreeFactory->createTransformTreeModel(
+          this->laserBeamModel);
+  this->laserBeamModel->getComponentList().addComponent(
+      std::move(laserBeamTransformUptr));
+
+  TransformTreeModel *transformController =
+      (TransformTreeModel *)this->controllerModel->getComponentList()
+          .getComponent("transformTree");
+
+  TransformTreeModel *transformLaserBeam =
+      (TransformTreeModel *)this->laserBeamModel->getComponentList()
+          .getComponent("transformTree");
+
+  transformController->addChild(transformLaserBeam);
+  transformLaserBeam->setLocalPosition(CL_Vec3(0.0f, 0.0f, 0.125f));
+  transformLaserBeam->setLocalScale(CL_Vec3(0.025, 0.1f, 0.1f));
+  transformLaserBeam->setLocalRotation(CL_Vec3(90.0f, 0.0f, 0.0f));
+
+  std::unique_ptr<ShaderDiffuseTexture> laserBeamShaderUptr;
+  std::unique_ptr<MaterialDiffuseTexture> laserBeamMaterialUptr;
+  std::unique_ptr<Texture> laserBeamTextureUptr;
+
+  // doubt ~ why is this named shader for 360 degree spheres
+  laserBeamShaderUptr =
+      this->diffuseTextureFactory->createShader("laserBeamShader", scene.get());
+  assert(laserBeamShaderUptr != nullptr);
+  this->laserBeamShader = laserBeamShaderUptr.get();
+  laserBeamShaderUptr->enableAlphaChannel();
+  this->scene->addToScene(std::move(laserBeamShaderUptr));
+
+  laserBeamMaterialUptr = this->diffuseTextureFactory->createMaterial(
+      "laserBeamMaterial", (ShaderDiffuseTexture *)this->laserBeamShader);
+  assert(laserBeamMaterialUptr != nullptr);
+  this->laserBeamMaterial = laserBeamMaterialUptr.get();
+  this->scene->addToScene(std::move(laserBeamMaterialUptr));
+
+  laserBeamTextureUptr =
+      this->diffuseTextureFactory->createTexture("laserBeamTexture");
+
+  std::unique_ptr<Image> laserBeamImageUptr = std::move(laserBeamImage);
+  laserBeamTextureUptr->setTextureData(std::move(laserBeamImageUptr->data));
+  laserBeamTextureUptr->setHeight(laserBeamImageUptr->height);
+  laserBeamTextureUptr->setWidth(laserBeamImageUptr->width);
+  laserBeamTextureUptr->setTextureDataSize(laserBeamImageUptr->dataSize);
+  laserBeamTextureUptr->setColorFormat(Texture::ColorFormat::RGBA);
+
+  this->laserBeamTexture = laserBeamTextureUptr.get();
+  this->scene->addToScene(std::move(laserBeamTextureUptr));
+  ((MaterialDiffuseTexture *)this->laserBeamMaterial)
+      ->setDiffuseTexture(this->laserBeamTexture);
+
+  this->laserBeamModel->createBiRelation(this->laserBeamMaterial);
 }
 
 void Image360::initFadeScreen() {
@@ -551,20 +615,20 @@ void Image360::drawInit() {
 
 // void Image360::draw(EYE eye) { renderer->draw(scene.get(), eye); }
 void Image360::drawMono() {
-  renderer->draw(scene.get(), LEFT);
-  renderer->draw(scene.get(), RIGHT);
+  renderer->drawLeft(scene.get());
+  renderer->drawRight(scene.get());
 }
 
 void Image360::drawStereoLeft() {
-  stereoImageContainer[LEFT]->setIsVisible(true);
-  stereoImageContainer[RIGHT]->setIsVisible(false);
-  renderer->draw(scene.get(), LEFT);
+  stereoImageContainer[Image360::EYE::LEFT]->setIsVisible(true);
+  stereoImageContainer[Image360::EYE::RIGHT]->setIsVisible(false);
+  renderer->drawLeft(scene.get());
 }
 
 void Image360::drawStereoRight() {
-  stereoImageContainer[LEFT]->setIsVisible(false);
-  stereoImageContainer[RIGHT]->setIsVisible(true);
-  renderer->draw(scene.get(), RIGHT);
+  stereoImageContainer[Image360::EYE::LEFT]->setIsVisible(false);
+  stereoImageContainer[Image360::EYE::RIGHT]->setIsVisible(true);
+  renderer->drawRight(scene.get());
 }
 
 void Image360::drawComplete() { renderer->drawComplete(); }

@@ -34,32 +34,40 @@ find_library(android-lib android)
 find_library(egl EGL)
 find_library(gles-v2 GLESv2)
 
+set(build_type "debug")
+if(CMAKE_BUILD_TYPE EQUAL "release")
+    set(build_type "release")
+endif()
+if(CMAKE_BUILD_TYPE EQUAL "releaseDemo")
+    set(build_type "release")
+endif()
+
 add_library(core_engine SHARED IMPORTED)
 set_target_properties(
     core_engine
     PROPERTIES IMPORTED_LOCATION
-    ${ANDROID_LIBRARIES}/coreEngine/${CMAKE_BUILD_TYPE}/${ANDROID_ABI}/libCoreEngine.so
+    ${ANDROID_LIBRARIES}/coreEngine/${build_type}/${ANDROID_ABI}/libCoreEngine.so
 )
 
 add_library(gl_implementation SHARED IMPORTED)
 set_target_properties(
     gl_implementation
     PROPERTIES IMPORTED_LOCATION
-    ${ANDROID_LIBRARIES}/glImplementation/${CMAKE_BUILD_TYPE}/${ANDROID_ABI}/libGLImplementation.so
+    ${ANDROID_LIBRARIES}/glImplementation/${build_type}/${ANDROID_ABI}/libGLImplementation.so
 )
 
 add_library(image360 SHARED IMPORTED)
 set_target_properties(
     image360
     PROPERTIES IMPORTED_LOCATION
-    ${ANDROID_LIBRARIES}/image360/${CMAKE_BUILD_TYPE}/${ANDROID_ABI}/libImage360.so
+    ${ANDROID_LIBRARIES}/image360/${build_type}/${ANDROID_ABI}/libImage360.so
 )
 
 add_library(daydream_implementation SHARED IMPORTED)
 set_target_properties(
     daydream_implementation
     PROPERTIES IMPORTED_LOCATION
-    ${ANDROID_LIBRARIES}/daydreamimplementation/${CMAKE_BUILD_TYPE}/${ANDROID_ABI}/libDaydreamImplementation.so
+    ${ANDROID_LIBRARIES}/daydreamimplementation/${build_type}/${ANDROID_ABI}/libDaydreamImplementation.so
 )
 
 add_library(gvr SHARED IMPORTED)

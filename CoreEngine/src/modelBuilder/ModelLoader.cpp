@@ -7,7 +7,7 @@
 namespace cl {
 ModelLoader::ModelLoader(ILoggerFactory *loggerFactory) {
   assert(loggerFactory != nullptr);
-  this->logger = loggerFactory->createLogger("CoreEngine::Relation: ");
+  this->logger = loggerFactory->createLogger("CoreEngine::ModelLoader: ");
 }
 void ModelLoader::load_obj(std::string filename, Model *model) {
   std::vector<CL_Vec3> &vertices = model->getVertices();

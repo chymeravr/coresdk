@@ -76,6 +76,8 @@ public final class ChymeraVrSdk {
 
 
         copyAssets(context, Config.getFontDir());
+        copyAssets(context, "textures");
+        copyAssets(context, "models");
         if(!BuildConfig.NETWORK_ENABLED) {
             if(!copyAssets(context, Config.getImage360Dir())){
                 Log.e(TAG, "Failed to copy SDK Assets. Initialize Exit");

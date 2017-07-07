@@ -63,21 +63,21 @@ else()
 	set_target_properties(
 		freetype_lib
 		PROPERTIES IMPORTED_LOCATION
-		${ANDROID_LIBRARIES}/freetype/${CMAKE_BUILD_TYPE}/${ANDROID_ABI}/libfreetype.so
+		${ANDROID_LIBRARIES}/freetype/release/${ANDROID_ABI}/libfreetype.so
 	)
 
 	add_library(soil_lib SHARED IMPORTED)
 	set_target_properties(
 		soil_lib
 		PROPERTIES IMPORTED_LOCATION
-		${ANDROID_LIBRARIES}/soil/${CMAKE_BUILD_TYPE}/${ANDROID_ABI}/libSOIL.so
+		${ANDROID_LIBRARIES}/soil/release/${ANDROID_ABI}/libSOIL.so
 	)
 
 	add_library(libjpeg SHARED IMPORTED)
 	set_target_properties(
 		libjpeg
 		PROPERTIES IMPORTED_LOCATION
-		${ANDROID_LIBRARIES}/libjpeg/${CMAKE_BUILD_TYPE}/${ANDROID_ABI}/libjpeg.so
+		${ANDROID_LIBRARIES}/libjpeg/release/${ANDROID_ABI}/libjpeg.so
 	)
 	target_link_libraries(${PROJECT_NAME} freetype_lib soil_lib libjpeg)
 endif()

@@ -224,6 +224,11 @@ int _tmain(int argc, _TCHAR** argv) {
             "C:\\Users\\robin_"
             "chimera\\SDK\\Projects\\VisualStudio\\Image360WindowsLa"
             "uncher\\Debug\\ddcontroller_idle.png");
+	std::unique_ptr<Image> laserBeamTexture = 
+		imagePNGLoader.loadImage(
+			"C:\\Users\\robin_"
+            "chimera\\SDK\\Projects\\VisualStudio\\Image360WindowsLa"
+			"uncher\\Debug\\laserTexture.png");
     /*std::unique_ptr<Image> controllerTexture = imageJPEGLoader.loadImage(
         "C:\\Users\\robin_"
         "chimera\\SDK\\Projects\\VisualStudio\\Image360WindowsLa"
@@ -245,6 +250,7 @@ int _tmain(int argc, _TCHAR** argv) {
         "C:\\Users\\robin_"
         "chimera\\Documents\\SDK\\Projects\\VisualStudio\\Image360WindowsLa"
         "uncher\\Debug\\ddController.obj");
+	application->initControllerLaser(std::move(laserBeamTexture));
     application->initComplete();
 
     //// register callbacks

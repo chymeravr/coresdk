@@ -11,25 +11,21 @@
 
 #include <memory>
 #include <string>
-#include <thread> // NOLINT
+#include <thread>  // NOLINT
 #include <vector>
 
 #include "vr/gvr/capi/include/gvr.h"
 #include "vr/gvr/capi/include/gvr_audio.h"
 #include "vr/gvr/capi/include/gvr_controller.h"
 #include "vr/gvr/capi/include/gvr_types.h"
-#include "world_layout_data.h" // NOLINT
 
 #include <coreEngine/IRenderer.h>
 #include <glImplementation/renderObjects/CameraGL.h>
 
-namespace cl
-{
+namespace cl {
 
-class RendererDaydream : public IRenderer
-{
-
-private:
+class RendererDaydream : public IRenderer {
+ private:
   void PrepareFramebuffer();
   void ResumeControllerApiAsNeeded();
   void ProcessControllerInput();
@@ -61,7 +57,9 @@ private:
 
   std::unique_ptr<ILogger> logger;
 
-public:
+  CL_Quat rotQuat;
+
+ public:
   RendererDaydream(gvr_context *gvr_context, ILoggerFactory *loggerFactory);
 
   ~RendererDaydream();
@@ -74,7 +72,9 @@ public:
 
   void drawInit(Scene *scene);
 
-  void draw(Scene *scene, EYE eye);
+  void drawLeft(Scene *scene);
+
+  void drawRight(Scene *scene);
 
   void drawComplete();
 
@@ -92,4 +92,4 @@ public:
 };
 }
 
-#endif //DAYDREAMIMPLEMENTATION_RENDERER_H
+#endif  // DAYDREAMIMPLEMENTATION_RENDERER_H

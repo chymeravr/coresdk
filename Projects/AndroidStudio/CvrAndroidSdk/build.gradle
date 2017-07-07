@@ -225,9 +225,10 @@ task deleteNdk(type: Delete) {
 
 task deleteCvr(type: Delete){
     delete "${project.rootDir}/distribution/coreEngine"
-    delete "${project.rootDir}/distribution/SOIL"
-    delete "${project.rootDir}/distribution/freetype"
-    delete "${project.rootDir}/distribution/libjpeg"
+    // we don't want to build our external dependencies so frequently
+//    delete "${project.rootDir}/distribution/SOIL"
+//    delete "${project.rootDir}/distribution/freetype"
+//    delete "${project.rootDir}/distribution/libjpeg"
     delete "${project.rootDir}/distribution/glImplementation"
     delete "${project.rootDir}/distribution/image360"
     delete "${project.rootDir}/distribution/daydreamimplementation"
@@ -238,5 +239,6 @@ task deleteCvr(type: Delete){
     delete "${project.rootDir}/distribution/analytics"
     delete "${project.rootDir}/distribution/common"
 }
-clean.dependsOn(deleteNdk)
+// uncomment below if we want to clean gvr as well
+//clean.dependsOn(deleteNdk)
 clean.dependsOn(deleteCvr)
