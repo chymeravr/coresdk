@@ -50,6 +50,8 @@
 
 // Application Dependency
 #include <image360/Image360.h>
+#include <image360/Image360EventKeyPressListener.h>
+#include <image360/Image360EventPassiveMouseMotionListener.h>
 
 //  Windowing Library
 #include <GLFW/glfw3.h>
@@ -71,6 +73,9 @@ Glut tutorial http://www.lighthouse3d.com/tutorials/glut-tutorial/
 std::unique_ptr<Image360> application;
 std::unique_ptr<ILogger> logger;
 std::unique_ptr<IEventQueue> eventQueue = nullptr;
+std::unique_ptr<ILoggerFactory> loggerFactory(new LoggerFactoryWindows());
+std::unique_ptr<EventKeyPressListener> eventKeyPressListener;
+std::unique_ptr<EventPassiveMouseMotionListener> eventPassiveMouseMotionListener;
 
 // enum APPLICATION_MODE { MONO, STEREO };
 
@@ -83,16 +88,18 @@ void key_callback(GLFWwindow* window, int key, int scancode, int action,
     glfwSetWindowShouldClose(window, GL_TRUE);
   } else {
     std::unique_ptr<IEvent> keyPressEvent(
-        new EventKeyPress(application.get()->getEventKeyPressListener(),
+        new EventKeyPress(eventKeyPressListener.get(),
                           key, action, mode));
     eventQueue->push(std::move(keyPressEvent));
   }
 }
 
+
+
 void mouse_pos_callback(GLFWwindow* window, double mouseXPos,
                         double mouseYPos) {
   std::unique_ptr<IEvent> mousePassiveEvent(new EventPassiveMouseMotion(
-      application.get()->getEventPassiveMouseMotionListener(), mouseXPos,
+      eventPassiveMouseMotionListener.get(), mouseXPos,
       mouseYPos));
   eventQueue->push(std::move(mousePassiveEvent));
 }
@@ -145,7 +152,7 @@ int _tmain(int argc, _TCHAR** argv) {
   glfwGetFramebufferSize(window, &width, &height);
   // glViewport(0, 0, width, height);
 
-  std::unique_ptr<ILoggerFactory> loggerFactory(new LoggerFactoryWindows());
+  
 
   cout << "TestAppWindowsLauncer" << endl;
   logger = loggerFactory->createLogger("TestAppWindowsLauncher: ");
@@ -207,6 +214,12 @@ int _tmain(int argc, _TCHAR** argv) {
                      eventQueue.get(), loggerFactory.get(),
                      std::move(uiFactory), std::move(gazeDetectorFactory),
                      std::move(eventGazeListenerFactory), fontFilePath));
+
+	eventKeyPressListener = std::unique_ptr<EventKeyPressListener>(
+		new Image360EventKeyPressListener(application.get(), loggerFactory.get()));
+
+	eventPassiveMouseMotionListener = std::unique_ptr<EventPassiveMouseMotionListener>(
+		new Image360EventPassiveMouseMotionListener(application.get(), loggerFactory.get()));
 
     application->start();
 

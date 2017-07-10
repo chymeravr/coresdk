@@ -116,11 +116,12 @@ public final class Image360Activity extends Activity {
 
 
     // ddController is not thread safe - we call this from the rendering thread and execute on main UI thread
-    private final Runnable r = new Runnable() {
+    private final Runnable controllerThread = new Runnable() {
         public void run() {
             if(ddController.clickButtonState) {
 
-                ControllerClickEventResponse keyEventResponse = ControllerClickEventResponse.values()[nativeOnControllerClicked(nativeImage360ActivityHandler)];
+                ControllerClickEventResponse keyEventResponse
+                        = ControllerClickEventResponse.values()[nativeOnControllerClicked(nativeImage360ActivityHandler)];
 
                 switch (keyEventResponse){
                     case NO_EVENT:
@@ -152,7 +153,7 @@ public final class Image360Activity extends Activity {
             clientClass = Class.forName(Image360Activity.this.returningClassName);
             ComponentName c= new ComponentName(Image360Activity.this, clientClass);
             Intent vrIntent = DaydreamApi.createVrIntent(c);
-            daydreamApi.launchInVr(vrIntent);
+            this.daydreamApi.launchInVr(vrIntent);
         } catch (ClassNotFoundException e) {
             Log.e(TAG, e.toString());
         }
@@ -266,7 +267,7 @@ public final class Image360Activity extends Activity {
                         ddController.update();
 
                         // daydream functions are not thread safe - run them on UI thread
-                        //Image360Activity.this.runOnUiThread(r);
+                        Image360Activity.this.runOnUiThread(controllerThread);
                     }
                 });
         surfaceView.setOnTouchListener(
@@ -332,7 +333,7 @@ public final class Image360Activity extends Activity {
         // Destruction order is important; shutting down the GvrLayout will detach
         // the GLSurfaceView and stop the GL thread, allowing safe shutdown of
         // native resources from the UI thread.
-        this.emitEvent(EventType.AD_CLICK, EventPriority.HIGH, null);
+        this.emitEvent(EventType.AD_CLOSE, EventPriority.HIGH, null);
         gvrLayout.shutdown();
         nativeDestroyRenderer(nativeImage360ActivityHandler);
         this.ddControllerManager.stop();
@@ -405,6 +406,7 @@ public final class Image360Activity extends Activity {
     private void onDownloadClick(){
         // send user to vr play store of advertiser for starting download
         // exit from ad
+        this.emitEvent(EventType.AD_CLICK, EventPriority.HIGH, null);
 
         Intent launchIntent = new Intent(Intent.ACTION_VIEW);
 
@@ -417,7 +419,7 @@ public final class Image360Activity extends Activity {
         ComponentName playStoreComponent = new ComponentName("com.google.android.vr.home", "com.google.android.apps.vr.playstore.PlayStoreActivity");
         Intent downloadAppIntent = daydreamApi.createVrIntent(playStoreComponent);
         downloadAppIntent.setData(Uri.parse("https://play.google.com/vr/store/apps/details?id=" + this.clickUrl));
-        daydreamApi.launchInVr(downloadAppIntent);
+        this.daydreamApi.launchInVr(downloadAppIntent);
     }
 
     private native long nativeCreateRenderer(

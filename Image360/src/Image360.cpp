@@ -76,12 +76,12 @@ void Image360::initialize() {
   this->fontStore =
       uiFactory->createFontStore(scene.get(), this->fontFolderPath.c_str());
 
-  this->eventKeyPressListener = std::unique_ptr<EventKeyPressListener>(
-      new Image360EventKeyPressListener(this, this->loggerFactory));
-  this->eventPassiveMouseMotionListener =
-      std::unique_ptr<EventPassiveMouseMotionListener>(
-          new Image360EventPassiveMouseMotionListener(this,
-                                                      this->loggerFactory));
+  //   this->eventKeyPressListener = std::unique_ptr<EventKeyPressListener>(
+  //       new Image360EventKeyPressListener(this, this->loggerFactory));
+  //   this->eventPassiveMouseMotionListener =
+  //       std::unique_ptr<EventPassiveMouseMotionListener>(
+  //           new Image360EventPassiveMouseMotionListener(this,
+  //                                                       this->loggerFactory));
 }
 
 void Image360::initMonoView() {

@@ -129,13 +129,13 @@ class Image360 {
 
   Reticle *getParentReticle();
 
-  EventKeyPressListener *getEventKeyPressListener() {
-    return this->eventKeyPressListener.get();
-  }
+  // EventKeyPressListener *getEventKeyPressListener() {
+  //   return this->eventKeyPressListener.get();
+  // }
 
-  EventPassiveMouseMotionListener *getEventPassiveMouseMotionListener() {
-    return this->eventPassiveMouseMotionListener.get();
-  }
+  // EventPassiveMouseMotionListener *getEventPassiveMouseMotionListener() {
+  //   return this->eventPassiveMouseMotionListener.get();
+  // }
 
   Camera *getCamera() { return this->camera; }
 
@@ -215,9 +215,9 @@ class Image360 {
   TransformTree *gazeTransformTarget;
 
   // todo : can we make the client initialize and add to event queue?
-  std::unique_ptr<EventKeyPressListener> eventKeyPressListener;
-  std::unique_ptr<EventPassiveMouseMotionListener>
-      eventPassiveMouseMotionListener;
+  // std::unique_ptr<EventKeyPressListener> eventKeyPressListener;
+  // std::unique_ptr<EventPassiveMouseMotionListener>
+  //     eventPassiveMouseMotionListener;
 
   void initCubeMapTexture(Image *rightImage, Image *leftImage, Image *topImage,
                           Image *bottomImage, Image *frontImage,

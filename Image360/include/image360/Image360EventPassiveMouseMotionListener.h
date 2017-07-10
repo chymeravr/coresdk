@@ -1,3 +1,8 @@
+/*
+* This Class contains implementation for a passive motion motion listener
+* event. This will be used for mouse movement for a windows implementation
+*/
+
 #ifndef IMAGE360_EVENTPASSIVEMOUSEMOTIONLISTENER_H
 #define IMAGE360_EVENTPASSIVEMOUSEMOTIONLISTENER_H
 
@@ -8,7 +13,7 @@
 
 namespace cl {
 class Image360EventPassiveMouseMotionListener
-    : EventPassiveMouseMotionListener {
+    : public EventPassiveMouseMotionListener {
  public:
   Image360EventPassiveMouseMotionListener(Image360 *image360,
                                           ILoggerFactory *loggerFactory);

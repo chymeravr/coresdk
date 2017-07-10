@@ -1,3 +1,8 @@
+/*
+* This Class contains implementation for a key press listener
+* event. This will be used for keyboard events for a windows implementation
+*/
+
 #ifndef IMAGE360_EVENTKEYPRESSLISTENER_H
 #define IMAGE360_EVENTKEYPRESSLISTENER_H
 
@@ -10,7 +15,7 @@
  * Implementation of Key Press Listener for Image360 Application
 */
 namespace cl {
-class Image360EventKeyPressListener : EventKeyPressListener {
+class Image360EventKeyPressListener : public EventKeyPressListener {
  public:
   Image360EventKeyPressListener(Image360 *image360,
                                 ILoggerFactory *loggerFactory);

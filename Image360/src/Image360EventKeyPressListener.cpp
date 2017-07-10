@@ -4,7 +4,8 @@
 // TODO - Ideally I think this should be a windows implementation detail
 namespace cl {
 Image360EventKeyPressListener::Image360EventKeyPressListener(
-    Image360 *image360, ILoggerFactory *loggerFactory) {
+    Image360 *image360, ILoggerFactory *loggerFactory)
+    : EventKeyPressListener() {
   assert(image360 != nullptr);
   this->image360 = image360;
   this->logger =
