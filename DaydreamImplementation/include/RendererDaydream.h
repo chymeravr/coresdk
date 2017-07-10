@@ -59,6 +59,8 @@ class RendererDaydream : public IRenderer {
 
   CL_Quat rotQuat;
 
+    void updateController(Scene *scene);
+
  public:
   RendererDaydream(gvr_context *gvr_context, ILoggerFactory *loggerFactory);
 

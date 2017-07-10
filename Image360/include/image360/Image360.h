@@ -27,8 +27,7 @@ enum TEXTURE_MAP_MODE {
 };
 enum IMAGE_MODE { STEREO, MONO };
 
-class Image360 : public EventKeyPressListener,
-                 public EventPassiveMouseMotionListener {
+class Image360 {
  public:
   Image360(std::unique_ptr<IRenderer> renderer,
            std::unique_ptr<ISceneFactory> sceneFactory,
@@ -42,38 +41,8 @@ class Image360 : public EventKeyPressListener,
            std::unique_ptr<UIFactory> uiFactory,
            std::unique_ptr<GazeDetectorFactory> gazeDetectorFactory,
            std::unique_ptr<IEventGazeListenerFactory> gazeEventListenerFactory,
-           std::string fontFolderPath) {
-    assert(renderer != nullptr);
-    assert(sceneFactory != nullptr);
-    assert(modelFactory != nullptr);
-    assert(diffuseTextureFactory != nullptr);
-    assert(diffuseTextureCubeMapFactory != nullptr);
-    assert(transformTreeFactory != nullptr);
-    assert(eventQueue != nullptr);
-    assert(cameraFactory != nullptr);
-    assert(uiFactory != nullptr);
-    assert(gazeDetectorFactory != nullptr);
-    assert(gazeEventListenerFactory != nullptr);
+           std::string fontFolderPath);
 
-    this->renderer = std::move(renderer);
-    this->sceneFactory = std::move(sceneFactory);
-    this->modelFactory = std::move(modelFactory);
-    this->diffuseTextureFactory = std::move(diffuseTextureFactory);
-    this->diffuseTextureCubeMapFactory =
-        std::move(diffuseTextureCubeMapFactory);
-    this->transformTreeFactory = std::move(transformTreeFactory);
-    this->cameraFactory = std::move(cameraFactory);
-    this->eventQueue = eventQueue;
-    this->logger = loggerFactory->createLogger("Image360::");
-    this->uiFactory = std::move(uiFactory);
-    this->gazeDetectorFactory = std::move(gazeDetectorFactory);
-    this->eventGazeListenerFactory = std::move(gazeEventListenerFactory);
-    this->fontFolderPath = fontFolderPath;
-
-    this->loggerFactory = loggerFactory;
-  }
-
-  // virtual ~Image360() = 0;
   // IApplication implementation
   void start();
   /**
@@ -85,51 +54,56 @@ class Image360 : public EventKeyPressListener,
   * BACK, RIGHT, TOP AND BOTTOM. In other cases just one image is required.
   */
   void initialize();
+
+  // use mono init funtions if you have a mono image360
   void initMonoView();
   void initMonoEquirectangularView(std::unique_ptr<Image> textureImage);
   void initMonoCubeMapSingleTextureView(std::unique_ptr<Image> textureImage);
   void initMonoCubeMapSixTextureView(
       std::vector<std::unique_ptr<Image>> textureImage);
 
+  // use stereo init functions if you have a stereo image360 (Top Bottom => Left
+  // Right)
   void initStereoView();
   void initStereoEquirectangularView(std::unique_ptr<Image> textureImage);
   // note - implement stereo cubemaps if they catch on popularity
 
+  // Addition User Interface Objects ~ buttons, reticle, controller,
+  // controller laser, fadein/out screen
   void initUIButtons();
   void initCameraReticle();
   void initControllerReticle();
-
   void initController(std::unique_ptr<Image> controllerImage,
                       std::string controllerModelPath);
   void initControllerLaser(std::unique_ptr<Image> laserBeamImage);
-  // void initFadeInScreen();
   void initFadeScreen();
-
+  // call initComplete after you have initialized the scene graph
   void initComplete();
 
   // TODO : review update functions
   void update();
-
+  void updateControllerQuaternion(CL_Quat controllerOrientation);
+  void updateControllerRotation(CL_Vec3 controllerRotation);
+  void updateControllerPosition(CL_Vec3 controllerPosition);
   // draw is split into 4 steps - init, left eye, right eye, complete
 
   // draw init common stuff
   void drawInit();
-
-  // void draw(EYE eye);
-
   // draw mono - no distinction between rendering for left and right eye
   void drawMono();
-  // draw eye specific stuff - camera, models etc.
+  // draw stereo - eye specific stuff - camera, models etc.
   void drawStereoRight();
   void drawStereoLeft();
-
   void drawComplete();
+
   void deinitialize();
   void stop();
   void pause();
   void resume();
+
   void onKeyPress(char key, int x, int y);
   void onPassiveMouseMotion(int x, int y);
+
   IRenderer *getRenderer();
 
   std::unique_ptr<EventGazeListener> actionButtonListener;
@@ -152,6 +126,20 @@ class Image360 : public EventKeyPressListener,
   void beginFade() { fadeStarted = true; }
 
   bool isFadeComplete() { return this->fadeComplete; }
+
+  Reticle *getParentReticle();
+
+  EventKeyPressListener *getEventKeyPressListener() {
+    return this->eventKeyPressListener.get();
+  }
+
+  EventPassiveMouseMotionListener *getEventPassiveMouseMotionListener() {
+    return this->eventPassiveMouseMotionListener.get();
+  }
+
+  Camera *getCamera() { return this->camera; }
+
+  Model *getControllerModel() { return this->controllerModel; }
 
  private:
   std::unique_ptr<Scene> scene;
@@ -216,13 +204,20 @@ class Image360 : public EventKeyPressListener,
   // std::unique_ptr<FadeScreen> fadeInScreen;
   std::unique_ptr<Reticle> reticle;
   std::unique_ptr<Reticle> reticleBase;
+  std::unique_ptr<Reticle> controllerReticle;
   std::unique_ptr<GazeDetectorContainer> gazeDetectorContainer;
 
+  // todo move these to mouse motion listener class
   int lastPassiveMousePositionX = -1;
   int lastPassiveMousePositionY = -1;
   float passiveMouseMotionSensitivity = 0.35f;
   std::unique_ptr<FontStore> fontStore;
   TransformTree *gazeTransformTarget;
+
+  // todo : can we make the client initialize and add to event queue?
+  std::unique_ptr<EventKeyPressListener> eventKeyPressListener;
+  std::unique_ptr<EventPassiveMouseMotionListener>
+      eventPassiveMouseMotionListener;
 
   void initCubeMapTexture(Image *rightImage, Image *leftImage, Image *topImage,
                           Image *bottomImage, Image *frontImage,

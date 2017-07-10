@@ -76,14 +76,14 @@ std::unique_ptr<IEventQueue> eventQueue = nullptr;
 
 void key_callback(GLFWwindow* window, int key, int scancode, int action,
                   int mode) {
-  std::cout << "Key Pressed " << std::endl;
+  std::cout << "Key Pressed " << key << std::endl;
 
   std::cout << application->getActionButtonText() << std::endl;
   if (key == GLFW_KEY_ESCAPE && action == GLFW_PRESS) {
     glfwSetWindowShouldClose(window, GL_TRUE);
   } else {
     std::unique_ptr<IEvent> keyPressEvent(
-        new EventKeyPress((EventKeyPressListener*)(Image360*)application.get(),
+        new EventKeyPress(application.get()->getEventKeyPressListener(),
                           key, action, mode));
     eventQueue->push(std::move(keyPressEvent));
   }
@@ -92,7 +92,7 @@ void key_callback(GLFWwindow* window, int key, int scancode, int action,
 void mouse_pos_callback(GLFWwindow* window, double mouseXPos,
                         double mouseYPos) {
   std::unique_ptr<IEvent> mousePassiveEvent(new EventPassiveMouseMotion(
-      (EventPassiveMouseMotionListener*)(Image360*)application.get(), mouseXPos,
+      application.get()->getEventPassiveMouseMotionListener(), mouseXPos,
       mouseYPos));
   eventQueue->push(std::move(mousePassiveEvent));
 }
@@ -219,20 +219,22 @@ int _tmain(int argc, _TCHAR** argv) {
         "C:\\Users\\robin_"
         "chimera\\SDK\\Projects\\VisualStudio\\Image360WindowsLauncher\\Debug\\"
         "360images\\Witcher-BoatSunset-SmartPhone-360-Stereo.jpg"));
-    std::unique_ptr<Image> controllerTexture =
-            imagePNGLoader.loadImage(
-            "C:\\Users\\robin_"
-            "chimera\\SDK\\Projects\\VisualStudio\\Image360WindowsLa"
-            "uncher\\Debug\\ddcontroller_idle.png");
+    
 	std::unique_ptr<Image> laserBeamTexture = 
 		imagePNGLoader.loadImage(
 			"C:\\Users\\robin_"
             "chimera\\SDK\\Projects\\VisualStudio\\Image360WindowsLa"
 			"uncher\\Debug\\laserTexture.png");
-    /*std::unique_ptr<Image> controllerTexture = imageJPEGLoader.loadImage(
-        "C:\\Users\\robin_"
-        "chimera\\SDK\\Projects\\VisualStudio\\Image360WindowsLa"
-        "uncher\\Debug\\ddcontroller_idle.jpg");*/
+    
+	std::unique_ptr<Image> controllerTexture =
+		imagePNGLoader.loadImage(
+		"C:\\Users\\robin_"
+		"chimera\\SDK\\Projects\\VisualStudio\\Image360WindowsLa"
+		"uncher\\Debug\\ddcontroller_idle.png");
+	//std::unique_ptr<Image> controllerTexture = imageJPEGLoader.loadImage(
+ //       "C:\\Users\\robin_"
+ //       "chimera\\SDK\\Projects\\VisualStudio\\Image360WindowsLa"
+ //       "uncher\\Debug\\ddcontroller_idle.jpg");
 
     std::cout << application->getActionButtonText() << std::endl;
     application->setActionButtonText(std::string("Download"));
@@ -242,8 +244,8 @@ int _tmain(int argc, _TCHAR** argv) {
     application->initStereoView();
     application->initStereoEquirectangularView(std::move(textureImages[0]));
 
-    application->initCameraReticle();
-    application->initUIButtons();
+    //application->initCameraReticle();
+    
     // application->initFadeScreen();
     application->initController(
         std::move(controllerTexture),
@@ -251,6 +253,9 @@ int _tmain(int argc, _TCHAR** argv) {
         "chimera\\Documents\\SDK\\Projects\\VisualStudio\\Image360WindowsLa"
         "uncher\\Debug\\ddController.obj");
 	application->initControllerLaser(std::move(laserBeamTexture));
+	application->initControllerReticle();
+
+	application->initUIButtons();
     application->initComplete();
 
     //// register callbacks

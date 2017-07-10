@@ -4,13 +4,17 @@
 #include <coreEngine/IRenderer.h>
 #include <renderer/RendererNoHMD.h>
 
-namespace cl{
-	class RendererNoHMDStereo : public RendererNoHMD{
-	public:
-		void drawInit(Scene *scene);
-		void draw(Scene *scene, EYE eye);
-		void drawComplete();
-	};
+namespace cl {
+class RendererNoHMDStereo : public RendererNoHMD {
+ public:
+  void drawInit(Scene *scene);
+  void drawLeft(Scene *scene);
+  void drawRight(Scene *scene);
+  void drawComplete();
+
+ private:
+  void drawScene(Scene *scene);
+};
 }
 
-#endif //RENDERER_RENDERERNOHMD_H
+#endif  // RENDERER_RENDERERNOHMD_H

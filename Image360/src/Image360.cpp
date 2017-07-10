@@ -7,8 +7,51 @@
 #include <coreEngine/modifier/ImageModifier.h>
 #include <coreEngine/modifier/ModelModifier.h>
 #include <image360/Image360.h>
+#include <image360/Image360EventKeyPressListener.h>
+#include <image360/Image360EventPassiveMouseMotionListener.h>
 
 namespace cl {
+Image360::Image360(
+    std::unique_ptr<IRenderer> renderer,
+    std::unique_ptr<ISceneFactory> sceneFactory,
+    std::unique_ptr<IModelFactory> modelFactory,
+    std::unique_ptr<IDiffuseTextureFactory> diffuseTextureFactory,
+    std::unique_ptr<IDiffuseTextureCubeMapFactory> diffuseTextureCubeMapFactory,
+    std::unique_ptr<ITransformTreeFactory> transformTreeFactory,
+    std::unique_ptr<ICameraFactory> cameraFactory, IEventQueue *eventQueue,
+    ILoggerFactory *loggerFactory, std::unique_ptr<UIFactory> uiFactory,
+    std::unique_ptr<GazeDetectorFactory> gazeDetectorFactory,
+    std::unique_ptr<IEventGazeListenerFactory> gazeEventListenerFactory,
+    std::string fontFolderPath) {
+  assert(renderer != nullptr);
+  assert(sceneFactory != nullptr);
+  assert(modelFactory != nullptr);
+  assert(diffuseTextureFactory != nullptr);
+  assert(diffuseTextureCubeMapFactory != nullptr);
+  assert(transformTreeFactory != nullptr);
+  assert(eventQueue != nullptr);
+  assert(cameraFactory != nullptr);
+  assert(uiFactory != nullptr);
+  assert(gazeDetectorFactory != nullptr);
+  assert(gazeEventListenerFactory != nullptr);
+
+  this->renderer = std::move(renderer);
+  this->sceneFactory = std::move(sceneFactory);
+  this->modelFactory = std::move(modelFactory);
+  this->diffuseTextureFactory = std::move(diffuseTextureFactory);
+  this->diffuseTextureCubeMapFactory = std::move(diffuseTextureCubeMapFactory);
+  this->transformTreeFactory = std::move(transformTreeFactory);
+  this->cameraFactory = std::move(cameraFactory);
+  this->eventQueue = eventQueue;
+  this->logger = loggerFactory->createLogger("Image360::");
+  this->uiFactory = std::move(uiFactory);
+  this->gazeDetectorFactory = std::move(gazeDetectorFactory);
+  this->eventGazeListenerFactory = std::move(gazeEventListenerFactory);
+  this->fontFolderPath = fontFolderPath;
+
+  this->loggerFactory = loggerFactory;
+}
+
 void Image360::start() {
   this->renderer->start();
   this->logger->log(LOG_INFO, "Application started.");
@@ -24,14 +67,21 @@ void Image360::initialize() {
   assert(camera != nullptr);
   camera->setAspect(1.5f);
   camera->setFarPlane(1000.0f);
-  camera->setFov(1.5f);
-  camera->setNearPlane(1.0f);
+  camera->setFov(1.75f);
+  camera->setNearPlane(0.1f);
   this->camera = camera.get();
   scene->addToScene(std::move(camera));
 
   // Font store Intialization
   this->fontStore =
       uiFactory->createFontStore(scene.get(), this->fontFolderPath.c_str());
+
+  this->eventKeyPressListener = std::unique_ptr<EventKeyPressListener>(
+      new Image360EventKeyPressListener(this, this->loggerFactory));
+  this->eventPassiveMouseMotionListener =
+      std::unique_ptr<EventPassiveMouseMotionListener>(
+          new Image360EventPassiveMouseMotionListener(this,
+                                                      this->loggerFactory));
 }
 
 void Image360::initMonoView() {
@@ -417,20 +467,9 @@ void Image360::initCameraReticle() {
   TransformTreeCamera *transformTreeCamera =
       (TransformTreeCamera *)this->camera->getComponentList().getComponent(
           "transformTree");
-  reticle = this->uiFactory->createReticle("reticle", scene.get(),
-                                           transformTreeCamera, reticleColor);
+  this->reticle = this->uiFactory->createReticle(
+      "reticle", scene.get(), transformTreeCamera, reticleColor);
   this->gazeTransformTarget = transformTreeCamera;
-}
-
-void Image360::initControllerReticle() {
-  // create a reticle attached to the controller
-  auto reticleColor = CL_Vec4(0.0, 1.0, 0.0, 1.0);
-  reticleBase = uiFactory->createReticle("reticleBase", scene.get(), nullptr,
-                                         reticleColor);
-  TransformTreeModel *transform = reticleBase->getTransformTreeModel();
-  reticle =
-      uiFactory->createReticle("reticle", scene.get(), transform, reticleColor);
-  this->gazeTransformTarget = transform;
 }
 
 void Image360::initController(std::unique_ptr<Image> controllerImage,
@@ -449,6 +488,7 @@ void Image360::initController(std::unique_ptr<Image> controllerImage,
   modelLoader->load_obj(controllerModelPath, this->controllerModel);
   this->controllerModel->setDepthTest(true);
   this->controllerModel->setBlending(true);
+  this->controllerModel->setBackFaceCulling(true);
 
   std::unique_ptr<TransformTreeModel> controllerTransformUptr =
       this->transformTreeFactory->createTransformTreeModel(
@@ -459,9 +499,10 @@ void Image360::initController(std::unique_ptr<Image> controllerImage,
   TransformTreeModel *transformController =
       (TransformTreeModel *)this->controllerModel->getComponentList()
           .getComponent("transformTree");
-  transformController->setLocalPosition(CL_Vec3(0.0f, 0.0f, -2.0f));
+
+  transformController->setLocalPosition(CL_Vec3(0.65f, -0.65f, -1.0f));
   transformController->setLocalScale(CL_Vec3(25.0f, 25.0f, 25.0f));
-  transformController->setLocalRotation(CL_Vec3(90.0f, 90.0f, 90.0f));
+  transformController->setLocalRotation(CL_Vec3(30.0f, 0.0f, 30.0f));
 
   std::unique_ptr<ShaderDiffuseTexture> controllerShaderUptr;
   std::unique_ptr<MaterialDiffuseTexture> controllerMaterialUptr;
@@ -490,6 +531,7 @@ void Image360::initController(std::unique_ptr<Image> controllerImage,
   controllerTextureUptr->setWidth(controllerImageUptr->width);
   controllerTextureUptr->setTextureDataSize(controllerImageUptr->dataSize);
   controllerTextureUptr->setColorFormat(Texture::ColorFormat::RGBA);
+  //   controllerTextureUptr->setColorFormat(Texture::ColorFormat::RGB);
 
   this->controllerTexture = controllerTextureUptr.get();
   this->scene->addToScene(std::move(controllerTextureUptr));
@@ -527,9 +569,9 @@ void Image360::initControllerLaser(std::unique_ptr<Image> laserBeamImage) {
           .getComponent("transformTree");
 
   transformController->addChild(transformLaserBeam);
-  transformLaserBeam->setLocalPosition(CL_Vec3(0.0f, 0.0f, 0.125f));
+  transformLaserBeam->setLocalPosition(CL_Vec3(0.0f, 0.0f, -0.125f));
   transformLaserBeam->setLocalScale(CL_Vec3(0.025, 0.1f, 0.1f));
-  transformLaserBeam->setLocalRotation(CL_Vec3(90.0f, 0.0f, 0.0f));
+  transformLaserBeam->setLocalRotation(CL_Vec3(270.0f, 0.0f, 0.0f));
 
   std::unique_ptr<ShaderDiffuseTexture> laserBeamShaderUptr;
   std::unique_ptr<MaterialDiffuseTexture> laserBeamMaterialUptr;
@@ -565,6 +607,21 @@ void Image360::initControllerLaser(std::unique_ptr<Image> laserBeamImage) {
       ->setDiffuseTexture(this->laserBeamTexture);
 
   this->laserBeamModel->createBiRelation(this->laserBeamMaterial);
+}
+
+void Image360::initControllerReticle() {
+  // create a reticle attached to the controller
+  auto reticleColor = CL_Vec4(1.0f, 1.0f, 1.0f, 1.0f);
+  TransformTreeModel *transformController =
+      (TransformTreeModel *)this->controllerModel->getComponentList()
+          .getComponent("transformTree");
+  this->controllerReticle = uiFactory->createReticle(
+      "controllerReticle", scene.get(), transformController, reticleColor);
+  TransformTreeModel *transformReticle =
+      this->controllerReticle->getTransformTreeModel();
+  transformReticle->setLocalPosition(CL_Vec3(0.0f, 0.0f, -0.35f));
+  transformReticle->setLocalScale(CL_Vec3(0.03f, 0.03f, 0.02f));
+  this->gazeTransformTarget = transformController;
 }
 
 void Image360::initFadeScreen() {
@@ -640,45 +697,31 @@ void Image360::pause() { renderer->pause(); }
 
 void Image360::resume() { renderer->resume(); }
 
-void Image360::onKeyPress(char key, int x, int y) {
-  // logger->log(LOG_DEBUG, "Key pressed:" + std::string(1, key));
-  logger->log(LOG_DEBUG, "Key pressed:" + std::string(1, key));
-  TransformTreeModel *transform = reticle->getTransformTreeModel();
-  CL_Vec3 loc = transform->getParent()->getLocalPosition();
-
-  if (key == 'W') {
-    loc[2] -= 0.2f;
-  } else if (key == 'S') {
-    loc[2] += 0.2f;
-  } else if (key == 'A') {
-    loc[0] -= 0.2f;
-  } else if (key == 'D') {
-    loc[0] += 0.2f;
-  } else {
-    return;
+Reticle *Image360::getParentReticle() {
+  if (this->controllerReticle != nullptr) {
+    return this->controllerReticle.get();
   }
-  transform->getParent()->setLocalPosition(loc);
-}
-
-void Image360::onPassiveMouseMotion(int x, int y) {
-  // logger->log(LOG_DEBUG, "Mouse move:" + std::to_string(x) + "," +
-  // std::to_string(y));
-  if (lastPassiveMousePositionX != -1) {
-    float xoff =
-        (x - lastPassiveMousePositionX) * passiveMouseMotionSensitivity;
-    float yoff =
-        (y - lastPassiveMousePositionY) * passiveMouseMotionSensitivity;
-
-    TransformTreeCamera *transform =
-        (TransformTreeCamera *)camera->getComponentList().getComponent(
-            "transformTree");
-    CL_Vec3 rotation = transform->getLocalRotation();
-    transform->setLocalRotation(
-        CL_Vec3(rotation.x - yoff, rotation.y - xoff, rotation.z));
-  }
-  lastPassiveMousePositionX = x;
-  lastPassiveMousePositionY = y;
+  return this->reticleBase.get();
 }
 
 IRenderer *Image360::getRenderer() { return this->renderer.get(); }
+
+void Image360::updateControllerQuaternion(CL_Quat controllerOrientation) {
+  TransformTreeModel *transformController =
+      (TransformTreeModel *)this->controllerModel->getComponentList()
+          .getComponent("transformTree");
+  transformController->setLocalQuaternion(controllerOrientation);
+}
+void Image360::updateControllerRotation(CL_Vec3 controllerOrientation) {
+  TransformTreeModel *transformController =
+      (TransformTreeModel *)this->controllerModel->getComponentList()
+          .getComponent("transformTree");
+  transformController->setLocalRotation(controllerOrientation);
+}
+void Image360::updateControllerPosition(CL_Vec3 controllerPosition) {
+  TransformTreeModel *transformController =
+      (TransformTreeModel *)this->controllerModel->getComponentList()
+          .getComponent("transformTree");
+  transformController->setLocalPosition(controllerPosition);
+}
 }

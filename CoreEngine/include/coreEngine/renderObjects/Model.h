@@ -69,6 +69,7 @@ class Model : public Relation, public IScenable {
 
   inline void setDepthTest(bool enabled) { this->depthTest = enabled; }
   inline void setBlending(bool enabled) { this->blending = enabled; }
+  inline void setBackFaceCulling(bool enabled) { this->backFaceCull = enabled; }
 
  protected:
   std::string sceneId;
@@ -84,6 +85,7 @@ class Model : public Relation, public IScenable {
 
   bool depthTest = false;
   bool blending = false;
+  bool backFaceCull = false;
 };
 }
 

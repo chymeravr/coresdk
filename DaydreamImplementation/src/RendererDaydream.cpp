@@ -200,6 +200,25 @@ void RendererDaydream::ProcessControllerInput() {
   }
 }
 
+    void RendererDaydream::updateController(Scene *scene){
+        // initialize controller
+        if (gvr_viewer_type_ == GVR_VIEWER_TYPE_DAYDREAM) {
+            auto controller4scene = (Model *) scene->getFromScene("controllerModel");
+            auto controllerTransform =
+                    (TransformTreeModel *) controller4scene->getComponentList().getComponent(
+                            "transformTree");
+            auto controllerOrientationQuat = gvr_controller_state_.GetOrientation();
+            CL_Quat controllerQuat = CL_Quat(controllerOrientationQuat.qw, controllerOrientationQuat.qx,
+                                             controllerOrientationQuat.qy, controllerOrientationQuat.qz);
+            auto controllerPositionGvr = gvr_controller_state_.GetPosition();
+            LOGD("Controller Quat : %f %f %f %f", controllerQuat.x, controllerQuat.y, controllerQuat.z, controllerQuat.w);
+            LOGD("Controller Positions : %f %f %f", controllerPositionGvr.x, controllerPositionGvr.y, controllerPositionGvr.z);
+            controllerTransform->setLocalQuaternion(controllerQuat);
+//            auto controllerPosition = CL_Vec3(controllerPositionGvr.x, controllerPositionGvr.y, controllerPositionGvr.z);
+//            controllerTransform->setLocalPosition(controllerPosition);
+        }
+    }
+
 RendererDaydream::RendererDaydream(gvr_context *gvr_context,
                                    ILoggerFactory *loggerFactory)
     : gvr_api_(gvr::GvrApi::WrapNonOwned(gvr_context)),
@@ -223,44 +242,45 @@ RendererDaydream::~RendererDaydream() {}
 bool RendererDaydream::start() { return true; }
 
 bool RendererDaydream::initialize(Scene *scene) {
-  logger->log(LOG_DEBUG, "Renderer Intialization Start!!!");
-  InitializeGl();
+    logger->log(LOG_DEBUG, "Renderer Intialization Start!!!");
+    InitializeGl();
 
-  frame = (gvr::Frame *)malloc(sizeof(gvr::Frame));
+    frame = (gvr::Frame *) malloc(sizeof(gvr::Frame));
 
-  IRenderable *sceneRenderer = scene->getRenderable();
-  sceneRenderer->initialize();
-  std::vector<Relation *> cameraRelations = scene->getRelations("camera");
-  assert(cameraRelations.size() == 1);
-  ((Camera *)cameraRelations[0])->getRenderable()->initialize();
+    IRenderable *sceneRenderer = scene->getRenderable();
+    sceneRenderer->initialize();
+    std::vector<Relation *> cameraRelations = scene->getRelations("camera");
+    assert(cameraRelations.size() == 1);
+    ((Camera *) cameraRelations[0])->getRenderable()->initialize();
 
-  std::vector<Relation *> shaderRelations = scene->getRelations("shader");
-  for (auto it = shaderRelations.cbegin(); it != shaderRelations.cend(); it++) {
-    Shader *shader = (Shader *)(*it);
-    shader->getRenderable()->initialize();
+    std::vector<Relation *> shaderRelations = scene->getRelations("shader");
+    for (auto it = shaderRelations.cbegin(); it != shaderRelations.cend(); it++) {
+        Shader *shader = (Shader *) (*it);
+        shader->getRenderable()->initialize();
 
-    std::vector<Relation *> materialRelations =
-        shader->getRelations("material");
-    for (auto it = materialRelations.cbegin(); it != materialRelations.cend();
-         it++) {
-      Material *material = (Material *)(*it);
-      material->getRenderable()->initialize();
+        std::vector<Relation *> materialRelations =
+                shader->getRelations("material");
+        for (auto it = materialRelations.cbegin(); it != materialRelations.cend();
+             it++) {
+            Material *material = (Material *) (*it);
+            material->getRenderable()->initialize();
 
-      std::vector<Relation *> modelRelations = material->getRelations("model");
-      for (auto it = modelRelations.cbegin(); it != modelRelations.cend();
-           it++) {
-        Model *model = (Model *)(*it);
-        model->getRenderable()->initialize();
-      }
+            std::vector<Relation *> modelRelations = material->getRelations("model");
+            for (auto it = modelRelations.cbegin(); it != modelRelations.cend();
+                 it++) {
+                Model *model = (Model *) (*it);
+                model->getRenderable()->initialize();
+            }
+        }
     }
-  }
 
-  this->renderCamera = (CameraGL *)cameraRelations[0];
-  this->renderCamera->setIsAsymetricProjection(true);
+    this->renderCamera = (CameraGL *) cameraRelations[0];
+    this->renderCamera->setIsAsymetricProjection(true);
 
-  this->renderCamera->setNearPlane(kZNear);
-  this->renderCamera->setFarPlane(kZFar);
+    this->renderCamera->setNearPlane(kZNear);
+    this->renderCamera->setFarPlane(kZFar);
 
+    this->updateController(scene);
   logger->log(LOG_DEBUG, "Renderer Intialization Complete!!!");
   return true;
 }
@@ -296,7 +316,7 @@ void RendererDaydream::drawInit(Scene *scene) {
   this->rotQuat = CL_Rot_To_Quat(rotMat);
   transform->setLocalQuaternion(this->rotQuat);
   auto cameraQuat = transform->getLocalQuaternion();
-  LOGD("Camera Params : %f %f %f %f", cameraQuat.x, cameraQuat.y, cameraQuat.z, cameraQuat.w);
+//  LOGD("Camera Params : %f %f %f %f", cameraQuat.x, cameraQuat.y, cameraQuat.z, cameraQuat.w);
   // A client app does its rendering here.
 
   this->viewport_list_->SetToRecommendedBufferViewports();
@@ -313,7 +333,7 @@ void RendererDaydream::drawLeft(Scene *scene) {
       (TransformTreeCamera *)this->renderCamera->getComponentList()
           .getComponent("transformTree");
   auto cameraQuat = transform->getLocalQuaternion();
-  LOGD("Camera Params : %f %f %f %f", cameraQuat.x, cameraQuat.y, cameraQuat.z, cameraQuat.w);
+//  LOGD("Camera Params : %f %f %f %f", cameraQuat.x, cameraQuat.y, cameraQuat.z, cameraQuat.w);
   this->viewport_list_->GetBufferViewport(0, &this->scratch_viewport_);
   gvr::Mat4f eye_matrix = gvr_api_->GetEyeFromHeadMatrix(GVR_LEFT_EYE);
 
@@ -355,7 +375,7 @@ void RendererDaydream::drawRight(Scene *scene) {
     transform->setLocalQuaternion(this->rotQuat);
 
     auto cameraQuat = transform->getLocalQuaternion();
-  LOGD("Camera Params : %f %f %f %f", cameraQuat.x, cameraQuat.y, cameraQuat.z, cameraQuat.w);
+//  LOGD("Camera Params : %f %f %f %f", cameraQuat.x, cameraQuat.y, cameraQuat.z, cameraQuat.w);
   this->viewport_list_->GetBufferViewport(1, &this->scratch_viewport_);
   gvr::Mat4f eye_matrix = gvr_api_->GetEyeFromHeadMatrix(GVR_RIGHT_EYE);
 
@@ -496,19 +516,21 @@ void RendererDaydream::drawScene(Scene *scene) {
   }
 
   if (gvr_viewer_type_ == GVR_VIEWER_TYPE_DAYDREAM) {
-    auto gvrReticleQuat = gvr_controller_state_.GetOrientation();
-    CL_Quat reticleQuat = CL_Quat(gvrReticleQuat.qw, gvrReticleQuat.qx,
-                                  gvrReticleQuat.qy, gvrReticleQuat.qz);
-    auto reticle4scene = (Model *)scene->getFromScene("reticle");
-    auto reticleTransform =
-        (TransformTreeModel *)reticle4scene->getComponentList().getComponent(
-            "transformTree");
-    // LOGD("Quaternion parameters : %f, %f, %f, %f", gvrReticleQuat.qw,
-    // gvrReticleQuat.qx, gvrReticleQuat.qy, gvrReticleQuat.qz);
-    // auto rotmat = CL_RotationMatrix(reticleQuat);
-    auto reticleBaseTransform =
-        (TransformTreeModel *)reticleTransform->getParent();
-    reticleBaseTransform->setLocalQuaternion(reticleQuat);
+//    auto gvrReticleQuat = gvr_controller_state_.GetOrientation();
+//    CL_Quat reticleQuat = CL_Quat(gvrReticleQuat.qw, gvrReticleQuat.qx,
+//                                  gvrReticleQuat.qy, gvrReticleQuat.qz);
+//    auto reticle4scene = (Model *)scene->getFromScene("reticle");
+//    auto reticleTransform =
+//        (TransformTreeModel *)reticle4scene->getComponentList().getComponent(
+//            "transformTree");
+//    // LOGD("Quaternion parameters : %f, %f, %f, %f", gvrReticleQuat.qw,
+//    // gvrReticleQuat.qx, gvrReticleQuat.qy, gvrReticleQuat.qz);
+//    // auto rotmat = CL_RotationMatrix(reticleQuat);
+//    auto reticleBaseTransform =
+//        (TransformTreeModel *)reticleTransform->getParent();
+//    reticleBaseTransform->setLocalQuaternion(reticleQuat);
   }
+
+    this->updateController(scene);
 }
 }

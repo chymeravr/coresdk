@@ -15,7 +15,7 @@ std::unique_ptr<Image> ImagePNGLoader::loadImage(std::string imagePath) {
   // logger->log(LOG_DEBUG, "Image Height: " + std::to_string(height));
   // logger->log(LOG_DEBUG, "Image Channels: " + std::to_string(channels));
 
-  // invertImage(data.get(), width, height, channels);
+  invertImage(data.get(), width, height, channels);
 
   std::unique_ptr<Image> image(new Image);
   image->data = std::move(data);

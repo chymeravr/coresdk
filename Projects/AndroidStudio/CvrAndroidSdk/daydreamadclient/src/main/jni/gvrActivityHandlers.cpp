@@ -255,11 +255,13 @@ JNI_METHOD(void, nativeInitializeGl)
     image360->initStereoEquirectangularView(std::move(textureImages[0]));
 
     // we require the following UI components
-    image360->initCameraReticle();
-    image360->initUIButtons();
+    //image360->initCameraReticle();
+
 
     image360->initController(std::move(controllerTexture), controllerModelAbsoluteFilePath);
     image360->initControllerLaser(std::move(laserBeamTexture));
+    image360->initControllerReticle();
+    image360->initUIButtons();
 
     image360->initComplete();
     // end of initialization

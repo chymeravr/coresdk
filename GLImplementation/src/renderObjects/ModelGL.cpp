@@ -179,6 +179,10 @@ void ModelGL::enableStates() {
     glEnable(GL_BLEND);
     glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
   }
+  if (this->backFaceCull) {
+    glEnable(GL_CULL_FACE);
+    glCullFace(GL_BACK);
+  }
 }
 
 void ModelGL::disableStates() {
@@ -193,6 +197,9 @@ void ModelGL::disableStates() {
   }
   if (this->depthTest) {
     glDisable(GL_DEPTH_TEST);
+  }
+  if (this->backFaceCull) {
+    glDisable(GL_CULL_FACE);
   }
 }
 }

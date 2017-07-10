@@ -144,6 +144,13 @@ void ModelLoader::indexVBO(std::vector<CL_Vec3> &in_vertices,
       out_indices.push_back(newindex);
       VertexToOutIndex[packed] = newindex;
     }
+
+    // test for duplicating all vertices
+    // out_vertices.push_back(in_vertices[i]);
+    // out_uvs.push_back(in_uvs[i]);
+    // out_normals.push_back(in_normals[i]);
+    // CL_GLuint newindex = (CL_GLuint)out_vertices.size() - 1;
+    // out_indices.push_back(newindex);
   }
 }
 }
