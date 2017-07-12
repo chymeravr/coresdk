@@ -76,12 +76,9 @@ void Image360::initialize() {
   this->fontStore =
       uiFactory->createFontStore(scene.get(), this->fontFolderPath.c_str());
 
-  //   this->eventKeyPressListener = std::unique_ptr<EventKeyPressListener>(
-  //       new Image360EventKeyPressListener(this, this->loggerFactory));
-  //   this->eventPassiveMouseMotionListener =
-  //       std::unique_ptr<EventPassiveMouseMotionListener>(
-  //           new Image360EventPassiveMouseMotionListener(this,
-  //                                                       this->loggerFactory));
+  this->stereoSphere = std::unique_ptr<StereoSphere>(new StereoSphere(
+      this->loggerFactory, this->modelFactory.get(),
+      this->diffuseTextureFactory.get(), this->transformTreeFactory.get()));
 }
 
 void Image360::initMonoView() {
@@ -249,71 +246,29 @@ void Image360::initCubeMapTexture(Image *rightImage, Image *leftImage,
   cubeBuilder.buildInwardCube(this->imageContainer);
 }
 
+// TODO remove to stereosphere class
 void Image360::initStereoView() {
-  std::unique_ptr<Model> imageContainerLeft =
-      modelFactory->create("imageContainerLeft");
-  assert(imageContainerLeft != nullptr);
-  this->stereoImageContainer[0] = imageContainerLeft.get();
-  scene->addToScene(std::move(imageContainerLeft));
+  //   std::unique_ptr<Model> imageContainerLeft =
+  //       modelFactory->create("imageContainerLeft");
+  //   assert(imageContainerLeft != nullptr);
+  //   this->stereoImageContainer[0] = imageContainerLeft.get();
+  //   scene->addToScene(std::move(imageContainerLeft));
 
-  std::unique_ptr<Model> imageContainerRight =
-      modelFactory->create("imageContainerRight");
-  assert(imageContainerRight != nullptr);
-  this->stereoImageContainer[1] = imageContainerRight.get();
-  scene->addToScene(std::move(imageContainerRight));
+  //   std::unique_ptr<Model> imageContainerRight =
+  //       modelFactory->create("imageContainerRight");
+  //   assert(imageContainerRight != nullptr);
+  //   this->stereoImageContainer[1] = imageContainerRight.get();
+  //   scene->addToScene(std::move(imageContainerRight));
 }
 
+// TODO remove to stereo sphere class
 void Image360::initStereoEquirectangularView(
     std::unique_ptr<Image> textureImage) {
   assert(textureImage != nullptr);
-
-  std::unique_ptr<ShaderDiffuseTexture> shaderDiffuseTexture;
-  std::unique_ptr<MaterialDiffuseTexture> materialDiffuseTexture;
-  std::unique_ptr<Texture> imageTexture;
-
-  shaderDiffuseTexture =
-      diffuseTextureFactory->createShader("shader", scene.get());
-  assert(shaderDiffuseTexture != nullptr);
-  this->stereoShader = shaderDiffuseTexture.get();
-  scene->addToScene(std::move(shaderDiffuseTexture));
-
-  materialDiffuseTexture = diffuseTextureFactory->createMaterial(
-      "material", (ShaderDiffuseTexture *)this->stereoShader);
-  assert(materialDiffuseTexture != nullptr);
-  this->stereoMaterial = materialDiffuseTexture.get();
-  scene->addToScene(std::move(materialDiffuseTexture));
-
-  // todo - change texture mapping of models to do this
-  imageTexture = diffuseTextureFactory->createTexture("imageTexture");
-
-  std::unique_ptr<Image> image = std::move(textureImage);
-  imageTexture->setTextureData(std::move(image->data));
-  imageTexture->setHeight(image->height);
-  imageTexture->setWidth(image->width);
-  imageTexture->setTextureDataSize(image->dataSize);
-  this->stereoImageTexture = imageTexture.get();
-  scene->addToScene(std::move(imageTexture));
-  ((MaterialDiffuseTexture *)this->stereoMaterial)
-      ->setDiffuseTexture(this->stereoImageTexture);
-
   std::unique_ptr<TransformTreeCamera> transformTreeCameraUptr =
       transformTreeFactory->createTransformTreeCamera(this->camera);
   this->camera->getComponentList().addComponent(
       std::move(transformTreeCameraUptr));
-
-  std::unique_ptr<TransformTreeModel> leftTransformSphereUptr =
-      transformTreeFactory->createTransformTreeModel(
-          this->stereoImageContainer[Image360::EYE::LEFT]);
-  this->stereoImageContainer[Image360::EYE::LEFT]
-      ->getComponentList()
-      .addComponent(std::move(leftTransformSphereUptr));
-
-  std::unique_ptr<TransformTreeModel> rightTransformSphereUptr =
-      transformTreeFactory->createTransformTreeModel(
-          this->stereoImageContainer[Image360::EYE::RIGHT]);
-  this->stereoImageContainer[Image360::EYE::RIGHT]
-      ->getComponentList()
-      .addComponent(std::move(rightTransformSphereUptr));
 
   TransformTreeCamera *transformTreeCamera =
       (TransformTreeCamera *)this->camera->getComponentList().getComponent(
@@ -321,42 +276,99 @@ void Image360::initStereoEquirectangularView(
   transformTreeCamera->setLocalPosition(CL_Vec3(0.0f, 0.0f, 0.0f));
   transformTreeCamera->setLocalRotation(CL_Vec3(0.0f, 0.0f, 0.0f));
 
-  TransformTreeModel *transformSphereLeft =
-      (TransformTreeModel *)this->stereoImageContainer[Image360::EYE::LEFT]
-          ->getComponentList()
-          .getComponent("transformTree");
-  transformSphereLeft->setLocalPosition(CL_Vec3(0.0f, 0.0f, 0.0f));
-  transformSphereLeft->setLocalScale(CL_Vec3(100.0f, 100.0f, 100.0f));
+  this->stereoSphere->initialize(this->scene.get(), std::move(textureImage));
 
-  this->stereoImageContainer[Image360::EYE::LEFT]->createBiRelation(
-      this->stereoMaterial);
+  //   std::unique_ptr<ShaderDiffuseTexture> shaderDiffuseTexture;
+  //   std::unique_ptr<MaterialDiffuseTexture> materialDiffuseTexture;
+  //   std::unique_ptr<Texture> imageTexture;
 
-  TransformTreeModel *transformSphereRight =
-      (TransformTreeModel *)this->stereoImageContainer[Image360::EYE::RIGHT]
-          ->getComponentList()
-          .getComponent("transformTree");
-  transformSphereRight->setLocalPosition(CL_Vec3(0.0f, 0.0f, 0.0f));
-  transformSphereRight->setLocalScale(CL_Vec3(100.0f, 100.0f, 100.0f));
+  //   shaderDiffuseTexture =
+  //       diffuseTextureFactory->createShader("shader", scene.get());
+  //   assert(shaderDiffuseTexture != nullptr);
+  //   this->stereoShader = shaderDiffuseTexture.get();
+  //   scene->addToScene(std::move(shaderDiffuseTexture));
 
-  this->stereoImageContainer[Image360::EYE::RIGHT]->createBiRelation(
-      this->stereoMaterial);
+  //   materialDiffuseTexture = diffuseTextureFactory->createMaterial(
+  //       "material", (ShaderDiffuseTexture *)this->stereoShader);
+  //   assert(materialDiffuseTexture != nullptr);
+  //   this->stereoMaterial = materialDiffuseTexture.get();
+  //   scene->addToScene(std::move(materialDiffuseTexture));
 
-  std::unique_ptr<ModelModifier> modelModifierLeft(new ModelModifier);
-  UVSphereBuilder uvSphereBuilderLeft(modelModifierLeft.get());
-  uvSphereBuilderLeft.setVMax(0.5f);
-  uvSphereBuilderLeft.buildUnitSphere(
-      this->stereoImageContainer[Image360::EYE::LEFT], 5);
+  //   // todo - change texture mapping of models to do this
+  //   imageTexture = diffuseTextureFactory->createTexture("imageTexture");
 
-  std::unique_ptr<ModelModifier> modelModifierRight(new ModelModifier);
-  UVSphereBuilder uvSphereBuilderRight(modelModifierRight.get());
-  uvSphereBuilderRight.setVMin(0.5f);
-  uvSphereBuilderRight.buildUnitSphere(
-      this->stereoImageContainer[Image360::EYE::RIGHT], 5);
+  //   std::unique_ptr<Image> image = std::move(textureImage);
+  //   imageTexture->setTextureData(std::move(image->data));
+  //   imageTexture->setHeight(image->height);
+  //   imageTexture->setWidth(image->width);
+  //   imageTexture->setTextureDataSize(image->dataSize);
+  //   this->stereoImageTexture = imageTexture.get();
+  //   scene->addToScene(std::move(imageTexture));
+  //   ((MaterialDiffuseTexture *)this->stereoMaterial)
+  //       ->setDiffuseTexture(this->stereoImageTexture);
 
-  this->stereoImageContainer[0]->setDepthTest(true);
-  this->stereoImageContainer[1]->setDepthTest(true);
-  this->stereoImageContainer[0]->setBlending(true);
-  this->stereoImageContainer[1]->setBlending(true);
+  //   std::unique_ptr<TransformTreeCamera> transformTreeCameraUptr =
+  //       transformTreeFactory->createTransformTreeCamera(this->camera);
+  //   this->camera->getComponentList().addComponent(
+  //       std::move(transformTreeCameraUptr));
+
+  //   std::unique_ptr<TransformTreeModel> leftTransformSphereUptr =
+  //       transformTreeFactory->createTransformTreeModel(
+  //           this->stereoImageContainer[Image360::EYE::LEFT]);
+  //   this->stereoImageContainer[Image360::EYE::LEFT]
+  //       ->getComponentList()
+  //       .addComponent(std::move(leftTransformSphereUptr));
+
+  //   std::unique_ptr<TransformTreeModel> rightTransformSphereUptr =
+  //       transformTreeFactory->createTransformTreeModel(
+  //           this->stereoImageContainer[Image360::EYE::RIGHT]);
+  //   this->stereoImageContainer[Image360::EYE::RIGHT]
+  //       ->getComponentList()
+  //       .addComponent(std::move(rightTransformSphereUptr));
+
+  //   TransformTreeCamera *transformTreeCamera =
+  //       (TransformTreeCamera *)this->camera->getComponentList().getComponent(
+  //           "transformTree");
+  //   transformTreeCamera->setLocalPosition(CL_Vec3(0.0f, 0.0f, 0.0f));
+  //   transformTreeCamera->setLocalRotation(CL_Vec3(0.0f, 0.0f, 0.0f));
+
+  //   TransformTreeModel *transformSphereLeft =
+  //       (TransformTreeModel *)this->stereoImageContainer[Image360::EYE::LEFT]
+  //           ->getComponentList()
+  //           .getComponent("transformTree");
+  //   transformSphereLeft->setLocalPosition(CL_Vec3(0.0f, 0.0f, 0.0f));
+  //   transformSphereLeft->setLocalScale(CL_Vec3(100.0f, 100.0f, 100.0f));
+
+  //   this->stereoImageContainer[Image360::EYE::LEFT]->createBiRelation(
+  //       this->stereoMaterial);
+
+  //   TransformTreeModel *transformSphereRight =
+  //       (TransformTreeModel
+  //       *)this->stereoImageContainer[Image360::EYE::RIGHT]
+  //           ->getComponentList()
+  //           .getComponent("transformTree");
+  //   transformSphereRight->setLocalPosition(CL_Vec3(0.0f, 0.0f, 0.0f));
+  //   transformSphereRight->setLocalScale(CL_Vec3(100.0f, 100.0f, 100.0f));
+
+  //   this->stereoImageContainer[Image360::EYE::RIGHT]->createBiRelation(
+  //       this->stereoMaterial);
+
+  //   std::unique_ptr<ModelModifier> modelModifierLeft(new ModelModifier);
+  //   UVSphereBuilder uvSphereBuilderLeft(modelModifierLeft.get());
+  //   uvSphereBuilderLeft.setVMax(0.5f);
+  //   uvSphereBuilderLeft.buildUnitSphere(
+  //       this->stereoImageContainer[Image360::EYE::LEFT], 5);
+
+  //   std::unique_ptr<ModelModifier> modelModifierRight(new ModelModifier);
+  //   UVSphereBuilder uvSphereBuilderRight(modelModifierRight.get());
+  //   uvSphereBuilderRight.setVMin(0.5f);
+  //   uvSphereBuilderRight.buildUnitSphere(
+  //       this->stereoImageContainer[Image360::EYE::RIGHT], 5);
+
+  //   this->stereoImageContainer[0]->setDepthTest(true);
+  //   this->stereoImageContainer[1]->setDepthTest(true);
+  //   this->stereoImageContainer[0]->setBlending(true);
+  //   this->stereoImageContainer[1]->setBlending(true);
 }
 
 void Image360::initUIButtons() {
@@ -677,14 +689,16 @@ void Image360::drawMono() {
 }
 
 void Image360::drawStereoLeft() {
-  stereoImageContainer[Image360::EYE::LEFT]->setIsVisible(true);
-  stereoImageContainer[Image360::EYE::RIGHT]->setIsVisible(false);
+  /*stereoImageContainer[EYE::LEFT]->setIsVisible(true);
+  stereoImageContainer[EYE::RIGHT]->setIsVisible(false);*/
+  this->stereoSphere->drawLeft();
   renderer->drawLeft(scene.get());
 }
 
 void Image360::drawStereoRight() {
-  stereoImageContainer[Image360::EYE::LEFT]->setIsVisible(false);
-  stereoImageContainer[Image360::EYE::RIGHT]->setIsVisible(true);
+  /*stereoImageContainer[EYE::LEFT]->setIsVisible(false);
+  stereoImageContainer[EYE::RIGHT]->setIsVisible(true);*/
+  this->stereoSphere->drawRight();
   renderer->drawRight(scene.get());
 }
 

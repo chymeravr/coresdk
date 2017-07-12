@@ -18,14 +18,10 @@
 
 #include <coreEngine/factory/IEventGazeListenerFactory.h>
 
+#include <image360/Constants.h>
+#include <image360/StereoSphere.h>
+
 namespace cl {
-// todo : remove this
-enum TEXTURE_MAP_MODE {
-  CUBE_MAP_MODE_SIX_IMAGES,
-  CUBE_MAP_MODE_SINGLE_IMAGE,
-  EQUIRECTANGULAR_MAP_MODE
-};
-enum IMAGE_MODE { STEREO, MONO };
 
 class Image360 {
  public:
@@ -43,16 +39,8 @@ class Image360 {
            std::unique_ptr<IEventGazeListenerFactory> gazeEventListenerFactory,
            std::string fontFolderPath);
 
-  // IApplication implementation
   void start();
-  /**
-  * @arg mode: One of the values of enum TEXTURE_MAP_MODE -
-  * CUBE_MAP_MODE_SIX_IMAGES, CUBE_MAP_MODE_SINGLE_IMAGE,
-  * EQUIRECTANGULAR_MAP_MODE
-  * @arg textureImages: Images required to generate textures. In
-  * case of CUBE_MAP_MODE_SIX_IMAGES order of images should be FRONT, LEFT,
-  * BACK, RIGHT, TOP AND BOTTOM. In other cases just one image is required.
-  */
+
   void initialize();
 
   // use mono init funtions if you have a mono image360
@@ -66,7 +54,9 @@ class Image360 {
   // Right)
   void initStereoView();
   void initStereoEquirectangularView(std::unique_ptr<Image> textureImage);
-  // note - implement stereo cubemaps if they catch on popularity
+  // note - stereo cubemaps not implemented because we did not find them
+  // popularly
+  // used despite John Cormack favouring the format
 
   // Addition User Interface Objects ~ buttons, reticle, controller,
   // controller laser, fadein/out screen
@@ -101,9 +91,6 @@ class Image360 {
   void pause();
   void resume();
 
-  void onKeyPress(char key, int x, int y);
-  void onPassiveMouseMotion(int x, int y);
-
   IRenderer *getRenderer();
 
   std::unique_ptr<EventGazeListener> actionButtonListener;
@@ -129,52 +116,61 @@ class Image360 {
 
   Reticle *getParentReticle();
 
-  // EventKeyPressListener *getEventKeyPressListener() {
-  //   return this->eventKeyPressListener.get();
-  // }
-
-  // EventPassiveMouseMotionListener *getEventPassiveMouseMotionListener() {
-  //   return this->eventPassiveMouseMotionListener.get();
-  // }
-
   Camera *getCamera() { return this->camera; }
 
   Model *getControllerModel() { return this->controllerModel; }
 
  private:
+  // Image360 Class will initialze a set of renderables into a scene
   std::unique_ptr<Scene> scene;
-  enum EYE { LEFT, RIGHT };
 
+  // Main camera for our application
   Camera *camera;
 
+  // TODO : try and remove this bool flag ~ considered bad practice
+  bool isControllerPresent = false;
+
+  // Controller Component
   Shader *controllerShader;
   Material *controllerMaterial;
   Texture *controllerTexture;
   Model *controllerModel;
 
+  // Laser Beam Component
   Shader *laserBeamShader;
   Material *laserBeamMaterial;
   Texture *laserBeamTexture;
   Model *laserBeamModel;
 
-  // mono rendering
+  // Reticle at the end of controller's laser beam
+  std::unique_ptr<Reticle> controllerReticle;
+
+  // mono rendering component
   Shader *shader;
   Material *material;
   Texture *imageTexture;
   Model *imageContainer;
 
-  // stereo rendering
-  Shader *stereoShader;
-  Material *stereoMaterial;
-  Texture *stereoImageTexture;
-  Model *stereoImageContainer[2];  // 0->left, 1->right
+  // stereo rendering component
+  std::unique_ptr<StereoSphere> stereoSphere;
+  // Shader *stereoShader;
+  // Material *stereoMaterial;
+  // Texture *stereoImageTexture;
+  // Model *stereoImageContainer[2];  // 0->left, 1->right
 
+  // logging utils
   ILoggerFactory *loggerFactory;
-
-  std::unique_ptr<IRenderer> renderer;
-  IEventQueue *eventQueue;
   std::unique_ptr<ILogger> logger;
 
+  // Renderer Encapsulate the draw calls to the GPU rendering library (opengl,
+  // directx, vulkan)
+  // This is what allows our application to be cross platform
+  std::unique_ptr<IRenderer> renderer;
+
+  // event queue contains events to be processed at each draw call
+  IEventQueue *eventQueue;
+
+  // These helper factories abstract instantiation of component
   std::unique_ptr<ISceneFactory> sceneFactory;
   std::unique_ptr<IModelFactory> modelFactory;
   std::unique_ptr<IDiffuseTextureFactory> diffuseTextureFactory;
@@ -185,39 +181,35 @@ class Image360 {
   std::unique_ptr<GazeDetectorFactory> gazeDetectorFactory;
   std::unique_ptr<IEventGazeListenerFactory> eventGazeListenerFactory;
 
+  // font store component
+  std::unique_ptr<FontStore> fontStore;
+  // path where the font file is located (.ttf files)
   std::string fontFolderPath = "";
 
-  std::string closeButtonText = "Close";
-  std::string actionButtonText = "Notify Me";
+  // Buttons
   std::unique_ptr<PlanarBackground> actionButtonBackground;
   std::unique_ptr<PlanarBackground> closeButtonBackground;
+  std::string closeButtonText = "Close";
+  std::string actionButtonText = "Notify Me";
 
-  std::unique_ptr<PlanarBackground> laserBox;
+  // Whats this for?
+  // std::unique_ptr<PlanarBackground> laserBox;
 
+  // fade screen component
+  std::unique_ptr<FadeScreen> fadeScreen;
   bool fadeStarted = false;
   bool fadeComplete = false;
   CL_GLfloat alphaFade = 1.0f;
   CL_GLfloat fadeSpeed = 0.01f;
-  bool isControllerPresent = false;
 
-  std::unique_ptr<FadeScreen> fadeScreen;
-  // std::unique_ptr<FadeScreen> fadeInScreen;
+  // Reticle component
   std::unique_ptr<Reticle> reticle;
   std::unique_ptr<Reticle> reticleBase;
-  std::unique_ptr<Reticle> controllerReticle;
+
+  // contains all our gaze detection boxes
   std::unique_ptr<GazeDetectorContainer> gazeDetectorContainer;
 
-  // todo move these to mouse motion listener class
-  int lastPassiveMousePositionX = -1;
-  int lastPassiveMousePositionY = -1;
-  float passiveMouseMotionSensitivity = 0.35f;
-  std::unique_ptr<FontStore> fontStore;
   TransformTree *gazeTransformTarget;
-
-  // todo : can we make the client initialize and add to event queue?
-  // std::unique_ptr<EventKeyPressListener> eventKeyPressListener;
-  // std::unique_ptr<EventPassiveMouseMotionListener>
-  //     eventPassiveMouseMotionListener;
 
   void initCubeMapTexture(Image *rightImage, Image *leftImage, Image *topImage,
                           Image *bottomImage, Image *frontImage,
