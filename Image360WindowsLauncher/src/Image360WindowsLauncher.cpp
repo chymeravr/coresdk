@@ -324,46 +324,49 @@ int _tmain(int argc, _TCHAR** argv) {
                      std::move(uiFactory), std::move(gazeDetectorFactory),
                      std::move(eventGazeListenerFactory), fontFilePath));
 
+	eventKeyPressListener = std::unique_ptr<EventKeyPressListener>(
+		new Image360EventKeyPressListener(application.get(), loggerFactory.get()));
+
+	eventPassiveMouseMotionListener = std::unique_ptr<EventPassiveMouseMotionListener>(
+		new Image360EventPassiveMouseMotionListener(application.get(), loggerFactory.get()));
+
     application->start();
+
+	std::cout << application->getActionButtonText() << std::endl;
+	application->setActionButtonText(std::string("Download"));
+	std::cout << application->getActionButtonText() << std::endl;
+	application->initialize();
+	application->initMonoView();
 
     ImageJPEGLoader imageJPEGLoader(logger.get());
 
     std::vector<std::unique_ptr<Image> > textureImages;
-    TEXTURE_MAP_MODE mode = EQUIRECTANGULAR_MAP_MODE;
+	TEXTURE_MAP_MODE mode = CUBE_MAP_MODE_SINGLE_IMAGE;
     // EQUIRECTANGULAR_MAP_MODE;  // CUBE_MAP_MODE_SINGLE_IMAGE; // image mode
 
     switch (mode) {
       case CUBE_MAP_MODE_SINGLE_IMAGE:
-        // textureImages.push_back(imagePNGLoader.loadImage("cubemap_current.png"));
         textureImages.push_back(imageJPEGLoader.loadImage(
             "C:\\Users\\robin_"
             "chimera\\SDK\\Projects\\VisualStudio\\Image360WindowsLa"
             "uncher\\Debug\\360images\\cubemap_desert.jpg"));
-        // textureImages.push_back(imagePNGLoader.loadImage("C:\\Users\\robin_chimera\\Documents\\SDK\\Projects\\VisualStudio\\Image360WindowsLauncher\\Debug\\cubemap_current2.jpg"));
+		application->initMonoCubeMapSingleTextureView(std::move(textureImages[0]));
         break;
       case EQUIRECTANGULAR_MAP_MODE:
-        // textureImages.push_back(imageBMPLoader.loadImage("tex_current.bmp"));
-        // textureImages.push_back(imageJPEGLoader.loadImage("equirectangular_desert2.jpg"));
         textureImages.push_back(imageJPEGLoader.loadImage(
             "C:\\Users\\robin_"
             "chimera\\SDK\\Projects\\VisualStudio\\Image360WindowsLa"
             "uncher\\Debug\\360images\\equirectangular_desert.jpg"));
+		application->initMonoEquirectangularView(std::move(textureImages[0]));
         break;
       default:
         break;
     }
 
-    std::cout << application->getActionButtonText() << std::endl;
-    application->setActionButtonText(std::string("Download"));
-    std::cout << application->getActionButtonText() << std::endl;
-    application->initialize();
-    application->initMonoView();
-    // application->initMonoEquirectangularView(std::move (textureImages[0]));
-    application->initMonoCubeMapSingleTextureView(std::move(textureImages[0]));
-
     application->initCameraReticle();
     application->initUIButtons();
     application->initFadeScreen();
+	application->initComplete();
 
     //// register callbacks
     glfwSetKeyCallback(window, key_callback);
@@ -380,6 +383,8 @@ int _tmain(int argc, _TCHAR** argv) {
       glfwPollEvents();
 
       application->drawInit();
+	  application->drawMono();
+	  application->drawComplete();
 
       // Swap the screen buffers
       glfwSwapBuffers(window);

@@ -19,6 +19,7 @@
 #include <coreEngine/factory/IEventGazeListenerFactory.h>
 
 #include <image360/Constants.h>
+#include <image360/MonoCubeMap.h>
 #include <image360/MonoSphere.h>
 #include <image360/StereoSphere.h>
 
@@ -146,14 +147,13 @@ class Image360 {
   // Reticle at the end of controller's laser beam
   std::unique_ptr<Reticle> controllerReticle;
 
-  // mono rendering component
+  // mono spherical rendering component
   std::unique_ptr<MonoSphere> monoSphere;
-  // Shader *shader;
-  // Material *material;
-  // Texture *imageTexture;
-  // Model *imageContainer;
 
-  // stereo rendering component
+  // mono cubemap rendering component
+  std::unique_ptr<MonoCubeMap> monoCubeMap;
+
+  // stereo spherical rendering component
   std::unique_ptr<StereoSphere> stereoSphere;
 
   // logging utils
@@ -208,10 +208,6 @@ class Image360 {
   std::unique_ptr<GazeDetectorContainer> gazeDetectorContainer;
 
   TransformTree *gazeTransformTarget;
-
-  void initCubeMapTexture(Image *rightImage, Image *leftImage, Image *topImage,
-                          Image *bottomImage, Image *frontImage,
-                          Image *backImage);
 };
 }
 

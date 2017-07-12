@@ -2,10 +2,9 @@
 #define IMAGE360_MONOSPHERE_H
 
 /*
-* This class is responsible to creating two spheres with 360 stereo image
-* texture mapped to it. These two image textures correspond to the left
-* and right eye and are either Computer Generated or Captured with a
-* stereo camera
+* This class is responsible to creating a spheres with 360 equirectangular image
+* texture mapped to it. This class works with mono images.
+* For rendering Stereo Images use StereoSphere instead
 */
 
 // renderable objects

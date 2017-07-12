@@ -2,9 +2,9 @@
 #define IMAGE360_STEREOSPHERE_H
 
 /*
-* This class is responsible to creating two spheres with 360 stereo image
-* texture mapped to it. These two image textures correspond to the left
-* and right eye and are either Computer Generated or Captured with a
+* This class is responsible to creating two spheres with 360 equirectangular
+* stereo image texture mapped to it. These two image textures correspond to the
+* left and right eye and are either Computer Generated or Captured with a
 * stereo camera
 */
 
