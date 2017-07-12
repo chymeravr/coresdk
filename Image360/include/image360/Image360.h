@@ -19,6 +19,7 @@
 #include <coreEngine/factory/IEventGazeListenerFactory.h>
 
 #include <image360/Constants.h>
+#include <image360/MonoSphere.h>
 #include <image360/StereoSphere.h>
 
 namespace cl {
@@ -146,17 +147,14 @@ class Image360 {
   std::unique_ptr<Reticle> controllerReticle;
 
   // mono rendering component
-  Shader *shader;
-  Material *material;
-  Texture *imageTexture;
-  Model *imageContainer;
+  std::unique_ptr<MonoSphere> monoSphere;
+  // Shader *shader;
+  // Material *material;
+  // Texture *imageTexture;
+  // Model *imageContainer;
 
   // stereo rendering component
   std::unique_ptr<StereoSphere> stereoSphere;
-  // Shader *stereoShader;
-  // Material *stereoMaterial;
-  // Texture *stereoImageTexture;
-  // Model *stereoImageContainer[2];  // 0->left, 1->right
 
   // logging utils
   ILoggerFactory *loggerFactory;

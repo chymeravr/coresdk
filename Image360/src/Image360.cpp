@@ -72,6 +72,8 @@ void Image360::initialize() {
   this->camera = camera.get();
   scene->addToScene(std::move(camera));
 
+  // todo - camera transforms should be initialized here
+
   // Font store Intialization
   this->fontStore =
       uiFactory->createFontStore(scene.get(), this->fontFolderPath.c_str());
@@ -79,192 +81,197 @@ void Image360::initialize() {
   this->stereoSphere = std::unique_ptr<StereoSphere>(new StereoSphere(
       this->loggerFactory, this->modelFactory.get(),
       this->diffuseTextureFactory.get(), this->transformTreeFactory.get()));
+
+  this->monoSphere = std::unique_ptr<MonoSphere>(new MonoSphere(
+	  this->loggerFactory, this->modelFactory.get(),
+	  this->diffuseTextureFactory.get(), this->transformTreeFactory.get()));
 }
 
 void Image360::initMonoView() {
   // Initialize an empty model for holding the sphere for 360 image
-  std::unique_ptr<Model> imageContainer =
-      modelFactory->create("imageContainer");
-  assert(imageContainer != nullptr);
-  this->imageContainer = imageContainer.get();
-  scene->addToScene(std::move(imageContainer));
+  //   std::unique_ptr<Model> imageContainer =
+  //       modelFactory->create("imageContainer");
+  //   assert(imageContainer != nullptr);
+  //   this->imageContainer = imageContainer.get();
+  //   scene->addToScene(std::move(imageContainer));
 }
 
 void Image360::initMonoEquirectangularView(
     std::unique_ptr<Image> textureImage) {
-  assert(imageTexture != nullptr);
+	assert(textureImage != nullptr);
 
-  std::unique_ptr<ShaderDiffuseTexture> shaderDiffuseTexture;
-  std::unique_ptr<MaterialDiffuseTexture> materialDiffuseTexture;
-  std::unique_ptr<Texture> imageTexture;
-  shaderDiffuseTexture =
-      diffuseTextureFactory->createShader("shader", scene.get());
-  assert(shaderDiffuseTexture != nullptr);
-  this->shader = shaderDiffuseTexture.get();
-  scene->addToScene(std::move(shaderDiffuseTexture));
-
-  materialDiffuseTexture = diffuseTextureFactory->createMaterial(
-      "material", (ShaderDiffuseTexture *)this->shader);
-  assert(materialDiffuseTexture != nullptr);
-  this->material = materialDiffuseTexture.get();
-  scene->addToScene(std::move(materialDiffuseTexture));
-
-  imageTexture = diffuseTextureFactory->createTexture("imageTexture");
-
-  std::unique_ptr<Image> image = std::move(textureImage);
-  imageTexture->setTextureData(std::move(image->data));
-  imageTexture->setHeight(image->height);
-  imageTexture->setWidth(image->width);
-  imageTexture->setTextureDataSize(image->dataSize);
-  this->imageTexture = imageTexture.get();
-  scene->addToScene(std::move(imageTexture));
-
-  ((MaterialDiffuseTexture *)this->material)
-      ->setDiffuseTexture(this->imageTexture);
+  // todo ~ remove camera transform initialization from here
   std::unique_ptr<TransformTreeCamera> transformTreeCameraUptr =
       transformTreeFactory->createTransformTreeCamera(this->camera);
   this->camera->getComponentList().addComponent(
       std::move(transformTreeCameraUptr));
-
-  std::unique_ptr<TransformTreeModel> transformSphereUptr =
-      transformTreeFactory->createTransformTreeModel(this->imageContainer);
-  this->imageContainer->getComponentList().addComponent(
-      std::move(transformSphereUptr));
 
   TransformTreeCamera *transformTreeCamera =
       (TransformTreeCamera *)this->camera->getComponentList().getComponent(
           "transformTree");
   transformTreeCamera->setLocalPosition(CL_Vec3(0.0f, 0.0f, 0.0f));
   transformTreeCamera->setLocalRotation(CL_Vec3(0.0f, 0.0f, 0.0f));
+  this->monoSphere->initialize(scene.get(), std::move(textureImage));
+  //   std::unique_ptr<ShaderDiffuseTexture> shaderDiffuseTexture;
+  //   std::unique_ptr<MaterialDiffuseTexture> materialDiffuseTexture;
+  //   std::unique_ptr<Texture> imageTexture;
+  //   shaderDiffuseTexture =
+  //       diffuseTextureFactory->createShader("shader", scene.get());
+  //   assert(shaderDiffuseTexture != nullptr);
+  //   this->shader = shaderDiffuseTexture.get();
+  //   scene->addToScene(std::move(shaderDiffuseTexture));
 
-  TransformTreeModel *transformSphere =
-      (TransformTreeModel *)this->imageContainer->getComponentList()
-          .getComponent("transformTree");
-  transformSphere->setLocalPosition(CL_Vec3(0.0f, 0.0f, 0.0f));
-  transformSphere->setLocalScale(CL_Vec3(100.0f, 100.0f, 100.0f));
+  //   materialDiffuseTexture = diffuseTextureFactory->createMaterial(
+  //       "material", (ShaderDiffuseTexture *)this->shader);
+  //   assert(materialDiffuseTexture != nullptr);
+  //   this->material = materialDiffuseTexture.get();
+  //   scene->addToScene(std::move(materialDiffuseTexture));
 
-  this->imageContainer->createBiRelation(this->material);
+  //   imageTexture = diffuseTextureFactory->createTexture("imageTexture");
 
-  std::unique_ptr<ModelModifier> modelModifier(new ModelModifier);
-  UVSphereBuilder uvSphereBuilder(modelModifier.get());
-  uvSphereBuilder.buildUnitSphere(this->imageContainer, 5);
+  //   std::unique_ptr<Image> image = std::move(textureImage);
+  //   imageTexture->setTextureData(std::move(image->data));
+  //   imageTexture->setHeight(image->height);
+  //   imageTexture->setWidth(image->width);
+  //   imageTexture->setTextureDataSize(image->dataSize);
+  //   this->imageTexture = imageTexture.get();
+  //   scene->addToScene(std::move(imageTexture));
+
+  //   ((MaterialDiffuseTexture *)this->material)
+  //       ->setDiffuseTexture(this->imageTexture);
+  //   std::unique_ptr<TransformTreeCamera> transformTreeCameraUptr =
+  //       transformTreeFactory->createTransformTreeCamera(this->camera);
+  //   this->camera->getComponentList().addComponent(
+  //       std::move(transformTreeCameraUptr));
+
+  //   std::unique_ptr<TransformTreeModel> transformSphereUptr =
+  //       transformTreeFactory->createTransformTreeModel(this->imageContainer);
+  //   this->imageContainer->getComponentList().addComponent(
+  //       std::move(transformSphereUptr));
+
+  //   TransformTreeCamera *transformTreeCamera =
+  //       (TransformTreeCamera *)this->camera->getComponentList().getComponent(
+  //           "transformTree");
+  //   transformTreeCamera->setLocalPosition(CL_Vec3(0.0f, 0.0f, 0.0f));
+  //   transformTreeCamera->setLocalRotation(CL_Vec3(0.0f, 0.0f, 0.0f));
+
+  //   TransformTreeModel *transformSphere =
+  //       (TransformTreeModel *)this->imageContainer->getComponentList()
+  //           .getComponent("transformTree");
+  //   transformSphere->setLocalPosition(CL_Vec3(0.0f, 0.0f, 0.0f));
+  //   transformSphere->setLocalScale(CL_Vec3(100.0f, 100.0f, 100.0f));
+
+  //   this->imageContainer->createBiRelation(this->material);
+
+  //   std::unique_ptr<ModelModifier> modelModifier(new ModelModifier);
+  //   UVSphereBuilder uvSphereBuilder(modelModifier.get());
+  //   uvSphereBuilder.buildUnitSphere(this->imageContainer, 5);
 }
 
 void Image360::initMonoCubeMapSingleTextureView(
     std::unique_ptr<Image> textureImage) {
-  std::unique_ptr<ShaderDiffuseTextureCubeMap> shaderUPtr =
-      diffuseTextureCubeMapFactory->createShader("shader", scene.get());
-  assert(shaderUPtr != nullptr);
-  this->shader = shaderUPtr.get();
-  scene->addToScene(std::move(shaderUPtr));
+  //std::unique_ptr<ShaderDiffuseTextureCubeMap> shaderUPtr =
+  //    diffuseTextureCubeMapFactory->createShader("shader", scene.get());
+  //assert(shaderUPtr != nullptr);
+  //this->shader = shaderUPtr.get();
+  //scene->addToScene(std::move(shaderUPtr));
 
-  std::unique_ptr<MaterialDiffuseTextureCubeMap> materialUPtr =
-      diffuseTextureCubeMapFactory->createMaterial(
-          "material", (ShaderDiffuseTextureCubeMap *)this->shader);
-  assert(materialUPtr != nullptr);
-  this->material = materialUPtr.get();
-  scene->addToScene(std::move(materialUPtr));
+  //std::unique_ptr<MaterialDiffuseTextureCubeMap> materialUPtr =
+  //    diffuseTextureCubeMapFactory->createMaterial(
+  //        "material", (ShaderDiffuseTextureCubeMap *)this->shader);
+  //assert(materialUPtr != nullptr);
+  //this->material = materialUPtr.get();
+  //scene->addToScene(std::move(materialUPtr));
 
-  std::unique_ptr<Image> frontImage(new Image);
-  std::unique_ptr<Image> leftImage(new Image);
-  std::unique_ptr<Image> backImage(new Image);
-  std::unique_ptr<Image> rightImage(new Image);
-  std::unique_ptr<Image> topImage(new Image);
-  std::unique_ptr<Image> bottomImage(new Image);
+  //std::unique_ptr<Image> frontImage(new Image);
+  //std::unique_ptr<Image> leftImage(new Image);
+  //std::unique_ptr<Image> backImage(new Image);
+  //std::unique_ptr<Image> rightImage(new Image);
+  //std::unique_ptr<Image> topImage(new Image);
+  //std::unique_ptr<Image> bottomImage(new Image);
 
-  //   assert(textureImages.size() == 1);
-  //   assert(textureImages[0] != nullptr);
-  assert(textureImage != nullptr);
-  std::unique_ptr<Image> originalImage = std::move(textureImage);
-  ImageModifier imageModifier(logger.get());
-  imageModifier.convertSingleCubicImageIntoSix(
-      originalImage.get(), frontImage.get(), leftImage.get(), backImage.get(),
-      rightImage.get(), bottomImage.get(), topImage.get());
+  ////   assert(textureImages.size() == 1);
+  ////   assert(textureImages[0] != nullptr);
+  //assert(textureImage != nullptr);
+  //std::unique_ptr<Image> originalImage = std::move(textureImage);
+  //ImageModifier imageModifier(logger.get());
+  //imageModifier.convertSingleCubicImageIntoSix(
+  //    originalImage.get(), frontImage.get(), leftImage.get(), backImage.get(),
+  //    rightImage.get(), bottomImage.get(), topImage.get());
 
-  assert(rightImage != nullptr && leftImage != nullptr && topImage != nullptr &&
-         bottomImage != nullptr && backImage != nullptr &&
-         frontImage != nullptr);
+  //assert(rightImage != nullptr && leftImage != nullptr && topImage != nullptr &&
+  //       bottomImage != nullptr && backImage != nullptr &&
+  //       frontImage != nullptr);
 
-  initCubeMapTexture(rightImage.get(), leftImage.get(), topImage.get(),
-                     bottomImage.get(), frontImage.get(), backImage.get());
+  //initCubeMapTexture(rightImage.get(), leftImage.get(), topImage.get(),
+  //                   bottomImage.get(), frontImage.get(), backImage.get());
 }
 
 void Image360::initCubeMapTexture(Image *rightImage, Image *leftImage,
                                   Image *topImage, Image *bottomImage,
                                   Image *frontImage, Image *backImage) {
-  std::unique_ptr<TextureCubeMap> textureUPtr =
-      diffuseTextureCubeMapFactory->createTexture("imageTexture");
-  assert(textureUPtr != nullptr);
+  //std::unique_ptr<TextureCubeMap> textureUPtr =
+  //    diffuseTextureCubeMapFactory->createTexture("imageTexture");
+  //assert(textureUPtr != nullptr);
 
-  // using an array of images initialized in same order as the texture enum to
-  // enable looping
-  Image *cubeMapImages[6] = {leftImage, rightImage, frontImage,
-                             backImage, topImage,   bottomImage};
-  for (int i = 0; i < 6; i++) {
-    TEXTURE_CUBE_MAP_FACE cubeMapTexture =
-        static_cast<TEXTURE_CUBE_MAP_FACE>(i);
+  //// using an array of images initialized in same order as the texture enum to
+  //// enable looping
+  //Image *cubeMapImages[6] = {leftImage, rightImage, frontImage,
+  //                           backImage, topImage,   bottomImage};
+  //for (int i = 0; i < 6; i++) {
+  //  TEXTURE_CUBE_MAP_FACE cubeMapTexture =
+  //      static_cast<TEXTURE_CUBE_MAP_FACE>(i);
 
-    textureUPtr->setTextureData(cubeMapTexture,
-                                std::move(cubeMapImages[i]->data));
-    textureUPtr->setHeight(cubeMapTexture, cubeMapImages[i]->height);
-    textureUPtr->setWidth(cubeMapTexture, cubeMapImages[i]->width);
-    textureUPtr->setTextureDataSize(cubeMapTexture, cubeMapImages[i]->dataSize);
-  }
+  //  textureUPtr->setTextureData(cubeMapTexture,
+  //                              std::move(cubeMapImages[i]->data));
+  //  textureUPtr->setHeight(cubeMapTexture, cubeMapImages[i]->height);
+  //  textureUPtr->setWidth(cubeMapTexture, cubeMapImages[i]->width);
+  //  textureUPtr->setTextureDataSize(cubeMapTexture, cubeMapImages[i]->dataSize);
+  //}
 
-  this->imageTexture = textureUPtr.get();
-  scene->addToScene(std::move(textureUPtr));
+  //this->imageTexture = textureUPtr.get();
+  //scene->addToScene(std::move(textureUPtr));
 
-  ((MaterialDiffuseTextureCubeMap *)this->material)
-      ->setDiffuseTexture(this->imageTexture);
+  //((MaterialDiffuseTextureCubeMap *)this->material)
+  //    ->setDiffuseTexture(this->imageTexture);
 
-  std::unique_ptr<TransformTreeCamera> transformTreeCameraUptr =
-      transformTreeFactory->createTransformTreeCamera(this->camera);
-  this->camera->getComponentList().addComponent(
-      std::move(transformTreeCameraUptr));
+  //std::unique_ptr<TransformTreeCamera> transformTreeCameraUptr =
+  //    transformTreeFactory->createTransformTreeCamera(this->camera);
+  //this->camera->getComponentList().addComponent(
+  //    std::move(transformTreeCameraUptr));
 
-  std::unique_ptr<TransformTreeModel> transformSphereUptr =
-      transformTreeFactory->createTransformTreeModel(this->imageContainer);
-  this->imageContainer->getComponentList().addComponent(
-      std::move(transformSphereUptr));
+  //std::unique_ptr<TransformTreeModel> transformSphereUptr =
+  //    transformTreeFactory->createTransformTreeModel(this->imageContainer);
+  //this->imageContainer->getComponentList().addComponent(
+  //    std::move(transformSphereUptr));
 
-  TransformTreeCamera *transformTreeCamera =
-      (TransformTreeCamera *)this->camera->getComponentList().getComponent(
-          "transformTree");
-  transformTreeCamera->setLocalPosition(CL_Vec3(0.0f, 0.0f, 0.0f));
-  transformTreeCamera->setLocalRotation(CL_Vec3(0.0f, 0.0f, 0.0f));
+  //TransformTreeCamera *transformTreeCamera =
+  //    (TransformTreeCamera *)this->camera->getComponentList().getComponent(
+  //        "transformTree");
+  //transformTreeCamera->setLocalPosition(CL_Vec3(0.0f, 0.0f, 0.0f));
+  //transformTreeCamera->setLocalRotation(CL_Vec3(0.0f, 0.0f, 0.0f));
 
-  TransformTreeModel *transformSphere =
-      (TransformTreeModel *)this->imageContainer->getComponentList()
-          .getComponent("transformTree");
-  transformSphere->setLocalPosition(CL_Vec3(0.0f, 0.0f, 0.0f));
-  transformSphere->setLocalScale(CL_Vec3(100.0f, 100.0f, 100.0f));
+  //TransformTreeModel *transformSphere =
+  //    (TransformTreeModel *)this->imageContainer->getComponentList()
+  //        .getComponent("transformTree");
+  //transformSphere->setLocalPosition(CL_Vec3(0.0f, 0.0f, 0.0f));
+  //transformSphere->setLocalScale(CL_Vec3(100.0f, 100.0f, 100.0f));
 
-  this->imageContainer->createBiRelation(this->material);
+  //this->imageContainer->createBiRelation(this->material);
 
-  std::unique_ptr<ModelModifier> modelModifier(new ModelModifier);
-  CubeBuilder cubeBuilder(modelModifier.get());
-  cubeBuilder.buildInwardCube(this->imageContainer);
+  //std::unique_ptr<ModelModifier> modelModifier(new ModelModifier);
+  //CubeBuilder cubeBuilder(modelModifier.get());
+  //cubeBuilder.buildInwardCube(this->imageContainer);
 }
 
-// TODO remove to stereosphere class
-void Image360::initStereoView() {
-  //   std::unique_ptr<Model> imageContainerLeft =
-  //       modelFactory->create("imageContainerLeft");
-  //   assert(imageContainerLeft != nullptr);
-  //   this->stereoImageContainer[0] = imageContainerLeft.get();
-  //   scene->addToScene(std::move(imageContainerLeft));
+// TODO remove empty function
+void Image360::initStereoView() {}
 
-  //   std::unique_ptr<Model> imageContainerRight =
-  //       modelFactory->create("imageContainerRight");
-  //   assert(imageContainerRight != nullptr);
-  //   this->stereoImageContainer[1] = imageContainerRight.get();
-  //   scene->addToScene(std::move(imageContainerRight));
-}
-
-// TODO remove to stereo sphere class
 void Image360::initStereoEquirectangularView(
     std::unique_ptr<Image> textureImage) {
   assert(textureImage != nullptr);
+
+  // this does not belong here ~ remove to camera initialization
   std::unique_ptr<TransformTreeCamera> transformTreeCameraUptr =
       transformTreeFactory->createTransformTreeCamera(this->camera);
   this->camera->getComponentList().addComponent(
@@ -277,98 +284,6 @@ void Image360::initStereoEquirectangularView(
   transformTreeCamera->setLocalRotation(CL_Vec3(0.0f, 0.0f, 0.0f));
 
   this->stereoSphere->initialize(this->scene.get(), std::move(textureImage));
-
-  //   std::unique_ptr<ShaderDiffuseTexture> shaderDiffuseTexture;
-  //   std::unique_ptr<MaterialDiffuseTexture> materialDiffuseTexture;
-  //   std::unique_ptr<Texture> imageTexture;
-
-  //   shaderDiffuseTexture =
-  //       diffuseTextureFactory->createShader("shader", scene.get());
-  //   assert(shaderDiffuseTexture != nullptr);
-  //   this->stereoShader = shaderDiffuseTexture.get();
-  //   scene->addToScene(std::move(shaderDiffuseTexture));
-
-  //   materialDiffuseTexture = diffuseTextureFactory->createMaterial(
-  //       "material", (ShaderDiffuseTexture *)this->stereoShader);
-  //   assert(materialDiffuseTexture != nullptr);
-  //   this->stereoMaterial = materialDiffuseTexture.get();
-  //   scene->addToScene(std::move(materialDiffuseTexture));
-
-  //   // todo - change texture mapping of models to do this
-  //   imageTexture = diffuseTextureFactory->createTexture("imageTexture");
-
-  //   std::unique_ptr<Image> image = std::move(textureImage);
-  //   imageTexture->setTextureData(std::move(image->data));
-  //   imageTexture->setHeight(image->height);
-  //   imageTexture->setWidth(image->width);
-  //   imageTexture->setTextureDataSize(image->dataSize);
-  //   this->stereoImageTexture = imageTexture.get();
-  //   scene->addToScene(std::move(imageTexture));
-  //   ((MaterialDiffuseTexture *)this->stereoMaterial)
-  //       ->setDiffuseTexture(this->stereoImageTexture);
-
-  //   std::unique_ptr<TransformTreeCamera> transformTreeCameraUptr =
-  //       transformTreeFactory->createTransformTreeCamera(this->camera);
-  //   this->camera->getComponentList().addComponent(
-  //       std::move(transformTreeCameraUptr));
-
-  //   std::unique_ptr<TransformTreeModel> leftTransformSphereUptr =
-  //       transformTreeFactory->createTransformTreeModel(
-  //           this->stereoImageContainer[Image360::EYE::LEFT]);
-  //   this->stereoImageContainer[Image360::EYE::LEFT]
-  //       ->getComponentList()
-  //       .addComponent(std::move(leftTransformSphereUptr));
-
-  //   std::unique_ptr<TransformTreeModel> rightTransformSphereUptr =
-  //       transformTreeFactory->createTransformTreeModel(
-  //           this->stereoImageContainer[Image360::EYE::RIGHT]);
-  //   this->stereoImageContainer[Image360::EYE::RIGHT]
-  //       ->getComponentList()
-  //       .addComponent(std::move(rightTransformSphereUptr));
-
-  //   TransformTreeCamera *transformTreeCamera =
-  //       (TransformTreeCamera *)this->camera->getComponentList().getComponent(
-  //           "transformTree");
-  //   transformTreeCamera->setLocalPosition(CL_Vec3(0.0f, 0.0f, 0.0f));
-  //   transformTreeCamera->setLocalRotation(CL_Vec3(0.0f, 0.0f, 0.0f));
-
-  //   TransformTreeModel *transformSphereLeft =
-  //       (TransformTreeModel *)this->stereoImageContainer[Image360::EYE::LEFT]
-  //           ->getComponentList()
-  //           .getComponent("transformTree");
-  //   transformSphereLeft->setLocalPosition(CL_Vec3(0.0f, 0.0f, 0.0f));
-  //   transformSphereLeft->setLocalScale(CL_Vec3(100.0f, 100.0f, 100.0f));
-
-  //   this->stereoImageContainer[Image360::EYE::LEFT]->createBiRelation(
-  //       this->stereoMaterial);
-
-  //   TransformTreeModel *transformSphereRight =
-  //       (TransformTreeModel
-  //       *)this->stereoImageContainer[Image360::EYE::RIGHT]
-  //           ->getComponentList()
-  //           .getComponent("transformTree");
-  //   transformSphereRight->setLocalPosition(CL_Vec3(0.0f, 0.0f, 0.0f));
-  //   transformSphereRight->setLocalScale(CL_Vec3(100.0f, 100.0f, 100.0f));
-
-  //   this->stereoImageContainer[Image360::EYE::RIGHT]->createBiRelation(
-  //       this->stereoMaterial);
-
-  //   std::unique_ptr<ModelModifier> modelModifierLeft(new ModelModifier);
-  //   UVSphereBuilder uvSphereBuilderLeft(modelModifierLeft.get());
-  //   uvSphereBuilderLeft.setVMax(0.5f);
-  //   uvSphereBuilderLeft.buildUnitSphere(
-  //       this->stereoImageContainer[Image360::EYE::LEFT], 5);
-
-  //   std::unique_ptr<ModelModifier> modelModifierRight(new ModelModifier);
-  //   UVSphereBuilder uvSphereBuilderRight(modelModifierRight.get());
-  //   uvSphereBuilderRight.setVMin(0.5f);
-  //   uvSphereBuilderRight.buildUnitSphere(
-  //       this->stereoImageContainer[Image360::EYE::RIGHT], 5);
-
-  //   this->stereoImageContainer[0]->setDepthTest(true);
-  //   this->stereoImageContainer[1]->setDepthTest(true);
-  //   this->stereoImageContainer[0]->setBlending(true);
-  //   this->stereoImageContainer[1]->setBlending(true);
 }
 
 void Image360::initUIButtons() {
@@ -682,22 +597,17 @@ void Image360::drawInit() {
   renderer->drawInit(scene.get());
 }
 
-// void Image360::draw(EYE eye) { renderer->draw(scene.get(), eye); }
 void Image360::drawMono() {
   renderer->drawLeft(scene.get());
   renderer->drawRight(scene.get());
 }
 
 void Image360::drawStereoLeft() {
-  /*stereoImageContainer[EYE::LEFT]->setIsVisible(true);
-  stereoImageContainer[EYE::RIGHT]->setIsVisible(false);*/
   this->stereoSphere->drawLeft();
   renderer->drawLeft(scene.get());
 }
 
 void Image360::drawStereoRight() {
-  /*stereoImageContainer[EYE::LEFT]->setIsVisible(false);
-  stereoImageContainer[EYE::RIGHT]->setIsVisible(true);*/
   this->stereoSphere->drawRight();
   renderer->drawRight(scene.get());
 }
