@@ -20,7 +20,7 @@
 // model builders
 #include <coreEngine/modelBuilder/UVSphereBuilder.h>
 
-// factory declarations
+// factories
 #include <coreEngine/components/transformTree/ITransformTreeFactory.h>
 #include <coreEngine/factory/IDiffuseTextureFactory.h>
 #include <coreEngine/factory/IModelFactory.h>
@@ -37,11 +37,9 @@ class MonoSphere {
              IDiffuseTextureFactory *diffuseTextureFactory,
              ITransformTreeFactory *transformTreeFactory);
   void initialize(Scene *scene, std::unique_ptr<Image> textureImage);
-  void drawLeft();
-  void drawRight();
 
  private:
-  // stereo rendering component
+  // rendering components
   Shader *monoSphereShader;
   Material *monoSphereMaterial;
   Texture *monoSphereImageTexture;

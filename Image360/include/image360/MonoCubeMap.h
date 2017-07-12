@@ -40,7 +40,7 @@ class MonoCubeMap {
   void initialize(Scene *scene, std::unique_ptr<Image> textureImage);
 
  private:
-  // stereo rendering component
+  // mono rendering component
   Shader *monoCubeMapShader;
   Material *monoCubeMapMaterial;
   Texture *monoCubeMapImageTexture;
@@ -54,9 +54,9 @@ class MonoCubeMap {
   IDiffuseTextureCubeMapFactory *diffuseTextureCubeMapFactory;
   ITransformTreeFactory *transformTreeFactory;
 
-  void initCubeMapTexture(Scene *scene, Image *rightImage, Image *leftImage, Image *topImage,
-                          Image *bottomImage, Image *frontImage,
-                          Image *backImage);
+  void initCubeMapTexture(Scene *scene, Image *rightImage, Image *leftImage,
+                          Image *topImage, Image *bottomImage,
+                          Image *frontImage, Image *backImage);
 };
 }
 

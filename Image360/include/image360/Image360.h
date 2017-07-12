@@ -190,9 +190,6 @@ class Image360 {
   std::string closeButtonText = "Close";
   std::string actionButtonText = "Notify Me";
 
-  // Whats this for?
-  // std::unique_ptr<PlanarBackground> laserBox;
-
   // fade screen component
   std::unique_ptr<FadeScreen> fadeScreen;
   bool fadeStarted = false;

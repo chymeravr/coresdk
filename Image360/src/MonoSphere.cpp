@@ -26,8 +26,7 @@ void MonoSphere::initialize(Scene *scene, std::unique_ptr<Image> textureImage) {
   std::unique_ptr<Texture> imageTexture;
 
   // initialize shader and add to scene ~ should I name this more appropriately?
-  shaderDiffuseTexture =
-      diffuseTextureFactory->createShader("shader", scene);
+  shaderDiffuseTexture = diffuseTextureFactory->createShader("shader", scene);
   assert(shaderDiffuseTexture != nullptr);
   this->monoSphereShader = shaderDiffuseTexture.get();
   scene->addToScene(std::move(shaderDiffuseTexture));
@@ -77,7 +76,4 @@ void MonoSphere::initialize(Scene *scene, std::unique_ptr<Image> textureImage) {
   UVSphereBuilder uvSphereBuilder(modelModifier.get());
   uvSphereBuilder.buildUnitSphere(this->monoSphereImageContainer, 5);
 }
-
-void MonoSphere::drawLeft() {}
-void MonoSphere::drawRight() {}
 }
