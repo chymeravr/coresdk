@@ -202,7 +202,7 @@ int _tmain(int argc, _TCHAR** argv) {
       "\\Debug\\fonts\\arial.ttf";
   // std::string fontFilePath = "fonts/arial.ttf";
 
-  IMAGE_MODE appMode = STEREO;
+  IMAGE_MODE appMode = MONO;
 
   if (appMode == STEREO) {
     std::unique_ptr<IRenderer> renderer(new RendererNoHMDStereo());
@@ -393,9 +393,7 @@ int _tmain(int argc, _TCHAR** argv) {
     application->stop();
     application->deinitialize();
 
-    // Terminate GLFW, clearing any resources allocated by GLFW.
-    _CrtSetDbgFlag(_CRTDBG_ALLOC_MEM_DF | _CRTDBG_LEAK_CHECK_DF);
-
+    
     glfwTerminate();
   }
 

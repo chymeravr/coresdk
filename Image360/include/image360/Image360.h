@@ -18,6 +18,7 @@
 
 #include <coreEngine/factory/IEventGazeListenerFactory.h>
 
+#include <image360/Buttons.h>
 #include <image360/Constants.h>
 #include <image360/MonoCubeMap.h>
 #include <image360/MonoSphere.h>
@@ -46,7 +47,7 @@ class Image360 {
   void initialize();
 
   // use mono init funtions if you have a mono image360
-  void initMonoView();
+
   void initMonoEquirectangularView(std::unique_ptr<Image> textureImage);
   void initMonoCubeMapSingleTextureView(std::unique_ptr<Image> textureImage);
   void initMonoCubeMapSixTextureView(
@@ -54,7 +55,7 @@ class Image360 {
 
   // use stereo init functions if you have a stereo image360 (Top Bottom => Left
   // Right)
-  void initStereoView();
+
   void initStereoEquirectangularView(std::unique_ptr<Image> textureImage);
   // note - stereo cubemaps not implemented because we did not find them
   // popularly
@@ -95,22 +96,22 @@ class Image360 {
 
   IRenderer *getRenderer();
 
-  std::unique_ptr<EventGazeListener> actionButtonListener;
-  std::unique_ptr<EventGazeListener> closeButtonListener;
+  // std::unique_ptr<EventGazeListener> actionButtonListener;
+  // std::unique_ptr<EventGazeListener> closeButtonListener;
 
   void setIsControllerPresent(bool isControllerPresent) {
     this->isControllerPresent = isControllerPresent;
   }
 
-  void setCloseButtonText(std::string newCloseButtonText) {
-    this->closeButtonText = newCloseButtonText;
-  }
+  // void setCloseButtonText(std::string newCloseButtonText) {
+  //   this->closeButtonText = newCloseButtonText;
+  // }
 
-  void setActionButtonText(std::string newActionButtonText) {
-    this->actionButtonText = newActionButtonText;
-  }
+  // void setActionButtonText(std::string newActionButtonText) {
+  //   this->actionButtonText = newActionButtonText;
+  // }
 
-  std::string getActionButtonText() { return this->actionButtonText; }
+  // std::string getActionButtonText() { return this->actionButtonText; }
 
   void beginFade() { fadeStarted = true; }
 
@@ -185,10 +186,11 @@ class Image360 {
   std::string fontFolderPath = "";
 
   // Buttons
-  std::unique_ptr<PlanarBackground> actionButtonBackground;
-  std::unique_ptr<PlanarBackground> closeButtonBackground;
-  std::string closeButtonText = "Close";
-  std::string actionButtonText = "Notify Me";
+  // std::unique_ptr<PlanarBackground> actionButtonBackground;
+  // std::unique_ptr<PlanarBackground> closeButtonBackground;
+  // std::string closeButtonText = "Close";
+  // std::string actionButtonText = "Notify Me";
+  std::unique_ptr<Buttons> buttons;
 
   // fade screen component
   std::unique_ptr<FadeScreen> fadeScreen;
@@ -202,8 +204,9 @@ class Image360 {
   std::unique_ptr<Reticle> reticleBase;
 
   // contains all our gaze detection boxes
-  std::unique_ptr<GazeDetectorContainer> gazeDetectorContainer;
+  // std::unique_ptr<GazeDetectorContainer> gazeDetectorContainer;
 
+  // TODO: maybe this should be called the gazeTransformSource??
   TransformTree *gazeTransformTarget;
 };
 }
