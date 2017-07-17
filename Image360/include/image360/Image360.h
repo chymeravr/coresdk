@@ -20,6 +20,7 @@
 
 #include <image360/Buttons.h>
 #include <image360/Constants.h>
+#include <image360/Controller.h>
 #include <image360/MonoCubeMap.h>
 #include <image360/MonoSphere.h>
 #include <image360/StereoSphere.h>
@@ -96,22 +97,9 @@ class Image360 {
 
   IRenderer *getRenderer();
 
-  // std::unique_ptr<EventGazeListener> actionButtonListener;
-  // std::unique_ptr<EventGazeListener> closeButtonListener;
-
   void setIsControllerPresent(bool isControllerPresent) {
     this->isControllerPresent = isControllerPresent;
   }
-
-  // void setCloseButtonText(std::string newCloseButtonText) {
-  //   this->closeButtonText = newCloseButtonText;
-  // }
-
-  // void setActionButtonText(std::string newActionButtonText) {
-  //   this->actionButtonText = newActionButtonText;
-  // }
-
-  // std::string getActionButtonText() { return this->actionButtonText; }
 
   void beginFade() { fadeStarted = true; }
 
@@ -119,9 +107,20 @@ class Image360 {
 
   Reticle *getParentReticle();
 
+  Buttons *getButtons() { return this->buttons.get(); }
   Camera *getCamera() { return this->camera; }
 
-  Model *getControllerModel() { return this->controllerModel; }
+  Model *getControllerModel() { return this->controller->getControllerModel(); }
+
+  EventGazeListener *getActionButtonListener() {
+    return this->buttons->getActionButtonListener();
+  }
+
+  EventGazeListener *getCloseButtonListener() {
+    return this->buttons->getCloseButtonListener();
+  }
+
+  TransformTree *getGazeTransformTarget() { return this->gazeTransformTarget; }
 
  private:
   // Image360 Class will initialze a set of renderables into a scene
@@ -133,21 +132,8 @@ class Image360 {
   // TODO : try and remove this bool flag ~ considered bad practice
   bool isControllerPresent = false;
 
-  // Controller Component
-  Shader *controllerShader;
-  Material *controllerMaterial;
-  Texture *controllerTexture;
-  Model *controllerModel;
-
-  // Laser Beam Component
-  Shader *laserBeamShader;
-  Material *laserBeamMaterial;
-  Texture *laserBeamTexture;
-  Model *laserBeamModel;
-
-  // Reticle at the end of controller's laser beam
-  std::unique_ptr<Reticle> controllerReticle;
-
+  //   // Controller Component
+  std::unique_ptr<Controller> controller;
   // mono spherical rendering component
   std::unique_ptr<MonoSphere> monoSphere;
 
@@ -186,10 +172,6 @@ class Image360 {
   std::string fontFolderPath = "";
 
   // Buttons
-  // std::unique_ptr<PlanarBackground> actionButtonBackground;
-  // std::unique_ptr<PlanarBackground> closeButtonBackground;
-  // std::string closeButtonText = "Close";
-  // std::string actionButtonText = "Notify Me";
   std::unique_ptr<Buttons> buttons;
 
   // fade screen component

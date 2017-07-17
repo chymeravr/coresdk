@@ -83,7 +83,7 @@ void key_callback(GLFWwindow* window, int key, int scancode, int action,
                   int mode) {
   std::cout << "Key Pressed " << key << std::endl;
 
-  std::cout << application->getActionButtonText() << std::endl;
+  std::cout << application->getButtons()->getActionButtonText() << std::endl;
   if (key == GLFW_KEY_ESCAPE && action == GLFW_PRESS) {
     glfwSetWindowShouldClose(window, GL_TRUE);
   } else {
@@ -108,9 +108,9 @@ void mouse_button_callback(GLFWwindow* window, int button, int action,
                            int mods) {
   std::cout << "Mouse Clicked " << std::endl;
   if (button == GLFW_MOUSE_BUTTON_LEFT && action == GLFW_PRESS) {
-    if (application->actionButtonListener->inFocus()) {
+    if (application->getActionButtonListener()->inFocus()) {
       std::cout << "Action Button Pressed" << std::endl;
-    } else if (application->closeButtonListener->inFocus()) {
+    } else if (application->getCloseButtonListener()->inFocus()) {
       std::cout << "Close Button Pressed" << std::endl;
       application->beginFade();
       // glfwSetWindowShouldClose(window, GL_TRUE);
@@ -202,7 +202,7 @@ int _tmain(int argc, _TCHAR** argv) {
       "\\Debug\\fonts\\arial.ttf";
   // std::string fontFilePath = "fonts/arial.ttf";
 
-  IMAGE_MODE appMode = MONO;
+  IMAGE_MODE appMode = STEREO;
 
   if (appMode == STEREO) {
     std::unique_ptr<IRenderer> renderer(new RendererNoHMDStereo());
@@ -249,12 +249,8 @@ int _tmain(int argc, _TCHAR** argv) {
  //       "chimera\\SDK\\Projects\\VisualStudio\\Image360WindowsLa"
  //       "uncher\\Debug\\ddcontroller_idle.jpg");
 
-    std::cout << application->getActionButtonText() << std::endl;
-    application->setActionButtonText(std::string("Download"));
-    std::cout << application->getActionButtonText() << std::endl;
     application->initialize();
 
-    application->initStereoView();
     application->initStereoEquirectangularView(std::move(textureImages[0]));
 
     //application->initCameraReticle();
@@ -270,6 +266,10 @@ int _tmain(int argc, _TCHAR** argv) {
 
 	application->initUIButtons();
     application->initComplete();
+
+	std::cout << application->getButtons()->getActionButtonText() << std::endl;
+	application->getButtons()->setActionButtonText(std::string("Download"));
+	std::cout << application->getButtons()->getActionButtonText() << std::endl;
 
     //// register callbacks
     glfwSetKeyCallback(window, key_callback);
@@ -332,11 +332,7 @@ int _tmain(int argc, _TCHAR** argv) {
 
     application->start();
 
-	std::cout << application->getActionButtonText() << std::endl;
-	application->setActionButtonText(std::string("Download"));
-	std::cout << application->getActionButtonText() << std::endl;
 	application->initialize();
-	application->initMonoView();
 
     ImageJPEGLoader imageJPEGLoader(logger.get());
 
@@ -367,6 +363,10 @@ int _tmain(int argc, _TCHAR** argv) {
     application->initUIButtons();
     application->initFadeScreen();
 	application->initComplete();
+
+	std::cout << application->getButtons()->getActionButtonText() << std::endl;
+	application->getButtons()->setActionButtonText(std::string("Download"));
+	std::cout << application->getButtons()->getActionButtonText() << std::endl;
 
     //// register callbacks
     glfwSetKeyCallback(window, key_callback);

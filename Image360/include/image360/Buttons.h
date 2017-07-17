@@ -3,6 +3,7 @@
 
 #include <coreEngine/components/gazeDetector/EventGazeListener.h>
 #include <coreEngine/components/gazeDetector/GazeDetectorFactory.h>
+#include <coreEngine/components/transformTree/ITransformTreeFactory.h>
 #include <coreEngine/factory/IEventGazeListenerFactory.h>
 #include <coreEngine/renderObjects/Scene.h>
 #include <coreEngine/ui/FontStore.h>
@@ -11,7 +12,6 @@
 #include <coreEngine/ui/UIFactory.h>
 #include <coreEngine/util/ILogger.h>
 #include <coreEngine/util/ILoggerFactory.h>
-#include <coreEngine/components/transformTree/ITransformTreeFactory.h>
 
 namespace cl {
 class Buttons {
@@ -20,6 +20,7 @@ class Buttons {
           GazeDetectorFactory &gazeDetectorFactory, FontStore &fontStore,
           IEventGazeListenerFactory &eventGazeListenerFactory);
   void initialize(Scene &scene, TransformTree &gazeTransformTarget);
+
   inline void setCloseButtonText(std::string newCloseButtonText) {
     this->closeButtonText = newCloseButtonText;
   }
@@ -29,6 +30,14 @@ class Buttons {
   }
 
   inline std::string getActionButtonText() { return this->actionButtonText; }
+
+  inline EventGazeListener *getActionButtonListener() {
+    return this->actionButtonListener.get();
+  }
+
+  inline EventGazeListener *getCloseButtonListener() {
+    return this->closeButtonListener.get();
+  }
 
  private:
   // Buttons
@@ -40,7 +49,7 @@ class Buttons {
   std::string actionButtonText = "Notify Me";
 
   std::unique_ptr<GazeDetectorContainer> gazeDetectorContainer;
-  //TransformTree *gazeTransformTarget;
+  // TransformTree *gazeTransformTarget;
 
   // Factories
   UIFactory *uiFactory;
