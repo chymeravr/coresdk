@@ -13,49 +13,35 @@ Buttons::Buttons(ILoggerFactory &loggerFactory, UIFactory &uiFactory,
 void Buttons::initialize(Scene &scene, TransformTree &gazeTransformTarget) {
   // Text style info
   TextStyle textStyle;
-  textStyle.fontSize = 20;
-  textStyle.scale = 0.025f;
-  textStyle.color = CL_Vec4(1.0, 1.0, 1.0, 1.0);
+  textStyle.fontSize = FONT_SIZE;
+  textStyle.scale = FONT_SCALE;
+  textStyle.color = FONT_COLOR;
 
   // Action Button Initialization
-  auto actionButtonPosition = CL_Vec3(-5.1, 0.0, -15.5);
-  auto actionButtonRotation = CL_Vec3(0.0, 0.0, 0.0);
-  auto actionButtonColor = CL_Vec4(0.0, 0.0, 0.0, 0.7);
-  auto actionButtonWidth = 3.0f;
-  auto actionButtonHeight = 1.0f;
   this->actionButtonBackground = this->uiFactory->createPlanarBackground(
-      "actionButton", &scene, actionButtonColor, actionButtonPosition,
-      actionButtonRotation, actionButtonWidth, actionButtonHeight);
+      "actionButton", &scene, ACTION_BUTTON_COLOR, ACTION_BUTTON_POSITION,
+      ACTION_BUTTON_ROTATION, ACTION_BUTTON_WIDTH, ACTION_BUTTON_HEIGHT);
 
   // action button text position & orientation is relative to the actionButton
   // planar background
-  auto actionTextPosition = CL_Vec3(-1.0, -0.2, 0.001);
-  auto actionTextRotation = CL_Vec3(0.0, 0.0, 0.0);
   std::unique_ptr<TextElement> actionButtonElement =
       this->uiFactory->createTextElement(
           "actionButtonElement", fontStore, &textStyle, this->actionButtonText,
-          actionTextPosition, actionTextRotation, &scene);
+          ACTION_TEXT_POSITION, ACTION_TEXT_ROTATION, &scene);
   this->actionButtonBackground->addChild("child1",
                                          std::move(actionButtonElement));
 
   // Close Button Intialization
-  auto closeButtonPosition = CL_Vec3(5.1, 0.0, -15.5);
-  auto closeButtonRotation = CL_Vec3(0.0, 0.0, 0.0);
-  auto closeButtonColor = CL_Vec4(0.0, 0.0, 0.0, 0.7);
-  auto closeButtonWidth = 3.0f;
-  auto closeButtonHeight = 1.0f;
   this->closeButtonBackground = this->uiFactory->createPlanarBackground(
-      "closeButton", &scene, closeButtonColor, closeButtonPosition,
-      closeButtonRotation, closeButtonWidth, closeButtonHeight);
+      "closeButton", &scene, CLOSE_BUTTON_COLOR, CLOSE_BUTTON_POSITION,
+      CLOSE_BUTTON_ROTATION, CLOSE_BUTTON_WIDTH, CLOSE_BUTTON_HEIGHT);
 
   // close button text position & orientation is relative to the actionButton
   // planar background
-  auto closeTextPosition = CL_Vec3(-0.5, -0.2, 0.001);
-  auto closeTextRotation = CL_Vec3(0.0, 0.0, 0.0);
   std::unique_ptr<TextElement> closeButtonElement =
       this->uiFactory->createTextElement(
           "closeButtonElement", fontStore, &textStyle, this->closeButtonText,
-          closeTextPosition, closeTextRotation, &scene);
+          CLOSE_TEXT_POSITION, CLOSE_TEXT_ROTATION, &scene);
   this->closeButtonBackground->addChild("child2",
                                         std::move(closeButtonElement));
 
@@ -79,33 +65,26 @@ void Buttons::initialize(Scene &scene, TransformTree &gazeTransformTarget) {
       this->eventGazeListenerFactory->createCloseButtonListener();
 
   // gaze detectors for action and close button
-  auto actionButtonGazeDetectorOrigin = CL_Vec3(0.0f, 0.0f, 0.0f);
-  auto actionButtonGazeDetectorLookAt = CL_Vec3(0.0f, 0.0f, -1.0f);
-  auto actionButtonGazeDetectorLengthX = 3.0f;
-  auto actionButtonGazeDetectorLengthY = 1.0f;
-  auto actionButtonGazeDetectorLengthZ = 0.00001f;
   std::unique_ptr<IComponent> actionButtonGazeDetector =
       this->gazeDetectorFactory->createGazeDetectorBox(
           this->actionButtonText, &gazeTransformTarget, transformActionButton,
           actionButtonListener.get(), gazeDetectorContainer.get(),
-          actionButtonGazeDetectorOrigin, actionButtonGazeDetectorLookAt,
-          actionButtonGazeDetectorLengthX, actionButtonGazeDetectorLengthY,
-          actionButtonGazeDetectorLengthZ);
+          ACTION_BUTTON_GAZE_DETECTOR_ORIGIN,
+          ACTION_BUTTON_GAZE_DETECTOR_LOOK_AT,
+          ACTION_BUTTON_GAZE_DETECTOR_LENGTH_X,
+          ACTION_BUTTON_GAZE_DETECTOR_LENGTH_Y,
+          ACTION_BUTTON_GAZE_DETECTOR_LENGTH_Z);
   actionButtonModel->getComponentList().addComponent(
       std::move(actionButtonGazeDetector));
 
-  auto closeButtonGazeDetectorOrigin = CL_Vec3(0.0f, 0.0f, 0.0f);
-  auto closeButtonGazeDetectorLookAt = CL_Vec3(0.0f, 0.0f, -1.0f);
-  auto closeButtonGazeDetectorLengthX = 3.0f;
-  auto closeButtonGazeDetectorLengthY = 1.0f;
-  auto closeButtonGazeDetectorLengthZ = 0.00001f;
   std::unique_ptr<IComponent> closeButtonGazeDetector =
       this->gazeDetectorFactory->createGazeDetectorBox(
           this->closeButtonText, &gazeTransformTarget, transformCloseButton,
           closeButtonListener.get(), gazeDetectorContainer.get(),
-          closeButtonGazeDetectorOrigin, closeButtonGazeDetectorLookAt,
-          closeButtonGazeDetectorLengthX, closeButtonGazeDetectorLengthY,
-          closeButtonGazeDetectorLengthZ);
+          CLOSE_BUTTON_GAZE_DETECTOR_ORIGIN, CLOSE_BUTTON_GAZE_DETECTOR_LOOK_AT,
+          CLOSE_BUTTON_GAZE_DETECTOR_LENGTH_X,
+          CLOSE_BUTTON_GAZE_DETECTOR_LENGTH_Y,
+          CLOSE_BUTTON_GAZE_DETECTOR_LENGTH_Z);
   closeButtonModel->getComponentList().addComponent(
       std::move(closeButtonGazeDetector));
 }

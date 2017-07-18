@@ -10,6 +10,10 @@
 #include <image360/Image360EventKeyPressListener.h>
 #include <image360/Image360EventPassiveMouseMotionListener.h>
 
+// todo :
+// 1. clean up event list
+// 2. implement component interface
+
 namespace cl {
 Image360::Image360(
     std::unique_ptr<IRenderer> renderer,
@@ -60,17 +64,18 @@ void Image360::start() {
 void Image360::initialize() {
   std::unique_ptr<Camera> camera;
 
-  scene = sceneFactory->create("Image360Scene");
+  this->scene = sceneFactory->create("Image360Scene");
   assert(scene != nullptr);
-  scene->setBackgroundColor(CL_Vec4(0.0f, 0.0f, 0.4f, 0.0f));
-  camera = cameraFactory->create("camera", scene.get());
+
+  this->scene->setBackgroundColor(SCENE_BACKGROUND_COLOR);
+  camera = this->cameraFactory->create("camera", scene.get());
   assert(camera != nullptr);
-  camera->setAspect(1.5f);
-  camera->setFarPlane(1000.0f);
-  camera->setFov(1.75f);
-  camera->setNearPlane(0.1f);
+  camera->setAspect(ASPECT_RATIO);
+  camera->setFarPlane(FAR_PLANE);
+  camera->setFov(FOV);
+  camera->setNearPlane(NEAR_PLANE);
   this->camera = camera.get();
-  scene->addToScene(std::move(camera));
+  this->scene->addToScene(std::move(camera));
 
   // camera transforms
   std::unique_ptr<TransformTreeCamera> transformTreeCameraUptr =
@@ -81,12 +86,12 @@ void Image360::initialize() {
   TransformTreeCamera *transformTreeCamera =
       (TransformTreeCamera *)this->camera->getComponentList().getComponent(
           "transformTree");
-  transformTreeCamera->setLocalPosition(CL_Vec3(0.0f, 0.0f, 0.0f));
-  transformTreeCamera->setLocalRotation(CL_Vec3(0.0f, 0.0f, 0.0f));
+  transformTreeCamera->setLocalPosition(CAMERA_POSITION);
+  transformTreeCamera->setLocalRotation(CAMERA_ROTATION);
 
   // Font store Intialization
-  this->fontStore =
-      uiFactory->createFontStore(scene.get(), this->fontFolderPath.c_str());
+  this->fontStore = uiFactory->createFontStore(this->scene.get(),
+                                               this->fontFolderPath.c_str());
 
   this->stereoSphere = std::unique_ptr<StereoSphere>(new StereoSphere(
       this->loggerFactory, this->modelFactory.get(),
@@ -140,13 +145,12 @@ void Image360::initUIButtons() {
 
 void Image360::initCameraReticle() {
   // create a reticle attached to the main camera
-  auto reticleColor = CL_Vec4(0.0, 1.0, 0.0, 1.0);
 
   TransformTreeCamera *transformTreeCamera =
       (TransformTreeCamera *)this->camera->getComponentList().getComponent(
           "transformTree");
   this->reticle = this->uiFactory->createReticle(
-      "reticle", scene.get(), transformTreeCamera, reticleColor);
+      "reticle", scene.get(), transformTreeCamera, CAMERA_RETICLE_COLOR);
   this->gazeTransformTarget = transformTreeCamera;
 }
 
@@ -168,14 +172,9 @@ void Image360::initControllerReticle() {
 
 void Image360::initFadeScreen() {
   // fade screen initialization
-  auto fadeScreenPosition = CL_Vec3(0.0, 0.0, -2.0);
-  auto fadeScreenRotation = CL_Vec3(0.0, 0.0, 0.0);
-  auto fadeScreenColor =
-      CL_Vec4(0.0, 0.0, 0.0, 0.0);  // change to 1.0 for start
-
   this->fadeScreen = uiFactory->createFadeScreen(
-      "fadeScreen", scene.get(), fadeScreenColor, fadeScreenPosition,
-      fadeScreenRotation, 20.0, 20.0);
+      "fadeScreen", scene.get(), FADE_SCREEN_COLOR, FADE_SCREEN_POSITION,
+      FADE_SCREEN_ROTATION, FADE_SCREEN_WIDTH, FADE_SCREEN_HEIGHT);
   TransformTreeCamera *transformTreeCamera =
       (TransformTreeCamera *)this->camera->getComponentList().getComponent(
           "transformTree");
@@ -189,20 +188,20 @@ void Image360::update() { renderer->update(); }
 void Image360::drawInit() {
   if (this->fadeStarted) {
     if (this->fadeScreen != nullptr) {
-      this->fadeScreen->setColor(CL_Vec4(0.0, 0.0, 0.0, this->alphaFade));
-      if (this->alphaFade < 1.0) {
-        this->alphaFade += this->fadeSpeed;
+      this->fadeScreen->setColor(CL_Vec4(0.0, 0.0, 0.0, this->FADE_ALPHA));
+      if (this->FADE_ALPHA < 1.0) {
+        this->FADE_ALPHA += this->FADE_SPEED;
       } else {
         this->fadeComplete = true;
       }
     } else {
       this->fadeComplete = true;
     }
-  } else if (this->alphaFade > 0.0f && this->alphaFade <= 1.0f) {
+  } else if (this->FADE_ALPHA > 0.0f && this->FADE_ALPHA <= 1.0f) {
     if (this->fadeScreen != nullptr) {
-      this->fadeScreen->setColor(CL_Vec4(0.0, 0.0, 0.0, this->alphaFade));
+      this->fadeScreen->setColor(CL_Vec4(0.0, 0.0, 0.0, this->FADE_ALPHA));
     }
-    this->alphaFade -= this->fadeSpeed / 1.5;
+    this->FADE_ALPHA -= this->FADE_SPEED / 1.5;
   }
 
   while (!eventQueue->empty()) {

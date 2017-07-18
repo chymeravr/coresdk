@@ -178,8 +178,6 @@ class Image360 {
   std::unique_ptr<FadeScreen> fadeScreen;
   bool fadeStarted = false;
   bool fadeComplete = false;
-  CL_GLfloat alphaFade = 1.0f;
-  CL_GLfloat fadeSpeed = 0.01f;
 
   // Reticle component
   std::unique_ptr<Reticle> reticle;
@@ -190,6 +188,28 @@ class Image360 {
 
   // TODO: maybe this should be called the gazeTransformSource??
   TransformTree *gazeTransformTarget;
+
+  // CONSTANTS
+  CL_Vec4 SCENE_BACKGROUND_COLOR = CL_Vec4(0.0f, 0.0f, 0.4f, 0.0f);
+  CL_Vec4 CAMERA_RETICLE_COLOR = CL_Vec4(0.0f, 1.0f, 0.0f, 1.0f);
+
+  // Initial values of camera params ~ hmds provide these
+  // through their apis and should be reset to use them as such
+  float ASPECT_RATIO = 1.5f;
+  float NEAR_PLANE = 0.1f;
+  float FAR_PLANE = 1000.0f;
+  float FOV = 1.75f;
+  CL_Vec3 CAMERA_POSITION = CL_Vec3(0.0f, 0.0f, 0.0f);
+  CL_Vec3 CAMERA_ROTATION = CL_Vec3(0.0f, 0.0f, 0.0f);
+
+  // FadeScreen Params
+  CL_Vec3 FADE_SCREEN_POSITION = CL_Vec3(0.0f, 0.0f, -2.0f);
+  CL_Vec3 FADE_SCREEN_ROTATION = CL_Vec3(0.0f, 0.0f, 0.0f);
+  CL_Vec4 FADE_SCREEN_COLOR = CL_Vec4(0.0f, 0.0f, 0.0f, 0.0f);
+  float FADE_SCREEN_WIDTH = 20.0f;
+  float FADE_SCREEN_HEIGHT = 20.0f;
+  CL_GLfloat FADE_ALPHA = 1.0f;
+  CL_GLfloat FADE_SPEED = 0.01f;
 };
 }
 
