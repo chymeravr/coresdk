@@ -7,7 +7,7 @@
 namespace cl{
 	class CameraGL : public Camera, public IRenderable {
 	public:
-		CameraGL(const std::string &sceneId, ILoggerFactory *loggerFactory, Scene *scene);
+		CameraGL(const std::string &sceneId, ILoggerFactory *loggerFactory);
 		IRenderable *getRenderable();
 		bool initialize();
 		void draw();

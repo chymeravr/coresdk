@@ -28,15 +28,18 @@
 // utils
 #include <coreEngine/util/ILogger.h>
 #include <coreEngine/util/ILoggerFactory.h>
+
+#include <image360/ApplicationObject.h>
 #include <image360/Constants.h>
 
 namespace cl {
-class MonoSphere {
+class MonoSphere : public ApplicationObject {
  public:
-  MonoSphere(ILoggerFactory *loggerFactory, IModelFactory *modelFactory,
-             IDiffuseTextureFactory *diffuseTextureFactory,
-             ITransformTreeFactory *transformTreeFactory);
-  void initialize(Scene *scene, std::unique_ptr<Image> textureImage);
+  MonoSphere(ILoggerFactory &loggerFactory, IModelFactory &modelFactory,
+             IDiffuseTextureFactory &diffuseTextureFactory,
+             ITransformTreeFactory &transformTreeFactory,
+             std::unique_ptr<Image> textureImage);
+  void initialize(Scene &scene);
 
  private:
   // rendering components
@@ -44,7 +47,7 @@ class MonoSphere {
   Material *monoSphereMaterial;
   Texture *monoSphereImageTexture;
   Model *monoSphereImageContainer;
-
+  std::unique_ptr<Image> textureImage;
   // logging util
   std::unique_ptr<ILogger> logger;
 
@@ -52,6 +55,12 @@ class MonoSphere {
   IModelFactory *modelFactory;
   IDiffuseTextureFactory *diffuseTextureFactory;
   ITransformTreeFactory *transformTreeFactory;
+
+  // CONSTANTS
+  CL_Vec3 SPHERE_POSITION = CL_Vec3(0.0f, 0.0f, 0.0f);
+  CL_Vec3 SPHERE_SCALE = CL_Vec3(100.0f, 100.0f, 100.0f);
+
+  int N_SUBDIVISION_TIMES = 5;
 };
 }
 

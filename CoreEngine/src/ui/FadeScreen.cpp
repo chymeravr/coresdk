@@ -1,13 +1,12 @@
-#include <coreEngine/ui/FadeScreen.h>
+#include <coreEngine/ui/FadePlanarBackground.h>
 
 namespace cl {
-FadeScreen::FadeScreen(std::string id, IModelFactory *modelFactory,
-                       IUniformFadeColorFactory *uniformFadeColorFactory,
-                       Scene *scene, CL_Vec4 color,
-                       ITransformTreeFactory *transformTreeFactory,
-                       CL_Vec3 &localPosition, CL_Vec3 &localRotation,
-                       float width, float height,
-                       ILoggerFactory *loggerFactory) {
+FadePlanarBackground::FadePlanarBackground(
+    std::string id, IModelFactory *modelFactory,
+    IUniformFadeColorFactory *uniformFadeColorFactory, Scene *scene,
+    CL_Vec4 color, ITransformTreeFactory *transformTreeFactory,
+    CL_Vec3 &localPosition, CL_Vec3 &localRotation, float width, float height,
+    ILoggerFactory *loggerFactory) {
   std::string modelId;
   Model *model = nullptr;
 
@@ -53,5 +52,7 @@ FadeScreen::FadeScreen(std::string id, IModelFactory *modelFactory,
   componentList.addComponent(std::move(transformTreeModel));
 }
 
-void FadeScreen::setColor(CL_Vec4 color) { this->material->setColor(color); }
+void FadePlanarBackground::setColor(CL_Vec4 color) {
+  this->material->setColor(color);
+}
 }

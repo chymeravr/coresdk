@@ -29,15 +29,18 @@
 // utils
 #include <coreEngine/util/ILogger.h>
 #include <coreEngine/util/ILoggerFactory.h>
+
+#include <image360/ApplicationObject.h>
 #include <image360/Constants.h>
 
 namespace cl {
-class MonoCubeMap {
+class MonoCubeMap : public ApplicationObject {
  public:
-  MonoCubeMap(ILoggerFactory *loggerFactory, IModelFactory *modelFactory,
-              IDiffuseTextureCubeMapFactory *diffuseTextureCubeMapFactory,
-              ITransformTreeFactory *transformTreeFactory);
-  void initialize(Scene *scene, std::unique_ptr<Image> textureImage);
+  MonoCubeMap(ILoggerFactory &loggerFactory, IModelFactory &modelFactory,
+              IDiffuseTextureCubeMapFactory &diffuseTextureCubeMapFactory,
+              ITransformTreeFactory &transformTreeFactory,
+              std::unique_ptr<Image> textureImage);
+  void initialize(Scene &scene);
 
  private:
   // mono rendering component
@@ -45,6 +48,7 @@ class MonoCubeMap {
   Material *monoCubeMapMaterial;
   Texture *monoCubeMapImageTexture;
   Model *monoCubeMapImageContainer;
+  std::unique_ptr<Image> textureImage;
 
   // logging util
   std::unique_ptr<ILogger> logger;
@@ -53,6 +57,10 @@ class MonoCubeMap {
   IModelFactory *modelFactory;
   IDiffuseTextureCubeMapFactory *diffuseTextureCubeMapFactory;
   ITransformTreeFactory *transformTreeFactory;
+
+  // CONSTANTS
+  CL_Vec3 CUBE_POSITION = CL_Vec3(0.0f, 0.0f, 0.0f);
+  CL_Vec3 CUBE_SCALE = CL_Vec3(100.0f, 100.0f, 100.0f);
 
   void initCubeMapTexture(Scene *scene, Image *rightImage, Image *leftImage,
                           Image *topImage, Image *bottomImage,

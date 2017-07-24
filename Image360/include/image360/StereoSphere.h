@@ -31,15 +31,19 @@
 #include <coreEngine/util/ILoggerFactory.h>
 #include <image360/Constants.h>
 
+#include <image360/ApplicationObject.h>
+#include <image360/StereoObject.h>
+
 namespace cl {
-class StereoSphere {
+class StereoSphere : public ApplicationObject, public StereoObject {
  public:
-  StereoSphere(ILoggerFactory *loggerFactory, IModelFactory *modelFactory,
-               IDiffuseTextureFactory *diffuseTextureFactory,
-               ITransformTreeFactory *transformTreeFactory);
-  void initialize(Scene *scene, std::unique_ptr<Image> textureImage);
-  void drawLeft();
-  void drawRight();
+  StereoSphere(ILoggerFactory &loggerFactory, IModelFactory &modelFactory,
+               IDiffuseTextureFactory &diffuseTextureFactory,
+               ITransformTreeFactory &transformTreeFactory,
+               std::unique_ptr<Image> textureImage);
+  void initialize(Scene &scene);
+  void preDrawLeft();
+  void preDrawRight();
 
  private:
   // stereo rendering component
@@ -47,6 +51,7 @@ class StereoSphere {
   Material *stereoMaterial;
   Texture *stereoImageTexture;
   Model *stereoImageContainer[2];  // 0->left, 1->right
+  std::unique_ptr<Image> textureImage;
 
   // logging util
   std::unique_ptr<ILogger> logger;
@@ -55,6 +60,13 @@ class StereoSphere {
   IModelFactory *modelFactory;
   IDiffuseTextureFactory *diffuseTextureFactory;
   ITransformTreeFactory *transformTreeFactory;
+
+  // CONSTANTS
+  CL_Vec3 LEFT_SPHERE_POSITION = CL_Vec3(0.0f, 0.0f, 0.0f);
+  CL_Vec3 LEFT_SPHERE_SCALE = CL_Vec3(100.0f, 100.0f, 100.0f);
+
+  CL_Vec3 RIGHT_SPHERE_POSITION = CL_Vec3(0.0f, 0.0f, 0.0f);
+  CL_Vec3 RIGHT_SPHERE_SCALE = CL_Vec3(100.0f, 100.0f, 100.0f);
 };
 }
 

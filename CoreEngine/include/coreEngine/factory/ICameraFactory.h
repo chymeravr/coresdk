@@ -7,7 +7,7 @@
 namespace cl{
 	class ICameraFactory{
 	public:
-		virtual std::unique_ptr<Camera> create(const std::string &sceneId, Scene *scene) = 0;
+		virtual std::unique_ptr<Camera> create(const std::string &sceneId) = 0;
 	};
 }
 

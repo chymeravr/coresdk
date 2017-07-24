@@ -12,8 +12,8 @@ namespace cl {
 class Camera : public IScenable, public Relation {
  public:
   virtual ~Camera() {}
-  Camera(const std::string &sceneId, ILoggerFactory *loggerFactory,
-         Scene *scene);
+  Camera(const std::string &sceneId, ILoggerFactory *loggerFactory);
+         //Scene *scene);
   virtual IRenderable *getRenderable() = 0;
   std::string getSceneId();
   std::string getType();

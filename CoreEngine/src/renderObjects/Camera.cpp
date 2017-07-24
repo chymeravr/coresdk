@@ -1,9 +1,9 @@
 #include <coreEngine/renderObjects/Camera.h>
 
 namespace cl{
-	Camera::Camera(const std::string &sceneId, ILoggerFactory *loggerFactory, Scene *scene) : Relation(loggerFactory){
+	Camera::Camera(const std::string &sceneId, ILoggerFactory *loggerFactory) : Relation(loggerFactory){
 		this->sceneId = sceneId;
-		this->createBiRelation(scene);
+		//this->createBiRelation(scene);
 	}
 
 	std::string Camera::getSceneId(){

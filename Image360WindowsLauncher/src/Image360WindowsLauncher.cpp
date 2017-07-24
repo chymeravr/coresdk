@@ -21,9 +21,12 @@
 #include <coreEngine/components/gazeDetector/GazeDetectorFactory.h>
 #include <coreEngine/components/transformTree/TransformTreeFactory.h>
 #include <coreEngine/events/EventKeyPress.h>
-#include <coreEngine/events/EventKeyPressListener.h>
+//#include <coreEngine/events/EventKeyPressListener.h>
 #include <coreEngine/events/EventPassiveMouseMotion.h>
+#include <coreEngine/events/EventMouse.h>
 #include <coreEngine/events/EventQueue.h>
+#include <coreEngine/events/EventCloseApplication.h>
+
 #include <coreEngine/modifier/ImageBMPLoader.h>
 #include <coreEngine/modifier/ImageJPEGLoader.h>
 #include <coreEngine/modifier/ImagePNGLoader.h>
@@ -43,6 +46,7 @@
 #include <windowsImplementation/GazeListenerFactoryWindows.h>
 #include <windowsImplementation/LoggerFactoryWindows.h>
 #include <windowsImplementation/MutexLockWindows.h>
+#include <windowsImplementation/GlfwEventCloseApplicationListener.h>
 
 // Windows Renderer
 #include <renderer/RendererNoHMD.h>
@@ -50,8 +54,20 @@
 
 // Application Dependency
 #include <image360/Image360.h>
+
+#include <image360/FadeScreen.h>
+#include <image360/Buttons.h>
+#include <image360/Constants.h>
+#include <image360/Controller.h>
+#include <image360/FPSCamera.h>
+#include <image360/MonoCubeMap.h>
+#include <image360/MonoSphere.h>
+#include <image360/StereoSphere.h>
+
 #include <image360/Image360EventKeyPressListener.h>
 #include <image360/Image360EventPassiveMouseMotionListener.h>
+#include <image360/Image360EventMouseListener.h>
+#include <image360/Image360EventBeginFade.h>
 
 //  Windowing Library
 #include <GLFW/glfw3.h>
@@ -70,12 +86,53 @@ https://msdn.microsoft.com/en-us/library/windows/desktop/ms686927(v=vs.85).aspx
 Glut tutorial http://www.lighthouse3d.com/tutorials/glut-tutorial/
 */
 
+// Application Components
+std::unique_ptr<Controller> controller;
+std::unique_ptr<StereoSphere> stereoSphere;
+std::unique_ptr<MonoSphere> monoSphere;
+std::unique_ptr<MonoCubeMap> monoCubeMap;
+std::unique_ptr<Buttons> buttons;
+std::unique_ptr<FPSCamera> fpsCamera;
+std::unique_ptr<FadeScreen> fadeScreen;
+
+std::unique_ptr<GazeDetectorContainer> gazeDetectorContainer;
+
 std::unique_ptr<Image360> application;
 std::unique_ptr<ILogger> logger;
 std::unique_ptr<IEventQueue> eventQueue = nullptr;
 std::unique_ptr<ILoggerFactory> loggerFactory(new LoggerFactoryWindows());
+
 std::unique_ptr<EventKeyPressListener> eventKeyPressListener;
 std::unique_ptr<EventPassiveMouseMotionListener> eventPassiveMouseMotionListener;
+std::unique_ptr<EventMouseListener> eventMouseListener;
+
+std::unique_ptr<EventCloseApplication> eventCloseApplication;
+std::unique_ptr<EventCloseApplicationListener> eventCloseApplicationListener;
+std::unique_ptr<IEvent> image360EventBeginFade;
+
+int mouse_button_wrapper(int button){
+	switch (button){
+	case GLFW_MOUSE_BUTTON_LEFT:
+		return cl::LEFT_BUTTON;
+	case GLFW_MOUSE_BUTTON_MIDDLE:
+		return cl::MIDDLE_BUTTON;
+	case GLFW_MOUSE_BUTTON_RIGHT:
+		return cl::RIGHT_BUTTON;
+	default:
+		return -1;
+	}
+}
+
+int mouse_action_wrapper(int action){
+	switch (action){
+	case GLFW_PRESS:
+		return cl::MOUSE_BUTTON_DOWN;
+	case GLFW_RELEASE:
+		return cl::MOUSE_BUTTON_UP;
+	default:
+		return -1;
+	}
+}
 
 // enum APPLICATION_MODE { MONO, STEREO };
 
@@ -83,7 +140,8 @@ void key_callback(GLFWwindow* window, int key, int scancode, int action,
                   int mode) {
   std::cout << "Key Pressed " << key << std::endl;
 
-  std::cout << application->getButtons()->getActionButtonText() << std::endl;
+  // todo - use buttons directly here
+  //std::cout << application->getButtons()->getActionButtonText() << std::endl;
   if (key == GLFW_KEY_ESCAPE && action == GLFW_PRESS) {
     glfwSetWindowShouldClose(window, GL_TRUE);
   } else {
@@ -107,15 +165,23 @@ void mouse_pos_callback(GLFWwindow* window, double mouseXPos,
 void mouse_button_callback(GLFWwindow* window, int button, int action,
                            int mods) {
   std::cout << "Mouse Clicked " << std::endl;
-  if (button == GLFW_MOUSE_BUTTON_LEFT && action == GLFW_PRESS) {
-    if (application->getActionButtonListener()->inFocus()) {
-      std::cout << "Action Button Pressed" << std::endl;
-    } else if (application->getCloseButtonListener()->inFocus()) {
-      std::cout << "Close Button Pressed" << std::endl;
-      application->beginFade();
-      // glfwSetWindowShouldClose(window, GL_TRUE);
-    }
-  }
+
+  // todo - this kind of testing should be handled by the application
+  auto image360_button = (cl::MOUSE_BUTTON)mouse_button_wrapper(button);
+  auto image360_action = (cl::MOUSE_BUTTON_STATE)mouse_action_wrapper(action);
+  
+  std::unique_ptr<IEvent> mouseButtonEvent(new EventMouse(
+	  eventMouseListener.get(), image360_button, image360_action));
+  eventQueue->push(std::move(mouseButtonEvent));
+  //if (button == GLFW_MOUSE_BUTTON_LEFT && action == GLFW_PRESS) {
+  //  if (application->getActionButtonListener()->inFocus()) {
+  //    std::cout << "Action Button Pressed" << std::endl;
+  //  } else if (application->getCloseButtonListener()->inFocus()) {
+  //    std::cout << "Close Button Pressed" << std::endl;
+  //    application->beginFade();
+  //    // glfwSetWindowShouldClose(window, GL_TRUE);
+  //  }
+  //}
 }
 
 // Window dimensions
@@ -150,13 +216,17 @@ int _tmain(int argc, _TCHAR** argv) {
   // Define the viewport dimensions
   int width, height;
   glfwGetFramebufferSize(window, &width, &height);
-  // glViewport(0, 0, width, height);
-
   
-
   cout << "TestAppWindowsLauncer" << endl;
   logger = loggerFactory->createLogger("TestAppWindowsLauncher: ");
   logger->log(LOG_DEBUG, "Testing logger.");
+  
+
+  eventCloseApplicationListener = std::unique_ptr<EventCloseApplicationListener>(
+	  new GlfwEventCloseApplicationListener(*window));
+  
+  eventCloseApplication = std::unique_ptr<EventCloseApplication>(new EventCloseApplication(eventCloseApplicationListener.get()));
+
   std::unique_ptr<ISceneFactory> sceneFactory(
       new SceneGLFactory(loggerFactory.get()));
   std::unique_ptr<IModelFactory> modelFactory(
@@ -202,74 +272,107 @@ int _tmain(int argc, _TCHAR** argv) {
       "\\Debug\\fonts\\arial.ttf";
   // std::string fontFilePath = "fonts/arial.ttf";
 
-  IMAGE_MODE appMode = STEREO;
+  gazeDetectorContainer = gazeDetectorFactory->createGazeDetectorContainer();
+
+  ImageJPEGLoader imageJPEGLoader(logger.get());
+  ImagePNGLoader imagePNGLoader(logger.get());
+
+  std::unique_ptr<Image> laserBeamTexture =
+	  imagePNGLoader.loadImage(
+	  "C:\\Users\\robin_"
+	  "chimera\\SDK\\Projects\\VisualStudio\\Image360WindowsLa"
+	  "uncher\\Debug\\laserTexture.png");
+
+  std::unique_ptr<Image> controllerTexture =
+	  imagePNGLoader.loadImage(
+	  "C:\\Users\\robin_"
+	  "chimera\\SDK\\Projects\\VisualStudio\\Image360WindowsLa"
+	  "uncher\\Debug\\ddcontroller_idle.png");
+
+  std::string controllerModelPath("C:\\Users\\robin_"
+	  "chimera\\Documents\\SDK\\Projects\\VisualStudio\\Image360WindowsLa"
+	  "uncher\\Debug\\ddController.obj");
+
+  std::vector<std::unique_ptr<Image> > stereoTextureImages;
+
+  stereoTextureImages.push_back(imageJPEGLoader.loadImage(
+	  "C:\\Users\\robin_"
+	  "chimera\\SDK\\Projects\\VisualStudio\\Image360WindowsLauncher\\Debug\\"
+	  "360images\\Witcher-BoatSunset-SmartPhone-360-Stereo.jpg"));
+
+  std::vector<std::unique_ptr<Image> > monoCubeTextureImages;
+
+  monoCubeTextureImages.push_back(imageJPEGLoader.loadImage(
+	  "C:\\Users\\robin_"
+	  "chimera\\SDK\\Projects\\VisualStudio\\Image360WindowsLa"
+	  "uncher\\Debug\\360images\\cubemap_desert.jpg"));
+
+  std::vector<std::unique_ptr<Image> > monoSphereTextureImages;
+
+  monoSphereTextureImages.push_back(imageJPEGLoader.loadImage(
+	  "C:\\Users\\robin_"
+	  "chimera\\SDK\\Projects\\VisualStudio\\Image360WindowsLa"
+	  "uncher\\Debug\\360images\\equirectangular_desert.jpg"));
+
+  
+
+  IMAGE_MODE appMode = MONO;
 
   if (appMode == STEREO) {
     std::unique_ptr<IRenderer> renderer(new RendererNoHMDStereo());
+
+	controller = std::unique_ptr<Controller>(new Controller(*loggerFactory, *modelFactory,
+		*transformTreeFactory, *diffuseTextureFactory, *uiFactory,
+		std::move(controllerTexture), std::move(laserBeamTexture),
+		controllerModelPath));
+
+	stereoSphere = std::unique_ptr<StereoSphere>(new StereoSphere(
+		*loggerFactory, *modelFactory,
+		*diffuseTextureFactory, *transformTreeFactory,
+		std::move(stereoTextureImages[0])));
+
+	fpsCamera = std::unique_ptr<FPSCamera>(new FPSCamera(
+		*loggerFactory, *transformTreeFactory, *cameraFactory
+		));
+	
     application = std::unique_ptr<Image360>(
-        new Image360(std::move(renderer), std::move(sceneFactory),
-                     std::move(modelFactory), std::move(diffuseTextureFactory),
-                     std::move(diffuseTextureCubeMapFactory),
-                     std::move(transformTreeFactory), std::move(cameraFactory),
-                     eventQueue.get(), loggerFactory.get(),
-                     std::move(uiFactory), std::move(gazeDetectorFactory),
-                     std::move(eventGazeListenerFactory), fontFilePath));
+        new Image360(std::move(renderer), *sceneFactory,
+                     *transformTreeFactory, *cameraFactory,
+                     *eventQueue, *loggerFactory,
+					 *uiFactory, *gazeDetectorContainer,
+					 *eventGazeListenerFactory));
+
+	//application->setController(std::move(controller));
+	//application->setStereoSphere(std::move(stereoSphere));
 
 	eventKeyPressListener = std::unique_ptr<EventKeyPressListener>(
 		new Image360EventKeyPressListener(application.get(), loggerFactory.get()));
 
 	eventPassiveMouseMotionListener = std::unique_ptr<EventPassiveMouseMotionListener>(
-		new Image360EventPassiveMouseMotionListener(application.get(), loggerFactory.get()));
+		new Image360EventPassiveMouseMotionListener(*fpsCamera, *loggerFactory));
 
+	eventMouseListener = std::unique_ptr<EventMouseListener>(
+		new Image360EventMouseListener(*buttons, *loggerFactory.get()));
+	
     application->start();
-
-    ImageJPEGLoader imageJPEGLoader(logger.get());
-    ImagePNGLoader imagePNGLoader(logger.get());
-
-    std::vector<std::unique_ptr<Image> > textureImages;
-
-    textureImages.push_back(imageJPEGLoader.loadImage(
-        "C:\\Users\\robin_"
-        "chimera\\SDK\\Projects\\VisualStudio\\Image360WindowsLauncher\\Debug\\"
-        "360images\\Witcher-BoatSunset-SmartPhone-360-Stereo.jpg"));
-    
-	std::unique_ptr<Image> laserBeamTexture = 
-		imagePNGLoader.loadImage(
-			"C:\\Users\\robin_"
-            "chimera\\SDK\\Projects\\VisualStudio\\Image360WindowsLa"
-			"uncher\\Debug\\laserTexture.png");
-    
-	std::unique_ptr<Image> controllerTexture =
-		imagePNGLoader.loadImage(
-		"C:\\Users\\robin_"
-		"chimera\\SDK\\Projects\\VisualStudio\\Image360WindowsLa"
-		"uncher\\Debug\\ddcontroller_idle.png");
-	//std::unique_ptr<Image> controllerTexture = imageJPEGLoader.loadImage(
- //       "C:\\Users\\robin_"
- //       "chimera\\SDK\\Projects\\VisualStudio\\Image360WindowsLa"
- //       "uncher\\Debug\\ddcontroller_idle.jpg");
 
     application->initialize();
 
-    application->initStereoEquirectangularView(std::move(textureImages[0]));
+    //application->initStereoEquirectangularView();
 
     //application->initCameraReticle();
     
     // application->initFadeScreen();
-    application->initController(
-        std::move(controllerTexture),
-        "C:\\Users\\robin_"
-        "chimera\\Documents\\SDK\\Projects\\VisualStudio\\Image360WindowsLa"
-        "uncher\\Debug\\ddController.obj");
-	application->initControllerLaser(std::move(laserBeamTexture));
-	application->initControllerReticle();
+    // application->initController();
+	//application->initControllerLaser(std::move(laserBeamTexture));
+	//application->initControllerReticle();
 
-	application->initUIButtons();
+	//application->initUIButtons();
     application->initComplete();
 
-	std::cout << application->getButtons()->getActionButtonText() << std::endl;
-	application->getButtons()->setActionButtonText(std::string("Download"));
-	std::cout << application->getButtons()->getActionButtonText() << std::endl;
+	std::cout << buttons->getActionButtonText() << std::endl;
+	buttons->setActionButtonText(std::string("Download"));
+	std::cout << buttons->getActionButtonText() << std::endl;
 
     //// register callbacks
     glfwSetKeyCallback(window, key_callback);
@@ -280,9 +383,10 @@ int _tmain(int argc, _TCHAR** argv) {
     while (!glfwWindowShouldClose(window)) {
       // Check if any events have been activiated (key pressed, mouse moved
       // etc.) and call corresponding response functions
-      if (application->isFadeComplete()) {
+      
+		/*if (fadeScreen->isFadeComplete()) {
         glfwSetWindowShouldClose(window, GL_TRUE);
-      }
+      }*/
       glfwPollEvents();
 
       glViewport(0, 0, width, height);
@@ -315,59 +419,90 @@ int _tmain(int argc, _TCHAR** argv) {
   } else {
     std::unique_ptr<IRenderer> renderer(new RendererNoHMD());
 
+	
+	TEXTURE_MAP_MODE mode = CUBE_MAP_MODE_SINGLE_IMAGE;
+	// EQUIRECTANGULAR_MAP_MODE;  // CUBE_MAP_MODE_SINGLE_IMAGE; // image mode
+
+	controller = std::unique_ptr<Controller>(new Controller(*loggerFactory, *modelFactory,
+		*transformTreeFactory, *diffuseTextureFactory, *uiFactory,
+		std::move(controllerTexture), std::move(laserBeamTexture),
+		controllerModelPath));
+
+	fpsCamera = std::unique_ptr<FPSCamera>(new FPSCamera(
+		*loggerFactory, *transformTreeFactory, *cameraFactory
+		));
+
+	stereoSphere = std::unique_ptr<StereoSphere>(new StereoSphere(
+		     *loggerFactory, *modelFactory,
+		     *diffuseTextureFactory, *transformTreeFactory,
+			 std::move(stereoTextureImages[0])));
+
+	monoSphere = std::unique_ptr<MonoSphere>(new MonoSphere(
+		*loggerFactory, *modelFactory,
+		*diffuseTextureFactory, *transformTreeFactory,
+		std::move(monoSphereTextureImages[0])));
+	
+	monoCubeMap = std::unique_ptr<MonoCubeMap>(new MonoCubeMap(
+		*loggerFactory, *modelFactory, 
+		*diffuseTextureCubeMapFactory, *transformTreeFactory,
+		std::move(monoCubeTextureImages[0])));
+
+	auto gazeTransformSource = fpsCamera->getCameraTransformTree();
+
+	fadeScreen = std::unique_ptr<FadeScreen>(new FadeScreen(
+		*loggerFactory, *uiFactory, *gazeTransformSource, *eventCloseApplicationListener));
+
+	image360EventBeginFade = std::unique_ptr<IEvent>(new Image360EventBeginFade(*fadeScreen, *loggerFactory));
+
+	buttons = std::unique_ptr<Buttons>(new Buttons(
+		*loggerFactory, *uiFactory,
+		*gazeDetectorContainer, *gazeDetectorFactory,
+		*eventGazeListenerFactory,
+		gazeTransformSource, fontFilePath, *image360EventBeginFade));
+
     application = std::unique_ptr<Image360>(
-        new Image360(std::move(renderer), std::move(sceneFactory),
-                     std::move(modelFactory), std::move(diffuseTextureFactory),
-                     std::move(diffuseTextureCubeMapFactory),
-                     std::move(transformTreeFactory), std::move(cameraFactory),
-                     eventQueue.get(), loggerFactory.get(),
-                     std::move(uiFactory), std::move(gazeDetectorFactory),
-                     std::move(eventGazeListenerFactory), fontFilePath));
+        new Image360(std::move(renderer), *sceneFactory,
+                     *transformTreeFactory, *cameraFactory,
+                     *eventQueue, *loggerFactory,
+					 *uiFactory, *gazeDetectorContainer,
+                     *eventGazeListenerFactory));
+
+	
+
+	application->addApplicationObject(monoCubeMap.get());
+	application->addApplicationObject(fpsCamera.get());
+	application->addApplicationObject(buttons.get());
+	application->addApplicationObject(controller.get());
+	application->addApplicationObject(fadeScreen.get());
+
 
 	eventKeyPressListener = std::unique_ptr<EventKeyPressListener>(
 		new Image360EventKeyPressListener(application.get(), loggerFactory.get()));
 
 	eventPassiveMouseMotionListener = std::unique_ptr<EventPassiveMouseMotionListener>(
-		new Image360EventPassiveMouseMotionListener(application.get(), loggerFactory.get()));
+		new Image360EventPassiveMouseMotionListener(*fpsCamera, *loggerFactory));
+
+	eventMouseListener = std::unique_ptr<EventMouseListener>(
+		new Image360EventMouseListener(*buttons, *loggerFactory.get()));
 
     application->start();
 
 	application->initialize();
+	//switch (mode) {
+	//case CUBE_MAP_MODE_SINGLE_IMAGE:
+	//	application->initMonoCubeMapSingleTextureView();
+	//	break;
+	//case EQUIRECTANGULAR_MAP_MODE:
+	//	application->initMonoEquirectangularView();
+	//	break;
+	//default:
+	//	break;
+	//}
 
-    ImageJPEGLoader imageJPEGLoader(logger.get());
-
-    std::vector<std::unique_ptr<Image> > textureImages;
-	TEXTURE_MAP_MODE mode = CUBE_MAP_MODE_SINGLE_IMAGE;
-    // EQUIRECTANGULAR_MAP_MODE;  // CUBE_MAP_MODE_SINGLE_IMAGE; // image mode
-
-    switch (mode) {
-      case CUBE_MAP_MODE_SINGLE_IMAGE:
-        textureImages.push_back(imageJPEGLoader.loadImage(
-            "C:\\Users\\robin_"
-            "chimera\\SDK\\Projects\\VisualStudio\\Image360WindowsLa"
-            "uncher\\Debug\\360images\\cubemap_desert.jpg"));
-		application->initMonoCubeMapSingleTextureView(std::move(textureImages[0]));
-        break;
-      case EQUIRECTANGULAR_MAP_MODE:
-        textureImages.push_back(imageJPEGLoader.loadImage(
-            "C:\\Users\\robin_"
-            "chimera\\SDK\\Projects\\VisualStudio\\Image360WindowsLa"
-            "uncher\\Debug\\360images\\equirectangular_desert.jpg"));
-		application->initMonoEquirectangularView(std::move(textureImages[0]));
-        break;
-      default:
-        break;
-    }
-
-    application->initCameraReticle();
-    application->initUIButtons();
-    application->initFadeScreen();
 	application->initComplete();
 
-	std::cout << application->getButtons()->getActionButtonText() << std::endl;
-	application->getButtons()->setActionButtonText(std::string("Download"));
-	std::cout << application->getButtons()->getActionButtonText() << std::endl;
-
+	buttons->setActionButtonText(std::string("Download"));
+	
     //// register callbacks
     glfwSetKeyCallback(window, key_callback);
     glfwSetMouseButtonCallback(window, mouse_button_callback);
@@ -377,9 +512,9 @@ int _tmain(int argc, _TCHAR** argv) {
     while (!glfwWindowShouldClose(window)) {
       // Check if any events have been activiated (key pressed, mouse moved
       // etc.) and call corresponding response functions
-      if (application->isFadeComplete()) {
+      /*if (fadeScreen->isFadeComplete()) {
         glfwSetWindowShouldClose(window, GL_TRUE);
-      }
+      }*/
       glfwPollEvents();
 
       application->drawInit();

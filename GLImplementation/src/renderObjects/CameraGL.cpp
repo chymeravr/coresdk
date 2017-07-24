@@ -1,7 +1,7 @@
 #include <glImplementation/renderObjects/CameraGL.h>
 
 namespace cl{
-	CameraGL::CameraGL(const std::string &sceneId, ILoggerFactory *loggerFactory, Scene *scene) : Camera(sceneId, loggerFactory, scene){
+	CameraGL::CameraGL(const std::string &sceneId, ILoggerFactory *loggerFactory) : Camera(sceneId, loggerFactory){
 		logger = loggerFactory->createLogger("glImplementation::CameraGL: ");
 	}
 	IRenderable *CameraGL::getRenderable(){

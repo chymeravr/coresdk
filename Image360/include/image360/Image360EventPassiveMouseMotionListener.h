@@ -9,18 +9,20 @@
 #include <coreEngine/events/EventPassiveMouseMotionListener.h>
 #include <coreEngine/util/ILogger.h>
 #include <coreEngine/util/ILoggerFactory.h>
+#include <image360/FPSCamera.h>
 #include <image360/Image360.h>
 
+// this class should probably have a better name
 namespace cl {
 class Image360EventPassiveMouseMotionListener
     : public EventPassiveMouseMotionListener {
  public:
-  Image360EventPassiveMouseMotionListener(Image360 *image360,
-                                          ILoggerFactory *loggerFactory);
+  Image360EventPassiveMouseMotionListener(FPSCamera &fpsCamera,
+                                          ILoggerFactory &loggerFactory);
   void onPassiveMouseMotion(int x, int y);
 
  private:
-  Image360 *image360;
+  FPSCamera *fpsCamera;
   std::unique_ptr<ILogger> logger;
 
   int lastPassiveMousePositionX = -1;

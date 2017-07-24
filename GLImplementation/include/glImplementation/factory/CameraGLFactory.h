@@ -10,8 +10,8 @@ namespace cl{
 		CameraGLFactory(ILoggerFactory *loggerFactory){
 			this->loggerFactory = loggerFactory;
 		}
-		std::unique_ptr<Camera> create(const std::string &sceneId, Scene *scene){
-			return std::unique_ptr<Camera>(new CameraGL(sceneId, loggerFactory, scene));
+		std::unique_ptr<Camera> create(const std::string &sceneId){
+			return std::unique_ptr<Camera>(new CameraGL(sceneId, loggerFactory));
 		}
 	private:
 		ILoggerFactory *loggerFactory;

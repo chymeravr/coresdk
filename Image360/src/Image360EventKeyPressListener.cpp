@@ -14,10 +14,7 @@ Image360EventKeyPressListener::Image360EventKeyPressListener(
 void Image360EventKeyPressListener::onKeyPress(char key, int x, int y) {
   // logger->log(LOG_DEBUG, "Key pressed:" + std::string(1, key));
   logger->log(LOG_DEBUG, "Key pressed:" + std::string(1, key));
-  TransformTreeCamera *transform =
-      (TransformTreeCamera *)this->image360->getCamera()
-          ->getComponentList()
-          .getComponent("transformTree");
+  TransformTree *transform = nullptr;//this->image360->getFPSCamera()->getCameraTransformTree();
   // TODO : Error Handling
   CL_Vec3 rot = transform->getLocalRotation();
   CL_Vec3 pos = transform->getLocalPosition();

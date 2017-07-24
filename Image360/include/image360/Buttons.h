@@ -4,6 +4,8 @@
 #include <coreEngine/components/gazeDetector/EventGazeListener.h>
 #include <coreEngine/components/gazeDetector/GazeDetectorFactory.h>
 #include <coreEngine/components/transformTree/ITransformTreeFactory.h>
+#include <coreEngine/events/EventCloseApplication.h>
+#include <coreEngine/events/EventCloseApplicationListener.h>
 #include <coreEngine/factory/IEventGazeListenerFactory.h>
 #include <coreEngine/renderObjects/Scene.h>
 #include <coreEngine/ui/FontStore.h>
@@ -13,13 +15,20 @@
 #include <coreEngine/util/ILogger.h>
 #include <coreEngine/util/ILoggerFactory.h>
 
+#include <image360/ApplicationObject.h>
+
+// todo - separate out different buttons for different purposes.
+//
 namespace cl {
-class Buttons {
+class Buttons : public ApplicationObject {
  public:
   Buttons(ILoggerFactory &loggerFactory, UIFactory &uiFactory,
-          GazeDetectorFactory &gazeDetectorFactory, FontStore &fontStore,
-          IEventGazeListenerFactory &eventGazeListenerFactory);
-  void initialize(Scene &scene, TransformTree &gazeTransformTarget);
+          GazeDetectorContainer &gazeDetectorContainer,
+          GazeDetectorFactory &gazeDetectorFactory,
+          IEventGazeListenerFactory &eventGazeListenerFactory,
+          TransformTree *gazeTransformShooter, std::string fontFolderPath,
+          IEvent &eventCloseApplication);
+  void initialize(Scene &scene);
 
   inline void setCloseButtonText(std::string newCloseButtonText) {
     this->closeButtonText = newCloseButtonText;
@@ -39,6 +48,8 @@ class Buttons {
     return this->closeButtonListener.get();
   }
 
+  void onClickHandler();
+
  private:
   // Buttons
   std::unique_ptr<PlanarBackground> actionButtonBackground;
@@ -48,15 +59,25 @@ class Buttons {
   std::string closeButtonText = "Close";
   std::string actionButtonText = "Notify Me";
 
-  std::unique_ptr<GazeDetectorContainer> gazeDetectorContainer;
-  // TransformTree *gazeTransformTarget;
+  // std::unique_ptr<GazeDetectorContainer> gazeDetectorContainer;
+  // TODO - use the gazedetector to get currently looked at button
+  // when handling events
+  GazeDetectorContainer *gazeDetectorContainer;
+  TransformTree *gazeTransformShooter;
+
+  IEvent *eventCloseApplication;
 
   // Factories
   UIFactory *uiFactory;
   GazeDetectorFactory *gazeDetectorFactory;
   IEventGazeListenerFactory *eventGazeListenerFactory;
-  FontStore *fontStore;
+  // FontStore *fontStore;
   std::unique_ptr<ILogger> logger;
+
+  // font store component
+  std::unique_ptr<FontStore> fontStore;
+  // path where the font file is located (.ttf files)
+  std::string fontFolderPath = "";
 
   // CONSTANTS
   int FONT_SIZE = 20;

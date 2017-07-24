@@ -1,8 +1,9 @@
 #ifndef COREENGINE_UIFACTORY_H
 #define COREENGINE_UIFACTORY_H
 
+#include <coreEngine/factory/IUniformFadeColorFactory.h>
 #include <coreEngine/ui/CharacterElement.h>
-#include <coreEngine/ui/FadeScreen.h>
+#include <coreEngine/ui/FadePlanarBackground.h>
 #include <coreEngine/ui/FontStore.h>
 #include <coreEngine/ui/ITextMaterialFactory.h>
 #include <coreEngine/ui/PlanarBackground.h>
@@ -40,15 +41,13 @@ class UIFactory {
         loggerFactory));
   }
 
-  std::unique_ptr<FadeScreen> createFadeScreen(std::string id, Scene *scene,
-                                               CL_Vec4 color,
-                                               CL_Vec3 &localPosition,
-                                               CL_Vec3 &localRotation,
-                                               float width, float height) {
-    return std::unique_ptr<FadeScreen>(
-        new FadeScreen(id, modelFactory.get(), uniformFadeColorFactory.get(),
-                       scene, color, transformTreeFactory.get(), localPosition,
-                       localRotation, width, height, loggerFactory));
+  std::unique_ptr<FadePlanarBackground> createFadePlanarBackground(
+      std::string id, Scene *scene, CL_Vec4 color, CL_Vec3 &localPosition,
+      CL_Vec3 &localRotation, float width, float height) {
+    return std::unique_ptr<FadePlanarBackground>(new FadePlanarBackground(
+        id, modelFactory.get(), uniformFadeColorFactory.get(), scene, color,
+        transformTreeFactory.get(), localPosition, localRotation, width, height,
+        loggerFactory));
   }
 
   std::unique_ptr<CharacterElement> createCharacterElement(
