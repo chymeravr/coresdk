@@ -20,7 +20,6 @@ Image360::Image360(std::unique_ptr<IRenderer> renderer,
                    ITransformTreeFactory &transformTreeFactory,
                    ICameraFactory &cameraFactory, IEventQueue &eventQueue,
                    ILoggerFactory &loggerFactory, UIFactory &uiFactory,
-                   //  GazeDetectorFactory &gazeDetectorFactory,
                    GazeDetectorContainer &gazeDetectorContainer,
                    IEventGazeListenerFactory &gazeEventListenerFactory) {
   assert(renderer != nullptr);
@@ -60,6 +59,8 @@ void Image360::initialize() {
   for (int i = 0; i < image360Components.size(); i++) {
     image360Components[i]->initialize(*this->scene);
   }
+
+  this->renderer->initialize(scene.get());
 }
 
 // void Image360::initCameraReticle() {
@@ -70,44 +71,9 @@ this->reticle = this->uiFactory->createReticle(
     "reticle", scene.get(), transformTreeCamera, CAMERA_RETICLE_COLOR);*/
 // }
 
-// void Image360::initController() {
-// this->controller->initialize(*scene);
-// this->gazeTransformShooter = this->controller->getGazeTransformSource();
-// }
-
-// void Image360::initFadeScreen() {
-// fade screen initialization
-/*this->fadeScreen = uiFactory->createFadeScreen(
-    "fadeScreen", scene.get(), FADE_SCREEN_COLOR, FADE_SCREEN_POSITION,
-    FADE_SCREEN_ROTATION, FADE_SCREEN_WIDTH, FADE_SCREEN_HEIGHT);
-TransformTree *transformTreeCamera =
-    this->fpsCamera->getCameraTransformTree();
-transformTreeCamera->addChild(this->fadeScreen->getTransformTree());*/
-// }
-
-void Image360::initComplete() { this->renderer->initialize(scene.get()); }
-
 void Image360::update() { renderer->update(); }
 
 void Image360::drawInit() {
-  // if (this->fadeStarted) {
-  //   if (this->fadeScreen != nullptr) {
-  //     this->fadeScreen->setColor(CL_Vec4(0.0, 0.0, 0.0, this->FADE_ALPHA));
-  //     if (this->FADE_ALPHA < 1.0) {
-  //       this->FADE_ALPHA += this->FADE_SPEED;
-  //     } else {
-  //       this->fadeComplete = true;
-  //     }
-  //   } else {
-  //     this->fadeComplete = true;
-  //   }
-  // } else if (this->FADE_ALPHA > 0.0f && this->FADE_ALPHA <= 1.0f) {
-  //   if (this->fadeScreen != nullptr) {
-  //     this->fadeScreen->setColor(CL_Vec4(0.0, 0.0, 0.0, this->FADE_ALPHA));
-  //   }
-  //   this->FADE_ALPHA -= this->FADE_SPEED / 1.5;
-  // }
-
   for (int i = 0; i < image360Components.size(); i++) {
     image360Components[i]->preDraw();
   }
@@ -126,11 +92,17 @@ void Image360::drawMono() {
 
 void Image360::drawStereoLeft() {
   // this->stereoSphere->preDrawLeft();
+  for (int i = 0; i < image360StereoComponents.size(); i++) {
+    image360StereoComponents[i]->preDrawLeft();
+  }
   renderer->drawLeft(scene.get());
 }
 
 void Image360::drawStereoRight() {
   // this->stereoSphere->preDrawRight();
+  for (int i = 0; i < image360StereoComponents.size(); i++) {
+    image360StereoComponents[i]->preDrawRight();
+  }
   renderer->drawRight(scene.get());
 }
 
@@ -143,12 +115,12 @@ void Image360::pause() { renderer->pause(); }
 
 void Image360::resume() { renderer->resume(); }
 
-Reticle *Image360::getParentReticle() {
-  /*if (this->controller->getControllerReticle() != nullptr) {
-    return this->controller->getControllerReticle();
-  }*/
-  return this->reticleBase.get();
-}
+// Reticle *Image360::getParentReticle() {
+//   /*if (this->controller->getControllerReticle() != nullptr) {
+//     return this->controller->getControllerReticle();
+//   }*/
+//   return this->reticleBase.get();
+// }
 
 IRenderer *Image360::getRenderer() { return this->renderer.get(); }
 }

@@ -1,13 +1,7 @@
 #include <string>
 #include <coreEngine/modifier/ImageJPEGLoader.h>
-#include <SOIL.h>
-#include <coreEngine/modifier/textureLoader.h>
 #include <jpeglib.h>
-
-#include <stdio.h>
-#include <sys/stat.h>
 #include <stdlib.h>
-#include <fcntl.h>
 
 namespace cl{
 
@@ -15,27 +9,11 @@ ImageJPEGLoader::ImageJPEGLoader(ILogger *logger){
 		this->logger = logger;
 	}
 
-    // todo : use libjpeg for best performance - current one is too bad for pixel
 	std::unique_ptr<Image> ImageJPEGLoader::loadImage(std::string imagePath){
 		// Data read from the header of the BMP file
 		int width, height, channels;
-		//std::unique_ptr<unsigned char> data(SOIL_load_image(imagePath.c_str(), &width, &height, &channels, SOIL_LOAD_RGB));
-		
-		///std::unique_ptr<unsigned char> data(cvr_load_image(imagePath.c_str(), &width, &height, &channels, CVR_LOAD_RGB));
-
-		//invertImage(data.get(), width, height, channels);
-		
-		//int t = read_JPEG_file(imagePath.c_str());
-		//unsigned char* test = read_JPEG_file(imagePath.c_str(), &width, &height, &channels);
-		//std::unique_ptr<unsigned char> data2(read_JPEG_file(imagePath.c_str(), &width, &height, &channels));
 		auto newImage = read_JPEG_file(imagePath.c_str(), &width, &height, &channels);
-		invertImage(newImage.get()->data.get(), newImage.get()->width, newImage.get()->height, 3);
-	/*	std::unique_ptr<Image> image(new Image);
-		image->data = std::move(data);
-		image->width = width;
-		image->height = height;
-		image->dataSize = height * width * 3;
-		*/
+		invertImage(newImage->data.get(), newImage->width, newImage->height, 3);
 		return std::move(newImage);
 	}
 
@@ -56,32 +34,6 @@ ImageJPEGLoader::ImageJPEGLoader(ILogger *logger){
 			}
 		}
 	}
-
-//	struct my_error_mgr {
-//		struct jpeg_error_mgr pub;	/* "public" fields */
-//
-//		jmp_buf setjmp_buffer;	/* for return to caller */
-//	};
-//
-//	typedef struct my_error_mgr * my_error_ptr;
-//
-//	/*
-//	* Here's the routine that will replace the standard error_exit method:
-//	*/
-//
-//	METHODDEF(void)
-//		my_error_exit(j_common_ptr cinfo)
-//	{
-//		/* cinfo->err really points to a my_error_mgr struct, so coerce pointer */
-//		my_error_ptr myerr = (my_error_ptr)cinfo->err;
-//
-//		/* Always display the message. */
-//		/* We could postpone this until after returning, if we chose. */
-//		(*cinfo->err->output_message) (cinfo);
-//
-//		/* Return control to the setjmp point */
-//		longjmp(myerr->setjmp_buffer, 1);
-//	}
 
 	std::unique_ptr<Image> ImageJPEGLoader::read_JPEG_file(const char * filename, int* width, int* height, int* channels)
 	{

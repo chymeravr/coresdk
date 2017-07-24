@@ -5,7 +5,7 @@ namespace cl {
 class EventControllerQuaternionListener {
  public:
   virtual void updateControllerQuaternion(float qx, float qy, float qz,
-                                          float qw);
+                                          float qw) = 0;
 };
 }
 

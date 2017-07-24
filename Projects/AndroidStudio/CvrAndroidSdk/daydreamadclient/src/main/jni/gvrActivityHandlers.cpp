@@ -34,8 +34,12 @@
 
 // Image360 Application
 #include <image360/Image360.h>
-//#include <image360/Image360Mono.h>
-//#include <image360/Image360Stereo.h>
+#include <image360/StereoSphere.h>
+#include <image360/Controller.h>
+#include <image360/FPSCamera.h>
+#include <image360/Buttons.h>
+#include <image360/Constants.h>
+
 
 // Android Modules
 #include <LoggerDaydreamFactory.h>
@@ -60,13 +64,60 @@ namespace {
     std::unique_ptr<cl::LoggerDaydreamFactory> loggerFactory = nullptr;
     std::unique_ptr<cl::ILogger> logger = nullptr;
     std::unique_ptr<cl::IEventQueue> eventQueue = nullptr;
-    std::vector<std::unique_ptr<cl::Image> > textureImages;
+
+    std::unique_ptr<cl::GazeDetectorContainer> gazeDetectorContainer = nullptr;
+
+    // Event Close Applications will be empty here because Daydream can handle fade in fade out on
+    // its own
+    std::unique_ptr<cl::EventCloseApplication> eventCloseApplication = nullptr;
+    std::unique_ptr<cl::EventCloseApplicationListener> eventCloseApplicationListener = nullptr;
+    std::unique_ptr<cl::IEvent> image360EventBeginFade = nullptr;
+
+    std::unique_ptr<cl::StereoSphere> stereoSphere = nullptr;
+    std::unique_ptr<cl::Controller> controller = nullptr;
+    std::unique_ptr<cl::Buttons> buttons = nullptr;
+    std::unique_ptr<cl::FPSCamera> fpsCamera = nullptr;
+
+    //std::vector<std::unique_ptr<cl::Image> > textureImages;
+
+    std::unique_ptr<cl::ImageJPEGLoader> imageJPEGLoader = nullptr;
+    std::unique_ptr<cl::ImagePNGLoader> imagePNGLoader = nullptr;
+
+    std::unique_ptr<cl::Image> laserBeamTexture = nullptr;
+
+    std::unique_ptr<cl::Image> controllerTexture = nullptr;
+
+    std::vector<std::unique_ptr<cl::Image> > stereoTextureImages;
+
+    //stereoTextureImages.push_back(imageJPEGLoader.loadImage(stereoEquirectangleImageFilePath));
+
+    // Application components
+
+    // Factories
+    std::unique_ptr<cl::SceneGLFactory> sceneFactory = nullptr;
+    std::unique_ptr<cl::ModelGLFactory> modelFactory = nullptr;
+    std::unique_ptr<cl::CameraGLFactory> cameraFactory = nullptr;
+    std::unique_ptr<cl::DiffuseTextureGLFactory> diffuseTextureFactory = nullptr;
+    std::unique_ptr<cl::DiffuseTextureCubeMapGLFactory> diffuseTextureCubeMapFactory = nullptr;
+    std::unique_ptr<cl::ITransformTreeFactory> transformTreeFactory = nullptr;
+    std::unique_ptr<cl::ITransformTreeFactory> uiTransformTreeFactory = nullptr;
+    std::unique_ptr<cl::GazeDetectorFactory> gazeDetectorFactory = nullptr;
+    std::unique_ptr<cl::IModelFactory> uiModelFactory = nullptr;
+    std::unique_ptr<cl::IUniformColorFactory> uiUniformColorFactory = nullptr;
+    std::unique_ptr<cl::IUniformFadeColorFactory> uiUniformFadeColorFactory = nullptr;
+    std::unique_ptr<cl::ITextMaterialFactory> textMaterialFactory = nullptr;
+    std::unique_ptr<cl::UIFactory> uiFactory = nullptr;
+    std::unique_ptr<cl::IEventGazeListenerFactory> eventGazeListenerFactory = nullptr;
+
+    // Renderer
+    std::unique_ptr<cl::RendererDaydream> renderer = nullptr;
 
     const char *appDir;
     const char *image360File;
     const char *controllerModelFile;
     const char *controllerTextureFile;
     const char *laserBeamTextureFile;
+    std::string absoluteFontFilePath;
 
     inline jlong jptr(cl::Image360 *nativeImage360) {
         return reinterpret_cast<intptr_t>(nativeImage360);
@@ -104,56 +155,58 @@ JNI_METHOD(jlong, nativeCreateRenderer)
     laserBeamTextureFile = env->GetStringUTFChars(laserBeamTextureFilename, JNI_FALSE);
 
     /* GL Model Factories for the application */
-    std::unique_ptr<cl::SceneGLFactory> sceneFactory(new cl::SceneGLFactory(loggerFactory.get()));
-    std::unique_ptr<cl::ModelGLFactory> modelFactory(new cl::ModelGLFactory(loggerFactory.get()));
+    sceneFactory = std::unique_ptr<cl::SceneGLFactory>(new cl::SceneGLFactory(loggerFactory.get()));
+    modelFactory = std::unique_ptr<cl::ModelGLFactory>(new cl::ModelGLFactory(loggerFactory.get()));
 
     /* need a separate Camera for OVR due to the way it gives us access to view and projection
      * matrices for each of the eye
      */
-    //std::unique_ptr<cl::CameraGLOVRFactory> cameraFactory(new cl::CameraGLOVRFactory(loggerFactory.get()));
-    std::unique_ptr<cl::CameraGLFactory> cameraFactory(
-            new cl::CameraGLFactory(loggerFactory.get()));
+//    std::unique_ptr<cl::CameraGLFactory> cameraFactory(
+//            new cl::CameraGLFactory(loggerFactory.get()));
+    cameraFactory = std::unique_ptr<cl::CameraGLFactory>(new cl::CameraGLFactory(loggerFactory.get()));
     /*
      * Separate Texture Factories for OpenGLES - shader language is separate
      */
-    std::unique_ptr<cl::DiffuseTextureGLFactory> diffuseTextureFactory(
+    diffuseTextureFactory = std::unique_ptr<cl::DiffuseTextureGLFactory>(
             new cl::DiffuseTextureGLFactory(loggerFactory.get()));
-    std::unique_ptr<cl::DiffuseTextureCubeMapGLFactory> diffuseTextureCubeMapFactory(
+    diffuseTextureCubeMapFactory = std::unique_ptr<cl::DiffuseTextureCubeMapGLFactory>(
             new cl::DiffuseTextureCubeMapGLFactory(loggerFactory.get()));
 
-    std::unique_ptr<cl::RendererDaydream> renderer(
+    renderer = std::unique_ptr<cl::RendererDaydream>(
             new cl::RendererDaydream(reinterpret_cast<gvr_context *>(native_gvr_api), loggerFactory.get()));
-//    std::unique_ptr<cl::RendererGVRStereo> renderer(
-//            new cl::RendererGVRStereo(reinterpret_cast<gvr_context *>(native_gvr_api), loggerFactory.get()));
 
     std::unique_ptr<cl::MutexLockDaydream> mutexLock(new cl::MutexLockDaydream);
     eventQueue = std::unique_ptr<cl::IEventQueue>(new cl::EventQueue(std::move(mutexLock)));
 
-    std::unique_ptr<cl::ITransformTreeFactory> transformTreeFactory(
+    transformTreeFactory = std::unique_ptr<cl::ITransformTreeFactory>(
             new cl::TransformTreeFactory(loggerFactory.get()));
-    std::unique_ptr<cl::ITransformTreeFactory> uiTransformTreeFactory(
+    uiTransformTreeFactory = std::unique_ptr<cl::ITransformTreeFactory>(
             new cl::TransformTreeFactory(loggerFactory.get()));
-    std::unique_ptr<cl::GazeDetectorFactory> gazeDetectorFactory(new cl::GazeDetectorFactory);
-    std::unique_ptr<cl::IModelFactory> uiModelFactory(new cl::ModelGLFactory(loggerFactory.get()));
-    std::unique_ptr<cl::IUniformColorFactory> uiUniformColorFactory(
+    gazeDetectorFactory = std::unique_ptr<cl::GazeDetectorFactory>(new cl::GazeDetectorFactory);
+    uiModelFactory = std::unique_ptr<cl::IModelFactory>(new cl::ModelGLFactory(loggerFactory.get()));
+    uiUniformColorFactory = std::unique_ptr<cl::IUniformColorFactory>(
             new cl::UniformColorFactoryGL(loggerFactory.get()));
-    std::unique_ptr<cl::IUniformFadeColorFactory> uiUniformFadeColorFactory(
+    uiUniformFadeColorFactory = std::unique_ptr<cl::IUniformFadeColorFactory>(
             new cl::UniformFadeColorFactoryGL(loggerFactory.get()));
 
-    std::unique_ptr<cl::ITextMaterialFactory> textMaterialFactory(
+    textMaterialFactory = std::unique_ptr<cl::ITextMaterialFactory>(
             new cl::TextMaterialFactoryGL(loggerFactory.get()));
-    std::unique_ptr<cl::UIFactory> uiFactory(
+    uiFactory = std::unique_ptr<cl::UIFactory>(
             new cl::UIFactory(loggerFactory.get(), std::move(uiModelFactory),
                               std::move(uiUniformColorFactory), std::move(uiUniformFadeColorFactory),
                               std::move(uiTransformTreeFactory), std::move(textMaterialFactory)));
 
-    std::unique_ptr<cl::IEventGazeListenerFactory> eventGazeListenerFactory(
+    eventGazeListenerFactory = std::unique_ptr<cl::IEventGazeListenerFactory>(
             new cl::GazeListenerFactoryDaydream(loggerFactory.get()));
 
-    std::string absoluteFontFilePath = std::string(appDir) + std::string("/")
+    absoluteFontFilePath = std::string(appDir) + std::string("/")
                                        + std::string("chymeraSDKAssets/fonts/arial.ttf");
     logger->log(cl::LOG_DEBUG, absoluteFontFilePath);
 
+    stereoTextureImages = std::vector<std::unique_ptr<cl::Image>>();
+
+    imageJPEGLoader = std::unique_ptr<cl::ImageJPEGLoader>(new cl::ImageJPEGLoader(logger.get()));
+    imagePNGLoader = std::unique_ptr<cl::ImagePNGLoader>(new cl::ImagePNGLoader(logger.get()));
 
 //    return jptr(
 //            new cl::Image360Stereo(std::move(renderer),
@@ -172,18 +225,14 @@ JNI_METHOD(jlong, nativeCreateRenderer)
 //    );
     return jptr(
             new cl::Image360(std::move(renderer),
-                                   std::move(sceneFactory),
-                                   std::move(modelFactory),
-                                   std::move(diffuseTextureFactory),
-                                   std::move(diffuseTextureCubeMapFactory),
-                                   std::move(transformTreeFactory),
-                                   std::move(cameraFactory),
-                                   eventQueue.get(),
-                                   loggerFactory.get(),
-                                   std::move(uiFactory),
-                                   std::move(gazeDetectorFactory),
-                                   std::move(eventGazeListenerFactory),
-                                   absoluteFontFilePath)
+                                   *sceneFactory,
+                                   *transformTreeFactory,
+                                   *cameraFactory,
+                                   *eventQueue,
+                                   *loggerFactory,
+                                   *uiFactory,
+                                   *gazeDetectorContainer,
+                                   *eventGazeListenerFactory)
     );
 }
 
@@ -192,7 +241,7 @@ JNI_METHOD(void, nativeDestroyRenderer)
     logger->log(cl::LOG_DEBUG, "Native Destroy Renderer Start");
     auto image360 = native(nativeImage360);
     image360->stop();
-    textureImages.clear();
+    stereoTextureImages.clear();
     delete native(nativeImage360);
     logger->log(cl::LOG_DEBUG, "Native Destroy Renderer End");
 }
@@ -201,22 +250,67 @@ JNI_METHOD(void, nativeOnStart)
 (JNIEnv *env, jobject obj, jlong nativeImage360) {
     logger->log(cl::LOG_DEBUG, "Starting Image 360 Application");
     auto image360 = native(nativeImage360);
-    image360->setIsControllerPresent(true);
-    image360->start();
-
-    textureImages = std::vector<std::unique_ptr<cl::Image>>();
 
     logger->log(cl::LOG_DEBUG, "Loading Ad Image");
 
+    std::string controllerTextureAbsoluteFilePath = std::string(appDir) + std::string("/")
+                                                    + std::string(controllerTextureFile);
+    std::string laserBeamTextureAbsoluteFilePath = std::string(appDir) + std::string("/")
+                                                   + std::string(laserBeamTextureFile);
+    std::string controllerModelAbsoluteFilePath = std::string(appDir) + std::string("/")
+                                                  + std::string(controllerModelFile);
 
-    cl::ImageJPEGLoader imageJPEGLoader(logger.get());
+
     std::string image360AdAbsoluteFilePath = std::string(appDir) + std::string("/")
-                                   + std::string(image360File);
+                                             + std::string(image360File);
 
-    //textureImages.push_back(image);
-    auto image = imageJPEGLoader.loadImage(image360AdAbsoluteFilePath);
+    logger->log(cl::LOG_DEBUG, image360AdAbsoluteFilePath);
+
+    auto image = imageJPEGLoader->loadImage(image360AdAbsoluteFilePath);
     assert(image->data != nullptr);
-    textureImages.push_back(std::move(image));
+    stereoTextureImages.push_back(std::move(image));
+
+
+    gazeDetectorContainer = gazeDetectorFactory->createGazeDetectorContainer();
+
+    // stereo sphere initialization
+    stereoSphere = std::unique_ptr<cl::StereoSphere>(new cl::StereoSphere(
+            *loggerFactory, *modelFactory,
+            *diffuseTextureFactory, *transformTreeFactory,
+            std::move(stereoTextureImages[0])));
+
+    // controller initialization
+    auto controllerTexture = imagePNGLoader->loadImage(controllerTextureAbsoluteFilePath);
+    auto laserBeamTexture = imagePNGLoader->loadImage(laserBeamTextureAbsoluteFilePath);
+
+    assert(controllerTexture->data != nullptr);
+    assert(laserBeamTexture != nullptr);
+
+    controller = std::unique_ptr<cl::Controller>(new cl::Controller(*loggerFactory, *modelFactory,
+                                                                    *transformTreeFactory, *diffuseTextureFactory, *uiFactory,
+                                                                    std::move(controllerTexture), std::move(laserBeamTexture),
+                                                                    controllerModelAbsoluteFilePath));
+
+    // fps camera
+    fpsCamera = std::unique_ptr<cl::FPSCamera>(new cl::FPSCamera(
+            *loggerFactory, *transformTreeFactory, *cameraFactory));
+
+    auto gazeTransformSource = fpsCamera->getCameraTransformTree();
+
+    buttons = std::unique_ptr<cl::Buttons>(new cl::Buttons(
+            *loggerFactory, *uiFactory,
+            *gazeDetectorContainer, *gazeDetectorFactory,
+            *eventGazeListenerFactory,
+            gazeTransformSource, absoluteFontFilePath, *image360EventBeginFade));
+    buttons->setActionButtonText(std::string("Download"));
+
+    image360->addApplicationObject(stereoSphere.get());
+    image360->addApplicationObject(fpsCamera.get());
+    image360->addApplicationObject(controller.get());
+    image360->addApplicationObject(buttons.get());
+    image360->addStereoObject(stereoSphere.get());
+
+    image360->start();
 
     logger->log(cl::LOG_DEBUG, "Ad Image Loaded");
 }
@@ -225,46 +319,11 @@ JNI_METHOD(void, nativeInitializeGl)
 (JNIEnv *env, jobject obj, jlong nativeImage360) {
     logger->log(cl::LOG_DEBUG, "Initializing Native GL Start");
     auto image360 = native(nativeImage360);
-    //image360->start();
-    image360->setActionButtonText(std::string("Download"));
 
     auto mode = cl::EQUIRECTANGULAR_MAP_MODE;
 
-    cl::ImagePNGLoader imagePNGLoader(logger.get());
-    // filePaths that we require to render stuff on screen
-    std::string controllerTextureAbsoluteFilePath = std::string(appDir) + std::string("/")
-                                   + std::string(controllerTextureFile);
-    std::string laserBeamTextureAbsoluteFilePath = std::string(appDir) + std::string("/")
-                                                    + std::string(laserBeamTextureFile);
-    std::string controllerModelAbsoluteFilePath = std::string(appDir) + std::string("/")
-                                                  + std::string(controllerModelFile);
-
-    auto controllerTexture =
-            imagePNGLoader.loadImage(controllerTextureAbsoluteFilePath);
-    auto laserBeamTexture =
-            imagePNGLoader.loadImage(laserBeamTextureAbsoluteFilePath);
-
-    assert(controllerTexture->data != nullptr);
-    assert(laserBeamTexture != nullptr);
-    logger->log(cl::LOG_DEBUG, controllerModelAbsoluteFilePath);
     // begin initialization of image 360 application and required components
     image360->initialize();
-
-    // stereo texture => stereo view
-    image360->initStereoView();
-    image360->initStereoEquirectangularView(std::move(textureImages[0]));
-
-    // we require the following UI components
-    //image360->initCameraReticle();
-
-
-    image360->initController(std::move(controllerTexture), controllerModelAbsoluteFilePath);
-    image360->initControllerLaser(std::move(laserBeamTexture));
-    image360->initControllerReticle();
-    image360->initUIButtons();
-
-    image360->initComplete();
-    // end of initialization
 
     logger->log(cl::LOG_DEBUG, "Initializing Native GL Complete");
 }
@@ -283,30 +342,32 @@ JNI_METHOD(int, nativeOnTriggerEvent)
 (JNIEnv *env, jobject obj, jlong nativeImage360) {
     auto image360 = native(nativeImage360);
     logger->log(cl::LOG_DEBUG, "Trigger Event");
-    if(image360->closeButtonListener->inFocus()){
-        logger->log(cl::LOG_DEBUG, "Close Button Clicked");
-        return CLOSE_AD;
-    } else if(image360->actionButtonListener->inFocus()){
-        logger->log(cl::LOG_DEBUG, "Download Button Clicked");
-        return DOWNLOAD;
-    }else{
-        return NO_EVENT;
-    }
+//    if(image360->closeButtonListener->inFocus()){
+//        logger->log(cl::LOG_DEBUG, "Close Button Clicked");
+//        return CLOSE_AD;
+//    } else if(image360->actionButtonListener->inFocus()){
+//        logger->log(cl::LOG_DEBUG, "Download Button Clicked");
+//        return DOWNLOAD;
+//    }else{
+//        return NO_EVENT;
+//    }
+    return NO_EVENT;
 }
 
 JNI_METHOD(int, nativeOnControllerClicked)
 (JNIEnv *env, jobject obj, jlong nativeImage360){
     auto image360 = native(nativeImage360);
     logger->log(cl::LOG_DEBUG, "Trigger Event");
-    if(image360->closeButtonListener->inFocus()){
-        logger->log(cl::LOG_DEBUG, "Close Button Clicked");
-        return CLOSE_AD;
-    } else if(image360->actionButtonListener->inFocus()){
-        logger->log(cl::LOG_DEBUG, "Download Button Clicked");
-        return DOWNLOAD;
-    }else{
-        return NO_EVENT;
-    }
+//    if(image360->closeButtonListener->inFocus()){
+//        logger->log(cl::LOG_DEBUG, "Close Button Clicked");
+//        return CLOSE_AD;
+//    } else if(image360->actionButtonListener->inFocus()){
+//        logger->log(cl::LOG_DEBUG, "Download Button Clicked");
+//        return DOWNLOAD;
+//    }else{
+//        return NO_EVENT;
+//    }
+    return NO_EVENT;
 }
 
 JNI_METHOD(void, nativeOnPause)

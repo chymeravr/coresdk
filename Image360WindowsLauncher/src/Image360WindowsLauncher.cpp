@@ -63,6 +63,7 @@
 #include <image360/MonoCubeMap.h>
 #include <image360/MonoSphere.h>
 #include <image360/StereoSphere.h>
+#include <image360/CameraReticle.h>
 
 #include <image360/Image360EventKeyPressListener.h>
 #include <image360/Image360EventPassiveMouseMotionListener.h>
@@ -94,6 +95,7 @@ std::unique_ptr<MonoCubeMap> monoCubeMap;
 std::unique_ptr<Buttons> buttons;
 std::unique_ptr<FPSCamera> fpsCamera;
 std::unique_ptr<FadeScreen> fadeScreen;
+std::unique_ptr<CameraReticle> cameraReticle;
 
 std::unique_ptr<GazeDetectorContainer> gazeDetectorContainer;
 
@@ -141,7 +143,6 @@ void key_callback(GLFWwindow* window, int key, int scancode, int action,
   std::cout << "Key Pressed " << key << std::endl;
 
   // todo - use buttons directly here
-  //std::cout << application->getButtons()->getActionButtonText() << std::endl;
   if (key == GLFW_KEY_ESCAPE && action == GLFW_PRESS) {
     glfwSetWindowShouldClose(window, GL_TRUE);
   } else {
@@ -173,16 +174,39 @@ void mouse_button_callback(GLFWwindow* window, int button, int action,
   std::unique_ptr<IEvent> mouseButtonEvent(new EventMouse(
 	  eventMouseListener.get(), image360_button, image360_action));
   eventQueue->push(std::move(mouseButtonEvent));
-  //if (button == GLFW_MOUSE_BUTTON_LEFT && action == GLFW_PRESS) {
-  //  if (application->getActionButtonListener()->inFocus()) {
-  //    std::cout << "Action Button Pressed" << std::endl;
-  //  } else if (application->getCloseButtonListener()->inFocus()) {
-  //    std::cout << "Close Button Pressed" << std::endl;
-  //    application->beginFade();
-  //    // glfwSetWindowShouldClose(window, GL_TRUE);
-  //  }
-  //}
 }
+
+// External Files required for this application
+// use of hard coded file paths enables debugging in visual studio. 
+std::string fontFilePath =
+"C:\\Users\\robin_"
+"chimera\\Documents\\SDK\\Projects\\VisualStudio\\Image360WindowsLauncher"
+"\\Debug\\fonts\\arial.ttf";
+// std::string fontFilePath = "fonts/arial.ttf";
+
+std::string laserTextureFilePath = "C:\\Users\\robin_"
+"chimera\\SDK\\Projects\\VisualStudio\\Image360WindowsLa"
+"uncher\\Debug\\laserTexture.png";
+
+std::string controllerTextureFilePath = "C:\\Users\\robin_"
+"chimera\\SDK\\Projects\\VisualStudio\\Image360WindowsLa"
+"uncher\\Debug\\ddcontroller_idle.png";
+
+std::string controllerModelPath("C:\\Users\\robin_"
+	"chimera\\Documents\\SDK\\Projects\\VisualStudio\\Image360WindowsLa"
+	"uncher\\Debug\\ddController.obj");
+
+std::string stereoEquirectangleImageFilePath = "C:\\Users\\robin_"
+"chimera\\SDK\\Projects\\VisualStudio\\Image360WindowsLauncher\\Debug\\"
+"360images\\Witcher-BoatSunset-SmartPhone-360-Stereo.jpg";
+
+std::string monoCubeMapImageFilePath = "C:\\Users\\robin_"
+"chimera\\SDK\\Projects\\VisualStudio\\Image360WindowsLa"
+"uncher\\Debug\\360images\\cubemap_desert.jpg";
+
+std::string monoEquirectangleImageFilePath = "C:\\Users\\robin_"
+	  "chimera\\SDK\\Projects\\VisualStudio\\Image360WindowsLa"
+	  "uncher\\Debug\\360images\\equirectangular_desert.jpg";
 
 // Window dimensions
 const int WIDTH = 1600, HEIGHT = 1000;
@@ -266,11 +290,7 @@ int _tmain(int argc, _TCHAR** argv) {
 
   std::unique_ptr<IEventGazeListenerFactory> eventGazeListenerFactory(
       new GazeListenerFactoryWindows(loggerFactory.get()));
-  std::string fontFilePath =
-      "C:\\Users\\robin_"
-      "chimera\\Documents\\SDK\\Projects\\VisualStudio\\Image360WindowsLauncher"
-      "\\Debug\\fonts\\arial.ttf";
-  // std::string fontFilePath = "fonts/arial.ttf";
+  
 
   gazeDetectorContainer = gazeDetectorFactory->createGazeDetectorContainer();
 
@@ -278,43 +298,22 @@ int _tmain(int argc, _TCHAR** argv) {
   ImagePNGLoader imagePNGLoader(logger.get());
 
   std::unique_ptr<Image> laserBeamTexture =
-	  imagePNGLoader.loadImage(
-	  "C:\\Users\\robin_"
-	  "chimera\\SDK\\Projects\\VisualStudio\\Image360WindowsLa"
-	  "uncher\\Debug\\laserTexture.png");
+	  imagePNGLoader.loadImage(laserTextureFilePath);
 
   std::unique_ptr<Image> controllerTexture =
-	  imagePNGLoader.loadImage(
-	  "C:\\Users\\robin_"
-	  "chimera\\SDK\\Projects\\VisualStudio\\Image360WindowsLa"
-	  "uncher\\Debug\\ddcontroller_idle.png");
-
-  std::string controllerModelPath("C:\\Users\\robin_"
-	  "chimera\\Documents\\SDK\\Projects\\VisualStudio\\Image360WindowsLa"
-	  "uncher\\Debug\\ddController.obj");
+	  imagePNGLoader.loadImage(controllerTextureFilePath);
 
   std::vector<std::unique_ptr<Image> > stereoTextureImages;
 
-  stereoTextureImages.push_back(imageJPEGLoader.loadImage(
-	  "C:\\Users\\robin_"
-	  "chimera\\SDK\\Projects\\VisualStudio\\Image360WindowsLauncher\\Debug\\"
-	  "360images\\Witcher-BoatSunset-SmartPhone-360-Stereo.jpg"));
+  stereoTextureImages.push_back(imageJPEGLoader.loadImage(stereoEquirectangleImageFilePath));
 
   std::vector<std::unique_ptr<Image> > monoCubeTextureImages;
 
-  monoCubeTextureImages.push_back(imageJPEGLoader.loadImage(
-	  "C:\\Users\\robin_"
-	  "chimera\\SDK\\Projects\\VisualStudio\\Image360WindowsLa"
-	  "uncher\\Debug\\360images\\cubemap_desert.jpg"));
+  monoCubeTextureImages.push_back(imageJPEGLoader.loadImage(monoCubeMapImageFilePath));
 
   std::vector<std::unique_ptr<Image> > monoSphereTextureImages;
 
-  monoSphereTextureImages.push_back(imageJPEGLoader.loadImage(
-	  "C:\\Users\\robin_"
-	  "chimera\\SDK\\Projects\\VisualStudio\\Image360WindowsLa"
-	  "uncher\\Debug\\360images\\equirectangular_desert.jpg"));
-
-  
+  monoSphereTextureImages.push_back(imageJPEGLoader.loadImage(monoEquirectangleImageFilePath));
 
   IMAGE_MODE appMode = MONO;
 
@@ -334,6 +333,21 @@ int _tmain(int argc, _TCHAR** argv) {
 	fpsCamera = std::unique_ptr<FPSCamera>(new FPSCamera(
 		*loggerFactory, *transformTreeFactory, *cameraFactory
 		));
+
+	auto gazeTransformSource = fpsCamera->getCameraTransformTree();
+
+	fadeScreen = std::unique_ptr<FadeScreen>(new FadeScreen(
+		*loggerFactory, *uiFactory, *gazeTransformSource, *eventCloseApplicationListener));
+
+	image360EventBeginFade = std::unique_ptr<IEvent>(new Image360EventBeginFade(*fadeScreen, *loggerFactory));
+
+	buttons = std::unique_ptr<Buttons>(new Buttons(
+		*loggerFactory, *uiFactory,
+		*gazeDetectorContainer, *gazeDetectorFactory,
+		*eventGazeListenerFactory,
+		gazeTransformSource, fontFilePath, *image360EventBeginFade));
+
+	cameraReticle = std::unique_ptr<CameraReticle>(new CameraReticle(*loggerFactory, *uiFactory, *gazeTransformSource));
 	
     application = std::unique_ptr<Image360>(
         new Image360(std::move(renderer), *sceneFactory,
@@ -342,9 +356,7 @@ int _tmain(int argc, _TCHAR** argv) {
 					 *uiFactory, *gazeDetectorContainer,
 					 *eventGazeListenerFactory));
 
-	//application->setController(std::move(controller));
-	//application->setStereoSphere(std::move(stereoSphere));
-
+	
 	eventKeyPressListener = std::unique_ptr<EventKeyPressListener>(
 		new Image360EventKeyPressListener(application.get(), loggerFactory.get()));
 
@@ -354,21 +366,17 @@ int _tmain(int argc, _TCHAR** argv) {
 	eventMouseListener = std::unique_ptr<EventMouseListener>(
 		new Image360EventMouseListener(*buttons, *loggerFactory.get()));
 	
+	application->addApplicationObject(stereoSphere.get());
+	application->addApplicationObject(fpsCamera.get());
+	application->addStereoObject(stereoSphere.get());
+	application->addApplicationObject(controller.get());
+	application->addApplicationObject(buttons.get());
+	application->addApplicationObject(fadeScreen.get());
+	application->addApplicationObject(cameraReticle.get());
+
     application->start();
 
     application->initialize();
-
-    //application->initStereoEquirectangularView();
-
-    //application->initCameraReticle();
-    
-    // application->initFadeScreen();
-    // application->initController();
-	//application->initControllerLaser(std::move(laserBeamTexture));
-	//application->initControllerReticle();
-
-	//application->initUIButtons();
-    application->initComplete();
 
 	std::cout << buttons->getActionButtonText() << std::endl;
 	buttons->setActionButtonText(std::string("Download"));
@@ -384,9 +392,6 @@ int _tmain(int argc, _TCHAR** argv) {
       // Check if any events have been activiated (key pressed, mouse moved
       // etc.) and call corresponding response functions
       
-		/*if (fadeScreen->isFadeComplete()) {
-        glfwSetWindowShouldClose(window, GL_TRUE);
-      }*/
       glfwPollEvents();
 
       glViewport(0, 0, width, height);
@@ -411,17 +416,17 @@ int _tmain(int argc, _TCHAR** argv) {
     application->stop();
     application->deinitialize();
 
-    _CrtSetDbgFlag(_CRTDBG_ALLOC_MEM_DF | _CRTDBG_LEAK_CHECK_DF);
+    //_CrtSetDbgFlag(_CRTDBG_ALLOC_MEM_DF | _CRTDBG_LEAK_CHECK_DF);
 
     // Terminate GLFW, clearing any resources allocated by GLFW.
     glfwTerminate();
 
   } else {
-    std::unique_ptr<IRenderer> renderer(new RendererNoHMD());
 
-	
-	TEXTURE_MAP_MODE mode = CUBE_MAP_MODE_SINGLE_IMAGE;
+  TEXTURE_MAP_MODE mode = CUBE_MAP_MODE_SINGLE_IMAGE;
 	// EQUIRECTANGULAR_MAP_MODE;  // CUBE_MAP_MODE_SINGLE_IMAGE; // image mode
+
+    std::unique_ptr<IRenderer> renderer(new RendererNoHMD());
 
 	controller = std::unique_ptr<Controller>(new Controller(*loggerFactory, *modelFactory,
 		*transformTreeFactory, *diffuseTextureFactory, *uiFactory,
@@ -452,6 +457,8 @@ int _tmain(int argc, _TCHAR** argv) {
 	fadeScreen = std::unique_ptr<FadeScreen>(new FadeScreen(
 		*loggerFactory, *uiFactory, *gazeTransformSource, *eventCloseApplicationListener));
 
+	cameraReticle = std::unique_ptr<CameraReticle>(new CameraReticle(*loggerFactory, *uiFactory, *gazeTransformSource));
+
 	image360EventBeginFade = std::unique_ptr<IEvent>(new Image360EventBeginFade(*fadeScreen, *loggerFactory));
 
 	buttons = std::unique_ptr<Buttons>(new Buttons(
@@ -468,13 +475,18 @@ int _tmain(int argc, _TCHAR** argv) {
                      *eventGazeListenerFactory));
 
 	
+	if (mode == CUBE_MAP_MODE_SINGLE_IMAGE){
+		application->addApplicationObject(monoCubeMap.get());
+	}
+	if (mode == EQUIRECTANGULAR_MAP_MODE){
+		application->addApplicationObject(monoSphere.get());
+	}
 
-	application->addApplicationObject(monoCubeMap.get());
 	application->addApplicationObject(fpsCamera.get());
 	application->addApplicationObject(buttons.get());
 	application->addApplicationObject(controller.get());
 	application->addApplicationObject(fadeScreen.get());
-
+	application->addApplicationObject(cameraReticle.get());
 
 	eventKeyPressListener = std::unique_ptr<EventKeyPressListener>(
 		new Image360EventKeyPressListener(application.get(), loggerFactory.get()));
@@ -488,18 +500,6 @@ int _tmain(int argc, _TCHAR** argv) {
     application->start();
 
 	application->initialize();
-	//switch (mode) {
-	//case CUBE_MAP_MODE_SINGLE_IMAGE:
-	//	application->initMonoCubeMapSingleTextureView();
-	//	break;
-	//case EQUIRECTANGULAR_MAP_MODE:
-	//	application->initMonoEquirectangularView();
-	//	break;
-	//default:
-	//	break;
-	//}
-
-	application->initComplete();
 
 	buttons->setActionButtonText(std::string("Download"));
 	
@@ -512,9 +512,6 @@ int _tmain(int argc, _TCHAR** argv) {
     while (!glfwWindowShouldClose(window)) {
       // Check if any events have been activiated (key pressed, mouse moved
       // etc.) and call corresponding response functions
-      /*if (fadeScreen->isFadeComplete()) {
-        glfwSetWindowShouldClose(window, GL_TRUE);
-      }*/
       glfwPollEvents();
 
       application->drawInit();
