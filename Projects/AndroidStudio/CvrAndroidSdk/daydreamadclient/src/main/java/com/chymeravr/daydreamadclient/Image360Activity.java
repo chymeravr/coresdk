@@ -40,6 +40,7 @@ import lombok.Getter;
 
 /**
  * Created by robin_chimera on 3/22/2017.
+ * Defines Activity for Image360 Ad
  */
 
 public final class Image360Activity extends Activity {
@@ -62,8 +63,8 @@ public final class Image360Activity extends Activity {
 
     // count vars to ensure we only notify once / close once
     // TODO: 4/27/2017 change this to bools
-    private int notifyCount = 1;
-    private int closeCount = 1;
+    private boolean isDownloadClicked = false;
+    private boolean isCloseClicked = false;
 
     // enum representing possible controller click responses
     private enum ControllerClickEventResponse{
@@ -127,7 +128,6 @@ public final class Image360Activity extends Activity {
                     case NO_EVENT:
                         break;
                     case DOWNLOAD:
-                        //notifyUser();
                         onDownloadClick();
                         finishAdActivity();
                         break;
@@ -139,25 +139,27 @@ public final class Image360Activity extends Activity {
         }
     };
 
+    private final Runnable closeActivity =
+            new Runnable() {
+                @Override
+                public void run() {
+                    Image360Activity.this.finishAdActivity();
+                }
+            };
+
     // gracefully exit the vr ad back to users add - daydream provides a neat way to do this
     // only call this function once
     private void finishAdActivity(){
-
-        if(closeCount <= 0){
+        if(this.isCloseClicked){
             return;
         }
-        closeCount--;
-        Class<?> clientClass;
-        try {
-            // return to client activity (class) that called the ad show on closing
-            clientClass = Class.forName(Image360Activity.this.returningClassName);
-            ComponentName c= new ComponentName(Image360Activity.this, clientClass);
-            Intent vrIntent = DaydreamApi.createVrIntent(c);
-            this.daydreamApi.launchInVr(vrIntent);
-        } catch (ClassNotFoundException e) {
-            Log.e(TAG, e.toString());
-        }
+        this.isCloseClicked = true;
+
+        this.daydreamApi.launchInVr(this.clientClassReturningIntent);
+
     }
+
+    private Intent clientClassReturningIntent;
 
     // scheduler polls the hmd for parameters (quaternion) at regular intervals
     private ScheduledExecutorService scheduler = Executors.newScheduledThreadPool(1);
@@ -223,6 +225,17 @@ public final class Image360Activity extends Activity {
         this.instanceId = intent.getIntExtra("instanceId", -1);
         this.servingId = intent.getStringExtra("servingId");
         this.returningClassName = intent.getStringExtra("returningClass");
+
+        // Instantiate an intent to return to calling activity when ad finishes
+        Class<?> clientClass;
+        try {
+            // return to client activity (class) that called the ad show on closing
+            clientClass = Class.forName(this.returningClassName);
+            ComponentName c= new ComponentName(this, clientClass);
+            this.clientClassReturningIntent = DaydreamApi.createVrIntent(c);
+        } catch (ClassNotFoundException e) {
+            Log.e(TAG, e.toString());
+        }
 
         // Initialize GvrLayout and the native renderer.
         gvrLayout = new GvrLayout(this);
@@ -297,7 +310,6 @@ public final class Image360Activity extends Activity {
             AndroidCompat.setSustainedPerformanceMode(this, true);
         }
 
-
         // Enable VR Mode.
         AndroidCompat.setVrModeEnabled(this, true);
 
@@ -309,7 +321,7 @@ public final class Image360Activity extends Activity {
     protected void onPause() {
         super.onPause();
         Log.d(TAG, "onPause");
-        ddControllerManager.start();
+        ddControllerManager.stop();
         nativeOnPause(nativeImage360ActivityHandler);
         gvrLayout.onPause();
         surfaceView.onPause();
@@ -362,9 +374,6 @@ public final class Image360Activity extends Activity {
             return true;
         }
 
-
-
-
         return super.dispatchKeyEvent(event);
     }
 
@@ -412,12 +421,10 @@ public final class Image360Activity extends Activity {
 
         launchIntent.addCategory(Intent.CATEGORY_LAUNCHER);
 
-        //launchIntent.setComponent(cp);
         launchIntent.setData(Uri.parse("https://play.google.com/vr/store/apps/details?id=com.google.android.apps.youtube.vr"));
-        //startActivity(launchIntent);
 
         ComponentName playStoreComponent = new ComponentName("com.google.android.vr.home", "com.google.android.apps.vr.playstore.PlayStoreActivity");
-        Intent downloadAppIntent = daydreamApi.createVrIntent(playStoreComponent);
+        Intent downloadAppIntent = DaydreamApi.createVrIntent(playStoreComponent);
         downloadAppIntent.setData(Uri.parse("https://play.google.com/vr/store/apps/details?id=" + this.clickUrl));
         this.daydreamApi.launchInVr(downloadAppIntent);
     }

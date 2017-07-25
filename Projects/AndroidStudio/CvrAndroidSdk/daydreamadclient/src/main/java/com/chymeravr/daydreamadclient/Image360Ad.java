@@ -29,6 +29,7 @@ import java.util.Map;
 /**
  * Created by robin_chimera on 3/22/2017.
  * Image360Ad class
+ * TODO - Cleanup created daydream instance
  */
 
 public final class Image360Ad extends Ad {
@@ -43,6 +44,7 @@ public final class Image360Ad extends Ad {
     // TODO: 4/24/2017 test whetehr this is null or not before calling functions
     //@Setter
     private DaydreamApi daydreamApi;
+
     Runnable initializeDaydream = new Runnable(){
 
         @Override
@@ -77,6 +79,7 @@ public final class Image360Ad extends Ad {
         this.image360AdServices = new Image360AdServices(this, ChymeraVrSdk.getWebRequestQueue());
 
         ((Activity)context).runOnUiThread(initializeDaydream);
+        //this.daydreamApi = DaydreamApi.create(this.getContext());
 
     }
 
@@ -127,9 +130,6 @@ public final class Image360Ad extends Ad {
                     "WitnessSquare-Smartphone-360-Stereo"};
             int fileIndex = (int) (Math.random() * 9);
 
-            // for non stereo 360 images - use this
-            // String files[] = {"equirectangular_desert2"}
-            // int fileIndex = (int)(Math.random() * 0);
 
            filePath = Config.getImage360AdAssetDirectory()
                    + files[fileIndex] + ".jpg";
@@ -156,7 +156,7 @@ public final class Image360Ad extends Ad {
 
 
             // start activity for showing ad
-            daydreamApi.launchInVr(vrIntent);
+            this.daydreamApi.launchInVr(vrIntent);
             this.getVrAdListener().onVrAdOpened();
         } else {
             Log.i(TAG, "No Ad to Show");

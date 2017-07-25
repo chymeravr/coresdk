@@ -208,31 +208,8 @@ JNI_METHOD(jlong, nativeCreateRenderer)
     imageJPEGLoader = std::unique_ptr<cl::ImageJPEGLoader>(new cl::ImageJPEGLoader(logger.get()));
     imagePNGLoader = std::unique_ptr<cl::ImagePNGLoader>(new cl::ImagePNGLoader(logger.get()));
 
-//    return jptr(
-//            new cl::Image360Stereo(std::move(renderer),
-//                                   std::move(sceneFactory),
-//                                   std::move(modelFactory),
-//                                   std::move(diffuseTextureFactory),
-//                                   std::move(diffuseTextureCubeMapFactory),
-//                                   std::move(transformTreeFactory),
-//                                   std::move(cameraFactory),
-//                                   eventQueue.get(),
-//                                   loggerFactory.get(),
-//                                   std::move(uiFactory),
-//                                   std::move(gazeDetectorFactory),
-//                                   std::move(eventGazeListenerFactory),
-//                                   absoluteFontFilePath)
-//    );
     return jptr(
-            new cl::Image360(std::move(renderer),
-                                   *sceneFactory,
-                                   *transformTreeFactory,
-                                   *cameraFactory,
-                                   *eventQueue,
-                                   *loggerFactory,
-                                   *uiFactory,
-                                   *gazeDetectorContainer,
-                                   *eventGazeListenerFactory)
+            new cl::Image360(std::move(renderer), *sceneFactory, *eventQueue, *loggerFactory, *gazeDetectorContainer)
     );
 }
 
@@ -295,7 +272,8 @@ JNI_METHOD(void, nativeOnStart)
     fpsCamera = std::unique_ptr<cl::FPSCamera>(new cl::FPSCamera(
             *loggerFactory, *transformTreeFactory, *cameraFactory));
 
-    auto gazeTransformSource = fpsCamera->getCameraTransformTree();
+//    auto gazeTransformSource = fpsCamera->getCameraTransformTree();
+    auto gazeTransformSource = controller->getGazeTransformSource();
 
     buttons = std::unique_ptr<cl::Buttons>(new cl::Buttons(
             *loggerFactory, *uiFactory,
@@ -324,6 +302,8 @@ JNI_METHOD(void, nativeInitializeGl)
 
     // begin initialization of image 360 application and required components
     image360->initialize();
+
+    ((cl::RendererDaydream *) image360->getRenderer())->setControllerTransform(*(controller->getTransformTreeModel()));
 
     logger->log(cl::LOG_DEBUG, "Initializing Native GL Complete");
 }
@@ -358,15 +338,14 @@ JNI_METHOD(int, nativeOnControllerClicked)
 (JNIEnv *env, jobject obj, jlong nativeImage360){
     auto image360 = native(nativeImage360);
     logger->log(cl::LOG_DEBUG, "Trigger Event");
-//    if(image360->closeButtonListener->inFocus()){
-//        logger->log(cl::LOG_DEBUG, "Close Button Clicked");
-//        return CLOSE_AD;
-//    } else if(image360->actionButtonListener->inFocus()){
-//        logger->log(cl::LOG_DEBUG, "Download Button Clicked");
-//        return DOWNLOAD;
-//    }else{
-//        return NO_EVENT;
-//    }
+    if(buttons->getCloseButtonListener()->inFocus()){
+        logger->log(cl::LOG_DEBUG, "Close Button Clicked");
+        return CLOSE_AD;
+    } else if(buttons->getActionButtonListener()->inFocus()){
+        logger->log(cl::LOG_DEBUG, "Download Button Clicked");
+        return DOWNLOAD;
+    }
+
     return NO_EVENT;
 }
 

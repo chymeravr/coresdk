@@ -40,10 +40,6 @@ import java.util.Date;
 import javax.microedition.khronos.egl.EGLConfig;
 import javax.microedition.khronos.opengles.GL10;
 
-//import com.chymeravr.daydreamadclient.ChymeraVrSdk;
-//import com.chymeravr.daydreamadclient.Image360Ad;
-// cannot use daydreamapi in cardboard
-
 /**
  * A Gvr API sample application.
  */
@@ -53,7 +49,7 @@ public class MainActivity extends Activity {
     private GLSurfaceView surfaceView;
 
     Image360Ad image360TestAd;
-    public boolean isShowing = false;
+    //public boolean isShowing = false;
 
     private static final String TAG = "CvrAppDaydream";
     // This is done on the GL thread because refreshViewerProfile isn't thread-safe.
@@ -111,12 +107,12 @@ public class MainActivity extends Activity {
          * "flp"*/
 
         // Create a new Location
-        Location newLocation = new Location(PROVIDER);
-        newLocation.setLatitude(lat);
-        newLocation.setLongitude(lng);
-        newLocation.setAccuracy(accuracy);
+        Location location = new Location(PROVIDER);
+        location.setLatitude(lat);
+        location.setLongitude(lng);
+        location.setAccuracy(accuracy);
 
-        Location location = newLocation;
+        //Location location = newLocation;
 
         String date = 1989 + "/" + 7 + "/" + 15;
         SimpleDateFormat formatter = new SimpleDateFormat("yyyy/MM/dd");

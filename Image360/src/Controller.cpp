@@ -24,6 +24,17 @@ Controller::Controller(ILoggerFactory &loggerFactory,
   this->controllerImage = std::move(controllerImage);
   this->laserBeamImage = std::move(laserBeamImage);
   this->controllerModelPath = controllerModelPath;
+
+  // instantiate the model and transform
+  controllerModelContainer = this->modelFactory->create("controllerModel");
+  assert(controllerModelContainer != nullptr);
+  this->controllerModel = controllerModelContainer.get();
+
+  std::unique_ptr<TransformTreeModel> controllerTransformUptr =
+      this->transformTreeFactory->createTransformTreeModel(
+          this->controllerModel);
+  this->controllerModel->getComponentList().addComponent(
+      std::move(controllerTransformUptr));
 }
 
 void Controller::initialize(Scene &scene) {
@@ -33,10 +44,6 @@ void Controller::initialize(Scene &scene) {
 }
 
 void Controller::initializeController(Scene &scene) {
-  std::unique_ptr<Model> controllerModelContainer =
-      modelFactory->create("controllerModel");
-  assert(controllerModelContainer != nullptr);
-  this->controllerModel = controllerModelContainer.get();
   scene.addToScene(std::move(controllerModelContainer));
   std::unique_ptr<ModelLoader> modelLoader =
       std::unique_ptr<ModelLoader>(new ModelLoader(this->loggerFactory));
@@ -44,12 +51,6 @@ void Controller::initializeController(Scene &scene) {
   this->controllerModel->setDepthTest(true);
   this->controllerModel->setBlending(true);
   this->controllerModel->setBackFaceCulling(true);
-
-  std::unique_ptr<TransformTreeModel> controllerTransformUptr =
-      this->transformTreeFactory->createTransformTreeModel(
-          this->controllerModel);
-  this->controllerModel->getComponentList().addComponent(
-      std::move(controllerTransformUptr));
 
   TransformTreeModel *transformController =
       (TransformTreeModel *)this->controllerModel->getComponentList()
@@ -176,27 +177,33 @@ void Controller::initializeControllerReticle(Scene &scene) {
   transformReticle->setLocalScale(RETICLE_SCALE);
 }
 
+// TODO : potential duplicate function. Remove after testing
 TransformTreeModel *Controller::getGazeTransformSource() {
   return (TransformTreeModel *)this->controllerModel->getComponentList()
       .getComponent("transformTree");
 }
 
-void Controller::updateControllerQuaternion(CL_Quat controllerOrientation) {
-  TransformTreeModel *transformController =
-      (TransformTreeModel *)this->controllerModel->getComponentList()
-          .getComponent("transformTree");
-  transformController->setLocalQuaternion(controllerOrientation);
-}
-void Controller::updateControllerRotation(CL_Vec3 controllerRotation) {
-  TransformTreeModel *transformController =
-      (TransformTreeModel *)this->controllerModel->getComponentList()
-          .getComponent("transformTree");
-  transformController->setLocalRotation(controllerRotation);
-}
-void Controller::updateControllerPosition(CL_Vec3 controllerPosition) {
-  TransformTreeModel *transformController =
-      (TransformTreeModel *)this->controllerModel->getComponentList()
-          .getComponent("transformTree");
-  transformController->setLocalPosition(controllerPosition);
+// void Controller::updateControllerQuaternion(CL_Quat controllerOrientation) {
+//   TransformTreeModel *transformController =
+//       (TransformTreeModel *)this->controllerModel->getComponentList()
+//           .getComponent("transformTree");
+//   transformController->setLocalQuaternion(controllerOrientation);
+// }
+// void Controller::updateControllerRotation(CL_Vec3 controllerRotation) {
+//   TransformTreeModel *transformController =
+//       (TransformTreeModel *)this->controllerModel->getComponentList()
+//           .getComponent("transformTree");
+//   transformController->setLocalRotation(controllerRotation);
+// }
+// void Controller::updateControllerPosition(CL_Vec3 controllerPosition) {
+//   TransformTreeModel *transformController =
+//       (TransformTreeModel *)this->controllerModel->getComponentList()
+//           .getComponent("transformTree");
+//   transformController->setLocalPosition(controllerPosition);
+// }
+
+TransformTreeModel *Controller::getTransformTreeModel() {
+  return (TransformTreeModel *)this->controllerModel->getComponentList()
+      .getComponent("transformTree");
 }
 }

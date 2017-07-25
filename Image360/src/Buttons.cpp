@@ -58,9 +58,6 @@ void Buttons::initialize(Scene &scene) {
   this->closeButtonBackground->addChild("child2",
                                         std::move(closeButtonElement));
 
-  //   this->gazeDetectorContainer =
-  //       this->gazeDetectorFactory->createGazeDetectorContainer();
-
   // initializing action button model
   Model *actionButtonModel = (Model *)scene.getFromScene("actionButton");
   TransformTreeModel *transformActionButton =

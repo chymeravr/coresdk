@@ -200,29 +200,53 @@ void RendererDaydream::ProcessControllerInput() {
   }
 }
 
-void RendererDaydream::updateController(Scene *scene) {
-  // TODO - remove this from renderer. hand over controller to activity class
-  // initialize controller
-  if (gvr_viewer_type_ == GVR_VIEWER_TYPE_DAYDREAM) {
-    auto controller4scene = (Model *)scene->getFromScene("controllerModel");
-    auto controllerTransform =
-        (TransformTreeModel *)controller4scene->getComponentList().getComponent(
-            "transformTree");
-    auto controllerOrientationQuat = gvr_controller_state_.GetOrientation();
-    CL_Quat controllerQuat =
-        CL_Quat(controllerOrientationQuat.qw, controllerOrientationQuat.qx,
-                controllerOrientationQuat.qy, controllerOrientationQuat.qz);
-    auto controllerPositionGvr = gvr_controller_state_.GetPosition();
-    // LOGD("Controller Quat : %f %f %f %f", controllerQuat.x, controllerQuat.y,
-    // controllerQuat.z, controllerQuat.w);
-    // LOGD("Controller Positions : %f %f %f", controllerPositionGvr.x,
-    // controllerPositionGvr.y, controllerPositionGvr.z);
-    controllerTransform->setLocalQuaternion(controllerQuat);
-    //            auto controllerPosition = CL_Vec3(controllerPositionGvr.x,
-    //            controllerPositionGvr.y, controllerPositionGvr.z);
-    //            controllerTransform->setLocalPosition(controllerPosition);
-  }
+void RendererDaydream::setControllerTransform(
+    TransformTreeModel &controllerTransformTree) {
+  this->controllerTransformTree = &controllerTransformTree;
 }
+
+void RendererDaydream::updateController() {
+  if (this->controllerTransformTree == nullptr) {
+    return;
+  }
+
+  if (!this->gvr_controller_api_) {
+    return;
+  }
+
+  auto controllerOrientationQuat = this->gvr_controller_state_.GetOrientation();
+  CL_Quat controllerQuat =
+      CL_Quat(controllerOrientationQuat.qw, controllerOrientationQuat.qx,
+              controllerOrientationQuat.qy, controllerOrientationQuat.qz);
+
+  this->controllerTransformTree->setLocalQuaternion(controllerQuat);
+}
+
+// void RendererDaydream::updateController(Scene *scene) {
+//   // initialize controller
+//   if (gvr_viewer_type_ == GVR_VIEWER_TYPE_DAYDREAM) {
+//     auto controller4scene = (Model *)scene->getFromScene("controllerModel");
+//     auto controllerTransform =
+//         (TransformTreeModel
+//         *)controller4scene->getComponentList().getComponent(
+//             "transformTree");
+//     auto controllerOrientationQuat = gvr_controller_state_.GetOrientation();
+//     CL_Quat controllerQuat =
+//         CL_Quat(controllerOrientationQuat.qw, controllerOrientationQuat.qx,
+//                 controllerOrientationQuat.qy, controllerOrientationQuat.qz);
+//     auto controllerPositionGvr = gvr_controller_state_.GetPosition();
+//     // LOGD("Controller Quat : %f %f %f %f", controllerQuat.x,
+//     controllerQuat.y,
+//     // controllerQuat.z, controllerQuat.w);
+//     // LOGD("Controller Positions : %f %f %f", controllerPositionGvr.x,
+//     // controllerPositionGvr.y, controllerPositionGvr.z);
+//     controllerTransform->setLocalQuaternion(controllerQuat);
+//     //    this->controllerTransformTree->setLocalQuaternion(controllerQuat);
+//     //            auto controllerPosition = CL_Vec3(controllerPositionGvr.x,
+//     //            controllerPositionGvr.y, controllerPositionGvr.z);
+//     //            controllerTransform->setLocalPosition(controllerPosition);
+//   }
+// }
 
 RendererDaydream::RendererDaydream(gvr_context *gvr_context,
                                    ILoggerFactory *loggerFactory)
@@ -285,7 +309,8 @@ bool RendererDaydream::initialize(Scene *scene) {
   this->renderCamera->setNearPlane(kZNear);
   this->renderCamera->setFarPlane(kZFar);
 
-  this->updateController(scene);
+  // this->updateController(scene);
+  this->updateController();
   logger->log(LOG_DEBUG, "Renderer Intialization Complete!!!");
   return true;
 }
@@ -540,6 +565,7 @@ void RendererDaydream::drawScene(Scene *scene) {
     //    reticleBaseTransform->setLocalQuaternion(reticleQuat);
   }
 
-  this->updateController(scene);
+  // this->updateController(scene);
+  this->updateController();
 }
 }

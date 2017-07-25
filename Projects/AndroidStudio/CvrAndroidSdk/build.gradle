@@ -204,13 +204,13 @@ subprojects {
 // The dependencies for NDK builds live inside the .aar files so they need to
 // be extracted before NDK targets can build.
 task extractAudioSo(type: Copy) {
-    from zipTree("${project.rootDir}/gvr_libraries/sdk-audio-1.20.0.aar")
+    from zipTree("${project.rootDir}/gvr_libraries/sdk-audio-1.70.0.aar")
     into "${project.rootDir}/gvr_libraries/"
     include "jni/**/libgvr_audio.so"
 }
 
 task extractGvrSo(type: Copy) {
-    from zipTree("${project.rootDir}/gvr_libraries/sdk-base-1.20.0.aar")
+    from zipTree("${project.rootDir}/gvr_libraries/sdk-base-1.70.0.aar")
     into "${project.rootDir}/gvr_libraries/"
     include "jni/**/libgvr.so"
 }

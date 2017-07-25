@@ -25,9 +25,11 @@ class Controller : public ApplicationObject {
   Reticle *getControllerReticle() { return this->controllerReticle.get(); }
   TransformTreeModel *getGazeTransformSource();
 
-  void updateControllerQuaternion(CL_Quat controllerOrientation);
-  void updateControllerRotation(CL_Vec3 controllerRotation);
-  void updateControllerPosition(CL_Vec3 controllerPosition);
+  // void updateControllerQuaternion(CL_Quat controllerOrientation);
+  // void updateControllerRotation(CL_Vec3 controllerRotation);
+  // void updateControllerPosition(CL_Vec3 controllerPosition);
+
+  TransformTreeModel *getTransformTreeModel();
 
  private:
   // private functions
@@ -42,6 +44,7 @@ class Controller : public ApplicationObject {
   Model *controllerModel;
   std::unique_ptr<Image> controllerImage;
   std::string controllerModelPath;
+  std::unique_ptr<Model> controllerModelContainer;
 
   // Laser Beam Component
   Shader *laserBeamShader;

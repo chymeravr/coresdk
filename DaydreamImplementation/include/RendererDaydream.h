@@ -20,6 +20,7 @@
 #include "vr/gvr/capi/include/gvr_types.h"
 
 #include <coreEngine/IRenderer.h>
+#include <coreEngine/components/transformTree/TransformTreeModel.h>
 #include <glImplementation/renderObjects/CameraGL.h>
 
 namespace cl {
@@ -57,9 +58,13 @@ class RendererDaydream : public IRenderer {
 
   std::unique_ptr<ILogger> logger;
 
+  // Controller Params
+  TransformTreeModel *controllerTransformTree = nullptr;
   CL_Quat rotQuat;
 
-    void updateController(Scene *scene);
+  // void updateController(Scene *scene);
+
+  void updateController();
 
  public:
   RendererDaydream(gvr_context *gvr_context, ILoggerFactory *loggerFactory);
@@ -91,6 +96,8 @@ class RendererDaydream : public IRenderer {
   std::vector<float> getHMDParams();
 
   void drawScene(Scene *scene);
+
+  void setControllerTransform(TransformTreeModel &controllerTransformTree);
 };
 }
 

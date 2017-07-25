@@ -22,13 +22,13 @@
 
 
             <!-- Intent filter that enables this app to be launched from the
-                 Daydream app and from the traditional launcher. -->
-            <!--
+                 Daydream app -->
+
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
                 <category android:name="com.google.intent.category.DAYDREAM" />
             </intent-filter>
-            -->
+
         </activity>
 
     </application>
