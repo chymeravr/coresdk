@@ -2,18 +2,13 @@
 #define IMAGE360_IMAGE360_H
 
 #include <coreEngine/IRenderer.h>
+#include <coreEngine/components/gazeDetector/GazeDetectorContainer.h>
+#include <coreEngine/components/transformTree/TransformTree.h>
 #include <coreEngine/events/EventKeyPressListener.h>
 #include <coreEngine/events/EventPassiveMouseMotionListener.h>
 #include <coreEngine/events/IEventQueue.h>
-#include <coreEngine/factory/ICameraFactory.h>
 #include <coreEngine/factory/ISceneFactory.h>
-
-#include <coreEngine/components/gazeDetector/GazeDetectorFactory.h>
-#include <coreEngine/components/transformTree/ITransformTreeFactory.h>
 #include <coreEngine/modifier/Image.h>
-#include <coreEngine/ui/UIFactory.h>
-
-#include <coreEngine/factory/IEventGazeListenerFactory.h>
 
 #include <image360/ApplicationObject.h>
 #include <image360/StereoObject.h>
@@ -23,11 +18,8 @@ namespace cl {
 class Image360 {
  public:
   Image360(std::unique_ptr<IRenderer> renderer, ISceneFactory &sceneFactory,
-           ITransformTreeFactory &transformTreeFactory,
-           ICameraFactory &cameraFactory, IEventQueue &eventQueue,
-           ILoggerFactory &loggerFactory, UIFactory &uiFactory,
-           GazeDetectorContainer &gazeDetectorContainer,
-           IEventGazeListenerFactory &gazeEventListenerFactory);
+           IEventQueue &eventQueue, ILoggerFactory &loggerFactory,
+           GazeDetectorContainer &gazeDetectorContainer);
 
   void start();
 
@@ -51,8 +43,6 @@ class Image360 {
   void resume();
 
   IRenderer *getRenderer();
-
-  // Reticle *getParentReticle();
 
   TransformTree *getGazeTransformShooter() {
     return this->gazeTransformShooter;
@@ -79,23 +69,15 @@ class Image360 {
   ILoggerFactory *loggerFactory;
   std::unique_ptr<ILogger> logger;
 
-  // Renderer Encapsulate the draw calls to the GPU rendering library
-  // (opengl, // directx, vulkan)
-  // This is what allows our application to be cross platform
+  // Renderer Encapsulate the draw calls to the GPU rendering library (opengl,
+  // directx, vulkan). This is what allows our application to be cross platform
   std::unique_ptr<IRenderer> renderer;
 
   // event queue contains events to be processed at each draw call
   IEventQueue *eventQueue;
 
-  // These helper factories abstract instantiation of component
+  // Factory for scene instantiation
   ISceneFactory *sceneFactory;
-  ITransformTreeFactory *transformTreeFactory;
-  ICameraFactory *cameraFactory;
-  UIFactory *uiFactory;
-  GazeDetectorFactory *gazeDetectorFactory;
-  IEventGazeListenerFactory *eventGazeListenerFactory;
-
-  // Reticle component
 
   // contains all our gaze detection boxes
   GazeDetectorContainer *gazeDetectorContainer;

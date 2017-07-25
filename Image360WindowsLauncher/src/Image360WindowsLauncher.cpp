@@ -351,10 +351,9 @@ int _tmain(int argc, _TCHAR** argv) {
 	
     application = std::unique_ptr<Image360>(
         new Image360(std::move(renderer), *sceneFactory,
-                     *transformTreeFactory, *cameraFactory,
                      *eventQueue, *loggerFactory,
-					 *uiFactory, *gazeDetectorContainer,
-					 *eventGazeListenerFactory));
+					 *gazeDetectorContainer
+					 ));
 
 	
 	eventKeyPressListener = std::unique_ptr<EventKeyPressListener>(
@@ -469,10 +468,9 @@ int _tmain(int argc, _TCHAR** argv) {
 
     application = std::unique_ptr<Image360>(
         new Image360(std::move(renderer), *sceneFactory,
-                     *transformTreeFactory, *cameraFactory,
                      *eventQueue, *loggerFactory,
-					 *uiFactory, *gazeDetectorContainer,
-                     *eventGazeListenerFactory));
+					 *gazeDetectorContainer
+					 ));
 
 	
 	if (mode == CUBE_MAP_MODE_SINGLE_IMAGE){

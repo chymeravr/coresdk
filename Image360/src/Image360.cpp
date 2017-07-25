@@ -10,29 +10,18 @@
 #include <image360/Image360EventKeyPressListener.h>
 #include <image360/Image360EventPassiveMouseMotionListener.h>
 
-// todo :
-// 1. clean up event list
-// 2. implement component interface
-
 namespace cl {
 Image360::Image360(std::unique_ptr<IRenderer> renderer,
-                   ISceneFactory &sceneFactory,
-                   ITransformTreeFactory &transformTreeFactory,
-                   ICameraFactory &cameraFactory, IEventQueue &eventQueue,
-                   ILoggerFactory &loggerFactory, UIFactory &uiFactory,
-                   GazeDetectorContainer &gazeDetectorContainer,
-                   IEventGazeListenerFactory &gazeEventListenerFactory) {
+                   ISceneFactory &sceneFactory, IEventQueue &eventQueue,
+                   ILoggerFactory &loggerFactory,
+                   GazeDetectorContainer &gazeDetectorContainer) {
   assert(renderer != nullptr);
 
   this->renderer = std::move(renderer);
   this->eventQueue = &eventQueue;
 
   this->sceneFactory = &sceneFactory;
-  this->transformTreeFactory = &transformTreeFactory;
-  this->cameraFactory = &cameraFactory;
   this->loggerFactory = &loggerFactory;
-  this->uiFactory = &uiFactory;
-  this->eventGazeListenerFactory = &gazeEventListenerFactory;
 
   this->logger = this->loggerFactory->createLogger("Image360::");
 
@@ -45,31 +34,21 @@ void Image360::start() {
 }
 
 void Image360::initialize() {
-  // decide if camera should be initialized separately and added as a component
-  // to this
-
-  // scene stuff
+  // scene instantiation
   this->scene = sceneFactory->create("Image360Scene");
   assert(scene != nullptr);
 
   this->scene->setBackgroundColor(SCENE_BACKGROUND_COLOR);
 
-  // TODO : fix bug that causes the sequence of addition of components to matter
-  //        in the rendering.
+  // Note : our current renderers do not render scene objects in any pre
+  //        defined order. This introduces some artifacts due to sequence
+  //        of initialization. Currently, we have ignored these.
   for (int i = 0; i < image360Components.size(); i++) {
     image360Components[i]->initialize(*this->scene);
   }
 
   this->renderer->initialize(scene.get());
 }
-
-// void Image360::initCameraReticle() {
-// create a reticle attached to the main camera
-/*TransformTree *transformTreeCamera =
-    this->fpsCamera->getCameraTransformTree();
-this->reticle = this->uiFactory->createReticle(
-    "reticle", scene.get(), transformTreeCamera, CAMERA_RETICLE_COLOR);*/
-// }
 
 void Image360::update() { renderer->update(); }
 
@@ -91,7 +70,6 @@ void Image360::drawMono() {
 }
 
 void Image360::drawStereoLeft() {
-  // this->stereoSphere->preDrawLeft();
   for (int i = 0; i < image360StereoComponents.size(); i++) {
     image360StereoComponents[i]->preDrawLeft();
   }
@@ -99,7 +77,6 @@ void Image360::drawStereoLeft() {
 }
 
 void Image360::drawStereoRight() {
-  // this->stereoSphere->preDrawRight();
   for (int i = 0; i < image360StereoComponents.size(); i++) {
     image360StereoComponents[i]->preDrawRight();
   }
@@ -114,13 +91,6 @@ void Image360::stop() { renderer->stop(); }
 void Image360::pause() { renderer->pause(); }
 
 void Image360::resume() { renderer->resume(); }
-
-// Reticle *Image360::getParentReticle() {
-//   /*if (this->controller->getControllerReticle() != nullptr) {
-//     return this->controller->getControllerReticle();
-//   }*/
-//   return this->reticleBase.get();
-// }
 
 IRenderer *Image360::getRenderer() { return this->renderer.get(); }
 }

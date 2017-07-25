@@ -12,7 +12,7 @@ Image360EventControllerPositionListener::
 void Image360EventControllerPositionListener::updateControllerPosition(
     float pos_x, float pos_y, float pos_z) {
   // TODO : Error handlings
-	TransformTreeModel *transform = nullptr;
+	TransformTree *transform = nullptr;
       /*(TransformTreeModel *)this->image360->getControllerModel()
           ->getComponentList()
           .getComponent("transformTree");*/

@@ -10,6 +10,7 @@
 #include <coreEngine/util/ILogger.h>
 #include <coreEngine/util/ILoggerFactory.h>
 #include <image360/Image360.h>
+#include <coreEngine/components/transformTree/TransformTree.h>
 
 namespace cl {
 class Image360EventControllerPositionListener
