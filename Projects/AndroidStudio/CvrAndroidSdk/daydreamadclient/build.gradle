@@ -146,9 +146,9 @@ dependencies {
     compile 'org.projectlombok:lombok:1.16.12'
     compile 'javax.annotation:javax.annotation-api:1.2'
 
-//    compile 'com.google.vr:sdk-audio:1.30.0'
-    compile 'com.google.vr:sdk-base:1.30.0'
-    compile 'com.google.vr:sdk-controller:1.30.0'
+//    compile 'com.google.vr:sdk-audio:1.70.0'
+    compile 'com.google.vr:sdk-base:1.70.0'
+    compile 'com.google.vr:sdk-controller:1.70.0'
 
     embeddedDemo project(':common')
     embeddedDemo project(':analytics')

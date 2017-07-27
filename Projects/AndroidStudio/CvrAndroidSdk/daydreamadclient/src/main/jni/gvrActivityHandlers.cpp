@@ -46,6 +46,8 @@
 #include <MutexLockDaydream.h>
 #include <RendererDaydream.h>
 #include <GazeListenerFactoryDaydream.h>
+#include <ControllerDaydream.h>
+#include "DaydreamActivityCloseEvent.h"
 
 
 #define JNI_METHOD(return_type, method_name) \
@@ -69,9 +71,7 @@ namespace {
 
     // Event Close Applications will be empty here because Daydream can handle fade in fade out on
     // its own
-    std::unique_ptr<cl::EventCloseApplication> eventCloseApplication = nullptr;
-    std::unique_ptr<cl::EventCloseApplicationListener> eventCloseApplicationListener = nullptr;
-    std::unique_ptr<cl::IEvent> image360EventBeginFade = nullptr;
+    std::unique_ptr<cl::IEvent> image360EventClose = nullptr;
 
     std::unique_ptr<cl::StereoSphere> stereoSphere = nullptr;
     std::unique_ptr<cl::Controller> controller = nullptr;
@@ -109,8 +109,11 @@ namespace {
     std::unique_ptr<cl::UIFactory> uiFactory = nullptr;
     std::unique_ptr<cl::IEventGazeListenerFactory> eventGazeListenerFactory = nullptr;
 
+    // gvr api
+    std::unique_ptr<gvr::GvrApi> gvr_api = nullptr;
     // Renderer
     std::unique_ptr<cl::RendererDaydream> renderer = nullptr;
+    std::unique_ptr<cl::ControllerDaydream> controllerDaydream = nullptr;
 
     const char *appDir;
     const char *image360File;
@@ -172,8 +175,10 @@ JNI_METHOD(jlong, nativeCreateRenderer)
     diffuseTextureCubeMapFactory = std::unique_ptr<cl::DiffuseTextureCubeMapGLFactory>(
             new cl::DiffuseTextureCubeMapGLFactory(loggerFactory.get()));
 
+    gvr_api = gvr::GvrApi::WrapNonOwned(reinterpret_cast<gvr_context *>(native_gvr_api));
     renderer = std::unique_ptr<cl::RendererDaydream>(
-            new cl::RendererDaydream(reinterpret_cast<gvr_context *>(native_gvr_api), loggerFactory.get()));
+//            new cl::RendererDaydream(reinterpret_cast<gvr_context *>(native_gvr_api), loggerFactory.get()));
+            new cl::RendererDaydream(gvr_api.get(), loggerFactory.get()));
 
     std::unique_ptr<cl::MutexLockDaydream> mutexLock(new cl::MutexLockDaydream);
     eventQueue = std::unique_ptr<cl::IEventQueue>(new cl::EventQueue(std::move(mutexLock)));
@@ -208,6 +213,8 @@ JNI_METHOD(jlong, nativeCreateRenderer)
     imageJPEGLoader = std::unique_ptr<cl::ImageJPEGLoader>(new cl::ImageJPEGLoader(logger.get()));
     imagePNGLoader = std::unique_ptr<cl::ImagePNGLoader>(new cl::ImagePNGLoader(logger.get()));
 
+    image360EventClose = std::unique_ptr<cl::IEvent> (new cl::DaydreamActivityCloseEvent(env, &android_context));
+    controllerDaydream = std::unique_ptr<cl::ControllerDaydream>(new cl::ControllerDaydream(gvr_api.get(), loggerFactory.get()));
     return jptr(
             new cl::Image360(std::move(renderer), *sceneFactory, *eventQueue, *loggerFactory, *gazeDetectorContainer)
     );
@@ -279,7 +286,7 @@ JNI_METHOD(void, nativeOnStart)
             *loggerFactory, *uiFactory,
             *gazeDetectorContainer, *gazeDetectorFactory,
             *eventGazeListenerFactory,
-            gazeTransformSource, absoluteFontFilePath, *image360EventBeginFade));
+            gazeTransformSource, absoluteFontFilePath, *image360EventClose));
     buttons->setActionButtonText(std::string("Download"));
 
     image360->addApplicationObject(stereoSphere.get());
@@ -289,7 +296,7 @@ JNI_METHOD(void, nativeOnStart)
     image360->addStereoObject(stereoSphere.get());
 
     image360->start();
-
+    controllerDaydream->ResumeControllerApiAsNeeded();
     logger->log(cl::LOG_DEBUG, "Ad Image Loaded");
 }
 
@@ -304,6 +311,7 @@ JNI_METHOD(void, nativeInitializeGl)
     image360->initialize();
 
     ((cl::RendererDaydream *) image360->getRenderer())->setControllerTransform(*(controller->getTransformTreeModel()));
+    controllerDaydream->setControllerTransform(*(controller->getTransformTreeModel()));
 
     logger->log(cl::LOG_DEBUG, "Initializing Native GL Complete");
 }
@@ -311,7 +319,8 @@ JNI_METHOD(void, nativeInitializeGl)
 JNI_METHOD(void, nativeDrawFrame)
 (JNIEnv *env, jobject obj, jlong nativeImage360) {
     auto image360 = native(nativeImage360);
-
+    controllerDaydream->ProcessControllerInput();
+    controllerDaydream->updateController();
     image360->drawInit();
     image360->drawStereoLeft(); //(cl::LEFT);
     image360->drawStereoRight(); //(cl::RIGHT);

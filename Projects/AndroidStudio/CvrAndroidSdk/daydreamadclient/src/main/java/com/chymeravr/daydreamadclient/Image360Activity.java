@@ -7,6 +7,7 @@ import android.content.Intent;
 import android.net.Uri;
 import android.opengl.GLSurfaceView;
 import android.os.Bundle;
+import android.os.Handler;
 import android.os.Vibrator;
 import android.util.Log;
 import android.view.KeyEvent;
@@ -23,7 +24,9 @@ import com.google.vr.ndk.base.AndroidCompat;
 import com.google.vr.ndk.base.DaydreamApi;
 import com.google.vr.ndk.base.GvrLayout;
 import com.google.vr.sdk.controller.Controller;
+import com.google.vr.sdk.controller.Controller.ConnectionStates;
 import com.google.vr.sdk.controller.ControllerManager;
+import com.google.vr.sdk.controller.ControllerManager.ApiStatus;
 
 import java.sql.Timestamp;
 import java.util.HashMap;
@@ -34,9 +37,6 @@ import java.util.concurrent.TimeUnit;
 import javax.microedition.khronos.egl.EGLConfig;
 import javax.microedition.khronos.opengles.GL10;
 
-import lombok.Getter;
-
-//import com.google.vr.sdk.controller.ControllerManager;
 
 /**
  * Created by robin_chimera on 3/22/2017.
@@ -46,25 +46,6 @@ import lombok.Getter;
 public final class Image360Activity extends Activity {
 
     private static final String TAG = "Img360DaydreamActivity";
-
-    // google vr layout for holding the surface
-    private GvrLayout gvrLayout;
-
-    // daydream parameters - api object, controller etc.
-    private DaydreamApi daydreamApi;
-    private ControllerManager ddControllerManager;
-    private Controller ddController;
-
-    // native C++ handle for image360 application
-    private long nativeImage360ActivityHandler;
-
-    // gl surface on which rendering happens
-    private GLSurfaceView surfaceView;
-
-    // count vars to ensure we only notify once / close once
-    // TODO: 4/27/2017 change this to bools
-    private boolean isDownloadClicked = false;
-    private boolean isCloseClicked = false;
 
     // enum representing possible controller click responses
     private enum ControllerClickEventResponse{
@@ -77,30 +58,53 @@ public final class Image360Activity extends Activity {
     static {
         // gvr libs
         System.loadLibrary("gvr");
-        //System.loadLibrary("gvr_audio");
         // chymeravr libs
         System.loadLibrary("DaydreamAdClient");
     }
 
-    // below params are passed from Image360Ad class which in turn fetched it from server and passed to activity
-    // url to send in notification
+    // google vr layout for holding the surface
+    private GvrLayout gvrLayout;
+    // gl surface on which rendering happens
+    private GLSurfaceView surfaceView;
+
+    // daydream parameters - api object, controller etc.
+    private DaydreamApi daydreamApi;
+    private ControllerManager controllerManager;
+    private Controller controller;
+
+    // native C++ handle for image360 application
+    private long nativeImage360ActivityHandler;
+
+    // count vars to ensure we only notify once / close once
+    private boolean isDownloadClicked = false;
+    private boolean isCloseClicked = false;
+
+
+    // below params are passed from Image360Ad class which in turn fetched it from server
+    // and passed to activity
+    // url to open daydream play store when use clicks action button
     private String clickUrl;
 
-    // TODO: 4/27/2017 remove getter - clients should not get these from here
     // ad identfication ids
-    @Getter
     private String servingId;
-
-    @Getter
     private int instanceId;
 
-    // we need the class name to go transition back to
-    private String returningClassName;
+    private Intent clientClassReturningIntent;
+
+    // scheduler polls the hmd for parameters (quaternion) at regular intervals
+    private ScheduledExecutorService scheduler = Executors.newScheduledThreadPool(1);
+
+    // The various events we need to handle happen on arbitrary threads. They need to be reposted to
+    // the UI thread in order to manipulate the TextViews. This is only required if your app needs to
+    // perform actions on the UI thread in response to controller events.
+    private Handler uiHandler = new Handler();
+
+    EventListener listener = new EventListener();
 
     // the function talks to analytics manager as and when called
     public void emitEvent(EventType eventType, EventPriority priority, HashMap<String, String> map){
         long currTime = new Timestamp(System.currentTimeMillis()).getTime();
-        RuntimeAdMeta adMeta = new RuntimeAdMeta(this.getServingId(), this.getInstanceId());
+        RuntimeAdMeta adMeta = new RuntimeAdMeta(this.servingId, this.instanceId);
         SDKEvent event = new SDKEvent(currTime, eventType, adMeta);
         event.setParamsMap(map);
         ChymeraVrSdk.getAnalyticsManager().push(event, priority);
@@ -119,19 +123,22 @@ public final class Image360Activity extends Activity {
     // ddController is not thread safe - we call this from the rendering thread and execute on main UI thread
     private final Runnable controllerThread = new Runnable() {
         public void run() {
-            if(ddController.clickButtonState) {
-
+            if(Image360Activity.this.controller.clickButtonState) {
+                Log.d(TAG, "Controller Click DDController");
                 ControllerClickEventResponse keyEventResponse
                         = ControllerClickEventResponse.values()[nativeOnControllerClicked(nativeImage360ActivityHandler)];
 
                 switch (keyEventResponse){
                     case NO_EVENT:
+                        Log.d(TAG, "No Event");
                         break;
                     case DOWNLOAD:
+                        Log.d(TAG, "Download Event");
                         onDownloadClick();
                         finishAdActivity();
                         break;
                     case CLOSE_AD:
+                        Log.d(TAG, "Close Event");
                         finishAdActivity();
                         break;
                 }
@@ -139,30 +146,15 @@ public final class Image360Activity extends Activity {
         }
     };
 
-    private final Runnable closeActivity =
-            new Runnable() {
-                @Override
-                public void run() {
-                    Image360Activity.this.finishAdActivity();
-                }
-            };
-
     // gracefully exit the vr ad back to users add - daydream provides a neat way to do this
     // only call this function once
-    private void finishAdActivity(){
+    public void finishAdActivity(){
         if(this.isCloseClicked){
             return;
         }
         this.isCloseClicked = true;
-
         this.daydreamApi.launchInVr(this.clientClassReturningIntent);
-
     }
-
-    private Intent clientClassReturningIntent;
-
-    // scheduler polls the hmd for parameters (quaternion) at regular intervals
-    private ScheduledExecutorService scheduler = Executors.newScheduledThreadPool(1);
 
     private final Runnable hmdPollRunner = new Runnable() {
         public void run() {
@@ -180,20 +172,11 @@ public final class Image360Activity extends Activity {
         this.daydreamApi = DaydreamApi.create(this);
 
         // initialize daydream controller manager
-        this.ddControllerManager = new ControllerManager(this, new ControllerManager.EventListener() {
-            @Override
-            public void onApiStatusChanged(int i) {
-                Log.d(TAG, "Api Status Changed");
-            }
-
-            @Override
-            public void onRecentered() {
-                Log.d(TAG, "Recentered");
-            }
-        });
+        this.controllerManager = new ControllerManager(this, listener);
 
         // initialize daydream controller
-        this.ddController = this.ddControllerManager.getController();
+        this.controller = this.controllerManager.getController();
+        this.controller.setEventListener(listener);
 
         // Ensure fullscreen immersion.
         setImmersiveSticky();
@@ -218,19 +201,15 @@ public final class Image360Activity extends Activity {
 
         String imageAdFilePath = intent.getStringExtra("imageAdFilePath");
 
-        String controllerTextureFilePath = "chymeraSDKAssets/textures/ddcontroller_idle.png";
-        String laserBeamTextureFilePath = "chymeraSDKAssets/textures/laserTexture.png";
-        String controllerModelFilePath = "chymeraSDKAssets/models/ddController.obj";
-
         this.instanceId = intent.getIntExtra("instanceId", -1);
         this.servingId = intent.getStringExtra("servingId");
-        this.returningClassName = intent.getStringExtra("returningClass");
+        String returningClassName = intent.getStringExtra("returningClass");
 
         // Instantiate an intent to return to calling activity when ad finishes
         Class<?> clientClass;
         try {
             // return to client activity (class) that called the ad show on closing
-            clientClass = Class.forName(this.returningClassName);
+            clientClass = Class.forName(returningClassName);
             ComponentName c= new ComponentName(this, clientClass);
             this.clientClassReturningIntent = DaydreamApi.createVrIntent(c);
         } catch (ClassNotFoundException e) {
@@ -239,12 +218,17 @@ public final class Image360Activity extends Activity {
 
         // Initialize GvrLayout and the native renderer.
         gvrLayout = new GvrLayout(this);
+
+        String CONTROLLER_TEXTURE_FILE_PATH = "chymeraSDKAssets/textures/ddcontroller_idle.png";
+        String CONTROLLER_MODEL_FILE_PATH = "chymeraSDKAssets/models/ddController.obj";
+        String LASER_BEAM_TEXTURE_FILE_PATH = "chymeraSDKAssets/textures/laserTexture.png";
+
         nativeImage360ActivityHandler =
                 nativeCreateRenderer(
                         getClass().getClassLoader(),
                         this.getApplicationContext(),
                         gvrLayout.getGvrApi().getNativeGvrContext(), basePath, imageAdFilePath,
-                        controllerModelFilePath, controllerTextureFilePath, laserBeamTextureFilePath);
+                        CONTROLLER_MODEL_FILE_PATH, CONTROLLER_TEXTURE_FILE_PATH, LASER_BEAM_TEXTURE_FILE_PATH);
 
 
         nativeOnStart(nativeImage360ActivityHandler);
@@ -277,10 +261,11 @@ public final class Image360Activity extends Activity {
                         nativeDrawFrame(nativeImage360ActivityHandler);
 
                         // update controller status
-                        ddController.update();
+                        Image360Activity.this.controller.update();
 
                         // daydream functions are not thread safe - run them on UI thread
-                        Image360Activity.this.runOnUiThread(controllerThread);
+                        //Image360Activity.this.runOnUiThread(Image360Activity.this.controllerThread);
+                        uiHandler.post(listener);
                     }
                 });
         surfaceView.setOnTouchListener(
@@ -321,21 +306,21 @@ public final class Image360Activity extends Activity {
     protected void onPause() {
         super.onPause();
         Log.d(TAG, "onPause");
-        ddControllerManager.stop();
-        nativeOnPause(nativeImage360ActivityHandler);
-        gvrLayout.onPause();
-        surfaceView.onPause();
+        this.controllerManager.stop();
+        nativeOnPause(this.nativeImage360ActivityHandler);
+        this.gvrLayout.onPause();
+        this.surfaceView.onPause();
     }
 
     @Override
     protected void onResume() {
         super.onResume();
         Log.d(TAG, "onResume");
-        ddControllerManager.start();
-        nativeOnResume(nativeImage360ActivityHandler);
-        gvrLayout.onResume();
-        surfaceView.onResume();
-        surfaceView.queueEvent(refreshViewerProfileRunnable);
+        this.controllerManager.start();
+        nativeOnResume(this.nativeImage360ActivityHandler);
+        this.gvrLayout.onResume();
+        this.surfaceView.onResume();
+        this.surfaceView.queueEvent(this.refreshViewerProfileRunnable);
     }
 
     @Override
@@ -346,9 +331,9 @@ public final class Image360Activity extends Activity {
         // the GLSurfaceView and stop the GL thread, allowing safe shutdown of
         // native resources from the UI thread.
         this.emitEvent(EventType.AD_CLOSE, EventPriority.HIGH, null);
-        gvrLayout.shutdown();
+        this.gvrLayout.shutdown();
         nativeDestroyRenderer(nativeImage360ActivityHandler);
-        this.ddControllerManager.stop();
+        this.controllerManager.stop();
         this.daydreamApi.close();
         this.scheduler.shutdown();
     }
@@ -403,11 +388,6 @@ public final class Image360Activity extends Activity {
                 hmdEyeMap.put(key, String.valueOf(hmdParams[i++]));
 
             }
-//            Log.d(TAG, "getDaydreamHmdParams: "
-//                    + hmdParams[0] + ", "
-//                    + hmdParams[1] + ", "
-//                    + hmdParams[2] + ", "
-//                    + hmdParams[3]);
             this.emitEvent(EventType.AD_VIEW_METRICS, EventPriority.LOW, hmdEyeMap);
         }
     }
@@ -421,12 +401,72 @@ public final class Image360Activity extends Activity {
 
         launchIntent.addCategory(Intent.CATEGORY_LAUNCHER);
 
+        // NOTE : Bind Server Supplied address to this.
         launchIntent.setData(Uri.parse("https://play.google.com/vr/store/apps/details?id=com.google.android.apps.youtube.vr"));
 
-        ComponentName playStoreComponent = new ComponentName("com.google.android.vr.home", "com.google.android.apps.vr.playstore.PlayStoreActivity");
+        ComponentName playStoreComponent = new ComponentName("com.google.android.vr.home",
+                "com.google.android.apps.vr.playstore.PlayStoreActivity");
+
         Intent downloadAppIntent = DaydreamApi.createVrIntent(playStoreComponent);
         downloadAppIntent.setData(Uri.parse("https://play.google.com/vr/store/apps/details?id=" + this.clickUrl));
         this.daydreamApi.launchInVr(downloadAppIntent);
+    }
+
+    // We receive all events from the Controller through this listener. In this example, our
+    // listener handles both ControllerManager.EventListener and Controller.EventListener events.
+    // This class is also a Runnable since the events will be reposted to the UI thread.
+    private class EventListener extends Controller.EventListener
+            implements ControllerManager.EventListener, Runnable {
+
+        // The status of the overall controller API. This is primarily used for error handling since
+        // it rarely changes.
+        private String apiStatus;
+
+        // The state of a specific Controller connection.
+        private int controllerState = ConnectionStates.DISCONNECTED;
+
+        @Override
+        public void onApiStatusChanged(int state) {
+            apiStatus = ApiStatus.toString(state);
+            Log.d(TAG, "Controller API Status : " + apiStatus);
+            uiHandler.post(this);
+        }
+
+        @Override
+        public void onConnectionStateChanged(int state) {
+            controllerState = state;
+            Log.d(TAG, "Controller Connection State Changed : " + state);
+            uiHandler.post(this);
+        }
+
+        @Override
+        public void onRecentered() {
+            // In a real GVR application, this would have implicitly called recenterHeadTracker().
+            // Most apps don't care about this, but apps that want to implement custom behavior when a
+            // recentering occurs should use this callback.
+            //controllerOrientationView.resetYaw();
+            Log.d(TAG, "Controller Recentered");
+        }
+
+        @Override
+        public void onUpdate() {
+            uiHandler.post(this);
+        }
+
+        // Update the various TextViews in the UI thread.
+        @Override
+        public void run() {
+            Image360Activity.this.controller.update();
+
+            if (controller.isTouching) {
+                Log.d(TAG,
+                        String.format("[%4.2f, %4.2f]", controller.touch.x, controller.touch.y));
+            }
+            if(controller.clickButtonState){
+                Log.d(TAG, String.format("Clicked Buttons State : [%s]",
+                        controller.clickButtonState ? "T" : " "));
+            }
+        }
     }
 
     private native long nativeCreateRenderer(

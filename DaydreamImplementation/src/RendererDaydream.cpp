@@ -30,7 +30,7 @@
 namespace cl {
 typedef enum { NO_EVENT = 0, NOTIFY_ME = 1, CLOSE_AD = 2 } keyEventResponse;
 
-static const float kZNear = 1.0f;
+static const float kZNear = 0.01f;
 static const float kZFar = 1000.0f;
 
 static const uint64_t kPredictionTimeWithoutVsyncNanos = 50000000;
@@ -154,50 +154,59 @@ static std::array<float, 4> MatrixVectorMul(const gvr::Mat4f &matrix,
 }
 
 void RendererDaydream::ResumeControllerApiAsNeeded() {
-  switch (gvr_viewer_type_) {
-    case GVR_VIEWER_TYPE_CARDBOARD:
-      gvr_controller_api_.reset();
-      break;
-    case GVR_VIEWER_TYPE_DAYDREAM:
-      if (!gvr_controller_api_) {
-        // Initialized controller api.
-        gvr_controller_api_.reset(new gvr::ControllerApi);
-        CHECK(gvr_controller_api_);
-        CHECK(gvr_controller_api_->Init(gvr::ControllerApi::DefaultOptions(),
-                                        gvr_api_->cobj()));
-      }
-      gvr_controller_api_->Resume();
-      break;
-    default:
-      LOGE("unexpected viewer type.");
-      break;
-  }
+  // switch (gvr_viewer_type_) {
+  //   case GVR_VIEWER_TYPE_CARDBOARD:
+  //     gvr_controller_api_.reset();
+  //     break;
+  //   case GVR_VIEWER_TYPE_DAYDREAM:
+  //     if (!gvr_controller_api_) {
+  //       // Initialized controller api.
+  //       gvr_controller_api_.reset(new gvr::ControllerApi);
+
+  //       // Set up the options:
+  //       int32_t options = gvr::ControllerApi::DefaultOptions();
+
+  //       // Enable non-default options : Arm Model & Position Information
+  //       options |=
+  //           GVR_CONTROLLER_ENABLE_ARM_MODEL | GVR_CONTROLLER_ENABLE_POSITION;
+  //       CHECK(gvr_controller_api_);
+  //       CHECK(gvr_controller_api_->Init(options, gvr_api_->cobj()));
+  //     }
+  //     gvr_controller_api_->Resume();
+  //     break;
+  //   default:
+  //     LOGE("unexpected viewer type.");
+  //     break;
+  // }
 }
 
 void RendererDaydream::ProcessControllerInput() {
-  const int old_status = gvr_controller_state_.GetApiStatus();
-  const int old_connection_state = gvr_controller_state_.GetConnectionState();
+  // const int old_status = gvr_controller_state_.GetApiStatus();
+  // const int old_connection_state =
+  // gvr_controller_state_.GetConnectionState();
 
-  // Read current controller state.
-  gvr_controller_state_.Update(*gvr_controller_api_);
+  // gvr_controller_api_->ApplyArmModel(this->handedness, this->behavior,
+  //                                    this->head_view_);
+  // // Read current controller state.
+  // gvr_controller_state_.Update(*gvr_controller_api_);
 
-  // Print new API status and connection state, if they changed.
-  if (gvr_controller_state_.GetApiStatus() != old_status ||
-      gvr_controller_state_.GetConnectionState() != old_connection_state) {
-    LOGD("RendererDaydream: controller API status: %s, connection state: %s",
-         gvr_controller_api_status_to_string(
-             gvr_controller_state_.GetApiStatus()),
-         gvr_controller_connection_state_to_string(
-             gvr_controller_state_.GetConnectionState()));
-  }
+  // // Print new API status and connection state, if they changed.
+  // if (gvr_controller_state_.GetApiStatus() != old_status ||
+  //     gvr_controller_state_.GetConnectionState() != old_connection_state) {
+  //   LOGD("RendererDaydream: controller API status: %s, connection state: %s",
+  //        gvr_controller_api_status_to_string(
+  //            gvr_controller_state_.GetApiStatus()),
+  //        gvr_controller_connection_state_to_string(
+  //            gvr_controller_state_.GetConnectionState()));
+  // }
 
-  // Trigger click event if app/click button is clicked.
-  if (gvr_controller_state_.GetButtonDown(GVR_CONTROLLER_BUTTON_APP) ||
-      gvr_controller_state_.GetButtonDown(GVR_CONTROLLER_BUTTON_CLICK)) {
-    // todo : bind the click events to close and notify me
-    logger->log(LOG_DEBUG, "Controller Button Click");
-    // this->OnTriggerEvent();
-  }
+  // // Trigger click event if app/click button is clicked.
+  // if (gvr_controller_state_.GetButtonDown(GVR_CONTROLLER_BUTTON_APP) ||
+  //     gvr_controller_state_.GetButtonDown(GVR_CONTROLLER_BUTTON_CLICK)) {
+  //   // todo : bind the click events to close and notify me
+  //   logger->log(LOG_DEBUG, "Controller Button Click");
+  //   // this->OnTriggerEvent();
+  // }
 }
 
 void RendererDaydream::setControllerTransform(
@@ -214,43 +223,27 @@ void RendererDaydream::updateController() {
     return;
   }
 
+  // Get Controller Position and Orientation
   auto controllerOrientationQuat = this->gvr_controller_state_.GetOrientation();
+  auto controllerPosition = this->gvr_controller_state_.GetPosition();
+
+  // Update controller transform with orientation data
   CL_Quat controllerQuat =
       CL_Quat(controllerOrientationQuat.qw, controllerOrientationQuat.qx,
               controllerOrientationQuat.qy, controllerOrientationQuat.qz);
-
   this->controllerTransformTree->setLocalQuaternion(controllerQuat);
+
+  // Update controller transform with position data (arm model determines this)
+  auto controllerPos =
+      CL_Vec3(controllerPosition.x, controllerPosition.y, controllerPosition.z);
+  this->controllerTransformTree->setLocalPosition(controllerPos);
 }
 
-// void RendererDaydream::updateController(Scene *scene) {
-//   // initialize controller
-//   if (gvr_viewer_type_ == GVR_VIEWER_TYPE_DAYDREAM) {
-//     auto controller4scene = (Model *)scene->getFromScene("controllerModel");
-//     auto controllerTransform =
-//         (TransformTreeModel
-//         *)controller4scene->getComponentList().getComponent(
-//             "transformTree");
-//     auto controllerOrientationQuat = gvr_controller_state_.GetOrientation();
-//     CL_Quat controllerQuat =
-//         CL_Quat(controllerOrientationQuat.qw, controllerOrientationQuat.qx,
-//                 controllerOrientationQuat.qy, controllerOrientationQuat.qz);
-//     auto controllerPositionGvr = gvr_controller_state_.GetPosition();
-//     // LOGD("Controller Quat : %f %f %f %f", controllerQuat.x,
-//     controllerQuat.y,
-//     // controllerQuat.z, controllerQuat.w);
-//     // LOGD("Controller Positions : %f %f %f", controllerPositionGvr.x,
-//     // controllerPositionGvr.y, controllerPositionGvr.z);
-//     controllerTransform->setLocalQuaternion(controllerQuat);
-//     //    this->controllerTransformTree->setLocalQuaternion(controllerQuat);
-//     //            auto controllerPosition = CL_Vec3(controllerPositionGvr.x,
-//     //            controllerPositionGvr.y, controllerPositionGvr.z);
-//     //            controllerTransform->setLocalPosition(controllerPosition);
-//   }
-// }
-
-RendererDaydream::RendererDaydream(gvr_context *gvr_context,
+RendererDaydream::RendererDaydream(gvr::GvrApi *gvr_api,
+                                   //  gvr_context *gvr_context,
                                    ILoggerFactory *loggerFactory)
-    : gvr_api_(gvr::GvrApi::WrapNonOwned(gvr_context)),
+    : gvr_api_(gvr_api),
+      // gvr_api_(gvr::GvrApi::WrapNonOwned(gvr_context)),
       scratch_viewport_(gvr_api_->CreateBufferViewport()),
       gvr_viewer_type_(gvr_api_->GetViewerType()) {
   ResumeControllerApiAsNeeded();
@@ -309,7 +302,6 @@ bool RendererDaydream::initialize(Scene *scene) {
   this->renderCamera->setNearPlane(kZNear);
   this->renderCamera->setFarPlane(kZFar);
 
-  // this->updateController(scene);
   this->updateController();
   logger->log(LOG_DEBUG, "Renderer Intialization Complete!!!");
   return true;
@@ -346,8 +338,7 @@ void RendererDaydream::drawInit(Scene *scene) {
   this->rotQuat = CL_Rot_To_Quat(rotMat);
   transform->setLocalQuaternion(this->rotQuat);
   auto cameraQuat = transform->getLocalQuaternion();
-  //  LOGD("Camera Params : %f %f %f %f", cameraQuat.x, cameraQuat.y,
-  //  cameraQuat.z, cameraQuat.w);
+
   // A client app does its rendering here.
 
   this->viewport_list_->SetToRecommendedBufferViewports();
@@ -364,8 +355,7 @@ void RendererDaydream::drawLeft(Scene *scene) {
       (TransformTreeCamera *)this->renderCamera->getComponentList()
           .getComponent("transformTree");
   auto cameraQuat = transform->getLocalQuaternion();
-  //  LOGD("Camera Params : %f %f %f %f", cameraQuat.x, cameraQuat.y,
-  //  cameraQuat.z, cameraQuat.w);
+
   this->viewport_list_->GetBufferViewport(0, &this->scratch_viewport_);
   gvr::Mat4f eye_matrix = gvr_api_->GetEyeFromHeadMatrix(GVR_LEFT_EYE);
 
@@ -407,8 +397,7 @@ void RendererDaydream::drawRight(Scene *scene) {
   transform->setLocalQuaternion(this->rotQuat);
 
   auto cameraQuat = transform->getLocalQuaternion();
-  //  LOGD("Camera Params : %f %f %f %f", cameraQuat.x, cameraQuat.y,
-  //  cameraQuat.z, cameraQuat.w);
+
   this->viewport_list_->GetBufferViewport(1, &this->scratch_viewport_);
   gvr::Mat4f eye_matrix = gvr_api_->GetEyeFromHeadMatrix(GVR_RIGHT_EYE);
 
@@ -547,25 +536,6 @@ void RendererDaydream::drawScene(Scene *scene) {
       }
     }
   }
-
-  if (gvr_viewer_type_ == GVR_VIEWER_TYPE_DAYDREAM) {
-    //    auto gvrReticleQuat = gvr_controller_state_.GetOrientation();
-    //    CL_Quat reticleQuat = CL_Quat(gvrReticleQuat.qw, gvrReticleQuat.qx,
-    //                                  gvrReticleQuat.qy, gvrReticleQuat.qz);
-    //    auto reticle4scene = (Model *)scene->getFromScene("reticle");
-    //    auto reticleTransform =
-    //        (TransformTreeModel
-    //        *)reticle4scene->getComponentList().getComponent(
-    //            "transformTree");
-    //    // LOGD("Quaternion parameters : %f, %f, %f, %f", gvrReticleQuat.qw,
-    //    // gvrReticleQuat.qx, gvrReticleQuat.qy, gvrReticleQuat.qz);
-    //    // auto rotmat = CL_RotationMatrix(reticleQuat);
-    //    auto reticleBaseTransform =
-    //        (TransformTreeModel *)reticleTransform->getParent();
-    //    reticleBaseTransform->setLocalQuaternion(reticleQuat);
-  }
-
-  // this->updateController(scene);
   this->updateController();
 }
 }

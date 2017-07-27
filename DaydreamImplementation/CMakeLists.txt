@@ -22,6 +22,7 @@ set (INCLUDE_DIRS ${PROJECT_SOURCE_DIR}/include)
 
 set(SOURCES ${PROJECT_SOURCE_DIR}/src/LoggerDaydream.cpp
             ${PROJECT_SOURCE_DIR}/src/RendererDaydream.cpp
+            ${PROJECT_SOURCE_DIR}/src/ControllerDaydream.cpp
             ${PROJECT_SOURCE_DIR}/src/CloseButtonListenerDaydream.cpp
             ${PROJECT_SOURCE_DIR}/src/ActionButtonListenerDaydream.cpp)
 

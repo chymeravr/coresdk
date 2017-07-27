@@ -56,23 +56,6 @@ android {
             path '../../../../DaydreamImplementation/CMakeLists.txt'
         }
     }
-
-//    sourceSets {
-////        main {
-////            jniLibs.srcDirs = ["${distributionDir}/coreEngine", "${distributionDir}/glImplementation",
-////                               , "${distributionDir}/image360"]
-////        }
-//        debug{
-//            jniLibs.srcDirs = ["${distributionDir}/coreEngine/debug",
-//                               "${distributionDir}/glImplementation/debug",
-//                               "${distributionDir}/image360/debug"]
-//        }
-//        release{
-//            jniLibs.srcDirs = ["${distributionDir}/coreEngine/release",
-//                               "${distributionDir}/glImplementation/release",
-//                               "${distributionDir}/image360/release"]
-//        }
-//    }
 }
 
 tasks.whenTaskAdded { task ->

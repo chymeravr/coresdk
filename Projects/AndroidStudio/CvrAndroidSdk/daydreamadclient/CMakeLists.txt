@@ -23,9 +23,12 @@ include_directories(${REPO_PATH}/thirdParty/glm/glm-${GLM_VERSION}/glm
                     ${DaydreamImplementationRoot}/include
                     ${GVR_LIBRARIES}/headers)
 
-set(SOURCES ${PROJECT_SOURCE_DIR}/src/main/jni/gvrActivityHandlers.cpp)
+FILE(GLOB_RECURSE INCLUDE_HEADERS ${PROJECT_SOURCE_DIR}/src/main/jni/*.h)
 
-add_library(${PROJECT_NAME} SHARED ${SOURCES})
+set(SOURCES ${PROJECT_SOURCE_DIR}/src/main/jni/gvrActivityHandlers.cpp
+            ${PROJECT_SOURCE_DIR}/src/main/jni/DaydreamActivityCloseEvent.cpp)
+
+add_library(${PROJECT_NAME} SHARED ${INCLUDE_HEADERS} ${SOURCES})
 
 
 

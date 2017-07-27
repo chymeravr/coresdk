@@ -30,9 +30,14 @@ class RendererDaydream : public IRenderer {
   void PrepareFramebuffer();
   void ResumeControllerApiAsNeeded();
   void ProcessControllerInput();
+
   // Controller API entry point.
   std::unique_ptr<gvr::ControllerApi> gvr_controller_api_;
 
+  gvr::ControllerHandedness handedness =
+      static_cast<gvr::ControllerHandedness>(GVR_CONTROLLER_RIGHT_HANDED);
+  gvr::ArmModelBehavior behavior =
+      static_cast<gvr::ArmModelBehavior>(GVR_ARM_MODEL_IGNORE_GAZE);
   // The latest controller state (updated once per frame).
   gvr::ControllerState gvr_controller_state_;
 
@@ -40,7 +45,8 @@ class RendererDaydream : public IRenderer {
 
   // gvr stuff
 
-  std::unique_ptr<gvr::GvrApi> gvr_api_;
+  //   std::unique_ptr<gvr::GvrApi> gvr_api_;
+  gvr::GvrApi *gvr_api_;
   std::unique_ptr<gvr::BufferViewportList> viewport_list_;
   std::unique_ptr<gvr::SwapChain> swapchain_;
   gvr::BufferViewport scratch_viewport_;
@@ -50,24 +56,23 @@ class RendererDaydream : public IRenderer {
 
   gvr::ViewerType gvr_viewer_type_;
 
-  void InitializeGl();
-
   CameraGL *renderCamera;
 
   ILoggerFactory *loggerFactory;
-
   std::unique_ptr<ILogger> logger;
 
   // Controller Params
   TransformTreeModel *controllerTransformTree = nullptr;
   CL_Quat rotQuat;
 
-  // void updateController(Scene *scene);
-
   void updateController();
 
+  void InitializeGl();
+
  public:
-  RendererDaydream(gvr_context *gvr_context, ILoggerFactory *loggerFactory);
+  //   RendererDaydream(gvr_context *gvr_context, ILoggerFactory
+  //   *loggerFactory);
+  RendererDaydream(gvr::GvrApi *gvr_api, ILoggerFactory *loggerFactory);
 
   ~RendererDaydream();
 
@@ -95,6 +100,7 @@ class RendererDaydream : public IRenderer {
 
   std::vector<float> getHMDParams();
 
+  // make private in future
   void drawScene(Scene *scene);
 
   void setControllerTransform(TransformTreeModel &controllerTransformTree);
