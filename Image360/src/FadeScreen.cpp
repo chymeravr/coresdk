@@ -12,6 +12,10 @@ FadeScreen::FadeScreen(
   this->eventCloseApplicationListener = &eventCloseApplicationListener;
 }
 
+FadeScreen::~FadeScreen() {
+  this->logger->log(LOG_DEBUG, "FadeScreen Destructor");
+}
+
 void FadeScreen::initialize(Scene &scene) {
   this->screen = uiFactory->createFadePlanarBackground(
       "fadeScreen", &scene, FADE_SCREEN_COLOR, FADE_SCREEN_POSITION,

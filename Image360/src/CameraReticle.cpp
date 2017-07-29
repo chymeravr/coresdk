@@ -13,4 +13,8 @@ void CameraReticle::initialize(Scene &scene) {
   this->reticle = this->uiFactory->createReticle(
       "reticle", &scene, this->transformTreeCamera, this->CAMERA_RETICLE_COLOR);
 }
+
+CameraReticle::~CameraReticle() {
+  this->logger->log(LOG_DEBUG, "CameraReticle Destructor");
+}
 }

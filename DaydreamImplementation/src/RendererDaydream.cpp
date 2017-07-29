@@ -153,112 +153,16 @@ static std::array<float, 4> MatrixVectorMul(const gvr::Mat4f &matrix,
   return result;
 }
 
-void RendererDaydream::ResumeControllerApiAsNeeded() {
-  // switch (gvr_viewer_type_) {
-  //   case GVR_VIEWER_TYPE_CARDBOARD:
-  //     gvr_controller_api_.reset();
-  //     break;
-  //   case GVR_VIEWER_TYPE_DAYDREAM:
-  //     if (!gvr_controller_api_) {
-  //       // Initialized controller api.
-  //       gvr_controller_api_.reset(new gvr::ControllerApi);
-
-  //       // Set up the options:
-  //       int32_t options = gvr::ControllerApi::DefaultOptions();
-
-  //       // Enable non-default options : Arm Model & Position Information
-  //       options |=
-  //           GVR_CONTROLLER_ENABLE_ARM_MODEL | GVR_CONTROLLER_ENABLE_POSITION;
-  //       CHECK(gvr_controller_api_);
-  //       CHECK(gvr_controller_api_->Init(options, gvr_api_->cobj()));
-  //     }
-  //     gvr_controller_api_->Resume();
-  //     break;
-  //   default:
-  //     LOGE("unexpected viewer type.");
-  //     break;
-  // }
-}
-
-void RendererDaydream::ProcessControllerInput() {
-  // const int old_status = gvr_controller_state_.GetApiStatus();
-  // const int old_connection_state =
-  // gvr_controller_state_.GetConnectionState();
-
-  // gvr_controller_api_->ApplyArmModel(this->handedness, this->behavior,
-  //                                    this->head_view_);
-  // // Read current controller state.
-  // gvr_controller_state_.Update(*gvr_controller_api_);
-
-  // // Print new API status and connection state, if they changed.
-  // if (gvr_controller_state_.GetApiStatus() != old_status ||
-  //     gvr_controller_state_.GetConnectionState() != old_connection_state) {
-  //   LOGD("RendererDaydream: controller API status: %s, connection state: %s",
-  //        gvr_controller_api_status_to_string(
-  //            gvr_controller_state_.GetApiStatus()),
-  //        gvr_controller_connection_state_to_string(
-  //            gvr_controller_state_.GetConnectionState()));
-  // }
-
-  // // Trigger click event if app/click button is clicked.
-  // if (gvr_controller_state_.GetButtonDown(GVR_CONTROLLER_BUTTON_APP) ||
-  //     gvr_controller_state_.GetButtonDown(GVR_CONTROLLER_BUTTON_CLICK)) {
-  //   // todo : bind the click events to close and notify me
-  //   logger->log(LOG_DEBUG, "Controller Button Click");
-  //   // this->OnTriggerEvent();
-  // }
-}
-
-void RendererDaydream::setControllerTransform(
-    TransformTreeModel &controllerTransformTree) {
-  this->controllerTransformTree = &controllerTransformTree;
-}
-
-void RendererDaydream::updateController() {
-  if (this->controllerTransformTree == nullptr) {
-    return;
-  }
-
-  if (!this->gvr_controller_api_) {
-    return;
-  }
-
-  // Get Controller Position and Orientation
-  auto controllerOrientationQuat = this->gvr_controller_state_.GetOrientation();
-  auto controllerPosition = this->gvr_controller_state_.GetPosition();
-
-  // Update controller transform with orientation data
-  CL_Quat controllerQuat =
-      CL_Quat(controllerOrientationQuat.qw, controllerOrientationQuat.qx,
-              controllerOrientationQuat.qy, controllerOrientationQuat.qz);
-  this->controllerTransformTree->setLocalQuaternion(controllerQuat);
-
-  // Update controller transform with position data (arm model determines this)
-  auto controllerPos =
-      CL_Vec3(controllerPosition.x, controllerPosition.y, controllerPosition.z);
-  this->controllerTransformTree->setLocalPosition(controllerPos);
-}
 
 RendererDaydream::RendererDaydream(gvr::GvrApi *gvr_api,
-                                   //  gvr_context *gvr_context,
                                    ILoggerFactory *loggerFactory)
     : gvr_api_(gvr_api),
-      // gvr_api_(gvr::GvrApi::WrapNonOwned(gvr_context)),
-      scratch_viewport_(gvr_api_->CreateBufferViewport()),
-      gvr_viewer_type_(gvr_api_->GetViewerType()) {
-  ResumeControllerApiAsNeeded();
-  if (gvr_viewer_type_ == GVR_VIEWER_TYPE_CARDBOARD) {
-    LOGD("Viewer type: CARDBOARD");
-  } else if (gvr_viewer_type_ == GVR_VIEWER_TYPE_DAYDREAM) {
+      scratch_viewport_(gvr_api_->CreateBufferViewport())
+{
     LOGD("Viewer type: DAYDREAM");
-  } else {
-    LOGE("Unexpected viewer type.");
-  }
-  // todo: remove hardcoded string
   logger = loggerFactory->createLogger("RendererDaydream");
 }
 
-// todo : figure out if we have to do any cleanup
 RendererDaydream::~RendererDaydream() {}
 
 bool RendererDaydream::start() { return true; }
@@ -302,7 +206,6 @@ bool RendererDaydream::initialize(Scene *scene) {
   this->renderCamera->setNearPlane(kZNear);
   this->renderCamera->setFarPlane(kZFar);
 
-  this->updateController();
   logger->log(LOG_DEBUG, "Renderer Intialization Complete!!!");
   return true;
 }
@@ -310,12 +213,8 @@ bool RendererDaydream::initialize(Scene *scene) {
 void RendererDaydream::update() {}
 
 void RendererDaydream::drawInit(Scene *scene) {
-  if (gvr_viewer_type_ == GVR_VIEWER_TYPE_DAYDREAM) {
-    ProcessControllerInput();
-  }
 
   PrepareFramebuffer();
-  // gvr::Frame frame = swapchain_->AcquireFrame();
   *this->frame = swapchain_->AcquireFrame();
 
   // A client app does its rendering here.
@@ -440,18 +339,45 @@ void RendererDaydream::drawComplete() {
   CheckGLError("onDrawFrame");
 }
 
-void RendererDaydream::deinitialize(Scene *scene) { free(frame); }
+void RendererDaydream::deinitialize(Scene *scene) {
+  free(this->frame);
+  IRenderable *sceneRenderer = scene->getRenderable();
+  sceneRenderer->deinitialize();
+
+  std::vector<Relation *> cameraRelations = scene->getRelations("camera");
+  assert(cameraRelations.size() == 1);
+  ((Camera *)cameraRelations[0])->getRenderable()->deinitialize();
+
+  std::vector<Relation *> shaderRelations = scene->getRelations("shader");
+  for (auto it = shaderRelations.cbegin(); it != shaderRelations.cend(); it++) {
+    Shader *shader = (Shader *)(*it);
+    shader->getRenderable()->deinitialize();
+
+    std::vector<Relation *> materialRelations =
+        shader->getRelations("material");
+    for (auto it = materialRelations.cbegin(); it != materialRelations.cend();
+         it++) {
+      Material *material = (Material *)(*it);
+      material->getRenderable()->deinitialize();
+
+      std::vector<Relation *> modelRelations = material->getRelations("model");
+      for (auto it = modelRelations.cbegin(); it != modelRelations.cend();
+           it++) {
+        Model *model = (Model *)(*it);
+        model->getRenderable()->deinitialize();
+      }
+    }
+  }
+}
 
 void RendererDaydream::stop() {}
 
 void RendererDaydream::pause() {
   gvr_api_->PauseTracking();
-  if (gvr_controller_api_) gvr_controller_api_->Pause();
 }
 
 void RendererDaydream::resume() {
   gvr_api_->ResumeTracking();
-  ResumeControllerApiAsNeeded();
 }
 
 std::vector<float> RendererDaydream::getHMDParams() {
@@ -510,7 +436,6 @@ void RendererDaydream::InitializeGl() {
 
 void RendererDaydream::drawScene(Scene *scene) {
   IRenderable *sceneRenderer = scene->getRenderable();
-  // sceneRenderer->draw();
 
   std::vector<Relation *> cameraRelations = scene->getRelations("camera");
   assert(cameraRelations.size() == 1);
@@ -536,6 +461,5 @@ void RendererDaydream::drawScene(Scene *scene) {
       }
     }
   }
-  this->updateController();
 }
 }

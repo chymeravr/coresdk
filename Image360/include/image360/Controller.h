@@ -18,16 +18,12 @@ class Controller : public ApplicationObject {
              UIFactory &uiFactory, std::unique_ptr<Image> controllerImage,
              std::unique_ptr<Image> laserBeamImage,
              std::string controllerModelPath);
-
+  ~Controller();
   void initialize(Scene &scene);
 
   Model *getControllerModel() { return this->controllerModel; }
   Reticle *getControllerReticle() { return this->controllerReticle.get(); }
   TransformTreeModel *getGazeTransformSource();
-
-  // void updateControllerQuaternion(CL_Quat controllerOrientation);
-  // void updateControllerRotation(CL_Vec3 controllerRotation);
-  // void updateControllerPosition(CL_Vec3 controllerPosition);
 
   TransformTreeModel *getTransformTreeModel();
 

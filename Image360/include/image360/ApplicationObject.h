@@ -15,6 +15,7 @@ class ApplicationObject {
  public:
   virtual void initialize(Scene &scene) = 0;
   virtual void preDraw() {}
+  virtual ~ApplicationObject() {}
 };
 }
 

@@ -1,7 +1,7 @@
 apply plugin: 'com.android.library'
 //apply from: "${rootProject.rootDir}/fat-aar.gradle"
-apply from: "${rootProject.rootDir}/build_release_aar.gradle"
-apply from: "${rootProject.rootDir}/build_releaseDemo_aar.gradle"
+//apply from: "${rootProject.rootDir}/build_release_aar.gradle"
+//apply from: "${rootProject.rootDir}/build_releaseDemo_aar.gradle"
 
 apply plugin: 'maven-publish'
 apply from: 'https://raw.github.com/chrisbanes/gradle-mvn-push/master/gradle-mvn-push.gradle'
@@ -52,39 +52,32 @@ android {
         def TRUE = "true"
         def FALSE = "false"
         def NETWORK_ENABLED = "NETWORK_ENABLED"
-
         // we minify and test
-        debugDemo {
-            buildConfigField BOOLEAN, NETWORK_ENABLED, FALSE
-            minifyEnabled false
-            jniDebuggable true
-//             minifyEnabled true
-//             debuggable false
-//             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
-        }
-
+//        debugDemo {
+//            buildConfigField BOOLEAN, NETWORK_ENABLED, FALSE
+//            minifyEnabled false
+//            jniDebuggable true
+//            debuggable true
+//        }
         debug {
-            buildConfigField BOOLEAN, NETWORK_ENABLED, TRUE
+            buildConfigField BOOLEAN, NETWORK_ENABLED, FALSE            // a bug in android studio - we can't debug non default configs
             minifyEnabled false
             jniDebuggable true
-//             minifyEnabled true
-//             debuggable false
-//             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
+            debuggable true
         }
-
-        releaseDemo {
-            buildConfigField BOOLEAN, NETWORK_ENABLED, FALSE
-            minifyEnabled true
-            debuggable false
-            proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
-        }
-
-        release {
-            buildConfigField BOOLEAN, NETWORK_ENABLED, TRUE
-            minifyEnabled true
-            debuggable false
-            proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
-        }
+//        releaseDemo {
+//            buildConfigField BOOLEAN, NETWORK_ENABLED, FALSE
+//            minifyEnabled true
+//            debuggable false
+//            proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
+//        }
+//
+//        release {
+//            buildConfigField BOOLEAN, NETWORK_ENABLED, TRUE
+//            minifyEnabled true
+//            debuggable false
+//            proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
+//        }
     }
 
     sourceSets{
@@ -106,20 +99,20 @@ android {
 
         debug {
             jniLibs.srcDirs = debugLibs
-            assets.srcDirs = ['src/main/assets']
+            assets.srcDirs = ['src/main/assets', 'src/main/demo/assets/']           // remove demo assets when non default debugging bug gets fixed
         }
-        debugDemo {
-            jniLibs.srcDirs = debugLibs
-            assets.srcDirs = ['src/main/assets', 'src/main/demo/assets/']
-        }
-        release {
-            jniLibs.srcDirs = releaseLibs
-            assets.srcDirs = ['src/main/assets']
-        }
-        releaseDemo {
-            jniLibs.srcDirs = releaseLibs
-            assets.srcDirs = ['src/main/assets', 'src/main/demo/assets/']
-        }
+//        debugDemo {
+//            jniLibs.srcDirs = debugLibs
+//            assets.srcDirs = ['src/main/assets', 'src/main/demo/assets/']
+//        }
+//        release {
+//            jniLibs.srcDirs = releaseLibs
+//            assets.srcDirs = ['src/main/assets']
+//        }
+//        releaseDemo {
+//            jniLibs.srcDirs = releaseLibs
+//            assets.srcDirs = ['src/main/assets', 'src/main/demo/assets/']
+//        }
     }
 
     externalNativeBuild {
@@ -136,7 +129,7 @@ android.lintOptions {
 }
 
 dependencies {
-    compile fileTree(dir: 'libs', include: ['*.jar'])
+    compile fileTree(include: ['*.jar'], dir: 'libs')
     androidTestCompile('com.android.support.test.espresso:espresso-core:2.2.2', {
         exclude group: 'com.android.support', module: 'support-annotations'
     })
@@ -145,19 +138,19 @@ dependencies {
     androidTestCompile 'com.google.dexmaker:dexmaker-mockito:1.2'
     compile 'org.projectlombok:lombok:1.16.12'
     compile 'javax.annotation:javax.annotation-api:1.2'
-
-//    compile 'com.google.vr:sdk-audio:1.70.0'
+    //    compile 'com.google.vr:sdk-audio:1.70.0'
     compile 'com.google.vr:sdk-base:1.70.0'
     compile 'com.google.vr:sdk-controller:1.70.0'
-
-    embeddedDemo project(':common')
-    embeddedDemo project(':analytics')
-    embeddedDemo project(':adclient')
-
-    embedded project(':common')
-    embedded project(':analytics')
-    embedded project(':adclient')
-
+    // release management
+    //    embeddedDemo project(':common')
+    //    embeddedDemo project(':analytics')
+    //    embeddedDemo project(':adclient')
+    //    embedded project(':common')
+    //    embedded project(':analytics')
+    //    embedded project(':adclient')
+    compile project(':common')
+    compile project(':analytics')
+    compile project(':adclient')
 }
 
 

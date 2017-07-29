@@ -16,6 +16,7 @@ class FPSCamera : public ApplicationObject {
   FPSCamera(ILoggerFactory &loggerFactory,
             ITransformTreeFactory &transformTreeFactory,
             ICameraFactory &cameraFactory);
+  ~FPSCamera();
   void initialize(Scene &scene);
   TransformTree *getCameraTransformTree() { return this->gazeTransformShooter; }
 

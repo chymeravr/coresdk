@@ -11,6 +11,7 @@ class StereoObject {
  public:
   virtual void preDrawLeft() = 0;
   virtual void preDrawRight() = 0;
+  virtual ~StereoObject() {}
 };
 }
 

@@ -25,6 +25,10 @@ FPSCamera::FPSCamera(ILoggerFactory &loggerFactory,
   this->gazeTransformShooter = transformTreeCamera;
 }
 
+FPSCamera::~FPSCamera() {
+  this->logger->log(LOG_DEBUG, "FPSCamera Destructor");
+}
+
 void FPSCamera::initialize(Scene &scene) {
   assert(cameraUptr != nullptr);
   this->cameraUptr->setAspect(ASPECT_RATIO);

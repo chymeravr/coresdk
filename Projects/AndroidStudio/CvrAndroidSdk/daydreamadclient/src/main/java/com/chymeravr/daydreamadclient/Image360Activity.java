@@ -69,8 +69,8 @@ public final class Image360Activity extends Activity {
 
     // daydream parameters - api object, controller etc.
     private DaydreamApi daydreamApi;
-    private ControllerManager controllerManager;
-    private Controller controller;
+//    private ControllerManager controllerManager;
+//    private Controller controller;
 
     // native C++ handle for image360 application
     private long nativeImage360ActivityHandler;
@@ -121,34 +121,35 @@ public final class Image360Activity extends Activity {
 
 
     // ddController is not thread safe - we call this from the rendering thread and execute on main UI thread
-    private final Runnable controllerThread = new Runnable() {
-        public void run() {
-            if(Image360Activity.this.controller.clickButtonState) {
-                Log.d(TAG, "Controller Click DDController");
-                ControllerClickEventResponse keyEventResponse
-                        = ControllerClickEventResponse.values()[nativeOnControllerClicked(nativeImage360ActivityHandler)];
-
-                switch (keyEventResponse){
-                    case NO_EVENT:
-                        Log.d(TAG, "No Event");
-                        break;
-                    case DOWNLOAD:
-                        Log.d(TAG, "Download Event");
-                        onDownloadClick();
-                        finishAdActivity();
-                        break;
-                    case CLOSE_AD:
-                        Log.d(TAG, "Close Event");
-                        finishAdActivity();
-                        break;
-                }
-            }
-        }
-    };
+//    private final Runnable controllerThread = new Runnable() {
+//        public void run() {
+//            if(Image360Activity.this.controller.clickButtonState) {
+//                Log.d(TAG, "Controller Click DDController");
+//                ControllerClickEventResponse keyEventResponse
+//                        = ControllerClickEventResponse.values()[nativeOnControllerClicked(nativeImage360ActivityHandler)];
+//
+//                switch (keyEventResponse){
+//                    case NO_EVENT:
+//                        Log.d(TAG, "No Event");
+//                        break;
+//                    case DOWNLOAD:
+//                        Log.d(TAG, "Download Event");
+//                        onDownloadClick();
+//                        finishAdActivity();
+//                        break;
+//                    case CLOSE_AD:
+//                        Log.d(TAG, "Close Event");
+//                        finishAdActivity();
+//                        break;
+//                }
+//            }
+//        }
+//    };
 
     // gracefully exit the vr ad back to users add - daydream provides a neat way to do this
     // only call this function once
     public void finishAdActivity(){
+        Log.d(TAG, "Finishing Ad Activity");
         if(this.isCloseClicked){
             return;
         }
@@ -172,11 +173,11 @@ public final class Image360Activity extends Activity {
         this.daydreamApi = DaydreamApi.create(this);
 
         // initialize daydream controller manager
-        this.controllerManager = new ControllerManager(this, listener);
+//        this.controllerManager = new ControllerManager(this, listener);
 
         // initialize daydream controller
-        this.controller = this.controllerManager.getController();
-        this.controller.setEventListener(listener);
+//        this.controller = this.controllerManager.getController();
+//        this.controller.setEventListener(listener);
 
         // Ensure fullscreen immersion.
         setImmersiveSticky();
@@ -224,8 +225,7 @@ public final class Image360Activity extends Activity {
         String LASER_BEAM_TEXTURE_FILE_PATH = "chymeraSDKAssets/textures/laserTexture.png";
 
         nativeImage360ActivityHandler =
-                nativeCreateRenderer(
-                        getClass().getClassLoader(),
+                nativeCreateRenderer(this,
                         this.getApplicationContext(),
                         gvrLayout.getGvrApi().getNativeGvrContext(), basePath, imageAdFilePath,
                         CONTROLLER_MODEL_FILE_PATH, CONTROLLER_TEXTURE_FILE_PATH, LASER_BEAM_TEXTURE_FILE_PATH);
@@ -261,11 +261,11 @@ public final class Image360Activity extends Activity {
                         nativeDrawFrame(nativeImage360ActivityHandler);
 
                         // update controller status
-                        Image360Activity.this.controller.update();
+//                        Image360Activity.this.controller.update();
 
                         // daydream functions are not thread safe - run them on UI thread
                         //Image360Activity.this.runOnUiThread(Image360Activity.this.controllerThread);
-                        uiHandler.post(listener);
+//                        uiHandler.post(listener);
                     }
                 });
         surfaceView.setOnTouchListener(
@@ -306,7 +306,7 @@ public final class Image360Activity extends Activity {
     protected void onPause() {
         super.onPause();
         Log.d(TAG, "onPause");
-        this.controllerManager.stop();
+//        this.controllerManager.stop();
         nativeOnPause(this.nativeImage360ActivityHandler);
         this.gvrLayout.onPause();
         this.surfaceView.onPause();
@@ -316,7 +316,7 @@ public final class Image360Activity extends Activity {
     protected void onResume() {
         super.onResume();
         Log.d(TAG, "onResume");
-        this.controllerManager.start();
+//        this.controllerManager.start();
         nativeOnResume(this.nativeImage360ActivityHandler);
         this.gvrLayout.onResume();
         this.surfaceView.onResume();
@@ -333,7 +333,7 @@ public final class Image360Activity extends Activity {
         this.emitEvent(EventType.AD_CLOSE, EventPriority.HIGH, null);
         this.gvrLayout.shutdown();
         nativeDestroyRenderer(nativeImage360ActivityHandler);
-        this.controllerManager.stop();
+//        this.controllerManager.stop();
         this.daydreamApi.close();
         this.scheduler.shutdown();
     }
@@ -456,21 +456,22 @@ public final class Image360Activity extends Activity {
         // Update the various TextViews in the UI thread.
         @Override
         public void run() {
-            Image360Activity.this.controller.update();
-
-            if (controller.isTouching) {
-                Log.d(TAG,
-                        String.format("[%4.2f, %4.2f]", controller.touch.x, controller.touch.y));
-            }
-            if(controller.clickButtonState){
-                Log.d(TAG, String.format("Clicked Buttons State : [%s]",
-                        controller.clickButtonState ? "T" : " "));
-            }
+//            Image360Activity.this.controller.update();
+//
+//            if (controller.isTouching) {
+//                Log.d(TAG,
+//                        String.format("[%4.2f, %4.2f]", controller.touch.x, controller.touch.y));
+//            }
+//            if(controller.clickButtonState){
+//                Log.d(TAG, String.format("Clicked Buttons State : [%s]",
+//                        controller.clickButtonState ? "T" : " "));
+//            }
         }
     }
 
     private native long nativeCreateRenderer(
-            ClassLoader appClassLoader, Context context, long nativeGvrContext, String appDir,
+            Image360Activity image360Activity,
+            Context applicationContext, long nativeGvrContext, String appDir,
             String Image360AdFileName, String controllerModelFilename,
             String controllerTextureFilename, String laserBeamTextureFilename );
 
@@ -482,7 +483,7 @@ public final class Image360Activity extends Activity {
 
     private native long nativeDrawFrame(long nativeTreasureHuntRenderer);
 
-    private native int nativeOnControllerClicked(long nativeTreasureHuntRenderer);
+//    private native int nativeOnControllerClicked(long nativeTreasureHuntRenderer);
 
     private native void nativeOnPause(long nativeTreasureHuntRenderer);
 

@@ -16,6 +16,7 @@ class Shader : public Relation, public IScenable {
     this->sceneId = sceneId;
     this->createBiRelation(scene);
   }
+  virtual ~Shader() {}
   virtual IRenderable *getRenderable() = 0;
   std::string getType() { return this->type; }
   std::string getUniqueIdentifier() { return this->sceneId; }

@@ -26,7 +26,8 @@ include_directories(${REPO_PATH}/thirdParty/glm/glm-${GLM_VERSION}/glm
 FILE(GLOB_RECURSE INCLUDE_HEADERS ${PROJECT_SOURCE_DIR}/src/main/jni/*.h)
 
 set(SOURCES ${PROJECT_SOURCE_DIR}/src/main/jni/gvrActivityHandlers.cpp
-            ${PROJECT_SOURCE_DIR}/src/main/jni/DaydreamActivityCloseEvent.cpp)
+            ${PROJECT_SOURCE_DIR}/src/main/jni/DaydreamActivityCloseEvent.cpp
+            ${PROJECT_SOURCE_DIR}/src/main/jni/Image360AppWrapper.cpp)
 
 add_library(${PROJECT_NAME} SHARED ${INCLUDE_HEADERS} ${SOURCES})
 

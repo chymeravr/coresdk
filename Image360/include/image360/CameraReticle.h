@@ -16,6 +16,7 @@ class CameraReticle : public ApplicationObject {
  public:
   CameraReticle(ILoggerFactory &loggerFactory, UIFactory &uiFactory,
                 TransformTree &transformTreeCamera);
+  ~CameraReticle();
   void initialize(Scene &scene);
 
  private:

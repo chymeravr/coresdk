@@ -16,6 +16,9 @@ Controller::Controller(ILoggerFactory &loggerFactory,
   assert(!controllerModelPath.empty());
 
   this->loggerFactory = &loggerFactory;
+
+  this->logger = this->loggerFactory->createLogger("Controller");
+
   this->modelFactory = &modelFactory;
   this->transformTreeFactory = &transformTreeFactory;
   this->diffuseTextureFactory = &diffuseTextureFactory;
@@ -35,6 +38,10 @@ Controller::Controller(ILoggerFactory &loggerFactory,
           this->controllerModel);
   this->controllerModel->getComponentList().addComponent(
       std::move(controllerTransformUptr));
+}
+
+Controller::~Controller() {
+  this->logger->log(LOG_DEBUG, "Controller Destructor");
 }
 
 void Controller::initialize(Scene &scene) {

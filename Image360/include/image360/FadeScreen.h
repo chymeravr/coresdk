@@ -22,6 +22,7 @@ class FadeScreen : public ApplicationObject {
   FadeScreen(ILoggerFactory &loggerFactory, UIFactory &uiFactory,
              TransformTree &parentTransform,
              EventCloseApplicationListener &eventCloseApplicationListener);
+  ~FadeScreen();
   void initialize(Scene &scene);
   void preDraw();
 

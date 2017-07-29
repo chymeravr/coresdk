@@ -3,11 +3,12 @@
 
 #include <string>
 
-namespace cl{
-	class IScenable {
-	public:
-		virtual std::string getSceneId() = 0;
-	};
+namespace cl {
+class IScenable {
+ public:
+  virtual ~IScenable() {}
+  virtual std::string getSceneId() = 0;
+};
 }
 
-#endif //COREENGINE_ISCENABLE
+#endif  // COREENGINE_ISCENABLE

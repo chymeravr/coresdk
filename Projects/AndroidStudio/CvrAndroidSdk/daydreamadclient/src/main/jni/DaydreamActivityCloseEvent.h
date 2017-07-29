@@ -7,15 +7,21 @@
 
 #include <jni.h>
 #include <coreEngine/events/IEvent.h>
+#include <coreEngine/util/ILoggerFactory.h>
 
 namespace cl{
     class DaydreamActivityCloseEvent : public IEvent {
     public:
-        DaydreamActivityCloseEvent(JNIEnv *env, jobject *activitiyObject);
+        DaydreamActivityCloseEvent(JNIEnv *env, jobject activitiyObject, ILoggerFactory& loggerFactory);
         void callListener();
+        ~DaydreamActivityCloseEvent();
     private:
-        JNIEnv *env;
-        jobject *activityObject;
+//        JNIEnv *env;
+        JavaVM *jvm;
+        jint version;
+        jint attachStatus;
+        jobject activityObject;
+        std::unique_ptr<ILogger> logger = nullptr;
     };
 }
 

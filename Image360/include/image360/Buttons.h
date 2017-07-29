@@ -28,6 +28,9 @@ class Buttons : public ApplicationObject {
           IEventGazeListenerFactory &eventGazeListenerFactory,
           TransformTree *gazeTransformShooter, std::string fontFolderPath,
           IEvent &eventCloseApplication);
+
+  ~Buttons();
+
   void initialize(Scene &scene);
 
   inline void setCloseButtonText(std::string newCloseButtonText) {

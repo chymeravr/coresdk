@@ -7,13 +7,17 @@ StereoSphere::StereoSphere(ILoggerFactory &loggerFactory,
                            IDiffuseTextureFactory &diffuseTextureFactory,
                            ITransformTreeFactory &transformTreeFactory,
                            std::unique_ptr<Image> textureImage) {
-	/*assert(*loggerFactory != nullptr);
-	assert(*modelFactory != nullptr);*/
+  /*assert(*loggerFactory != nullptr);
+  assert(*modelFactory != nullptr);*/
   this->logger = loggerFactory.createLogger("StereoSphere:");
   this->modelFactory = &modelFactory;
   this->diffuseTextureFactory = &diffuseTextureFactory;
   this->transformTreeFactory = &transformTreeFactory;
   this->textureImage = std::move(textureImage);
+}
+
+StereoSphere::~StereoSphere() {
+  this->logger->log(LOG_DEBUG, "StereoSphere Destructor");
 }
 
 void StereoSphere::initialize(Scene &scene) {

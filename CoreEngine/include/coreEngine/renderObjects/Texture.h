@@ -12,6 +12,7 @@ class Texture : public IScenable {
   Texture(const std::string &sceneId, ILoggerFactory *loggerFactory) {
     this->sceneId = sceneId;
   }
+  virtual ~Texture() {}
   virtual IRenderable *getRenderable() = 0;
   std::string getSceneId() { return this->sceneId; }
   virtual void setTextureData(std::unique_ptr<unsigned char> data) {

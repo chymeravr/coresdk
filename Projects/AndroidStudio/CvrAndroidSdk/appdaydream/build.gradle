@@ -87,7 +87,9 @@ dependencies {
     compile 'com.google.vr:sdk-audio:1.70.0'
     compile 'com.google.vr:sdk-base:1.70.0'
     compile 'com.android.support.constraint:constraint-layout:1.0.2'
-    debugCompile project(path: ':daydreamadclient', configuration: 'debugDemo')
+//    compile project(':daydreamadclient')
+    debugCompile project(path: ':daydreamadclient', configuration: 'debug')
+//    debugCompile project(path: ':daydreamadclient', configuration: 'debugDemo')
 //    debugCompile(project(path: ':daydreamadclient', configuration: 'releaseDemo')){
 //        exclude module: 'adclient'
 //        exclude module: 'analytics'

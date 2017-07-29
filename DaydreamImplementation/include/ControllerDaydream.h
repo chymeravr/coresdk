@@ -19,6 +19,7 @@
 #include "vr/gvr/capi/include/gvr_types.h"
 
 #include <coreEngine/components/transformTree/TransformTreeModel.h>
+#include <coreEngine/events/IEvent.h>
 
 namespace cl {
 
@@ -43,6 +44,7 @@ class ControllerDaydream {
 
   ILoggerFactory *loggerFactory;
   std::unique_ptr<ILogger> logger;
+  IEvent *controllerClickEventHandler = nullptr;
 
   // Controller Params
   TransformTreeModel *controllerTransformTree = nullptr;
@@ -76,11 +78,14 @@ class ControllerDaydream {
 
   //   void stop();
 
-  //   void pause();
+  void pause();
 
-  //   void resume();
+  void resume();
 
   void setControllerTransform(TransformTreeModel &controllerTransformTree);
+  void setControllerClickEventHandler(IEvent &event) {
+    this->controllerClickEventHandler = &event;
+  }
 };
 }
 

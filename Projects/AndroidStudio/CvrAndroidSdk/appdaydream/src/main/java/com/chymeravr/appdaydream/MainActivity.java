@@ -224,7 +224,7 @@ public class MainActivity extends Activity {
         surfaceView.onResume();
         surfaceView.queueEvent(refreshViewerProfileRunnable);
 
-        ChymeraVrSdk.shutdown();
+
     }
 
     @Override
@@ -236,6 +236,7 @@ public class MainActivity extends Activity {
         // native resources from the UI thread.
         gvrLayout.shutdown();
         nativeDestroyRenderer(nativeTreasureHuntRenderer);
+        ChymeraVrSdk.shutdown();
 //        image360TestAd.destroy();
 //        this.daydreamApi.close();
     }

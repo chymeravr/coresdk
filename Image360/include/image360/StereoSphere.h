@@ -41,6 +41,7 @@ class StereoSphere : public ApplicationObject, public StereoObject {
                IDiffuseTextureFactory &diffuseTextureFactory,
                ITransformTreeFactory &transformTreeFactory,
                std::unique_ptr<Image> textureImage);
+  ~StereoSphere();
   void initialize(Scene &scene);
   void preDrawLeft();
   void preDrawRight();

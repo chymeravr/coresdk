@@ -98,6 +98,15 @@ void ControllerDaydream::ProcessControllerInput() {
     // todo : bind the click events to close and notify me
     logger->log(LOG_DEBUG, "Controller Button Click");
     // this->OnTriggerEvent();
+    if (this->controllerClickEventHandler != nullptr) {
+      this->controllerClickEventHandler->callListener();
+    }
   }
 }
+
+void ControllerDaydream::pause() {
+  if (gvr_controller_api_) gvr_controller_api_->Pause();
+}
+
+void ControllerDaydream::resume() { ResumeControllerApiAsNeeded(); }
 }

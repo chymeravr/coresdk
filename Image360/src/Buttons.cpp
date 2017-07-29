@@ -16,6 +16,9 @@ Buttons::Buttons(ILoggerFactory &loggerFactory, UIFactory &uiFactory,
   this->fontFolderPath = fontFolderPath;
   this->eventCloseApplication = &eventCloseApplication;
 }
+
+Buttons::~Buttons() { this->logger->log(LOG_DEBUG, "Buttons Destructor"); }
+
 void Buttons::initialize(Scene &scene) {
   // this->gazeTransformShooter = gazeTransformShooter;
 

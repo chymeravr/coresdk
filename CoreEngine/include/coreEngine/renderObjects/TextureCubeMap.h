@@ -16,7 +16,7 @@ class TextureCubeMap : public Texture {
  public:
   TextureCubeMap(const std::string &sceneId, ILoggerFactory *loggerFactory)
       : Texture(sceneId, loggerFactory) {}
-
+  virtual ~TextureCubeMap(){}
   void setTextureData(TEXTURE_CUBE_MAP_FACE face,
                       std::unique_ptr<unsigned char> data) {
     this->data[face] = std::move(data);
