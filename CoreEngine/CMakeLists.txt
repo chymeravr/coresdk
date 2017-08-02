@@ -127,6 +127,9 @@ if(WINDOWS)
 	FILE(GLOB_RECURSE INCLUDE_TEST_HEADERS "test/include/*.h")
 	include (CTest)
 	set(TEST_SOURCES	${PROJECT_SOURCE_DIR}/test/src/AllTests.cpp
+						${PROJECT_SOURCE_DIR}/test/src/AnimationTest.cpp
+						${PROJECT_SOURCE_DIR}/test/src/AnimationVec2Test.cpp
+						${PROJECT_SOURCE_DIR}/test/src/LinearInterpolatorTest.cpp
 						${PROJECT_SOURCE_DIR}/test/src/CameraTest.cpp
 						${PROJECT_SOURCE_DIR}/test/src/ComponentListTest.cpp
 						${PROJECT_SOURCE_DIR}/test/src/CubeBuilderTest.cpp

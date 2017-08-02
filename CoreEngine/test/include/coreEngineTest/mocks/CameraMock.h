@@ -7,7 +7,7 @@
 namespace cl{
 	class CameraMock : public Camera{
 	public:
-		CameraMock(const std::string &sceneId, ILoggerFactory *loggerFactory, Scene *scene) :Camera(sceneId, loggerFactory, scene){}
+		CameraMock(const std::string &sceneId, ILoggerFactory *loggerFactory) :Camera(sceneId, loggerFactory){}
 		MOCK_METHOD0(getRenderable, IRenderable *(void));
 	};
 }

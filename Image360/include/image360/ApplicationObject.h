@@ -10,6 +10,8 @@
 * camera reticle (if controller is not present)
 */
 
+// todo - rename preDraw to update
+
 namespace cl {
 class ApplicationObject {
  public:

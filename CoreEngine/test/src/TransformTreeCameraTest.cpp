@@ -10,7 +10,7 @@ namespace cl{
 		void SetUp(){
 			std::unique_ptr<ILoggerFactory> loggerFactory(new LoggerFactoryMock);
 			scene = std::unique_ptr<Scene>(new SceneMock(loggerFactory.get(), sceneId));
-			camera = std::unique_ptr<Camera>(new CameraMock(cameraId, loggerFactory.get(), scene.get()));
+			camera = std::unique_ptr<Camera>(new CameraMock(cameraId, loggerFactory.get()));
 			transformCamera = std::unique_ptr<TransformTreeCamera>(new TransformTreeCamera(camera.get(), loggerFactory.get()));
 		}
 		void TearDown(){
