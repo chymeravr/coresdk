@@ -16,6 +16,11 @@
 #include <coreEngine/events/EventCloseApplicationListener.h>
 #include <image360/ApplicationObject.h>
 
+// Animation Headers
+#include <coreEngine/animation/Animation.h>
+#include <coreEngine/animation/ChronoTimeKeeper.h>
+#include <coreEngine/animation/LinearInterpolator.h>
+
 namespace cl {
 class FadeScreen : public ApplicationObject {
  public:
@@ -26,7 +31,10 @@ class FadeScreen : public ApplicationObject {
   void initialize(Scene &scene);
   void preDraw();
 
-  void beginFade() { this->fadeStarted = true; }
+  void beginFade() {
+    this->fadeStarted = true;
+    animation->start();
+  }
 
   // bool isFadeComplete() { return this->fadeComplete; }
 
@@ -47,13 +55,16 @@ class FadeScreen : public ApplicationObject {
   // FadeScreen Params
   CL_Vec3 FADE_SCREEN_POSITION = CL_Vec3(0.0f, 0.0f, -0.2f);
   CL_Vec3 FADE_SCREEN_ROTATION = CL_Vec3(0.0f, 0.0f, 0.0f);
-  CL_Vec4 FADE_SCREEN_COLOR = CL_Vec4(0.0f, 0.0f, 0.0f, 0.0f);
+  CL_Vec3 FADE_SCREEN_COLOR = CL_Vec3(0.0f, 0.0f, 0.0f);
+
   float FADE_SCREEN_WIDTH = 20.0f;
   float FADE_SCREEN_HEIGHT = 20.0f;
 
   // todo ~ in future, the animator will take care of this
-  CL_GLfloat FADE_ALPHA = 1.0f;
+  CL_GLfloat FADE_ALPHA = 0.0f;
   CL_GLfloat FADE_SPEED = 0.01f;
+
+  std::unique_ptr<Animation<float>> animation;
 };
 }
 
