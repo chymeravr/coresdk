@@ -1,5 +1,10 @@
 #include <image360/Buttons.h>
 
+#include <coreEngine/animation/LinearInterpolator.h>
+#include <coreEngine/animation/ChronoTimeKeeper.h>
+#include <image360/ActionButtonListener.h>
+#include <iostream>
+
 namespace cl {
 Buttons::Buttons(ILoggerFactory &loggerFactory, UIFactory &uiFactory,
                  GazeDetectorContainer &gazeDetectorContainer,
@@ -15,6 +20,22 @@ Buttons::Buttons(ILoggerFactory &loggerFactory, UIFactory &uiFactory,
   this->gazeTransformShooter = gazeTransformShooter;
   this->fontFolderPath = fontFolderPath;
   this->eventCloseApplication = &eventCloseApplication;
+
+  auto interpolator = std::unique_ptr<LinearInterpolator<CL_Vec4>>(
+      new LinearInterpolator<CL_Vec4>());
+  auto timeKeeper = std::unique_ptr<ChronoTimeKeeper>(new ChronoTimeKeeper());
+  this->reticleEnterAnimation =
+      std::unique_ptr<Animation<CL_Vec4>>(new Animation<CL_Vec4>(
+                            loggerFactory, this->ACTION_BUTTON_COLOR,
+                            std::move(interpolator), std::move(timeKeeper)));
+
+  auto interpolator2 = std::unique_ptr<LinearInterpolator<CL_Vec4>>(
+	  new LinearInterpolator<CL_Vec4>());
+  auto timeKeeper2 = std::unique_ptr<ChronoTimeKeeper>(new ChronoTimeKeeper());
+  this->reticleLeaveAnimation =
+	  std::unique_ptr<Animation<CL_Vec4>>(new Animation<CL_Vec4>(
+	  loggerFactory, this->ACTION_BUTTON_COLOR,
+	  std::move(interpolator2), std::move(timeKeeper2)));
 }
 
 Buttons::~Buttons() { this->logger->log(LOG_DEBUG, "Buttons Destructor"); }
@@ -66,6 +87,8 @@ void Buttons::initialize(Scene &scene) {
   TransformTreeModel *transformActionButton =
       (TransformTreeModel *)actionButtonModel->getComponentList().getComponent(
           "transformTree");
+
+  // create an action button listener to handle events associated with it
   this->actionButtonListener =
       this->eventGazeListenerFactory->createActionButtonListener();
 
@@ -74,6 +97,8 @@ void Buttons::initialize(Scene &scene) {
   TransformTreeModel *transformCloseButton =
       (TransformTreeModel *)closeButtonModel->getComponentList().getComponent(
           "transformTree");
+
+  // create a close button listener to handle events associated with it
   this->closeButtonListener =
       this->eventGazeListenerFactory->createCloseButtonListener();
 
@@ -101,6 +126,22 @@ void Buttons::initialize(Scene &scene) {
           CLOSE_BUTTON_GAZE_DETECTOR_LENGTH_Z);
   closeButtonModel->getComponentList().addComponent(
       std::move(closeButtonGazeDetector));
+
+  std::vector<CL_Vec4> colorFrames = std::vector<CL_Vec4>{
+      this->ACTION_BUTTON_COLOR, CL_Vec4(0.0f, 0.0f, 1.0f, 1.0f)};
+  std::vector<float> timeFrames = {0.0f, 0.5f};
+  this->reticleEnterAnimation->setKeyFrames(colorFrames, timeFrames);
+
+  ((ActionButtonListener *)(this->actionButtonListener.get()))
+      ->setReticleEnterAnimation(*reticleEnterAnimation);
+
+  std::vector<CL_Vec4> colorFrames2 = std::vector<CL_Vec4>{
+	  this->ACTION_BUTTON_COLOR, CL_Vec4(0.0f, 0.0f, 0.0f, 0.7f)};
+  std::vector<float> timeFrames2 = { 0.0f, 0.5f };
+  this->reticleLeaveAnimation->setKeyFrames(colorFrames2, timeFrames2);
+
+  ((ActionButtonListener *)(this->actionButtonListener.get()))
+	  ->setReticleLeaveAnimation(*reticleLeaveAnimation);
 }
 
 void Buttons::onClickHandler() {
@@ -114,5 +155,15 @@ void Buttons::onClickHandler() {
     return;
   }
   this->logger->log(LOG_DEBUG, "No Button in Focus");
+}
+
+void Buttons::preDraw(){
+	if (this->reticleLeaveAnimation->isAnimationRunning()){
+		//this->logger->log(LOG_DEBUG, "Updating Reticle Leave Animation");
+		this->reticleLeaveAnimation->update();
+		//std::cout << "Action Button Color : " << this->ACTION_BUTTON_COLOR.x << " " << this->ACTION_BUTTON_COLOR.y << " " << this->ACTION_BUTTON_COLOR.z << std::endl;
+	}
+	this->actionButtonBackground->setColor(this->ACTION_BUTTON_COLOR);
+	this->closeButtonBackground->setColor(this->CLOSE_BUTTON_COLOR);
 }
 }

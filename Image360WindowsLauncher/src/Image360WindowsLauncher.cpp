@@ -43,7 +43,7 @@
 #include <glImplementation/factory/UniformFadeColorFactoryGL.h>
 
 // WindowsImplementation Dependencies
-#include <windowsImplementation/GazeListenerFactoryWindows.h>
+#include <image360/GazeListenerFactory.h>
 #include <windowsImplementation/LoggerFactoryWindows.h>
 #include <windowsImplementation/MutexLockWindows.h>
 #include <windowsImplementation/GlfwEventCloseApplicationListener.h>
@@ -289,7 +289,7 @@ int _tmain(int argc, _TCHAR** argv) {
       std::move(uiTransformTreeFactory), std::move(textMaterialFactory)));
 
   std::unique_ptr<IEventGazeListenerFactory> eventGazeListenerFactory(
-      new GazeListenerFactoryWindows(loggerFactory.get()));
+      new GazeListenerFactory(loggerFactory.get()));
   
 
   gazeDetectorContainer = gazeDetectorFactory->createGazeDetectorContainer();

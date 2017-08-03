@@ -10,7 +10,7 @@ class ChronoTimeKeeper : public ITimeKeeper {
   ~ChronoTimeKeeper() {}
 
   void start() {
-	this->isStarted = true;
+    this->isStarted = true;
     this->startTime = std::chrono::high_resolution_clock::now();
     // this->currTime = this->startTime;
   }
@@ -25,6 +25,8 @@ class ChronoTimeKeeper : public ITimeKeeper {
     auto diff = (float)cDiff.count();
     return diff;
   }
+
+  void reset() { this->isStarted = false; }
 
  private:
   //? should these variables be deinitialized??

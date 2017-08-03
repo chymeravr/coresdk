@@ -21,6 +21,8 @@
 #include <coreEngine/animation/ChronoTimeKeeper.h>
 #include <coreEngine/animation/LinearInterpolator.h>
 
+// todo - do fade in using animator as well.
+
 namespace cl {
 class FadeScreen : public ApplicationObject {
  public:

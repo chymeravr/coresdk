@@ -16,9 +16,11 @@
 #include <coreEngine/util/ILoggerFactory.h>
 
 #include <image360/ApplicationObject.h>
+#include <coreEngine/animation/Animation.h>
 
 // todo - separate out different buttons for different purposes.
-//
+// todo - change case of constants that are not constants anymore
+
 namespace cl {
 class Buttons : public ApplicationObject {
  public:
@@ -32,6 +34,8 @@ class Buttons : public ApplicationObject {
   ~Buttons();
 
   void initialize(Scene &scene);
+
+  void preDraw();
 
   inline void setCloseButtonText(std::string newCloseButtonText) {
     this->closeButtonText = newCloseButtonText;
@@ -68,6 +72,9 @@ class Buttons : public ApplicationObject {
   GazeDetectorContainer *gazeDetectorContainer;
   TransformTree *gazeTransformShooter;
 
+  std::unique_ptr<Animation<CL_Vec4>> reticleEnterAnimation;
+  std::unique_ptr<Animation<CL_Vec4>> reticleLeaveAnimation;
+
   IEvent *eventCloseApplication;
 
   // Factories
@@ -98,7 +105,7 @@ class Buttons : public ApplicationObject {
 
   CL_Vec3 CLOSE_BUTTON_POSITION = CL_Vec3(5.1, 0.0, -15.5);
   CL_Vec3 CLOSE_BUTTON_ROTATION = CL_Vec3(0.0, 0.0, 0.0);
-  CL_Vec4 CLOSE_BUTTON_COLOR = CL_Vec4(0.0, 0.0, 0.0, 0.7);
+  CL_Vec4 CLOSE_BUTTON_COLOR = CL_Vec4(0.0, 0.0, 0.0, 0.69);
   float CLOSE_BUTTON_WIDTH = 3.0f;
   float CLOSE_BUTTON_HEIGHT = 1.0f;
 

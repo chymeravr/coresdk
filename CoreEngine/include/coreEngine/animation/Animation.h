@@ -8,6 +8,8 @@
 #include <memory>
 #include <vector>
 
+// todo - a reset method might be useful
+
 namespace cl {
 template <class T>
 class Animation {
@@ -41,6 +43,12 @@ class Animation {
   void start() {
     this->timeKeeper->start();
     this->isAnimationStarted = true;
+  }
+
+  void stop() {
+    this->isAnimationStarted = false;
+    this->isAnimationComplete = false;
+    this->timeKeeper->reset();
   }
 
   void update() {

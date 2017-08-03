@@ -13,6 +13,8 @@ class ITimeKeeper {
 
   // returns the duration of time elapsed since start was called in seconds
   virtual float getElapsedTime() = 0;
+
+  virtual void reset() = 0;
 };
 }
 

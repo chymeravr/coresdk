@@ -1,14 +1,14 @@
-#ifndef WINDOWSIMPLEMENTATION_CLOSEMELISTENER_H
-#define WINDOWSIMPLEMENTATION_CLOSEMELISTENER_H
+#ifndef IMAGE360_CLOSEBUTTONLISTENER_H
+#define IMAGE360_CLOSEBUTTONLISTENER_H
 
 #include <assert.h>
 #include <coreEngine/components/gazeDetector/EventGazeListener.h>
 #include <coreEngine/util/ILoggerFactory.h>
 
 namespace cl {
-class CloseButtonListenerWindows : public EventGazeListener {
+class CloseButtonListener : public EventGazeListener {
  public:
-  CloseButtonListenerWindows(ILoggerFactory *loggerFactory) {
+  CloseButtonListener(ILoggerFactory *loggerFactory) {
     assert(loggerFactory != nullptr);
     this->logger = loggerFactory->createLogger(tag);
   }
@@ -27,9 +27,9 @@ class CloseButtonListenerWindows : public EventGazeListener {
 
  private:
   std::unique_ptr<ILogger> logger;
-  std::string tag = "CloseButtonListenerWindows";
+  std::string tag = "CloseButtonListener";
   bool focus = false;
 };
 }
 
-#endif  // WINDOWSIMPLEMENTATION_CLOSEMELISTENER_H
+#endif  // IMAGE360_CLOSEBUTTONLISTENER_H
