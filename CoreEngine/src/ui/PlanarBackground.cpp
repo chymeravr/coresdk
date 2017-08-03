@@ -10,7 +10,7 @@ PlanarBackground::PlanarBackground(std::string id, IModelFactory *modelFactory,
                                    float height,
                                    ILoggerFactory *loggerFactory) {
   std::string modelId;
-  Model *model = nullptr;
+  
 
   ShaderUniformColor *shader = uniformColorFactory->getShader(scene);
   this->material = uniformColorFactory->getMaterial(shader, color);
@@ -56,7 +56,14 @@ PlanarBackground::PlanarBackground(std::string id, IModelFactory *modelFactory,
   componentList.addComponent(std::move(transformTreeModel));
 }
 
+// write tests
 void PlanarBackground::setColor(CL_Vec4 color) {
   this->material->setColor(color);
+}
+
+// write tests
+void PlanarBackground::setScale(CL_Vec3 scale){
+	TransformTreeModel *transformModel = (TransformTreeModel *)this->model->getComponentList().getComponent("transformTree");
+	transformModel->setLocalScale(scale);
 }
 }

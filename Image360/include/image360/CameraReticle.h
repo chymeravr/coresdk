@@ -25,7 +25,7 @@ class CameraReticle : public ApplicationObject {
   UIFactory *uiFactory;
   TransformTree *transformTreeCamera;
 
-  CL_Vec4 CAMERA_RETICLE_COLOR = CL_Vec4(0.0f, 1.0f, 0.0f, 1.0f);
+  CL_Vec4 CAMERA_RETICLE_COLOR = CL_Vec4(1.0f, 1.0f, 1.0f, 1.0f);
 };
 }
 

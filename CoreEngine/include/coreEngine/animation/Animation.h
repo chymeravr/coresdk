@@ -5,6 +5,7 @@
 #include <coreEngine/animation/IInterpolator.h>
 #include <coreEngine/animation/ITimeKeeper.h>
 #include <coreEngine/util/ILoggerFactory.h>
+#include <iostream>
 #include <memory>
 #include <vector>
 
@@ -49,6 +50,7 @@ class Animation {
     this->isAnimationStarted = false;
     this->isAnimationComplete = false;
     this->timeKeeper->reset();
+    this->logger->log(LOG_DEBUG, "Stopping Animation");
   }
 
   void update() {
@@ -59,7 +61,8 @@ class Animation {
     if (startIndex == this->keyTimes.size() - 1) {
       // we have reached the end of all keyframes
       *this->frameBase = this->keyFrames[startIndex];
-      this->isAnimationComplete = true;
+      // this->isAnimationComplete = true;
+      this->stop();
       return;
     }
 
@@ -75,6 +78,8 @@ class Animation {
   bool isAnimationRunning() {
     return this->isAnimationStarted && !this->isAnimationComplete;
   }
+
+  T getCurrentFrameValue() { return *frameBase; }
 
  private:
   int getCurrentLowTimeIndex(float currTime) {
@@ -94,6 +99,8 @@ class Animation {
         return index;
       }
     }
+
+    return 0;
   }
 
   bool isValidTimeSequence(std::vector<float> timePoints) {

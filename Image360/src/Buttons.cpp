@@ -3,6 +3,7 @@
 #include <coreEngine/animation/LinearInterpolator.h>
 #include <coreEngine/animation/ChronoTimeKeeper.h>
 #include <image360/ActionButtonListener.h>
+#include <image360/CloseButtonListener.h>
 #include <iostream>
 
 namespace cl {
@@ -21,21 +22,77 @@ Buttons::Buttons(ILoggerFactory &loggerFactory, UIFactory &uiFactory,
   this->fontFolderPath = fontFolderPath;
   this->eventCloseApplication = &eventCloseApplication;
 
-  auto interpolator = std::unique_ptr<LinearInterpolator<CL_Vec4>>(
+  // ACTION BUTTON : color interpolation animation for on enter
+  auto actionButtonColorInterpolatorOnEnter= std::unique_ptr<LinearInterpolator<CL_Vec4>>(
       new LinearInterpolator<CL_Vec4>());
-  auto timeKeeper = std::unique_ptr<ChronoTimeKeeper>(new ChronoTimeKeeper());
-  this->reticleEnterAnimation =
+  auto actionButtonColorTimeKeeperOnEnter = std::unique_ptr<ChronoTimeKeeper>(new ChronoTimeKeeper());
+  this->actionButtonOnEnterColorAnimation =
       std::unique_ptr<Animation<CL_Vec4>>(new Animation<CL_Vec4>(
-                            loggerFactory, this->ACTION_BUTTON_COLOR,
-                            std::move(interpolator), std::move(timeKeeper)));
+	  loggerFactory, this->actionButtonColor,
+	  std::move(actionButtonColorInterpolatorOnEnter), std::move(actionButtonColorTimeKeeperOnEnter)));
 
-  auto interpolator2 = std::unique_ptr<LinearInterpolator<CL_Vec4>>(
+  // ACTION BUTTON : size interpolation animation for on enter
+  auto actionButtonScaleInterpolatorOnEnter = std::unique_ptr<LinearInterpolator<CL_Vec3>>(
+	  new LinearInterpolator<CL_Vec3>());
+  auto actionButtonScaleTimeKeeperOnEnter = std::unique_ptr<ChronoTimeKeeper>(new ChronoTimeKeeper());
+  this->actionButtonOnEnterScaleAnimation =
+	  std::unique_ptr<Animation<CL_Vec3>>(new Animation<CL_Vec3>(
+	  loggerFactory, this->actionButtonScale,
+	  std::move(actionButtonScaleInterpolatorOnEnter), std::move(actionButtonScaleTimeKeeperOnEnter)));
+
+  // ACTION BUTTON : color interpolation animation for on leave
+  auto actionButtonColorInterpolatorOnLeave = std::unique_ptr<LinearInterpolator<CL_Vec4>>(
 	  new LinearInterpolator<CL_Vec4>());
-  auto timeKeeper2 = std::unique_ptr<ChronoTimeKeeper>(new ChronoTimeKeeper());
-  this->reticleLeaveAnimation =
+  auto actionButtonColorTimeKeeperOnLeave = std::unique_ptr<ChronoTimeKeeper>(new ChronoTimeKeeper());
+  this->actionButtonOnLeaveColorAnimation =
 	  std::unique_ptr<Animation<CL_Vec4>>(new Animation<CL_Vec4>(
-	  loggerFactory, this->ACTION_BUTTON_COLOR,
-	  std::move(interpolator2), std::move(timeKeeper2)));
+	  loggerFactory, this->actionButtonColor,
+	  std::move(actionButtonColorInterpolatorOnLeave), std::move(actionButtonColorTimeKeeperOnLeave)));
+
+  // ACTION BUTTON : size interpolation animation for on leave
+  auto actionButtonScaleInterpolatorOnLeave = std::unique_ptr<LinearInterpolator<CL_Vec3>>(
+	  new LinearInterpolator<CL_Vec3>());
+  auto actionButtonScaleTimeKeeperOnLeave = std::unique_ptr<ChronoTimeKeeper>(new ChronoTimeKeeper());
+  this->actionButtonOnLeaveScaleAnimation =
+	  std::unique_ptr<Animation<CL_Vec3>>(new Animation<CL_Vec3>(
+	  loggerFactory, this->actionButtonScale,
+	  std::move(actionButtonScaleInterpolatorOnLeave), std::move(actionButtonScaleTimeKeeperOnLeave)));
+
+  // CLOSE BUTTON : color interpolation animation for on enter
+  auto closeButtonColorInterpolatorOnEnter = std::unique_ptr<LinearInterpolator<CL_Vec4>>(
+	  new LinearInterpolator<CL_Vec4>());
+  auto closeButtonColorTimeKeeperOnEnter = std::unique_ptr<ChronoTimeKeeper>(new ChronoTimeKeeper());
+  this->closeButtonOnEnterColorAnimation =
+	  std::unique_ptr<Animation<CL_Vec4>>(new Animation<CL_Vec4>(
+	  loggerFactory, this->closeButtonColor,
+	  std::move(closeButtonColorInterpolatorOnEnter), std::move(closeButtonColorTimeKeeperOnEnter)));
+
+  // CLOSE BUTTON : size interpolation animation for on enter
+  auto closeButtonScaleInterpolatorOnEnter = std::unique_ptr<LinearInterpolator<CL_Vec3>>(
+	  new LinearInterpolator<CL_Vec3>());
+  auto closeButtonScaleTimeKeeperOnEnter = std::unique_ptr<ChronoTimeKeeper>(new ChronoTimeKeeper());
+  this->closeButtonOnEnterScaleAnimation =
+	  std::unique_ptr<Animation<CL_Vec3>>(new Animation<CL_Vec3>(
+	  loggerFactory, this->closeButtonScale,
+	  std::move(closeButtonScaleInterpolatorOnEnter), std::move(closeButtonScaleTimeKeeperOnEnter)));
+
+  // CLOSE BUTTON : color interpolation animation for on leave
+  auto closeButtonColorInterpolatorOnLeave = std::unique_ptr<LinearInterpolator<CL_Vec4>>(
+	  new LinearInterpolator<CL_Vec4>());
+  auto closeButtonColorTimeKeeperOnLeave = std::unique_ptr<ChronoTimeKeeper>(new ChronoTimeKeeper());
+  this->closeButtonOnLeaveColorAnimation =
+	  std::unique_ptr<Animation<CL_Vec4>>(new Animation<CL_Vec4>(
+	  loggerFactory, this->closeButtonColor,
+	  std::move(closeButtonColorInterpolatorOnLeave), std::move(closeButtonColorTimeKeeperOnLeave)));
+
+  // CLOSE BUTTON : size interpolation animation for on leave
+  auto closeButtonSizeInterpolatorOnLeave = std::unique_ptr<LinearInterpolator<CL_Vec3>>(
+	  new LinearInterpolator<CL_Vec3>());
+  auto closeButtonScaleTimeKeeperOnLeave = std::unique_ptr<ChronoTimeKeeper>(new ChronoTimeKeeper());
+  this->closeButtonOnLeaveScaleAnimation =
+	  std::unique_ptr<Animation<CL_Vec3>>(new Animation<CL_Vec3>(
+	  loggerFactory, this->closeButtonScale,
+	  std::move(closeButtonSizeInterpolatorOnLeave), std::move(closeButtonScaleTimeKeeperOnLeave)));
 }
 
 Buttons::~Buttons() { this->logger->log(LOG_DEBUG, "Buttons Destructor"); }
@@ -54,7 +111,7 @@ void Buttons::initialize(Scene &scene) {
 
   // Action Button Initialization
   this->actionButtonBackground = this->uiFactory->createPlanarBackground(
-      "actionButton", &scene, ACTION_BUTTON_COLOR, ACTION_BUTTON_POSITION,
+      "actionButton", &scene, this->actionButtonColor, ACTION_BUTTON_POSITION,
       ACTION_BUTTON_ROTATION, ACTION_BUTTON_WIDTH, ACTION_BUTTON_HEIGHT);
 
   // action button text position & orientation is relative to the actionButton
@@ -69,7 +126,7 @@ void Buttons::initialize(Scene &scene) {
 
   // Close Button Intialization
   this->closeButtonBackground = this->uiFactory->createPlanarBackground(
-      "closeButton", &scene, CLOSE_BUTTON_COLOR, CLOSE_BUTTON_POSITION,
+      "closeButton", &scene, this->closeButtonColor, CLOSE_BUTTON_POSITION,
       CLOSE_BUTTON_ROTATION, CLOSE_BUTTON_WIDTH, CLOSE_BUTTON_HEIGHT);
 
   // close button text position & orientation is relative to the actionButton
@@ -127,21 +184,65 @@ void Buttons::initialize(Scene &scene) {
   closeButtonModel->getComponentList().addComponent(
       std::move(closeButtonGazeDetector));
 
-  std::vector<CL_Vec4> colorFrames = std::vector<CL_Vec4>{
-      this->ACTION_BUTTON_COLOR, CL_Vec4(0.0f, 0.0f, 1.0f, 1.0f)};
-  std::vector<float> timeFrames = {0.0f, 0.5f};
-  this->reticleEnterAnimation->setKeyFrames(colorFrames, timeFrames);
+  // ANIMATION INITIALIZATIONS - keyFrames, timeFrames
+  // time frames for button animations
+  std::vector<float> timeFrames = { BUTTON_ANIMATION_START_TIME, BUTTON_ANIMATION_END_TIME };
 
+  // color animation key frame initialization for on enter
+  std::vector<CL_Vec4> onEnterColorFrames = std::vector<CL_Vec4>{
+	  this->ACTION_BUTTON_START_COLOR, this->ACTION_BUTTON_END_COLOR};
+  
+  // size animation key frames initialization for on enter
+  std::vector<CL_Vec3> onEnterScaleFrames = std::vector<CL_Vec3>{
+	  this->ACTION_BUTTON_START_SCALE, this->ACTION_BUTTON_END_SCALE};
+  
+  // color animation key frame initialization for on leave
+  std::vector<CL_Vec4> onLeaveColorFrames = std::vector<CL_Vec4>{
+	  this->ACTION_BUTTON_END_COLOR, this->ACTION_BUTTON_START_COLOR};
+
+  // size animation key frames initialization for on enter
+  std::vector<CL_Vec3> onLeaveScaleFrames = std::vector<CL_Vec3>{
+	  this->ACTION_BUTTON_END_SCALE, this->ACTION_BUTTON_START_SCALE};
+  
+
+  /******************************* ACTION BUTTON *******************************************/
+  this->actionButtonOnEnterColorAnimation->setKeyFrames(onEnterColorFrames, timeFrames);
   ((ActionButtonListener *)(this->actionButtonListener.get()))
-      ->setReticleEnterAnimation(*reticleEnterAnimation);
-
-  std::vector<CL_Vec4> colorFrames2 = std::vector<CL_Vec4>{
-	  this->ACTION_BUTTON_COLOR, CL_Vec4(0.0f, 0.0f, 0.0f, 0.7f)};
-  std::vector<float> timeFrames2 = { 0.0f, 0.5f };
-  this->reticleLeaveAnimation->setKeyFrames(colorFrames2, timeFrames2);
-
+	  ->setReticleEnterAnimation(*this->actionButtonOnEnterColorAnimation);
+  
+  this->actionButtonOnEnterScaleAnimation->setKeyFrames(onEnterScaleFrames, timeFrames);
   ((ActionButtonListener *)(this->actionButtonListener.get()))
-	  ->setReticleLeaveAnimation(*reticleLeaveAnimation);
+	  ->setReticleEnterResizeAnimation(*this->actionButtonOnEnterScaleAnimation);
+
+  this->actionButtonOnLeaveColorAnimation->setKeyFrames(onLeaveColorFrames, timeFrames);
+  ((ActionButtonListener *)(this->actionButtonListener.get()))
+	  ->setReticleLeaveAnimation(*this->actionButtonOnLeaveColorAnimation);
+
+  this->actionButtonOnLeaveScaleAnimation->setKeyFrames(onLeaveScaleFrames, timeFrames);
+  ((ActionButtonListener *)(this->actionButtonListener.get()))
+	  ->setReticleLeaveResizeAnimation(*this->actionButtonOnLeaveScaleAnimation);
+
+  /******************************* CLOSE BUTTON *******************************************/
+  // CLOSE BUTTON : color animation key frame initialization for on enter
+  this->closeButtonOnEnterColorAnimation->setKeyFrames(onEnterColorFrames, timeFrames);
+  ((CloseButtonListener *)(this->closeButtonListener.get()))
+	  ->setReticleEnterAnimation(*this->closeButtonOnEnterColorAnimation);
+
+  // CLOSE BUTTON : size animation key frames initialization for on enter
+  this->closeButtonOnEnterScaleAnimation->setKeyFrames(onEnterScaleFrames, timeFrames);
+  ((CloseButtonListener *)(this->closeButtonListener.get()))
+	  ->setReticleEnterResizeAnimation(*this->closeButtonOnEnterScaleAnimation);
+
+  // CLOSE BUTTON : color animation key frame initialization for on leave
+  this->closeButtonOnLeaveColorAnimation->setKeyFrames(onLeaveColorFrames, timeFrames);
+  ((CloseButtonListener *)(this->closeButtonListener.get()))
+	  ->setReticleLeaveAnimation(*this->closeButtonOnLeaveColorAnimation);
+
+  // CLOSE BUTTON : size animation key frames initialization for on enter
+  this->closeButtonOnLeaveScaleAnimation->setKeyFrames(onLeaveScaleFrames, timeFrames);
+  ((CloseButtonListener *)(this->closeButtonListener.get()))
+	  ->setReticleLeaveResizeAnimation(*this->closeButtonOnLeaveScaleAnimation);
+
 }
 
 void Buttons::onClickHandler() {
@@ -158,12 +259,26 @@ void Buttons::onClickHandler() {
 }
 
 void Buttons::preDraw(){
-	if (this->reticleLeaveAnimation->isAnimationRunning()){
-		//this->logger->log(LOG_DEBUG, "Updating Reticle Leave Animation");
-		this->reticleLeaveAnimation->update();
-		//std::cout << "Action Button Color : " << this->ACTION_BUTTON_COLOR.x << " " << this->ACTION_BUTTON_COLOR.y << " " << this->ACTION_BUTTON_COLOR.z << std::endl;
+	if (this->actionButtonOnLeaveColorAnimation->isAnimationRunning()){
+		this->actionButtonOnLeaveColorAnimation->update();
 	}
-	this->actionButtonBackground->setColor(this->ACTION_BUTTON_COLOR);
-	this->closeButtonBackground->setColor(this->CLOSE_BUTTON_COLOR);
+
+	if (this->actionButtonOnLeaveScaleAnimation->isAnimationRunning()){
+		this->actionButtonOnLeaveScaleAnimation->update();
+	}
+
+	if (this->closeButtonOnLeaveColorAnimation->isAnimationRunning()){
+		this->closeButtonOnLeaveColorAnimation->update();
+	}
+
+	if (this->closeButtonOnLeaveScaleAnimation->isAnimationRunning()){
+		this->closeButtonOnLeaveScaleAnimation->update();
+	}
+
+	this->actionButtonBackground->setColor(this->actionButtonColor);
+	this->actionButtonBackground->setScale(this->actionButtonScale);
+
+	this->closeButtonBackground->setColor(this->closeButtonColor);
+	this->closeButtonBackground->setScale(this->closeButtonScale);
 }
 }
