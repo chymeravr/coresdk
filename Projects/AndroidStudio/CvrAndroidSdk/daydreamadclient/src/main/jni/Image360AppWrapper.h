@@ -36,12 +36,13 @@
 #include <image360/FPSCamera.h>
 #include <image360/Buttons.h>
 #include <image360/Constants.h>
+#include <image360/GazeListenerFactory.h>
 
 // Android Modules
 #include <LoggerDaydreamFactory.h>
 #include <MutexLockDaydream.h>
 #include <RendererDaydream.h>
-#include <GazeListenerFactoryDaydream.h>
+//#include <GazeListenerFactoryDaydream.h>
 #include <ControllerDaydream.h>
 #include <ControllerClickEventDaydream.h>
 #include "DaydreamActivityCloseEvent.h"

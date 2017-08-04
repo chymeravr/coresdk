@@ -52,8 +52,10 @@ namespace cl{
                                   std::move(uiUniformColorFactory), std::move(uiUniformFadeColorFactory),
                                   std::move(uiTransformTreeFactory), std::move(textMaterialFactory)));
 
+//        eventGazeListenerFactory = std::unique_ptr<IEventGazeListenerFactory>(
+//                new GazeListenerFactoryDaydream(loggerFactory.get()));
         eventGazeListenerFactory = std::unique_ptr<IEventGazeListenerFactory>(
-                new GazeListenerFactoryDaydream(loggerFactory.get()));
+                new GazeListenerFactory(loggerFactory.get()));
 
         std::unique_ptr<IRenderer> renderer = std::unique_ptr<RendererDaydream>(
                 new RendererDaydream(gvr_api.get(), loggerFactory.get()));

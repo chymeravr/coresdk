@@ -209,7 +209,7 @@ std::string monoEquirectangleImageFilePath = "C:\\Users\\robin_"
 	  "uncher\\Debug\\360images\\equirectangular_desert.jpg";
 
 // Window dimensions
-const int WIDTH = 1600, HEIGHT = 1000;
+const int WIDTH = 1800, HEIGHT =1500;
 
 int _tmain(int argc, _TCHAR** argv) {
   char** argvTyped = (char**)argv;
@@ -315,7 +315,7 @@ int _tmain(int argc, _TCHAR** argv) {
 
   monoSphereTextureImages.push_back(imageJPEGLoader.loadImage(monoEquirectangleImageFilePath));
 
-  IMAGE_MODE appMode = MONO;
+  IMAGE_MODE appMode = STEREO;
 
   if (appMode == STEREO) {
     std::unique_ptr<IRenderer> renderer(new RendererNoHMDStereo());
